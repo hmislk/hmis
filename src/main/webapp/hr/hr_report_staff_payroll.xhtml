@@ -50,7 +50,7 @@
             </h:panelGrid>
 
             <p:commandButton value="Print" ajax="false" action="#"  >
-                <p:printer target="print" ></p:printer>
+                <p:printer target="tbl" ></p:printer>
             </p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
             <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlocked()}" ></p:commandButton>
@@ -86,6 +86,7 @@
                         <th>Allowance Adjust</th>
                         <th>No Pay Allowance</th>
                         <th>Total Allowance</th>
+                        <th>Gross Salary</th>
                         <th>EPF Staff</th>
                         <ui:repeat value="#{salaryCycleController.headersSub}" var="hh">
                             <th>#{hh}</th>
@@ -160,6 +161,10 @@
                                 </h:outputText>
                             </td>
                             <td style="text-align: right;"><h:outputText value="#{scc.transTotalAllowance}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;"><h:outputText value="#{scc.transTotalAllowance+scc.transEpfEtfDiductableSalary}" >
                                     <f:convertNumber pattern="0.00" />
                                 </h:outputText>
                             </td>
@@ -257,6 +262,11 @@
                         </td>
                         <td style="text-align: right;">
                             <h:outputLabel value="#{salaryCycleController.transTotAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{salaryCycleController.epfDeduct+salaryCycleController.transTotAll}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>
                         </td>
