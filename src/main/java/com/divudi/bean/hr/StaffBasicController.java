@@ -317,6 +317,8 @@ public class StaffBasicController implements Serializable {
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
     }
+    
+    double totalStaffPaySheetComponentValue=0.0;
 
     public void createTable() {
         String sql = "Select s from StaffPaysheetComponent s"
@@ -336,7 +338,15 @@ public class StaffBasicController implements Serializable {
 
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        calTotal(items);
 
+    }
+    
+    public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents){
+        totalStaffPaySheetComponentValue=0.0;
+        for (StaffPaysheetComponent spc : staffPaysheetComponents) {
+            totalStaffPaySheetComponentValue+=spc.getStaffPaySheetComponentValue();
+        }
     }
 
     public List<StaffPaysheetComponent> getItems2() {
@@ -512,5 +522,13 @@ public class StaffBasicController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public double getTotalStaffPaySheetComponentValue() {
+        return totalStaffPaySheetComponentValue;
+    }
+
+    public void setTotalStaffPaySheetComponentValue(double totalStaffPaySheetComponentValue) {
+        this.totalStaffPaySheetComponentValue = totalStaffPaySheetComponentValue;
     }
 }
