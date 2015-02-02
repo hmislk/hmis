@@ -37,7 +37,7 @@
 <!--                            <ph:grnReturn bill="#{pharmacyBillSearch.bill}" />-->
                             
                             <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
-                                <ph:grn bill="#{pharmacyBillSearch.bill}"/>
+                                <ph:grnReturn bill="#{pharmacyBillSearch.bill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
