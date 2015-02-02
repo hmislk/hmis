@@ -8,7 +8,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="lst"> 
+            <p:panel id="lst1"> 
                 <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
                 <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
                     <f:selectItem itemLabel="Please select component Type "/>
@@ -27,16 +27,23 @@
 
 
 
-                <p:dataTable  value="#{staffBasicController.items}" 
+                <p:dataTable  value="#{staffBasicController.items}" id="lst" 
                               filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                               var="i"   rowKey="#{i.id}"  >
+                    
+                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Paysheet Component List"/>
+                                    <br/>
+                                    <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
+                                    </h:outputLabel>
+                                </f:facet>
 
-                    <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" >
+                    <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" style="text-align: right;">
                         <h:outputLabel value="#{i.fromDate}" >
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
+                    <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains" style="text-align: right;">
                         <p:cellEditor>  
                             <f:facet name="output">
                                 <h:outputLabel value="#{i.toDate}">
@@ -71,7 +78,7 @@
                     <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
                         <h:outputLabel value="#{i.staff.code}"/>
                     </p:column>
-                    <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
+                    <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains"  style="text-align: right;">
 
                         <h:outputLabel value="#{i.staffPaySheetComponentValue}">
                             <f:convertNumber pattern="#,##0.00" />
