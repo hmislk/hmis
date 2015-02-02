@@ -33,13 +33,10 @@ import com.divudi.entity.hr.StaffGrade;
 import com.divudi.entity.hr.StaffStaffCategory;
 import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FormFacade;
 import com.divudi.facade.FormItemValueFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import java.io.ByteArrayInputStream;
@@ -266,7 +263,7 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -285,6 +282,7 @@ public class StaffController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
+        sql+=" order by ss.codeInterger ";
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 

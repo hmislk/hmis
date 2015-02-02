@@ -42,13 +42,15 @@
             <p:commandButton value="Print" ajax="false" action="#"  >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
             <p:commandLink style="padding: .3em 1em;" styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" ajax="false" value="Download as Excel" download="#{salaryCycleController.current}.xls" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
             
             <p:panel id="print">
                 <table id="tbl" border="1">
                     <thead>
-                        <tr>  
+                        <tr>
+                            <th>EMP Code</th>
                             <th>Staff Name</th>
                             <ui:repeat value="#{salaryCycleController.headersAdd}" var="h">
                                 <th>#{h}</th>
@@ -65,6 +67,7 @@
                     <tbody>                   
                         <ui:repeat value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc">
                             <tr>
+                                <td><h:outputLabel value="#{scc.staff.code}" /></td>
                                 <td><h:outputLabel value="#{scc.staff.person.nameWithTitle}" /></td>
                                 <ui:repeat value="#{scc.staffSalaryComponantsAddition}"  var="col">
                                     <td><h:outputText value="#{col.componantValue}" >
@@ -95,6 +98,44 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
+                            
+                            
+<!--                            <tr>
+                                <td></td>
+                                <td></td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsAddition}"  var="col">
+                                    <td><h:outputText value="#{col.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <ui:repeat value="#{salaryCycleController.footerAdd}" var="f">
+                                <td>#{f}</td>
+                            </ui:repeat>
+                                <td><h:outputLabel value="#{scc.valueAdding}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsSubstraction}"  var="col2">
+                                    <td><h:outputText value="#{col2.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <td><h:outputLabel value="#{scc.epf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.etf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.valueAdding+(scc.valueSubstarction+scc.epf+scc.etf)}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>-->
+                            
                         </ui:repeat>
                     </tbody>
                 </table>

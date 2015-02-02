@@ -63,128 +63,128 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <p:column headerText="Emp No">
-                                    <p:outputLabel value="#{ss.staff.code}" >
-                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
+                                <p:column headerText="EPF NO">
+                                    <p:outputLabel value="#{ss.staff.epfNo}"></p:outputLabel>
+                                </p:column>    
                                 <p:column headerText="Emp Name">
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
-                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                              
-                                <p:column headerText="Over 45 OT Minute" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeMinute}">
+                                <p:column headerText="Merchantile Amount">
+                                    <p:outputLabel value="#{ss.merchantileAllowanceValue}"></p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.merchantileAllowanceValueTotal}"></p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Merchantile Count">
+                                    <p:outputLabel value="#{ss.merchantileCount}"></p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.merchantileCountTotal}"></p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Poya Amount">
+                                    <p:outputLabel value="#{ss.poyaAllowanceValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOvertimeMinit}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="#{hrReportController.poyaAllowanceValueTotal}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Extra Normal OT Minute" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.extraDutyNormalMinute}">
+                                <p:column headerText="Poya Count">
+                                    <p:outputLabel value="#{ss.poyaCount}"></p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.poyaCountTotal}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Late No Pay">
+                                    <p:outputLabel value="#{ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalExtraDutyNormalMinute}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="#{hrReportController.lateNoPayAllovanceValueTotal-hrReportController.lateNoPayBasicValueTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
+                                <p:column headerText="No Pay Value">
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)-(ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinut}">
-                                            <f:convertNumber pattern="#,##0.00" />
+                                        <h:outputLabel value="#{hrReportController.noPayValueAllowanceTotal
+                                                                +hrReportController.noPayValueBasicTotal
+                                                                -hrReportController.lateNoPayAllovanceValueTotal
+                                                                +hrReportController.lateNoPayBasicValueTotal}">                                            
+                                            <f:convertNumber pattern="#0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="OT Value" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue}">
+                                <p:column headerText="No Pay Total">
+                                    <p:outputLabel value="#{ss.noPayValueAllowance+ss.noPayValueBasic}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="#{(hrReportController.noPayValueAllowanceTotal
+                                                                +hrReportController.noPayValueBasicTotal)}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column/>
+                                <p:column headerText="No Pay For Basic">
+                                    <p:outputLabel value="#{(ss.noPayValueBasic)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.noPayValueBasicTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="No Pay For Allovance">
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.noPayValueAllowanceTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                                <p:column headerText="PH OT Min" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}">
-                                        <f:convertNumber pattern="0.00" />
+                                <p:column headerText="Late No Pay Count">
+                                    <p:outputLabel value="#{ss.lateNoPayCount}">
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtMin}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="#{hrReportController.lateNoPayCountTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>                                
+                                <p:column headerText="No Pay Count">
+                                    <p:outputLabel value="#{ss.noPayCount-ss.lateNoPayCount}">
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.noPayCountTotal
+                                                                -hrReportController.lateNoPayCountTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="RPM OT(1.5)" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
-                                        <f:convertNumber pattern="0.00" />
+                                <p:column headerText="Total">
+                                    <p:outputLabel value="#{ss.noPayCount}">                                          
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinutPhOt}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="PH OT Value" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="#{hrReportController.noPayCountTotal}">                                            
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column/>
-                                <p:column headerText="OFF DAY OT Min" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffDayOtMin}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="RPM(2.5)" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*2.5}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinuts}">                                            
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="OFF DAY OT Value" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffdyOtValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column/>
-
-                                <p:column headerText="Total" style="text-align: right;">
-                                    <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
                             </p:dataTable>
                         </p:panel>
 

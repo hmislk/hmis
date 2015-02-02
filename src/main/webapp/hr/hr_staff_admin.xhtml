@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -237,22 +238,11 @@
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Bank Detail">
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Bank"/>                                           
-                                            <p:selectOneMenu  value="#{institutionController.current}">
-                                                <f:selectItem itemLabel="Select Bank"/>
-                                                <f:selectItems value="#{institutionController.banks}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
-                                                <f:ajax execute="@this" render="br" event="change"/>
-                                            </p:selectOneMenu>
+                                        <h:panelGrid columns="2">                                           
                                             <p:outputLabel value="Bank Branch"/>                                           
-                                            <p:selectOneMenu id='br' value="#{staffController.current.bankAccount.bankBranch}">
-                                                <f:selectItem itemLabel="Select Bank"/>
-                                                <f:selectItems value="#{institutionController.current.branch}" var='i'
-                                                               itemValue="#{i}" itemLabel="#{i.name}"/>
-                                            </p:selectOneMenu>
-
+                                            <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <h:outputText  value="Account No" ></h:outputText>
-                                            <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}"  />
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Working Time">

@@ -91,13 +91,12 @@ public class StaffPaySheetComponentController implements Serializable {
                 + " where s.retired=false"
                 + " and s.paysheetComponent=:tp "
                 + " and s.staff=:st "
-                + " and s.fromDate=:fd"
-                + " and s.toDate=:td";
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
         HashMap hm = new HashMap();
         hm.put("tp", getCurrent().getPaysheetComponent());
         hm.put("st", getCurrent().getStaff());
-        hm.put("fd", getCurrent().getFromDate());
-        hm.put("td", getCurrent().getToDate());
+        hm.put("cu", getCurrent().getToDate());
         List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (!tmp.isEmpty()) {
@@ -174,19 +173,19 @@ public class StaffPaySheetComponentController implements Serializable {
     }
 
     public void createTable() {
-        
-        if (getPaysheetComponent() == null){
+
+        if (getPaysheetComponent() == null) {
             JsfUtil.addErrorMessage("Set Pay Sheet Component");
         }
 
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-               // + " and ss.staff=:st "
-                + " and ss.fromDate >=:fd "
-                + " and ss.toDate <=:td ";
+                // + " and ss.staff=:st "
+                + " and ss.fromDate <=:fd "
+                + " and ss.toDate >=:fd ";
         HashMap hm = new HashMap();
-        hm.put("td", getToDate());
+//        hm.put("td", getToDate());
         hm.put("fd", getFromDate());
 
         if (getPaysheetComponent() != null) {
@@ -200,7 +199,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -219,7 +218,7 @@ public class StaffPaySheetComponentController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql+=" order by ss.staff.codeInterger";
+        sql += " order by ss.staff.codeInterger";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -235,7 +234,7 @@ public class StaffPaySheetComponentController implements Serializable {
 
     public void makeItemNull() {
         items = null;
-        current=null;
+        current = null;
     }
 
     public List<PaysheetComponent> getCompnent() {

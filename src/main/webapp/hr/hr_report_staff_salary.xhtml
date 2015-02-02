@@ -90,7 +90,7 @@
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
-                
+
                 <p:column headerText="Deductional Componnet" >
                     <h:outputLabel value="#{scc.componentValueSubstraction}" >
                         <f:convertNumber pattern="0.00" />
@@ -132,7 +132,114 @@
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
-
+                <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel value="Total"></h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.basicValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.overTimeValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.extraDutyValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.noPayValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.holyDayAllowancesTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.dayOffValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.additionalComponentTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.deductionalComponentTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.adjustmentToBasicTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.adjustmentToAllowancesTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.epfStaffValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.epfCompanyValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.etfStaffValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputLabel style="text-align: right;" value="#{salaryCycleController.etfCompanValueTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                </p:columnGroup>
 
             </p:dataTable>
 

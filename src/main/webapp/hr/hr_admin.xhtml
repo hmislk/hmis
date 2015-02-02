@@ -26,7 +26,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_hrm_variables" value="Manage HRM Variable"  />
                             <p:commandButton styleClass="linkButton" ajax="false" value="Holiday Date" action="/hr/hr_ph_date" onclick="onSubmitButton();"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Salary Cycle" action="/hr/hr_salary_cycle" onclick="onSubmitButton();"/>
-                            
+
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
@@ -50,16 +50,6 @@
                         </h:panelGrid>
 
 
-                        <h:panelGrid columns="1">
-                            <f:facet name="header">
-                                <p:outputLabel value="Hr Component By All Staff "/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" 
-                                             action="/hr/hr_staff_paysheet_component_all" 
-                                             value="Manage Staff Paysheet Component All At Once " 
-                                             actionListener="#{staffPaySheetComponentAllController.makeNull}" />    
-
-                        </h:panelGrid>
 
                         <h:panelGrid columns="1">
                             <f:facet name="header">
@@ -71,11 +61,15 @@
                                              actionListener="#{staffBasicController.makeNull}" />    
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_paysheet_component_individual" 
-                                             value="Staff Paysheet " 
+                                             value=" Staff Paysheet Component Individual " 
+                                             actionListener="#{staffBasicController.makeNull}" />    
+                            <p:commandButton styleClass="linkButton"  ajax="false" 
+                                             action="/hr/hr_staff_paysheet_component_all" 
+                                             value=" Staff Paysheet Component All " 
                                              actionListener="#{staffBasicController.makeNull}" />    
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_loan_installment" 
-                                             value="Staff Loan " 
+                                             value=" Staff Loan " 
                                              actionListener="#{staffLoanController.makeNull}"  />                                                                                                           
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Staff Leave Entitle"

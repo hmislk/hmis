@@ -6,10 +6,12 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -98,10 +101,79 @@ public class StaffSalary implements Serializable {
     double basicRatePerMinute;
     @ManyToOne
     Institution institution;
+    @ManyToOne
+    Department department;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
+    //Not Consider For Any Calculation it's Already included for No Pay
+    double lateNoPayCount;
+    double lateNoPayBasicValue;
+    double lateNoPayAllovanceValue;
+    //Blocked Propertied
+    boolean blocked;
+    @ManyToOne
+    WebUser blockedUser;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date blockedDate;
+    String blockedComment;
+
+    public WebUser getBlockedUser() {
+        return blockedUser;
+    }
+
+    public void setBlockedUser(WebUser blockedUser) {
+        this.blockedUser = blockedUser;
+    }
+
+    public Date getBlockedDate() {
+        return blockedDate;
+    }
+
+    public void setBlockedDate(Date blockedDate) {
+        this.blockedDate = blockedDate;
+    }
+
+    public String getBlockedComment() {
+        return blockedComment;
+    }
+
+    public void setBlockedComment(String blockedComment) {
+        this.blockedComment = blockedComment;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public double getLateNoPayCount() {
+        return lateNoPayCount;
+    }
+
+    public void setLateNoPayCount(double lateNoPayCount) {
+        this.lateNoPayCount = lateNoPayCount;
+    }
+
+    public double getLateNoPayBasicValue() {
+        return lateNoPayBasicValue;
+    }
+
+    public void setLateNoPayBasicValue(double lateNoPayBasicValue) {
+        this.lateNoPayBasicValue = lateNoPayBasicValue;
+    }
+
+    public double getLateNoPayAllovanceValue() {
+        return lateNoPayAllovanceValue;
+    }
+
+    public void setLateNoPayAllovanceValue(double lateNoPayAllovanceValue) {
+        this.lateNoPayAllovanceValue = lateNoPayAllovanceValue;
+    }
 
     public double getOverTimeRatePerMinute() {
         return overTimeRatePerMinute;
@@ -112,7 +184,7 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransExtraDutyValue() {
-        return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
+        return roundOff(extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue);
     }
 
     public double getOverTimeMinute() {
@@ -169,6 +241,22 @@ public class StaffSalary implements Serializable {
 
     public void setDayOffAllowance(double dayOffAllowance) {
         this.dayOffAllowance = dayOffAllowance;
+    }
+
+    public double getBasicRatePerMinute() {
+        return basicRatePerMinute;
+    }
+
+    public void setBasicRatePerMinute(double basicRatePerMinute) {
+        this.basicRatePerMinute = basicRatePerMinute;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public double getSleepingDayAllowance() {
@@ -287,16 +375,25 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransGrossSalary() {
-        return basicValue
+        return roundOff(basicValue
                 + merchantileAllowanceValue
                 + poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
-                + adjustmentToBasic;
+                + adjustmentToBasic);
     }
 
     public double getTransEpfEtfDiductableSalary() {
-        return getTransGrossSalary() - noPayValueBasic;
+        return roundOff(getTransGrossSalary() + noPayValueBasic);
+    }
+
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public void calculateComponentTotal() {
@@ -330,11 +427,11 @@ public class StaffSalary implements Serializable {
 
             if (paysheetComponentType != null) {
 
-                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
-                    value = spc.getComponantValue();
-                } else {
-                    value = 0 - spc.getComponantValue();
-                }
+                //if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                value = roundOff(spc.getComponantValue());
+//                } else {
+//                    value = 0 - spc.getComponantValue();
+//                }
 
                 switch (paysheetComponentType) {
                     case BasicSalary:
@@ -400,15 +497,15 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransTotalAllowance() {
-        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+        return roundOff(componentValueAddition + adjustmentToAllowance + noPayValueAllowance);
     }
 
     public double getTransTotalDeduction() {
-        return componentValueSubstraction + epfStaffValue;
+        return roundOff(componentValueSubstraction + noPayValueBasic + noPayValueAllowance + epfStaffValue);
     }
 
     public double getTransNetSalry() {
-        return getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction();
+        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
     }
 
     public SalaryCycle getSalaryCycle() {

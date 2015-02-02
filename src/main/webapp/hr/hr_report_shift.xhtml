@@ -34,13 +34,15 @@
                             
                             <p:dataTable id="tb1" value="#{hrReportController.shiftLists}" var="ss">
                                 <p:column headerText="Roster Name">
-                                    #{ss.roster.name}
+                                    <h:outputLabel value="#{ss.roster.name}"/>
                                 </p:column>
                                  <p:column headerText="Shift Name">
-                                    #{ss.name}
+                                     <h:outputLabel value="#{ss.name}"/>
+                                    
                                 </p:column>
                                 <p:column headerText="Day Type">
-                                    #{ss.dayType}
+                                    <h:outputLabel value="#{ss.dayType}"/>
+                                    
                                 </p:column>
                               
                                 <p:column headerText="Starting Time">
@@ -58,39 +60,48 @@
                                 </p:column>
                                 
                                 <p:column headerText="Previous Shift">
-                                    #{ss.previousShift.name}
+                                    <h:outputLabel value="#{ss.previousShift.name}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Next Shift">
-                                    #{ss.nextShift.name}
+                                    <h:outputLabel value="#{ss.nextShift.name}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Leave Hour Full">
-                                    #{ss.leaveHourFull}
+                                    <h:outputLabel value="#{ss.leaveHourFull}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Leave Hour Half">
-                                    #{ss.leaveHourHalf}
+                                    <h:outputLabel value="#{ss.leaveHourHalf}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Duration Minutes">
-                                    #{ss.durationMin}
+                                    <h:outputLabel value="#{ss.durationMin}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="First Shift">
-                                    #{ss.firstShift}
+                                    <h:outputLabel value="#{ss.firstShift}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Last Shift">
-                                    #{ss.lastShift}
+                                    <h:outputLabel value="#{ss.lastShift}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Half Shift">
-                                    #{ss.halfShift}
+                                    <h:outputLabel value="#{ss.halfShift}"/>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Hide Shift">
-                                    #{ss.hideShift}
+                                    <h:outputLabel value="#{ss.hideShift}"/>
+                                    
                                 </p:column>
                                 
 

@@ -45,6 +45,9 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
+                                <p:column headerText="Staff Code">
+                                    #{ss.staff.codeInterger}
+                                </p:column>
                                 <p:column headerText="Staff">
                                     #{ss.staff.person.name}
                                 </p:column>
@@ -61,8 +64,11 @@
                                     #{ss.leave_medical}
                                 </p:column>
                                 <p:column headerText="No Pay Leave">
-                                    #{ss.leave_nopay}
+                                    #{ss.leave_nopay-ss.lateNoPays}
                                 </p:column>                             
+                                <p:column headerText="Late No Pay Days">
+                                    #{ss.lateNoPays}
+                                </p:column>
                                 <p:column headerText="Late Days">
                                     #{ss.latedays}
                                 </p:column>

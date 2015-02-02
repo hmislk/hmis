@@ -56,7 +56,10 @@ public class PaysheetComponentController implements Serializable {
     public List<PaysheetComponent> completePaysheetComponent(String qry) {
         List<PaysheetComponent> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findBySQL("select c "
+                    + " from PaysheetComponent"
+                    + " c where c.retired=false "
+                    + " and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<PaysheetComponent>();
@@ -92,6 +95,8 @@ public class PaysheetComponentController implements Serializable {
         PaysheetComponent tmp = getEjbFacade().findFirstBySQL(sql, hm);
 
         if (tmp != null) {
+            System.err.println("Name " + tmp.getName());
+
             return true;
         } else {
             return false;
@@ -110,7 +115,13 @@ public class PaysheetComponentController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
         } else {
-            if (checkComponent()) {
+            boolean flag = false;
+            for (PaysheetComponentType p : PaysheetComponentType.addition.getSystemDefinedComponents()) {
+                if (p == getCurrent().getComponentType()) {
+                    flag = true;
+                }
+            }
+            if (flag && checkComponent()) {
                 UtilityController.addErrorMessage("This Component Type Already Exist");
                 return;
             }
