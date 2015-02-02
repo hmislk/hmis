@@ -266,6 +266,11 @@
                             </h:outputLabel>
                         </td>
                         <td style="text-align: right;">
+                            <h:outputLabel value="#{salaryCycleController.epfDeduct+salaryCycleController.transTotAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{salaryCycleController.epfStaffVal}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>
