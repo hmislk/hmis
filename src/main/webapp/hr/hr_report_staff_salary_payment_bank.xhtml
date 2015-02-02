@@ -88,11 +88,36 @@
                                     <p:outputLabel value="#{ss.staff.accountNo}"  />
                                 </p:column>
                                 <p:column headerText="Net Salary" rendered="#{hrReportController.netSalary}">
-                                    <p:outputLabel value="#{ss.transNetSalry}"  />
+                                    <p:outputLabel value="#{ss.transNetSalry}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Over Time" rendered="#{hrReportController.otPayment}">
-                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  />
+                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalOverTime}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>  
+                                    </f:facet>
                                 </p:column>
+                                
+                                <p:column headerText="Total">
+                                    <p:outputLabel value="#{(ss.transExtraDutyValue+ss.overTimeValue)+ss.transNetSalry}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalofTotals}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
                             </p:dataTable>
                         </p:panel>
 

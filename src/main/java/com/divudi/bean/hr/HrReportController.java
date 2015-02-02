@@ -2010,6 +2010,9 @@ public class HrReportController implements Serializable {
     double totalRatePerMinuts = 0.0;  //overTimeRatePerMinute*2.5
     double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
+    double totalTransNetSalary = 0.0; //total of the transNetSalary;
+    double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
+    double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
 
     public void calTableTotal(List<StaffSalary> stfSal) {
 
@@ -2024,6 +2027,9 @@ public class HrReportController implements Serializable {
         totalRatePerMinuts = 0.0;  //overTimeRatePerMinute*2.5
         totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
+        totalTransNetSalary = 0.0;//total of transNetSalary
+        totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
+        totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
 
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
@@ -2037,6 +2043,10 @@ public class HrReportController implements Serializable {
             totalRatePerMinuts += totStaffSalary.getOverTimeRatePerMinute() * 2.5;
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
+            totalTransNetSalary += totStaffSalary.getTransNetSalry();
+            totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
+            totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
+        
         }
 
     }
@@ -2801,5 +2811,32 @@ public class HrReportController implements Serializable {
     public void setOtPayment(boolean otPayment) {
         this.otPayment = otPayment;
     }
+
+    public double getTotalTransNetSalary() {
+        return totalTransNetSalary;
+    }
+
+    public void setTotalTransNetSalary(double totalTransNetSalary) {
+        this.totalTransNetSalary = totalTransNetSalary;
+    }
+
+    public double getTotalOverTime() {
+        return totalOverTime;
+    }
+
+    public void setTotalOverTime(double totalOverTime) {
+        this.totalOverTime = totalOverTime;
+    }
+
+    public double getTotalofTotals() {
+        return totalofTotals;
+    }
+
+    public void setTotalofTotals(double totalofTotals) {
+        this.totalofTotals = totalofTotals;
+    }
+    
+    
+    
 
 }
