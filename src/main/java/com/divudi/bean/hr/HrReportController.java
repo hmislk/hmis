@@ -525,7 +525,7 @@ public class HrReportController implements Serializable {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
@@ -2018,6 +2018,8 @@ public class HrReportController implements Serializable {
     double totalTransNetSalary = 0.0; //total of the transNetSalary;
     double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
+    double totaldayOffAllowance = 0.0;
+    double totaldayOffCount = 0.0;
 
     public void calTableTotal(List<StaffSalary> stfSal) {
 
@@ -2035,6 +2037,8 @@ public class HrReportController implements Serializable {
         totalTransNetSalary = 0.0;//total of transNetSalary
         totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
+        totaldayOffAllowance = 0.0;
+        totaldayOffCount = 0.0;
 
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
@@ -2051,7 +2055,9 @@ public class HrReportController implements Serializable {
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
             totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
-        
+            totaldayOffAllowance +=totStaffSalary.getDayOffAllowance();
+            totaldayOffCount +=totStaffSalary.getDayOffCount();
+
         }
 
     }
@@ -2840,8 +2846,21 @@ public class HrReportController implements Serializable {
     public void setTotalofTotals(double totalofTotals) {
         this.totalofTotals = totalofTotals;
     }
-    
-    
-    
+
+    public double getTotaldayOffAllowance() {
+        return totaldayOffAllowance;
+    }
+
+    public void setTotaldayOffAllowance(double totaldayOffAllowance) {
+        this.totaldayOffAllowance = totaldayOffAllowance;
+    }
+
+    public double getTotaldayOffCount() {
+        return totaldayOffCount;
+    }
+
+    public void setTotaldayOffCount(double totaldayOffCount) {
+        this.totaldayOffCount = totaldayOffCount;
+    }
 
 }

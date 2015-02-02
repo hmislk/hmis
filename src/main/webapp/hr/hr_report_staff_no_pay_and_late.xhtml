@@ -62,6 +62,13 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel style="text-align: center" value="  No Pay And Late No Pay  Report "  />
+                                    <h:outputLabel/>
+                                    <br></br>
+                                    <h:outputLabel style="text-align: center" value="#{hrReportController.reportKeyWord.staff}"  />
+                                    <h:outputLabel/>
+                                </f:facet>
                                 <p:column headerText="Emp No">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
@@ -97,6 +104,24 @@
                                     <p:outputLabel value="#{ss.poyaCount}"></p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.poyaCountTotal}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Off Day Amount">
+                                    <p:outputLabel value="#{ss.dayOffAllowance}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.totaldayOffAllowance}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Off Day Count">
+                                    <p:outputLabel value="#{ss.dayOffCount}"></p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.totaldayOffCount}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel>
                                     </f:facet>
