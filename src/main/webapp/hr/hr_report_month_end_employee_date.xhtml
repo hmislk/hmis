@@ -45,43 +45,55 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
-                                <p:column headerText="Staff Code">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Employee Worked Date Report"/>
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.fromDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    To
+                                    <h:outputLabel value="#{hrReportController.fromDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    
+                                </f:facet>
+                                <p:column headerText="Staff Code" style="text-align: center;">
                                     #{ss.staff.codeInterger}
                                 </p:column>
-                                <p:column headerText="Staff">
+                                <p:column headerText="Staff" style="text-align: center;">
                                     #{ss.staff.person.name}
                                 </p:column>
-                                <p:column headerText="Worked Days">
+                                <p:column headerText="Worked Days" style="text-align: right;">
                                     #{ss.workedDays}
                                 </p:column>
-                                <p:column headerText="Annual Leave">
+                                <p:column headerText="Annual Leave" style="text-align: right;">
                                     #{ss.leave_annual}
                                 </p:column>
-                                <p:column headerText="Casual Leave">
+                                <p:column headerText="Casual Leave" style="text-align: right;">
                                     #{ss.leave_casual}
                                 </p:column>
-                                <p:column headerText="Medical Leave">
+                                <p:column headerText="Medical Leave" style="text-align: right;">
                                     #{ss.leave_medical}
                                 </p:column>
-                                <p:column headerText="No Pay Leave">
+                                <p:column headerText="No Pay Leave" style="text-align: right;">
                                     #{ss.leave_nopay-ss.lateNoPays}
                                 </p:column>                             
-                                <p:column headerText="Late No Pay Days">
+                                <p:column headerText="Late No Pay Days" style="text-align: right;">
                                     #{ss.lateNoPays}
                                 </p:column>
-                                <p:column headerText="Late Days">
+                                <p:column headerText="Late Days" style="text-align: right;">
                                     #{ss.latedays}
                                 </p:column>
-                                <p:column headerText="Off Days">
+                                <p:column headerText="Off Days" style="text-align: right;">
                                     #{ss.dayoff}
                                 </p:column>
-                                <p:column headerText="Sleeping Days">
+                                <p:column headerText="Sleeping Days" style="text-align: right;">
                                     #{ss.sleepingDays}
                                 </p:column>
-                                <p:column headerText="Poya Days">
+                                <p:column headerText="Poya Days" style="text-align: right;">
                                     #{ss.poyaDays}
                                 </p:column>
-                                <p:column headerText="Merhcantile Days">
+                                <p:column headerText="Merhcantile Days" style="text-align: right;">
                                     #{ss.merhchantileDays}
                                 </p:column>
 <!--                                <p:column headerText="Extra Duty Days">
