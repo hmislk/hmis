@@ -943,36 +943,40 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffWrokedDetail() {
-        if (getReportKeyWord().getStaff() != null) {
+        if (getReportKeyWord().getStaff() == null) {
+            UtilityController.addErrorMessage("Please Select  Staff");
             return;
         }
         staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getReportKeyWord().getStaff());
+        System.err.println("Sh Normal " + staffShiftsNormal);
         staffShiftsHoliday = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
                 getSalaryCycle().getSalaryToDate(),
                 getReportKeyWord().getStaff(),
                 Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya}));
+        System.err.println("Sh Holiday " + staffShiftsHoliday);
         staffShiftsDayOff = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
                 getSalaryCycle().getSalaryToDate(),
                 getReportKeyWord().getStaff(),
                 Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        System.err.println("Sh Day Off " + staffShiftsDayOff);
         staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
+        System.err.println("Sh Extra Duty " + staffShiftExtraDuties);
         staffLeavesNoPay = humanResourceBean.fetchStaffLeaveAddedLeaveList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+        System.err.println("User Leave " + staffLeavesNoPay);
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
-
+        System.err.println("System Leave " + staffLeaveSystem);
     }
 
-    List<StaffLeaveSystem> staffLeaveSystem;
+    List<StaffLeave> staffLeaveSystem;
 
-    public List<StaffLeaveSystem> getStaffLeaveSystem() {
+    public List<StaffLeave> getStaffLeaveSystem() {
         return staffLeaveSystem;
     }
 
-    public void setStaffLeaveSystem(List<StaffLeaveSystem> staffLeaveSystem) {
+    public void setStaffLeaveSystem(List<StaffLeave> staffLeaveSystem) {
         this.staffLeaveSystem = staffLeaveSystem;
     }
 
-  
-    
     public void createStaffLeaveDetail() {
         if (getReportKeyWord().getStaff() == null) {
             return;
@@ -1274,8 +1278,8 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
                 + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
-                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
-                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
+                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "

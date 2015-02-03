@@ -390,7 +390,7 @@ public class HumanResourceBean {
 
     }
 
-    public List<StaffLeaveSystem> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+    public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select l "
                 + " from StaffLeaveSystem l"
                 + " where l.retired=false "
@@ -466,6 +466,8 @@ public class HumanResourceBean {
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType in :tp"
                 + " order by ss.dayType,ss.shiftDate ";
@@ -485,6 +487,8 @@ public class HumanResourceBean {
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :tp"
                 + " order by ss.dayType,ss.shiftDate ";

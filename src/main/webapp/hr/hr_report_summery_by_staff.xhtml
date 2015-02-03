@@ -20,8 +20,9 @@
                             <h:outputLabel value="Staff Detail Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
+                            <h:outputLabel value="Select Salary Cycle"/>
                             <p:selectOneMenu id="advanced" 
-                                             value="#{hrReportController.current}" 
+                                             value="#{hrReportController.salaryCycle}" 
                                              converter="salaryCycleConverter" 
                                              effect="fade" var="t" 
                                              filter="true" 
