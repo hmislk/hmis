@@ -317,15 +317,20 @@ public class StaffBasicController implements Serializable {
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
     }
-    
-    double totalStaffPaySheetComponentValue=0.0;
+
+    double totalStaffPaySheetComponentValue = 0.0;
 
     public void createTable() {
-        String sql = "Select s from StaffPaysheetComponent s"
-                + " where s.retired=false ";
+        String sql = "Select s"
+                + " from StaffPaysheetComponent s"
+                + " where s.retired=false"
+                + " and s.staffPaySheetComponentValue!=0"
+                + " and s.fromDate<= :cu"
+                + " and s.toDate>:cu";
 
         HashMap hm = new HashMap();
 
+        hm.put("cu", date);
         if (paysheetComponent != null) {
             sql += " and s.paysheetComponent=:tp ";
             hm.put("tp", paysheetComponent);
@@ -341,11 +346,11 @@ public class StaffBasicController implements Serializable {
         calTotal(items);
 
     }
-    
-    public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents){
-        totalStaffPaySheetComponentValue=0.0;
+
+    public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents) {
+        totalStaffPaySheetComponentValue = 0.0;
         for (StaffPaysheetComponent spc : staffPaysheetComponents) {
-            totalStaffPaySheetComponentValue+=spc.getStaffPaySheetComponentValue();
+            totalStaffPaySheetComponentValue += spc.getStaffPaySheetComponentValue();
         }
     }
 
@@ -368,6 +373,8 @@ public class StaffBasicController implements Serializable {
 
         return items;
     }
+
+    private Date date;
 
     public void resetDate() {
 
@@ -530,5 +537,13 @@ public class StaffBasicController implements Serializable {
 
     public void setTotalStaffPaySheetComponentValue(double totalStaffPaySheetComponentValue) {
         this.totalStaffPaySheetComponentValue = totalStaffPaySheetComponentValue;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

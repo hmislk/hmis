@@ -383,6 +383,8 @@ public class StaffSalary implements Serializable {
                 + adjustmentToBasic);
     }
 
+    
+    
     public double getTransEpfEtfDiductableSalary() {
         return roundOff(getTransGrossSalary() + noPayValueBasic);
     }

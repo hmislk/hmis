@@ -1268,7 +1268,7 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     public double calStaffLeaveSystem(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
         List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select sum(s.qty) From StaffLeaveSystem s"
@@ -1615,6 +1615,21 @@ public class HumanResourceBean {
         hm.put("st", staff);
         hm.put("cu", date);
         hm.put("bs1", PaysheetComponentType.addition.getUserDefinedComponents());
+        return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffPaysheetComponent> fetchStaffPaysheetComponent(Staff staff, Date date, List<PaysheetComponentType> list) {
+
+        String sql = " Select s From StaffPaysheetComponent s "
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                + " and s.paysheetComponent.componentType in :bs1 "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("cu", date);
+        hm.put("bs1", list);
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -2099,6 +2114,23 @@ public class HumanResourceBean {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.Poya, DayType.MurchantileHoliday}));
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public long calculateWorkedDaysForSalary(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select count(distinct(ss.shiftDate)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null )"
+                + " or ss.leaveType is not null) "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
         hm.put("stf", staff);
 
         return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);

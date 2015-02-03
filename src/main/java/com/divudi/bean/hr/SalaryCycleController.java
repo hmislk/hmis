@@ -183,8 +183,107 @@ public class SalaryCycleController implements Serializable {
         this.salaryCycles = salaryCycles;
     }
 
-    public void saveSelected() {
+    private boolean errorCheck() {
         if (current == null) {
+            return true;
+        }
+
+        if (current.getSalaryFromDate() == null) {
+            return true;
+        }
+
+        if (current.getSalaryToDate() == null) {
+            return true;
+        }
+
+        if (current.getWorkedFromDate() == null) {
+            return true;
+        }
+
+        if (current.getWorkedToDate() == null) {
+            return true;
+        }
+
+        //Check Salry Cycle
+        String sql = "Select s from SalaryCycle s "
+                + " where s.retired=false "
+                + " and (s.salaryFromDate=:sfd "
+                + " or s.salaryToDate=:std "
+                + " or s.workedFromDate=:wfd "
+                + " or s.workedToDate=:wtd ) ";
+        HashMap hm = new HashMap();
+        hm.put("sfd", getCurrent().getSalaryFromDate());
+        hm.put("std", getCurrent().getSalaryToDate());
+        hm.put("wfd", getCurrent().getWorkedFromDate());
+        hm.put("wtd", getCurrent().getWorkedToDate());
+
+        SalaryCycle salaryCycle = facade.findFirstBySQL(sql, hm);
+        if (salaryCycle != null) {
+            UtilityController.addErrorMessage("Salary Cycle Already Exist For This Date");
+            return true;
+        }
+
+        //Check Salary Form Date
+        sql = "Select s from SalaryCycle s "
+                + " where s.retired=false "
+                + " and s.salaryFromDate<=:sfd "
+                + " and s.salaryToDate>=:sfd ";
+        hm = new HashMap();
+        hm.put("sfd", getCurrent().getSalaryFromDate());
+
+        salaryCycle = facade.findFirstBySQL(sql, hm);
+        if (salaryCycle != null) {
+            UtilityController.addErrorMessage("Salary From Date Already Exist in Other Cycle");
+            return true;
+        }
+
+        //Check Salary To Date
+        sql = "Select s from SalaryCycle s "
+                + " where s.retired=false "
+                + " and s.salaryFromDate<=:sfd "
+                + " and s.salaryToDate>=:sfd ";
+        hm = new HashMap();
+        hm.put("sfd", getCurrent().getSalaryToDate());
+
+        salaryCycle = facade.findFirstBySQL(sql, hm);
+        if (salaryCycle != null) {
+            UtilityController.addErrorMessage("Salary To Date Already Exist in Other Cycle");
+            return true;
+        }
+
+        //Check Worked Form Date
+        sql = "Select s from SalaryCycle s "
+                + " where s.retired=false "
+                + " and s.workedFromDate<=:wfd "
+                + " and s.workedToDate>=:wfd  ";
+        hm = new HashMap();
+        hm.put("wfd", getCurrent().getWorkedFromDate());
+
+        salaryCycle = facade.findFirstBySQL(sql, hm);
+        if (salaryCycle != null) {
+            UtilityController.addErrorMessage("Worked From Date Already Exist in Other Cycle");
+            return true;
+        }
+
+        //Check Worked TO Date
+        sql = "Select s from SalaryCycle s "
+                + " where s.retired=false "
+                + " and s.workedFromDate<=:wfd "
+                + " and s.workedToDate>=:wfd  ";
+        hm = new HashMap();
+        hm.put("wfd", getCurrent().getWorkedToDate());
+
+        salaryCycle = facade.findFirstBySQL(sql, hm);
+        if (salaryCycle != null) {
+            UtilityController.addErrorMessage("Worked To Date Already Exist in Other Cycle");
+            return true;
+        }
+
+        return false;
+    }
+
+    public void saveSelected() {
+        if (errorCheck()) {
             return;
         }
 

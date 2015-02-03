@@ -1874,6 +1874,32 @@ public class HrReportController implements Serializable {
     @Inject
     StaffSalaryController staffSalaryController;
 
+    public void updateStaffPaysheetComponent() {
+        String sql = "select s from StaffPaysheetComponent s "
+                + " where s.retired=false ";
+
+        List<StaffPaysheetComponent> staffPaysheetComponents = staffPaysheetComponentFacade.findBySQL(sql);
+
+        if (staffPaysheetComponents == null) {
+            return;
+        }
+
+        for (StaffPaysheetComponent spc : staffPaysheetComponents) {
+            if (spc.getStaffPaySheetComponentValue() != 0) {
+                continue;
+            }
+
+            if (spc.getModifiedValue() != 0) {
+                spc.setStaffPaySheetComponentValue(spc.getModifiedValue());
+            } else {
+                spc.setStaffPaySheetComponentValue(spc.getCreatedValue());
+            }
+
+            staffPaysheetComponentFacade.edit(spc);
+        }
+
+    }
+
     public void updateLateLeaveData() {
         String sql = "select s from StaffSalary s "
                 + " where s.retired=false"
@@ -2055,8 +2081,8 @@ public class HrReportController implements Serializable {
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
             totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
-            totaldayOffAllowance +=totStaffSalary.getDayOffAllowance();
-            totaldayOffCount +=totStaffSalary.getDayOffCount();
+            totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
+            totaldayOffCount += totStaffSalary.getDayOffCount();
 
         }
 
