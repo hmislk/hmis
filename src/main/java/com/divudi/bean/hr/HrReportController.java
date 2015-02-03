@@ -10,7 +10,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.MonthEndRecord;
 import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
-import com.divudi.facade.FormFacade;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
@@ -27,8 +26,10 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
@@ -37,6 +38,7 @@ import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
+import com.divudi.facade.FormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
@@ -45,8 +47,6 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +55,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -74,7 +76,7 @@ public class HrReportController implements Serializable {
     @EJB
     StaffFacade staffFacade;
     List<StaffShift> staffShifts;
-    List<StaffShift> staffShiftsAllowance;
+    List<StaffShift> staffShiftsHoliday;
     List<Staff> staffs;
     List<Shift> shiftLists;
     List<FingerPrintRecord> fingerPrintRecords;
@@ -180,12 +182,12 @@ public class HrReportController implements Serializable {
 
     }
 
-    public List<StaffShift> getStaffShiftsAllowance() {
-        return staffShiftsAllowance;
+    public List<StaffShift> getStaffShiftsHoliday() {
+        return staffShiftsHoliday;
     }
 
-    public void setStaffShiftsAllowance(List<StaffShift> staffShiftsAllowance) {
-        this.staffShiftsAllowance = staffShiftsAllowance;
+    public void setStaffShiftsHoliday(List<StaffShift> staffShiftsHoliday) {
+        this.staffShiftsHoliday = staffShiftsHoliday;
     }
 
     public StaffPaysheetComponentFacade getStaffPaysheetComponentFacade() {
@@ -910,17 +912,67 @@ public class HrReportController implements Serializable {
     }
 
     private List<StaffShift> staffShiftsNoPay;
+    SalaryCycle salaryCycle;
+
+    public SalaryCycle getSalaryCycle() {
+        return salaryCycle;
+    }
+
+    public void setSalaryCycle(SalaryCycle salaryCycle) {
+        this.salaryCycle = salaryCycle;
+    }
+
+    List<StaffShift> staffShiftsNormal;
+
+    public List<StaffShift> getStaffShiftsNormal() {
+        return staffShiftsNormal;
+    }
+
+    public void setStaffShiftsNormal(List<StaffShift> staffShiftsNormal) {
+        this.staffShiftsNormal = staffShiftsNormal;
+    }
+
+    List<StaffShift> staffShiftsDayOff;
+
+    public List<StaffShift> getStaffShiftsDayOff() {
+        return staffShiftsDayOff;
+    }
+
+    public void setStaffShiftsDayOff(List<StaffShift> staffShiftsDayOff) {
+        this.staffShiftsDayOff = staffShiftsDayOff;
+    }
 
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() != null) {
             return;
         }
+        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getReportKeyWord().getStaff());
+        staffShiftsHoliday = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
+                getSalaryCycle().getSalaryToDate(),
+                getReportKeyWord().getStaff(),
+                Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya}));
+        staffShiftsDayOff = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
+                getSalaryCycle().getSalaryToDate(),
+                getReportKeyWord().getStaff(),
+                Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
+        staffLeavesNoPay = humanResourceBean.fetchStaffLeaveAddedLeaveList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+        staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
 
-        staffShiftsAllowance = humanResourceBean.fetchStaffShiftAllowance(fromDate, toDate, getReportKeyWord().getStaff());
-        staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
     }
 
+    List<StaffLeaveSystem> staffLeaveSystem;
+
+    public List<StaffLeaveSystem> getStaffLeaveSystem() {
+        return staffLeaveSystem;
+    }
+
+    public void setStaffLeaveSystem(List<StaffLeaveSystem> staffLeaveSystem) {
+        this.staffLeaveSystem = staffLeaveSystem;
+    }
+
+  
+    
     public void createStaffLeaveDetail() {
         if (getReportKeyWord().getStaff() == null) {
             return;
@@ -979,6 +1031,25 @@ public class HrReportController implements Serializable {
         return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
+//    public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
+//        if (leaveType == null || staff == null) {
+//            return null;
+//        }
+//
+//        String sql = "";
+//        HashMap hm = new HashMap();
+//        sql = "select ss from StaffLeave ss "
+//                + " where ss.retired=false "
+//                + " and ss.leaveDate between :frm  and :to "
+//                + " and ss.staff=:stf"
+//                + " and ss.leaveType in :ltp ";
+//        hm.put("frm", fromDate);
+//        hm.put("to", toDate);
+//        hm.put("stf", staff);
+//        hm.put("ltp", leaveType.getLeaveTypes());
+//
+//        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+//    }
     List<StaffLeaveBallance> staffLeaveBallances;
 
     public List<StaffLeaveBallance> getStaffLeaveBallances() {

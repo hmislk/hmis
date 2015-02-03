@@ -317,6 +317,25 @@ public class HumanResourceBean {
 
     }
 
+    public List<StaffLeave> fetchStaffLeaveAddedLeaveList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select l "
+                + " from StaffLeave l"
+                + " where l.retired=false "
+                + " and type(l)!=:cl"
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("cl", StaffLeaveSystem.class);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
     public double fetchStaffLeaveAddedLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select sum(l.qty) "
                 + " from StaffLeave l"
@@ -336,25 +355,24 @@ public class HumanResourceBean {
 
     }
 
-    public double fetchStaffLeaveSystemLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
-        String sql = "select sum(l.qty) "
-                + " from StaffLeaveSystem l"
-                + " where l.retired=false "
-                //                + " and type(l)!=:cl"
-                + " and l.staff=:stf "
-                + " and l.leaveType in  :ltp "
-                + " and l.leaveDate between  :fd and :td ";
-        HashMap hm = new HashMap();
-//        hm.put("l", StaffLeaveSystem.class)
-        hm.put("stf", staff);
-        hm.put("ltp", leaveType.getLeaveTypes());
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
-
-        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
+//    public double fetchStaffLeaveSystemLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+//        String sql = "select sum(l.qty) "
+//                + " from StaffLeaveSystem l"
+//                + " where l.retired=false "
+//                //                + " and type(l)!=:cl"
+//                + " and l.staff=:stf "
+//                + " and l.leaveType in  :ltp "
+//                + " and l.leaveDate between  :fd and :td ";
+//        HashMap hm = new HashMap();
+////        hm.put("l", StaffLeaveSystem.class)
+//        hm.put("stf", staff);
+//        hm.put("ltp", leaveType.getLeaveTypes());
+//        hm.put("fd", fromDate);
+//        hm.put("td", toDate);
+//
+//        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+//
+//    }
     public double fetchStaffLeaveSystem(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select sum(l.qty) "
                 + " from StaffLeaveSystem l"
@@ -369,6 +387,23 @@ public class HumanResourceBean {
         hm.put("td", toDate);
 
         return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public List<StaffLeaveSystem> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select l "
+                + " from StaffLeaveSystem l"
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
 
@@ -422,17 +457,36 @@ public class HumanResourceBean {
 
     }
 
-    public List<StaffShift> fetchStaffShiftAllowance(Date fromDate, Date toDate, Staff staff) {
+    public List<StaffShift> fetchStaffShiftAllowance(Date fromDate, Date toDate, Staff staff, List<DayType> dayTypes) {
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("s", staff);
-        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya, DayType.DayOff, DayType.SleepingDay}));
+        m.put("tp", dayTypes);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType in :tp"
+                + " order by ss.dayType,ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftNormal(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday,
+            DayType.Poya,
+            DayType.DayOff,
+            DayType.SleepingDay}));
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType not in :tp"
                 + " order by ss.dayType,ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
@@ -447,7 +501,7 @@ public class HumanResourceBean {
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s"
-                + " and ss.additionalFrom is not null "
+                + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)>0 "
                 + " and ss.shiftDate between :fd and :td "
                 //                + " and type(ss)!=:tp"
                 + " order by ss.shiftDate ";
