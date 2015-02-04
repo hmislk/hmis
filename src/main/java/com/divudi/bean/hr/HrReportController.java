@@ -1197,6 +1197,7 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
+        
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
@@ -1277,12 +1278,14 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+                + " sum(ss.workedWithinTimeFrameVarified),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
                 + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ss.staff=:stf "
+                + " and ss.staff=:stf"
+                + " and ss.leavedTime=0 "
+                + " and ss.dayType not in :dtp "
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null) ) "
@@ -1290,7 +1293,8 @@ public class HrReportController implements Serializable {
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
-
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+        
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());

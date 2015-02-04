@@ -36,11 +36,14 @@
 
                             <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
-                            <p:commandButton update="staff" process="@this" value="Fill Staff" action="#{staffController.createStaffWithCode()}" onclick="onSubmitButton();"/>
+
                         </h:panelGrid>
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
+                        <p:commandButton ajax="false" 
+                                         action="#{staffController.createStaffWithCode()}"
+                                         onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
                                       filteredValue="#{staffController.filteredStaff}"     

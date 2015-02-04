@@ -270,18 +270,18 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void onEditBlockedUpdate(StaffSalary staffSalary) {
-        current = staffSalary;
+//        current = staffSalary;
 
-        if (current == null) {
+        if (staffSalary == null) {
             return;
         }
 
-        if (current.isBlocked()) {
-            current.setBlockedUser(sessionController.getLoggedUser());
-            current.setBlockedDate(new Date());
-        }
+//        if (current.isBlocked()) {
+//            current.setBlockedUser(sessionController.getLoggedUser());
+//            current.setBlockedDate(new Date());
+//        }
 
-        staffSalaryFacade.edit(current);
+        staffSalaryFacade.edit(staffSalary);
     }
 
     public void setCurrent(StaffSalary current) {

@@ -92,12 +92,7 @@
                                     <h:outputLabel value="#{ss.overTime}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                              
-                                <p:column headerText="Basic Per Minute">
-                                    <h:outputLabel value="#{ss.basicPerSecond}">
-                                        <f:convertNumber pattern="0.0000" />
-                                    </h:outputLabel>
-                                </p:column>
+                                </p:column>                                                            
                                 <p:column headerText="Over Time Value">
                                     <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
                                           <f:convertNumber pattern="0.00" />

@@ -32,6 +32,7 @@ import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -126,8 +127,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables = null;
         errorMessage = null;
     }
-    
-    public void checkFromdateBeforeToDate(StaffShift staffShift){
+
+    public void checkFromdateBeforeToDate(StaffShift staffShift) {
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         cal1.setTime(staffShift.getShiftStartTime());
@@ -138,23 +139,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
     }
-    
-    public void calDayCount(StaffShift staffShift){
-        
+
+    public void calDayCount(StaffShift staffShift) {
+
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         cal1.setTime(staffShift.getShiftStartTime());
         cal2.setTime(staffShift.getShiftEndTime());
 
         Long daycount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
-        
+
         System.out.println("daycount = " + daycount);
-        
-        if (daycount>2) {
+
+        if (daycount > 2) {
             UtilityController.addErrorMessage("Date Must Be less Than 2 Days");
             return;
         }
-        
+
     }
 
     public void listenStart(StaffShift staffShift) {
@@ -177,10 +178,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             staffShift.getStartRecord().setRecordTimeStamp(cal.getTime());
             return;
         }
-        
-        checkFromdateBeforeToDate(staffShift);
-        calDayCount(staffShift);
 
+//        checkFromdateBeforeToDate(staffShift);
+//        calDayCount(staffShift);
         staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
 //        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
 //        staffShiftFacade.edit(staffShift);
@@ -206,10 +206,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             staffShift.getEndRecord().setRecordTimeStamp(cal.getTime());
             return;
         }
-        
-        checkFromdateBeforeToDate(staffShift);
-        calDayCount(staffShift);
 
+//        checkFromdateBeforeToDate(staffShift);
+//        calDayCount(staffShift);
         staffShift.getEndRecord().setRecordTimeStamp(staffShift.getShiftEndTime());
 
 //        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
@@ -637,15 +636,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @Inject
     StaffLeaveFromLateAndEarlyController staffLeaveFromLateAndEarlyController;
 
-  
 //    public List<StaffShift> fetchStaffShift(StaffShift referenceShift){
 //        String sql="";
 //        
 //        
 //    }
-   
-    
-
     public void createShiftTableAdditional() {
         if (errorCheck()) {
             return;
@@ -1080,6 +1075,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
         }
 
+//        Long timePeriod = commonFunctions.calTimePeriod(ss.getStartRecord().getRecordTimeStamp(),
+//                ss.getEndRecord().getRecordTimeStamp());
+//        if (timePeriod <= 0 || (timePeriod / 24) > 1) {
+//            message = date
+//                    + " -> " + code
+//                    + " Check Start Time and End Time \r ";
+//            return true;
+//        }
+
         return false;
     }
 
@@ -1176,7 +1180,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
-        Set<StaffShift> staffShiftsTmp = new HashSet<>();
+//        Set<StaffShift> staffShiftsTmp = new HashSet<>();
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             UtilityController.addErrorMessage(empty_List);
@@ -1276,7 +1280,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 getStaffShiftFacade().edit(ss);
 
-
             }
 
             if (newSh.getStaffShift() != null && !newSh.getStaffShift().isEmpty()) {
@@ -1291,16 +1294,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             UtilityController.addSuccessMessage("All Record Successfully Updated");
         }
 
-////        List<Staff> staffs = humanResourceBean.fetchStaffFromShift(fromDate, toDate);
-//        if (staffShifts.isEmpty()) {
-//            return;
-//        }
-//        for (StaffShift s : staffShifts) {
-//            calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
-//            calStaffLeaveFromLateIn(s, 90 * 60, 600 * 60, 1);
-//            calStaffLeaveFromEarlyOut(s, 30 * 60, 90 * 60, 3);
-//            calStaffLeaveFromEarlyOut(s, 90 * 60, 600 * 60, 1);
-//        }
     }
 
 //    public List<StaffShift> fetchStaffShift(StaffShift staffShift) {

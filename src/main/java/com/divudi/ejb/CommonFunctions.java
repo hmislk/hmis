@@ -20,6 +20,23 @@ import java.util.TimeZone;
 @Singleton
 public class CommonFunctions {
 
+    public long calTimePeriod(Date frDate, Date tDate) {
+
+        if (frDate == null || tDate == null) {
+            return 0;
+        }
+
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(tDate);
+        cal2.setTime(frDate);
+
+        Long minCount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60);
+
+//        System.out.println("daycount = " + daycount);
+        return minCount;
+    }
+
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
         Date startOfThisMonth = getStartOfMonth(date);
