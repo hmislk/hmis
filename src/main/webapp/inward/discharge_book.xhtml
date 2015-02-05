@@ -48,6 +48,38 @@
 
 
                         </h:panelGrid>
+                        <h:panelGrid columns="16">
+                            <p:outputLabel value="Discharge" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.dischargeDate}" />
+                            <p:outputLabel value="BHT No" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
+                            <p:outputLabel value="Payment Methord" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.paymentMethord}" />
+                            <p:outputLabel value="Credit Company" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.creditCompany}" />
+                            <p:outputLabel value="Patient Details" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.person}" />
+                            <p:outputLabel value="Room" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.room}" />
+                            <p:outputLabel value="Refering Doctor" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.refDoctor}" />
+                            <p:outputLabel value="Admit Date" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.addmitDetails}" />
+                            <p:outputLabel value="Billed By" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.billedBy}" />
+                            <p:outputLabel value="Final Bill Total" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.finalBillTotal}" />
+                            <p:outputLabel value="Paid By Patient" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.paidByPatient}" />
+                            <p:outputLabel value="Credit Paid Amount" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.creditPaidAmount}" />
+                            <p:outputLabel value="Due Amount" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.dueAmount}" />
+                            <p:outputLabel value="Calculated Amount" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.calculatedAmount}" />
+                            <p:outputLabel value="Different Amount" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.differentAmount}" />
+                        </h:panelGrid>
 
                         <p:panelGrid columns="6">
                             <p:commandButton ajax="false" value="Fill Discharged All" action="#{inwardReportController.fillDischargeBook()}" onclick="onSubmitButton();" ></p:commandButton>                                                                                     
@@ -84,7 +116,7 @@
                                 <p:column>
                                     #{in+1}
                                 </p:column>
-                                <p:column headerText="Discharge Date">
+                                <p:column headerText="Discharge Date" rendered="#{inwardReportController.dischargeDate}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
@@ -92,34 +124,34 @@
                                         <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="BHT No">
+                                <p:column headerText="BHT No" rendered="#{inwardReportController.bhtNo}">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Payment Method">
+                                <p:column headerText="Payment Method" rendered="#{inwardReportController.paymentMethord}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Method"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.paymentMethod}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Credit Company Name">
+                                <p:column headerText="Credit Company Name" rendered="#{inwardReportController.creditCompany}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company Name"/>
                                     </f:facet>                                    
                                     <h:outputLabel  value="#{i.creditCompany.name}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Phone">
+                                <p:column headerText="Phone" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Phone"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.patient.person.mobile}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Room">
+                                <p:column headerText="Room" rendered="#{inwardReportController.room}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Room"/>
                                     </f:facet>
@@ -128,7 +160,7 @@
                                 </p:column>
 
 
-                                <p:column headerText="Patient Name">
+                                <p:column headerText="Patient Name" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>                                    
@@ -136,7 +168,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Referring Consultant">
+                                <p:column headerText="Referring Consultant" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Referring Consultant"/>
                                     </f:facet>                                    
@@ -144,7 +176,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admitted By">
+                                <p:column headerText="Admitted By" rendered="#{inwardReportController.addmitDetails}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
@@ -152,7 +184,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admitted Date">
+                                <p:column headerText="Admitted Date" rendered="#{inwardReportController.addmitDetails}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
@@ -161,7 +193,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Address">
+                                <p:column headerText="Address" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Address"/>
                                     </f:facet>                                    
@@ -169,7 +201,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Biiled By">
+                                <p:column headerText="Biiled By" rendered="#{inwardReportController.billedBy}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Biiled By"/>
                                     </f:facet>                                    
@@ -178,7 +210,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Final Bill Total">
+                                <p:column style="text-align: right;" headerText="Final Bill Total" rendered="#{inwardReportController.finalBillTotal}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill Total"/>
                                     </f:facet>                                    
@@ -192,7 +224,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Paid BY PATIENT">
+                                <p:column style="text-align: right;" headerText="Paid BY PATIENT" rendered="#{inwardReportController.paidByPatient}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid BY PATIENT"/>
                                     </f:facet>                                    
@@ -206,7 +238,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Credit Paid Amount">
+                                <p:column style="text-align: right;" headerText="Credit Paid Amount" rendered="#{inwardReportController.creditPaidAmount}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Paid Amount"/>
                                     </f:facet>                                    
@@ -220,7 +252,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Due Amount">
+                                <p:column style="text-align: right;" headerText="Due Amount" rendered="#{inwardReportController.dueAmount}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>                                    
@@ -234,7 +266,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Calculated Amount">
+                                <p:column style="text-align: right;" headerText="Calculated Amount" rendered="#{inwardReportController.calculatedAmount}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Calculated Amount"/>
                                     </f:facet>                                    
@@ -248,7 +280,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Difference Amount">
+                                <p:column style="text-align: right;" headerText="Difference Amount" rendered="#{inwardReportController.differentAmount}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Differece Amount"/>
                                     </f:facet>                                    
@@ -261,7 +293,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="BHT No">
+                                <p:column headerText="BHT No" rendered="#{inwardReportController.bhtNo}">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
