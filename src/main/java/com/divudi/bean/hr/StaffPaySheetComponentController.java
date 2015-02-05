@@ -109,9 +109,7 @@ public class StaffPaySheetComponentController implements Serializable {
 
     private boolean errorCheck() {
 
-        if (checkStaff()) {
-            return true;
-        }
+     
 
         if (getCurrent().getPaysheetComponent() == null) {
             UtilityController.addErrorMessage("Check Component Name");
@@ -124,6 +122,10 @@ public class StaffPaySheetComponentController implements Serializable {
 
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
+            return true;
+        }
+        
+           if (checkStaff()) {
             return true;
         }
 

@@ -12,11 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGrid columns="3" styleClass="alignTop">   
-                        <p:panel header="(1) Salary">
+                        <p:panel header="(1) Salary Report">
                             <h:panelGrid columns="1">
-                                <p:commandButton value="(1) All Staff Salary Detail" 
+<!--                                <p:commandButton value="(1) All Staff Salary Detail" 
                                                  action="/hr/hr_report_all_staff_salary" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false"  /> -->
                                 <p:commandButton value="(2) All Staff Salary Summery" 
                                                  action="/hr/hr_report_staff_salary" 
                                                  styleClass="linkButton" ajax="false" /> 
@@ -26,10 +26,11 @@
                                 <p:commandButton value="(4) Staff Over Time " 
                                                  action="/hr/hr_report_staff_over_time" 
                                                  styleClass="linkButton" ajax="false" />  
-                                <p:commandButton value="(5)No Pay And Late No Pay  Report " 
+                                <p:commandButton value="(5)No Pay And Salary Allovance  Report " 
                                                  action="/hr/hr_report_staff_no_pay_and_late" 
                                                  styleClass="linkButton" ajax="false" />  
-                                <p:commandButton  ajax="false"  action="/hr/hr_staff_paysheet_component_list"
+                                <p:commandButton  ajax="false"
+                                                  action="/hr/hr_staff_paysheet_component_list"
                                                   value="(6) Staff Paysheet Component  List" 
                                                   styleClass="linkButton"
                                                   actionListener="#{staffBasicController.makeItemNul()}"  />
@@ -56,25 +57,26 @@
                                 <p:commandButton value="(2) Early In " 
                                                  action="hr_report_attendance_early_in" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" rendered="fasle"  /> 
                                 <p:commandButton value="(3) Early Out " 
                                                  action="hr_report_attendance_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" rendered="false"/> 
                                 <p:commandButton value="(4) Late In " 
                                                  action="hr_report_attendance_late_in" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" rendered="false" /> 
                                 <p:commandButton value="(5) Late Out " 
                                                  action="hr_report_attendance_late_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" rendered="false"/> 
                                 <p:commandButton value="(6) Late In and Early Out " 
                                                  action="hr_report_attendance_late_in_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="(7) Staff Shift Extra" 
-                                                 action="hr_report_staff_shift_extra" 
+                               
+                                <p:commandButton value="(8) Staff Shift Detail By Staff" 
+                                                 action="hr_report_summery_by_staff" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
 
@@ -99,15 +101,15 @@
                                                  action="hr_report_staff_shift" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="(2) Entered Shift Report" 
+                                 <p:commandButton value="(2) Staff Extra Shift " 
+                                                 action="hr_report_staff_shift_extra" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(3) Entered Shift Report" 
                                                  action="hr_shift_report" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="(3) Manage Shift Report" 
-                                                 action="hr_report_shift" 
-                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" />
-
+                            
                             </h:panelGrid>
                         </p:panel>
 

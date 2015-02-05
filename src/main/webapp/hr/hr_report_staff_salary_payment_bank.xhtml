@@ -68,31 +68,92 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
-                                <p:column headerText="Emp No">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}"/>
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
+                                </f:facet>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="EMP No"/>
+                                    </f:facet>
+                                    
                                     <p:outputLabel value="#{ss.staff.code}" >
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Emp Name">
+                                
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp Name"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
-                                </p:column>                              
-                                <p:column headerText="Bank">
+                                </p:column>
+                                
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bank"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.bankBranch.institution.name}">
                                     </p:outputLabel>
-                                </p:column>   
-                                <p:column headerText="Bank Branch">
+                                </p:column>
+                                
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bank Branch"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.bankBranch.name}">
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Account No">
+                                
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Account No"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.accountNo}"  />
                                 </p:column>
-                                <p:column headerText="Net Salary" rendered="#{hrReportController.netSalary}">
-                                    <p:outputLabel value="#{ss.transNetSalry}"  />
+                                
+                                <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Salary"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.transNetSalry}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="Over Time" rendered="#{hrReportController.otPayment}">
-                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  />
+                                
+                                <p:column rendered="#{hrReportController.otPayment}" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Over Time"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>  
+                                    </f:facet>
                                 </p:column>
+                                
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{(ss.transExtraDutyValue+ss.overTimeValue)+ss.transNetSalry}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalofTotals}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
                             </p:dataTable>
                         </p:panel>
 

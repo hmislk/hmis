@@ -62,6 +62,14 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff Over Time"/>
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}">                                        
+                                    </h:outputLabel>
+
+
+                                </f:facet>
                                 <p:column headerText="Emp No">
                                     <p:outputLabel value="#{ss.staff.code}" >
                                     </p:outputLabel>

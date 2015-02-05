@@ -118,7 +118,15 @@ public class StaffSalary implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     Date blockedDate;
     String blockedComment;
-
+    //Hold Properties
+    private boolean hold;
+    @ManyToOne
+    private WebUser holdUser;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date holdDate;
+    private String holdComment;
+    
+    
     public WebUser getBlockedUser() {
         return blockedUser;
     }
@@ -383,6 +391,8 @@ public class StaffSalary implements Serializable {
                 + adjustmentToBasic);
     }
 
+    
+    
     public double getTransEpfEtfDiductableSalary() {
         return roundOff(getTransGrossSalary() + noPayValueBasic);
     }
@@ -793,6 +803,38 @@ public class StaffSalary implements Serializable {
 
     public void setExtraDutySleepingDayValue(double extraDutySleepingDayValue) {
         this.extraDutySleepingDayValue = extraDutySleepingDayValue;
+    }
+
+    public boolean isHold() {
+        return hold;
+    }
+
+    public void setHold(boolean hold) {
+        this.hold = hold;
+    }
+
+    public WebUser getHoldUser() {
+        return holdUser;
+    }
+
+    public void setHoldUser(WebUser holdUser) {
+        this.holdUser = holdUser;
+    }
+
+    public Date getHoldDate() {
+        return holdDate;
+    }
+
+    public void setHoldDate(Date holdDate) {
+        this.holdDate = holdDate;
+    }
+
+    public String getHoldComment() {
+        return holdComment;
+    }
+
+    public void setHoldComment(String holdComment) {
+        this.holdComment = holdComment;
     }
 
 }

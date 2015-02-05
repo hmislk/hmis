@@ -127,6 +127,9 @@
                                   <p:column headerText="Block">
                                        <p:selectBooleanCheckbox value="#{i.blocked}" />                                    
                                 </p:column>
+                                  <p:column headerText="Hold">
+                                       <p:selectBooleanCheckbox value="#{i.hold}" />                                    
+                                </p:column>
                               
                                 <p:column>
                                     <p:commandButton process="@this" 
@@ -138,7 +141,7 @@
                                 <p:column>
                                     <p:commandButton process="@this" 
                                                      update=":#{p:component('lst')} " 
-                                                     value="Blocked"  
+                                                     value="Update"  
                                                      actionListener="#{staffSalaryController.onEditBlockedUpdate(i)}" 
                                                      onclick="onSubmitButton();">                              
                                     </p:commandButton>                          

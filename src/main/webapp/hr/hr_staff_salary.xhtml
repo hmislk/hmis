@@ -41,7 +41,7 @@
                         <p:column headerText="Month">
                             <h:outputText value="#{t.salaryMonth}" />
                         </p:column>
-                        <f:ajax execute="@this" render="cycleDetail" event="change" />
+                        <f:ajax execute="@this" render="cycleDetail" event="change" listener="#{salaryCycleController.cycleSelectListener()}" />
                     </p:selectOneMenu>
                     <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
                     <h:panelGrid columns="2" id="cycleDetail">

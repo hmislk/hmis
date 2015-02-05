@@ -77,22 +77,32 @@
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.paysheetComponent.name}">
                                     </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Component Value ">
+                                <p:column headerText="Component Value " style="text-align: right;">
                                     <p:outputLabel value="#{ss.componantValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="EPF Staff Value ">
+                                <p:column headerText="EPF Staff Value " style="text-align: right;">
                                     <p:outputLabel value="#{ss.epfValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column> 
-                                <p:column headerText="EPF Company Value ">
+                                <p:column headerText="EPF Company Value " style="text-align: right;">
                                     <p:outputLabel value="#{ss.epfCompanyValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column> 
-                                <p:column headerText="ETF Company Value ">
+                                <p:column headerText="ETF Company Value " style="text-align: right;">
                                     <p:outputLabel value="#{ss.etfCompanyValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
-                                </p:column> 
+                                </p:column>
+                                
+                                <p:column headerText="Total" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.etfCompanyValue + ss.epfCompanyValue + ss.epfValue + ss.componantValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
 
                             </p:dataTable>
                         </p:panel>
