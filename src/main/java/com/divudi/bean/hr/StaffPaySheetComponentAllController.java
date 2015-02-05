@@ -87,7 +87,8 @@ public class StaffPaySheetComponentAllController implements Serializable {
     private boolean checkStaff() {
         repeatedComponent = null;
         for (Staff s : getStaffController().getSelectedList()) {
-            String sql = "Select s From StaffPaysheetComponent s "
+            String sql = "Select s "
+                    + " From StaffPaysheetComponent s "
                     + " where s.retired=false"
                     + " and s.paysheetComponent=:tp "
                     + " and s.staff=:st "
@@ -130,14 +131,20 @@ public class StaffPaySheetComponentAllController implements Serializable {
             return true;
         }
 
+        if (getFromDate() == null) {
+            UtilityController.addErrorMessage("Please select From Date");
+            return true;
+        }
+        
+         if (getToDate() == null) {
+            UtilityController.addErrorMessage("Please select To Date");
+            return true;
+        }
+        
         if (checkStaff()) {
             return true;
         }
 
-//        if (getFromDate() == null) {
-//            UtilityController.addErrorMessage("Check Date");
-//            return true;
-//        }
         return false;
     }
 
@@ -188,7 +195,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
             getStaffPaysheetComponentFacade().create(spc);
         }
 
-        updateExistingComponent();
+//        updateExistingComponent();
 
         makeNullWithout();
     }
@@ -225,7 +232,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                //                + " and ss.paysheetComponent=:tp "
                 + " and ss.fromDate <=:fd"
                 + " and ss.toDate >=:fd ";
 
@@ -233,6 +239,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         hm.put("fd", getFromDate());
 
         if (paysheetComponent != null) {
+            sql += " and ss.paysheetComponent=:tp ";
             hm.put("tp", getPaysheetComponent());
         }
 
@@ -242,7 +249,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 

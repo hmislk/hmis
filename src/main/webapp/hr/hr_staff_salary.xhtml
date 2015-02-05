@@ -41,7 +41,7 @@
                         <p:column headerText="Month">
                             <h:outputText value="#{t.salaryMonth}" />
                         </p:column>
-                        <f:ajax execute="@this" render="cycleDetail" event="change" />
+                        <f:ajax execute="@this" render="cycleDetail" event="change" listener="#{salaryCycleController.cycleSelectListener()}" />
                     </p:selectOneMenu>
                     <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
                     <h:panelGrid columns="2" id="cycleDetail">
@@ -104,8 +104,8 @@
                         <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.designation.name}"/>
                         </p:column>                         
-                        <p:column headerText="Code" filterBy="#{s.code}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.code}"/>
+                        <p:column headerText="Code" filterBy="#{s.codeInterger}"  filterMatchMode="contains">
+                            <h:outputLabel value="#{s.codeInterger}"/>
                         </p:column>
                         <p:column headerText="Name" filterBy="#{s.person.nameWithTitle}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.person.nameWithTitle}"/>
@@ -114,7 +114,6 @@
                 </p:tab>
                 <p:tab title="Staff Salary">
                     <p:commandButton ajax="false" value="Delete All"
-                                     
                                      action="#{staffSalaryController.deleteAll()}"
                                      />
                     <p:dataTable value="#{staffSalaryController.items}" var="i" 
@@ -128,6 +127,9 @@
                             <h:outputLabel value="#{i.salaryCycle.salaryToDate}">
                                 <f:convertDateTime pattern="dd MMMM" />
                             </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code ">
+                            <h:outputLabel value="#{i.staff.codeInterger}"/>
                         </p:column>
                         <p:column headerText="Staff">
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
@@ -153,8 +155,7 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Net Salary">
-
-                        </p:column>
+                        </p:column>                    
                         <p:column>
                             <p:commandButton process="@this" 
                                              update=":#{p:component('lst')}" 
@@ -199,12 +200,7 @@
                                 <f:facet name="input">
                                     <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
                                 </f:facet>
-                            </p:cellEditor>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
+                            </p:cellEditor>                         
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}">

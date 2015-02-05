@@ -260,7 +260,7 @@ public class StaffBasicController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -318,12 +318,19 @@ public class StaffBasicController implements Serializable {
         this.paysheetComponent = paysheetComponent;
     }
 
+    double totalStaffPaySheetComponentValue = 0.0;
+
     public void createTable() {
-        String sql = "Select s from StaffPaysheetComponent s"
-                + " where s.retired=false ";
+        String sql = "Select s"
+                + " from StaffPaysheetComponent s"
+                + " where s.retired=false"
+                + " and s.staffPaySheetComponentValue!=0"
+                + " and s.fromDate<= :cu"
+                + " and s.toDate>:cu";
 
         HashMap hm = new HashMap();
 
+        hm.put("cu", date);
         if (paysheetComponent != null) {
             sql += " and s.paysheetComponent=:tp ";
             hm.put("tp", paysheetComponent);
@@ -336,7 +343,15 @@ public class StaffBasicController implements Serializable {
 
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        calTotal(items);
 
+    }
+
+    public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents) {
+        totalStaffPaySheetComponentValue = 0.0;
+        for (StaffPaysheetComponent spc : staffPaysheetComponents) {
+            totalStaffPaySheetComponentValue += spc.getStaffPaySheetComponentValue();
+        }
     }
 
     public List<StaffPaysheetComponent> getItems2() {
@@ -358,6 +373,8 @@ public class StaffBasicController implements Serializable {
 
         return items;
     }
+
+    private Date date;
 
     public void resetDate() {
 
@@ -512,5 +529,21 @@ public class StaffBasicController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public double getTotalStaffPaySheetComponentValue() {
+        return totalStaffPaySheetComponentValue;
+    }
+
+    public void setTotalStaffPaySheetComponentValue(double totalStaffPaySheetComponentValue) {
+        this.totalStaffPaySheetComponentValue = totalStaffPaySheetComponentValue;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

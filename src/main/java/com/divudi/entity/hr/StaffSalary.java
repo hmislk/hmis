@@ -11,6 +11,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -117,7 +118,15 @@ public class StaffSalary implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     Date blockedDate;
     String blockedComment;
-
+    //Hold Properties
+    private boolean hold;
+    @ManyToOne
+    private WebUser holdUser;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date holdDate;
+    private String holdComment;
+    
+    
     public WebUser getBlockedUser() {
         return blockedUser;
     }
@@ -183,7 +192,7 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransExtraDutyValue() {
-        return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
+        return roundOff(extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue);
     }
 
     public double getOverTimeMinute() {
@@ -374,16 +383,27 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransGrossSalary() {
-        return basicValue
+        return roundOff(basicValue
                 + merchantileAllowanceValue
                 + poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
-                + adjustmentToBasic;
+                + adjustmentToBasic);
     }
 
+    
+    
     public double getTransEpfEtfDiductableSalary() {
-        return getTransGrossSalary() + noPayValueBasic;
+        return roundOff(getTransGrossSalary() + noPayValueBasic);
+    }
+
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public void calculateComponentTotal() {
@@ -418,7 +438,7 @@ public class StaffSalary implements Serializable {
             if (paysheetComponentType != null) {
 
                 //if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
-                value = spc.getComponantValue();
+                value = roundOff(spc.getComponantValue());
 //                } else {
 //                    value = 0 - spc.getComponantValue();
 //                }
@@ -487,15 +507,15 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransTotalAllowance() {
-        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+        return roundOff(componentValueAddition + adjustmentToAllowance + noPayValueAllowance);
     }
 
     public double getTransTotalDeduction() {
-        return componentValueSubstraction + epfStaffValue;
+        return roundOff(componentValueSubstraction + noPayValueBasic + noPayValueAllowance + epfStaffValue);
     }
 
     public double getTransNetSalry() {
-        return getTransGrossSalary() + getNoPayValueBasic() + getNoPayValueAllowance() + getTransTotalAllowance() + getTransTotalDeduction();
+        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
     }
 
     public SalaryCycle getSalaryCycle() {
@@ -783,6 +803,38 @@ public class StaffSalary implements Serializable {
 
     public void setExtraDutySleepingDayValue(double extraDutySleepingDayValue) {
         this.extraDutySleepingDayValue = extraDutySleepingDayValue;
+    }
+
+    public boolean isHold() {
+        return hold;
+    }
+
+    public void setHold(boolean hold) {
+        this.hold = hold;
+    }
+
+    public WebUser getHoldUser() {
+        return holdUser;
+    }
+
+    public void setHoldUser(WebUser holdUser) {
+        this.holdUser = holdUser;
+    }
+
+    public Date getHoldDate() {
+        return holdDate;
+    }
+
+    public void setHoldDate(Date holdDate) {
+        this.holdDate = holdDate;
+    }
+
+    public String getHoldComment() {
+        return holdComment;
+    }
+
+    public void setHoldComment(String holdComment) {
+        this.holdComment = holdComment;
     }
 
 }

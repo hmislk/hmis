@@ -28,9 +28,22 @@ public class MonthEndRecord {
     double leave_dutyLeave;
     double overtime;
     double latedays;
+    double lateNoPays;
     double absent;
     double dayoff;
     double sleepingDays;
+
+    
+    
+    public double getLateNoPays() {
+        return lateNoPays;
+    }
+
+    public void setLateNoPays(double lateNoPays) {
+        this.lateNoPays = lateNoPays;
+    }
+    
+    
 
     public double getSleepingDays() {
         return sleepingDays;
