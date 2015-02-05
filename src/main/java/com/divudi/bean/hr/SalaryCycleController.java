@@ -1295,6 +1295,14 @@ public class SalaryCycleController implements Serializable {
         this.etfCompanValueTotal = etfCompanValueTotal;
     }
 
+    public double getAdjustmentToAllowancesTotal() {
+        return adjustmentToAllowancesTotal;
+    }
+
+    public void setAdjustmentToAllowancesTotal(double adjustmentToAllowancesTotal) {
+        this.adjustmentToAllowancesTotal = adjustmentToAllowancesTotal;
+    }
+
     @FacesConverter(forClass = SalaryCycle.class)
     public static class SalaryCycleConverter implements Converter {
 
