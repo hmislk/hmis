@@ -58,6 +58,25 @@ public class SalaryCycleController implements Serializable {
     List<String> headersAdd;
     List<Double> footerAdd;
     List<Double> footerSub;
+    Institution institution;
+    Department department;
+    double adjustmentToAllowances;
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
     public List<String> getHeadersAdd() {
         if (headersAdd == null) {
@@ -766,7 +785,20 @@ public class SalaryCycleController implements Serializable {
 
     public void calTotalStaffSalary(List<StaffAndSalarySalaryComponent> stfSalCom) {
 
+        staffSalaryComponentAdjustmentotal = 0.0;
+        valueAddingTotal = 0.0;
+        staffSalaryComponantsSubstractionTotal = 0.0;
+        epfTotal = 0.0;
+        etfTotal = 0.0;
+        netStaffSalaryTotal = 0.0;
+
         for (StaffAndSalarySalaryComponent sassc : stfSalCom) {
+//            staffSalaryComponentAdjustmentotal;
+//            valueAddingTotal;
+//            staffSalaryComponantsSubstractionTotal;
+//            epfTotal;
+//            etfTotal;
+//            netStaffSalaryTotal;
         }
     }
 
@@ -962,11 +994,44 @@ public class SalaryCycleController implements Serializable {
     double additionalComponentTotal;
     double deductionalComponentTotal;
     double adjustmentToBasicTotal;
-    double adjustmentToBasic;
+    double adjustmentToAllowancesTotal;
+    double epfStaffValueTotal;
+    double epfCompanyValueTotal;
+    double etfStaffValueTotal;
+    double etfCompanValueTotal;
 
     public void allStaffSalaryTotal(List<StaffSalary> stfSal) {
-        for (StaffSalary staffSalary : stfSal) {
 
+        basicValueTotal = 0.0;
+        overTimeValueTotal = 0.0;
+        noPayValueTotal = 0.0;
+        extraDutyValueTotal = 0.0;
+        holyDayAllowancesTotal = 0.0;
+        dayOffValueTotal = 0.0;
+        additionalComponentTotal = 0.0;
+        deductionalComponentTotal = 0.0;
+        adjustmentToBasicTotal = 0.0;
+        adjustmentToAllowancesTotal = 0.0;
+        epfStaffValueTotal = 0.0;
+        epfCompanyValueTotal = 0.0;
+        etfStaffValueTotal = 0.0;
+        etfCompanValueTotal = 0.0;
+
+        for (StaffSalary staffSalaryTotal : stfSal) {
+            basicValueTotal += staffSalaryTotal.getBasicValue();
+            overTimeValueTotal += staffSalaryTotal.getOverTimeValue();
+            noPayValueTotal += staffSalaryTotal.getNoPayValueBasic() + staffSalaryTotal.getNoPayValueAllowance();
+            extraDutyValueTotal += staffSalaryTotal.getTransExtraDutyValue();
+            holyDayAllowancesTotal += staffSalaryTotal.getMerchantileAllowanceValue() + staffSalaryTotal.getPoyaAllowanceValue();
+            dayOffValueTotal += staffSalaryTotal.getDayOffAllowance() + staffSalaryTotal.getSleepingDayAllowance();
+            additionalComponentTotal += staffSalaryTotal.getComponentValueAddition();
+            deductionalComponentTotal += staffSalaryTotal.getComponentValueSubstraction();
+            adjustmentToBasicTotal += staffSalaryTotal.getAdjustmentToBasic();
+            adjustmentToAllowancesTotal += staffSalaryTotal.getAdjustmentToAllowance();
+            epfStaffValueTotal += staffSalaryTotal.getEpfStaffValue();
+            epfCompanyValueTotal += staffSalaryTotal.getEpfCompanyValue();
+            etfStaffValueTotal += staffSalaryTotal.getEtfSatffValue();
+            etfCompanValueTotal += staffSalaryTotal.getEtfCompanyValue();
         }
     }
     @EJB
@@ -1190,12 +1255,44 @@ public class SalaryCycleController implements Serializable {
         this.adjustmentToBasicTotal = adjustmentToBasicTotal;
     }
 
-    public double getAdjustmentToBasic() {
-        return adjustmentToBasic;
+    public double getAdjustmentToAllowances() {
+        return adjustmentToAllowances;
     }
 
-    public void setAdjustmentToBasic(double adjustmentToBasic) {
-        this.adjustmentToBasic = adjustmentToBasic;
+    public void setAdjustmentToAllowances(double adjustmentToAllowances) {
+        this.adjustmentToAllowances = adjustmentToAllowances;
+    }
+
+    public double getEpfStaffValueTotal() {
+        return epfStaffValueTotal;
+    }
+
+    public void setEpfStaffValueTotal(double epfStaffValueTotal) {
+        this.epfStaffValueTotal = epfStaffValueTotal;
+    }
+
+    public double getEpfCompanyValueTotal() {
+        return epfCompanyValueTotal;
+    }
+
+    public void setEpfCompanyValueTotal(double epfCompanyValueTotal) {
+        this.epfCompanyValueTotal = epfCompanyValueTotal;
+    }
+
+    public double getEtfStaffValueTotal() {
+        return etfStaffValueTotal;
+    }
+
+    public void setEtfStaffValueTotal(double etfStaffValueTotal) {
+        this.etfStaffValueTotal = etfStaffValueTotal;
+    }
+
+    public double getEtfCompanValueTotal() {
+        return etfCompanValueTotal;
+    }
+
+    public void setEtfCompanValueTotal(double etfCompanValueTotal) {
+        this.etfCompanValueTotal = etfCompanValueTotal;
     }
 
     @FacesConverter(forClass = SalaryCycle.class)
