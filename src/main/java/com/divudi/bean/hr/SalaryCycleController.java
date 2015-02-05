@@ -971,13 +971,12 @@ public class SalaryCycleController implements Serializable {
         return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
 
     }
-
     public void fillStaffSalary() {
 
         String jpql = "select spc from StaffSalary spc "
                 + " where spc.retired=false"
                 + " and spc.salaryCycle=:sc"
-                + " and ss.blocked=false "
+                + " and spc.blocked=false "
                 + " order by spc.staff.codeInterger ";
         HashMap m = new HashMap();
         m.put("sc", current);
