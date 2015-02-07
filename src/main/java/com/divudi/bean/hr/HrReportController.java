@@ -2026,6 +2026,17 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+      public void createStaffShiftLieAllowed() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftQuary(hm);
+        sql += " and ss.lieuAllowed=true "
+                + "  and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
+        sql += " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
 
     List<StaffSalary> staffSalarys;
 
