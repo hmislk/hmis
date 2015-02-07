@@ -236,7 +236,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("stf", staff);
         hm.put("ltp", list);
         hm.put("frm", frm);
-        hm.put("to", td);
+        hm.put("td", td);
         return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
     }
 
