@@ -161,14 +161,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public void fetchStaffShiftLie() {
-        
+
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
                 + " and s.lieuAllowed=true"
                 + " and (s.lieuQty>s.lieuQtyUtilized)"
-                + " and s.staff=:stf "
-                + " and s.startRecord.recordTimeStamp is not null "
-                + " and s.endRecord.recordTimeStamp is not null";
+                + " and s.staff=:stf ";
+//                + " and s.startRecord.recordTimeStamp is not null "
+//                + " and s.endRecord.recordTimeStamp is not null";
         HashMap hm = new HashMap();
         hm.put("stf", getCurrentLeaveForm().getStaff());
         staffShiftsLie = staffShiftFacade.findBySQL(sql, hm);
@@ -222,19 +222,22 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.staffShifts = staffShifts;
     }
 
-    public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
+    public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType, Date frm, Date td) {
         List<LeaveType> list = leaveType.getLeaveTypes();
 
         String sql = "select  ss "
-                + " from StaffLeaveEntitle ss"
-                + " where ss.retired=false"
-                + " and ss.staff=:stf"
+                + " from StaffLeaveEntitle ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:stf "
+                + " and ss.fromDate=:frm "
+                + " and ss.toDate=:td "
                 + " and ss.leaveType in :ltp ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", list);
-        
-        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+        hm.put("frm", frm);
+        hm.put("td", td);
+        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
     }
 
     public void calLeaveCount() {
@@ -250,7 +253,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
             return;
         }
 
-        StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
+        StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType(),
+                commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()),
+                commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
             UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
