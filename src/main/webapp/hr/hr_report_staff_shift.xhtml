@@ -37,6 +37,8 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
                          <p:commandButton ajax="false" value="Process Lie Allowed" action="#{hrReportController.createStaffShiftLieAllowed()}"/>
+                         <p:commandButton ajax="false" value="Process Worked" action="#{hrReportController.createStaffShiftWorked()}"/>
+                         <p:commandButton ajax="false" value="Process Worked Lie Allowed" action="#{hrReportController.createStaffShiftLieAllowedWorked()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -64,12 +66,16 @@
                                     #{ss.shift.name}
                                 </p:column>
 
+                                <p:column headerText="Shift Date">
+                                    #{ss.shiftDate}
+                                </p:column>
+                                
                                 <p:column headerText="Shift Start">
-                                    #{ss.shift.startingTime}
+                                    #{ss.shiftStartTime}
                                 </p:column>
 
                                 <p:column headerText="Shift Ending">
-                                    #{ss.shift.endingTime}
+                                    #{ss.shiftEndTime}
                                 </p:column>
 
                                 <p:column headerText="Previous Shift">
