@@ -82,7 +82,11 @@
 
                                             <h:outputText  value="NIC No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.nic}"  />
-
+                                            <h:outputText  value="Address" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.address}"  />
+                                            <p:outputLabel value="Birthday "/>
+                                            <p:calendar value="#{staffController.current.person.dob}" pattern="dd MMMM yyyy" >
+                                            </p:calendar>
                                             <h:outputText  value="Gender" ></h:outputText>
                                             <p:selectOneMenu id="txtNewSex"  value="#{staffController.current.person.sex}" >
                                                 <f:selectItem itemLabel="Select Gender"/>
