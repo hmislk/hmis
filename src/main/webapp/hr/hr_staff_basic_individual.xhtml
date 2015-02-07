@@ -30,13 +30,16 @@
 
                             </p:autoComplete>
                             <h:outputLabel value="From"/>
-                            <p:calendar id="frm"  value="#{staffBasicController.current.fromDate}" pattern="dd MMMM yyyy" >                                
+                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="dd MMMM yyyy" >                                
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar id="to"  value="#{staffBasicController.current.toDate}" pattern="dd MMMM yyyy">                                      
+                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="dd MMMM yyyy">                                      
                             </p:calendar>                    
                             <h:outputLabel value="Salary"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
+                            
+                             <h:outputLabel value="BR Value"/>
+                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
 
                             <p:commandButton id="btnAdd" value="Add"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:defaultCommand target="btnAdd"/>
@@ -59,9 +62,9 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffBasicController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                        <h:outputLabel value="To : " />
-                        <p:calendar value="#{staffBasicController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                      
+                        <p:calendar value="#{staffBasicController.fromDate}"
+                                    navigator="true"
+                                    pattern="dd MMMM yyyy hh:mm:ss a" />                                          
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
@@ -129,7 +132,11 @@
                             </p:commandButton>
                         </p:column>  
 
-
+                        <p:column style="width:6%">  
+                            <p:commandButton ajax="false" value="View" onclick="onSubmitButton();">
+                                <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
+                            </p:commandButton>
+                        </p:column> 
                     </p:dataTable>
                 </p:panel>
             </h:form>

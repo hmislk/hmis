@@ -1,0 +1,201 @@
+/* 
+    Document   : printing
+    Created on : Oct 6, 2013, 11:53:48 AM
+    Author     : Buddhika
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+
+@media print{
+    .posbill{
+        page-break-after:always!important; 
+        font-family:Arial, Helvetica, sans-serif!important;
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 1px!important; 
+        padding: 1px!important;
+        width: 100%!important;
+        height: 100%!important;
+        /*padding-left:0.5%!important;*/
+        font-size: 100%;
+        border: none!important;
+        line-height: 2!important;
+        /*font-family: sans-serif!important;*/ 
+         
+    }
+    
+    .posbillA4{
+        page-break-after:always!important; 
+        font-family:Arial, Helvetica, sans-serif!important;
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 1px!important; 
+        padding: 1px!important;
+        width: 100%!important;
+        height: 100%!important;
+        /*padding-left:0.5%!important;*/
+        font-size: 100%;
+/*        border: none!important;*/
+        line-height: 2!important;
+        /*font-family: sans-serif!important;*/ 
+         
+    }
+    
+    .a4HalfPaysheet{
+        page-break-after:always!important; 
+        font-family:Arial, Helvetica, sans-serif!important;
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 1px!important; 
+        padding: 1px!important;
+        width: 100%!important;
+        height: 100%!important;
+        /*padding-left:0.5%!important;*/
+        font-size: 100%;
+        border: none!important;
+        line-height: 2!important;
+        /*font-family: sans-serif!important;*/ 
+         
+    }
+}
+
+
+@media screen{
+    .posbill{
+        position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:800px!important;
+        width:1100px!important; 
+        overflow:hidden!important; 
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 100%;
+        line-height: 2!important;
+    }
+    
+    .posbillA4{
+        position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:800px!important;
+        width:1100px!important; 
+/*        overflow:hidden!important; */
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+/*        border: 1px solid!important;*/
+        font-size: 100%;
+        line-height: 2!important;
+    }
+    
+    .a4HalfPaysheet{
+        position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:400px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 100%;
+        line-height: 2!important;
+    }
+
+
+}
+
+.institutionName{
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 150%!important;
+
+}
+.institutionContact{
+    text-align: center!important;   
+    
+}
+
+
+.headingBill{
+    // position: absolute;
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 150%!important;
+    // text-align: center;
+    //  width: 90%;
+
+}
+
+.poDetail{
+    font-size: 15px!important;
+    font-family: sans-serif;
+    min-width: 100%!important;
+    /*line-height: 3%!important;*/
+    /*color: red;*/
+}
+
+.normalFont div *,
+.normalFont div ,
+.normalFont table *,
+.normalFont td{
+    //  border: none!important;
+    //  border-top:none!important;
+    font-family: Verdana!important;
+    font-size: 11px!important;
+    font-weight: normal!important;
+}
+
+.ui-datatable.borderless .ui-datatable-data tr,
+.ui-datatable.borderless .ui-datatable-data-empty tr,
+.ui-datatable.borderless .ui-datatable-data td,
+.ui-datatable.borderless .ui-datatable-data-empty td {
+    border-style: none!Important;
+    padding: 1px;
+    border: 1px;
+    overflow: hidden;
+}
+
+.noBorder div *,
+.noBorder div ,
+.noBorder table *,
+.noBorder td{
+    border: none!important;
+    border-top:none!important;
+    font-family: Verdana!important;
+    font-size: 11px!important;
+}
+
+.summeryBorder{
+    width: 100%!important; margin:0px!important;padding:0px!important;border:none!important;
+
+}
+
+.textAlignRight{
+   text-align: right!important; 
+}
+
+#textAlignRight{
+   text-align: right!important; 
+}
+
+.textAlignLeft{
+    text-align: left!important;
+}
+
+#textAlignLeft{
+    text-align: left!important;
+}
+

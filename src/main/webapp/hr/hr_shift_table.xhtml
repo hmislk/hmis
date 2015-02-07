@@ -85,7 +85,16 @@
                                             var="mys" 
                                             size="50"
                                             itemLabel="#{mys.name}" 
-                                            itemValue="#{mys}">                                  
+                                            itemValue="#{mys}"> 
+                                <p:column headerText="Prev">
+                                    #{mys.previousShift.name}
+                                </p:column>
+                                <p:column headerText="Name">
+                                    #{mys.name}
+                                </p:column>
+                                <p:column headerText="Next">
+                                    #{mys.nextShift.name}
+                                </p:column>
                             </p:autoComplete>
 
                             <p:autoComplete value="#{sts.shift}"
@@ -97,16 +106,22 @@
                                             var="mys" 
                                             size="50"
                                             itemLabel="#{mys.name}" 
-                                            itemValue="#{mys}">                                  
+                                            itemValue="#{mys}">   
+                                <p:column headerText="Prev">
+                                    #{mys.previousShift.name}
+                                </p:column>
+                                <p:column headerText="Name">
+                                    #{mys.name}
+                                </p:column>
+                                <p:column headerText="Next">
+                                    #{mys.nextShift.name}
+                                </p:column>
                             </p:autoComplete>
-                            <br/>
                             <h:outputLabel value="L"/>
-                            <p:selectBooleanCheckbox value="#{sts.lieuAllowed}" label="L"/>
-                            <h:outputLabel value="P"/>
-                            <p:selectBooleanCheckbox value="#{sts.lieuPaymentAllowed}" label="P"/>
+                            <p:selectBooleanCheckbox value="#{sts.lieuAllowed}" label="L"/>                           
                         </p:column>                   
-                        
-                        
+
+
                     </p:dataTable>  
                 </p:dataGrid>
 

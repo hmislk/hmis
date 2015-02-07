@@ -18,6 +18,8 @@ public class MonthEndRecord {
     Staff staff;
     double workedDays;
     double extraDutyDays;
+    double poyaDays;
+    double merhchantileDays;
     double leave_annual;
     double leave_casual;
     double leave_medical;
@@ -26,8 +28,52 @@ public class MonthEndRecord {
     double leave_dutyLeave;
     double overtime;
     double latedays;
+    double lateNoPays;
     double absent;
     double dayoff;
+    double sleepingDays;
+
+    
+    
+    public double getLateNoPays() {
+        return lateNoPays;
+    }
+
+    public void setLateNoPays(double lateNoPays) {
+        this.lateNoPays = lateNoPays;
+    }
+    
+    
+
+    public double getSleepingDays() {
+        return sleepingDays;
+    }
+
+    public void setSleepingDays(double sleepingDays) {
+        this.sleepingDays = sleepingDays;
+    }
+    
+    
+
+    public double getPoyaDays() {
+        return poyaDays;
+    }
+
+    public void setPoyaDays(double poyaDays) {
+        this.poyaDays = poyaDays;
+    }
+
+    public double getMerhchantileDays() {
+        return merhchantileDays;
+    }
+
+    public void setMerhchantileDays(double merhchantileDays) {
+        this.merhchantileDays = merhchantileDays;
+    }
+    
+    
+    
+    
 
     public double getLeave_dutyLeave() {
         return leave_dutyLeave;

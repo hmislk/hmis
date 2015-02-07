@@ -77,7 +77,7 @@ public class FingerPrintRecordController implements Serializable {
         }
 
         if (department != null) {
-            sql += " and (f.staff.department=:dep or f.roster.department=:dep) ";
+            sql += " and (f.staff.workingDepartment=:dep or f.roster.department=:dep) ";
             m.put("dep", department);
         }
         if (staff != null) {

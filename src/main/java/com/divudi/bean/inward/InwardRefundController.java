@@ -91,7 +91,7 @@ public class InwardRefundController implements Serializable {
         }
 
         if ((getPaidAmount() < getCurrent().getTotal())) {
-            double different = Math.abs((getPaidAmount() - getCurrent().getTotal()));
+            double different = Math.abs((getPaidAmount() - Math.abs(getCurrent().getTotal())));
 
             if (different > 0.1) {
                 UtilityController.addErrorMessage("Check Refuning Amount");

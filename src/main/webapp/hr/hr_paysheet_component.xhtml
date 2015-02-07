@@ -47,10 +47,12 @@
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText value="Name" ></h:outputText>
                                     <p:inputText autocomplete="off" value="#{paysheetComponentController.current.name}"  />                              
+                                    <h:outputText value="Order No" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{paysheetComponentController.current.orderNo}"  />                              
                                     <p:outputLabel value="Component Type "/>
                                     <p:selectOneMenu value="#{paysheetComponentController.current.componentType}">
                                         <f:selectItem itemLabel="Please select component Type "/>
-                                        <f:selectItems value="#{enumController.paysheetComponentTypes}"/>
+                                        <f:selectItems value="#{enumController.paysheetComponentTypesUserDefinded}"/>
                                     </p:selectOneMenu>  
 
                                     <h:outputText value="Included For EPF" ></h:outputText>

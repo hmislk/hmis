@@ -251,6 +251,37 @@ public class BookingController implements Serializable {
         return dbl;
     }
 
+    private double fetchLocalFee(Item item) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "Select sum(f.fee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+        m.put("ses", item);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+      
+        return obj;
+    }
+    
+    private double fetchForiegnFee(Item item) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "Select sum(f.fee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+        m.put("ses", item);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        if (obj == null) {
+            return 0;
+        }
+
+        return obj;
+    }
+
     private List<ItemFee> fetchFee(Item item) {
         String jpql;
         Map m = new HashMap();
@@ -277,8 +308,8 @@ public class BookingController implements Serializable {
             System.err.println("2222");
             ss.setTaxFee(dbl[0]);
             ss.setTaxFfee(dbl[1]);
-            ss.setTotalFee(ss.getHospitalFee() + ss.getProfessionalFee() + ss.getTaxFee());
-            ss.setTotalFfee(ss.getHospitalFfee() + ss.getProfessionalFfee() + ss.getTaxFfee());
+            ss.setTotalFee(fetchLocalFee(ss));
+            ss.setTotalFfee(fetchForiegnFee(ss));
             ss.setItemFees(fetchFee(ss));
         }
     }

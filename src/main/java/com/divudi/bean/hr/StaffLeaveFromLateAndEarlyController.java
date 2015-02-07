@@ -177,14 +177,16 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
+                + " and ss.considerForLateIn=false "
+                + " and (ss.leaveType is null"
+                + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
         sql += " and ss.lateInVarified!=0";
 
-        sql += " and ss.lateInVarified>= :frmTime  "
-                + " and ss.lateInVarified<= :toTime";
+        sql += " and ss.lateInVarified> :frmTime  "
+                + " and ss.lateInVarified< :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
@@ -196,14 +198,17 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
+                + " and ss.considerForLateIn=false "
+                + " and ss.leaveType is not null "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
-        sql += " and ss.lateInVarified!=0";
+        sql += " and ss.lateInLogged!=0";
 
-        sql += " and ss.lateInVarified>= :frmTime ";
+        sql += " and ss.lateInLogged>= :frmTime  ";
+//                + " and ss.lateInLogged<= :toTime";
         hm.put("frmTime", from);
+//        hm.put("toTime", to);
 
         return staffShiftFacade.findBySQL(sql, hm);
     }
@@ -213,14 +218,15 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
+                + " and ss.considerForEarlyOut=false "
+                + " and (ss.leaveType is null"
+                + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
         sql += " and ss.earlyOutVarified!=0";
-
-        sql += " and ss.earlyOutVarified>= :frmTime  "
-                + " and ss.earlyOutVarified<= :toTime";
+        sql += " and ss.earlyOutVarified> :frmTime  "
+                + " and ss.earlyOutVarified< :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
@@ -479,25 +485,27 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     }
 
-    public HrForm saveLeaveForm(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+    public HrForm saveLeaveForm(StaffShift staffShift, LeaveType leaveType, Date fromDate, Date toDate) {
         LeaveFormSystem leaveForm = new LeaveFormSystem();
         leaveForm.setCreatedAt(new Date());
         leaveForm.setCreater(sessionController.getLoggedUser());
-        leaveForm.setStaff(staff);
+        leaveForm.setStaff(staffShift.getStaff());
+        leaveForm.setStaffShift(staffShift);
         leaveForm.setFromDate(fromDate);
         leaveForm.setToDate(toDate);
         leaveFormFacade.create(leaveForm);
         return leaveForm;
     }
 
-    public void saveStaffLeaves(Staff staff, LeaveType leaveType, Date date, Form form) {
+    public void saveStaffLeaves(StaffShift staffShift, LeaveType leaveType, HrForm form) {
         StaffLeaveSystem staffLeave = new StaffLeaveSystem();
         staffLeave.setCreatedAt(new Date());
         staffLeave.setCreater(sessionController.getLoggedUser());
         staffLeave.setLeaveType(leaveType);
-        staffLeave.setRoster(staff.getRoster());
-        staffLeave.setStaff(staff);
-        staffLeave.setLeaveDate(date);
+        staffLeave.setRoster(staffShift.getStaff().getRoster());
+        staffLeave.setStaff(staffShift.getStaff());
+        staffLeave.setLeaveDate(staffShift.getShiftDate());
+        staffLeave.setStaffShift(staffShift);
         staffLeave.setForm(form);
         staffLeave.calLeaveQty();
         staffLeaveFacade.create(staffLeave);
@@ -510,6 +518,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.calLeaveTime();
         ss.setLeaveForm(form);
         ss.setLeaveType(leaveType);
+        ss.setAutoLeave(true);
         staffShiftFacade.edit(ss);
 
     }
