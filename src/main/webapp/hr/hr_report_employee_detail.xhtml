@@ -42,7 +42,10 @@
 
                             <p:dataTable value="#{hrReportController.staffs}" var="s" id="tbl1" rowIndexVar="i">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Employee List" />
+                                    <p:outputLabel value="Employee List " />
+                                    <h:outputLabel value=" - Institution - " rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
+                                    <h:outputLabel value=" - Ruhunu Hospital (Pvt) Ltd" rendered="#{hrReportController.reportKeyWord.institution eq null}"/>
                                 </f:facet>
                                 <p:column headerText="No">
                                     <f:facet name="header" >
