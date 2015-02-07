@@ -127,22 +127,11 @@ public class StaffPaysheetComponent implements Serializable {
         this.staff = staff;
     }
 
-    public double getStaffPaySheetComponentValue() {
-        if (modifiedValue != 0.0) {
-            staffPaySheetComponentValue = modifiedValue;
-        } else {
-            staffPaySheetComponentValue = createdValue;
-        }
+    public double getStaffPaySheetComponentValue() {       
         return staffPaySheetComponentValue;
     }
 
     public void setStaffPaySheetComponentValue(double staffPaySheetComponentValue) {
-        if (createdValue == 0.0) {
-            createdValue = staffPaySheetComponentValue;
-        } else {
-            modifiedValue = staffPaySheetComponentValue;
-        }
-
         this.staffPaySheetComponentValue = staffPaySheetComponentValue;
     }
 

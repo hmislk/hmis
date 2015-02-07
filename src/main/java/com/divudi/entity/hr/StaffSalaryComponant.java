@@ -8,6 +8,7 @@ package com.divudi.entity.hr;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -61,6 +62,15 @@ public class StaffSalaryComponant implements Serializable {
     @Transient
     String transName;
 
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public String getTransName() {
         return transName;
     }
@@ -73,7 +83,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public StaffSalaryComponant(double componantValue, PaysheetComponent paysheetComponent) {
-        this.componantValue = componantValue;
+        this.componantValue = roundOff(componantValue);
         this.staffPaysheetComponent = new StaffPaysheetComponent();
         this.staffPaysheetComponent.setPaysheetComponent(paysheetComponent);
 
@@ -101,9 +111,9 @@ public class StaffSalaryComponant implements Serializable {
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != null
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.subtraction)) {
 
-            this.componantValue = 0 - componantValue;
+            this.componantValue = roundOff(0 - componantValue);
         } else {
-            this.componantValue = componantValue;
+            this.componantValue = roundOff(componantValue);
         }
     }
 
@@ -225,7 +235,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setEpfValue(double epfValue) {
-        this.epfValue = epfValue;
+        this.epfValue = roundOff(epfValue);
     }
 
     public double getEtfValue() {
@@ -233,7 +243,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setEtfValue(double etfValue) {
-        this.etfValue = etfValue;
+        this.etfValue = roundOff(etfValue);
     }
 
     public double getEpfCompanyValue() {
@@ -241,7 +251,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setEpfCompanyValue(double epfCompanyValue) {
-        this.epfCompanyValue = epfCompanyValue;
+        this.epfCompanyValue = roundOff(epfCompanyValue);
     }
 
     public double getEtfCompanyValue() {
@@ -249,7 +259,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setEtfCompanyValue(double etfCompanyValue) {
-        this.etfCompanyValue = etfCompanyValue;
+        this.etfCompanyValue = roundOff(etfCompanyValue);
     }
 
 }

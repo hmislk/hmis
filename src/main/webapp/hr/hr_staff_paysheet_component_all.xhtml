@@ -36,11 +36,14 @@
 
                             <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
-                            <p:commandButton update="staff" process="@this" value="Fill Staff" action="#{staffController.createStaffWithCode()}" onclick="onSubmitButton();"/>
+
                         </h:panelGrid>
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
+                        <p:commandButton ajax="false" 
+                                         action="#{staffController.createStaffWithCode()}"
+                                         onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
                                       filteredValue="#{staffController.filteredStaff}"     
@@ -76,9 +79,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                        <h:outputLabel value="To : " />
-                        <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>

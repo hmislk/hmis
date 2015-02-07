@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+
+            <p:panel>
+                <f:facet name="header" >                
+                    <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
+                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
+                                     styleClass="noPrintButton" 
+                                     action="#{serviceSummery.createStaffWelfare()}"/>
+                    <p:commandButton ajax="false" value="Print"  
+                                     styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+
+                    <p:commandButton value="Excel2" ajax="false" >
+                        <pe:exporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
+                    </p:commandButton>
+
+                </f:facet>
+            </p:panel>
+            <p:spacer height="30"/>
+
+            <p:dataTable id="opd" rowIndexVar="i" 
+                         value="#{serviceSummery.staffs}" var="s">                   
+                <f:facet name="header">
+                    <h:outputLabel value="Staff Welfare Summery"/>
+                </f:facet>
+               
+                <p:column headerText="No">
+                    <f:facet name="header">
+                        <p:outputLabel value="No"/>
+                    </f:facet>
+                    <h:outputLabel value="#{i+1}"/>
+                </p:column>
+
+                <p:column headerText="Staff Code">
+                    <f:facet name="header">
+                        <p:outputLabel value="Staff Code"/>
+                    </f:facet>
+                    <p:outputLabel value="#{s.code}" />
+                </p:column>
+
+                <p:column headerText="Staff Name">
+                    <f:facet name="header">
+                        <p:outputLabel value="Staff Name"/>
+                    </f:facet>
+                    <p:outputLabel value="#{s.person.nameWithTitle}" />
+                </p:column>
+                
+                <p:column headerText="Annual Entitlement" >
+                    <f:facet name="header">
+                        <p:outputLabel value="Annual Entitlement"/>
+                    </f:facet>
+                    <p:outputLabel value="#{s.annualWelfareQualified}" style="float: right;">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Annual Utilized Value">
+                    <f:facet name="header">
+                        <p:outputLabel value="Annual Utilized Value"/>
+                    </f:facet>
+                    <p:outputLabel value="#{s.annualWelfareUtilized}" style="float: right;">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                </p:column>
+
+            </p:dataTable> 
+
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
