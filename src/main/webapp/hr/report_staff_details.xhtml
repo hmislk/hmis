@@ -12,17 +12,25 @@
                 <p:growl autoUpdate="true" />
                 <p:panel header="Staff Details Report" >
 
+                    <h:panelGrid columns="4" >
+
+                        <p:selectOneMenu id="mnuCat" value="#{formFormatController.formCategory}" >
+                            <f:selectItem itemLabel="Select Form" ></f:selectItem>
+                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                        </p:selectOneMenu>
+
+                        <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
 
 
-                    <p:selectOneMenu id="mnuCat" value="#{formFormatController.formCategory}" >
-                        <f:selectItem itemLabel="Select Form" ></f:selectItem>
-                        <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                    </p:selectOneMenu>
+                        <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
+                        <a download="somedata.xls" href="#" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet Name Here');"
+                           style="padding: .3em 1em;  background: #D7D0C0; " 
+                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Export to Excel</a>
 
-                    <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
+                    </h:panelGrid>
 
 
-                    <table class="standardTable" >
+                    <table class="standardTable" id="tbl" >
                         <tr>
 
                             <th>
