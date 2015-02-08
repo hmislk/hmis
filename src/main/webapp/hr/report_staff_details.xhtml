@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:growl autoUpdate="true" />
+                <p:panel header="Staff Details Report" >
+
+
+                    <p:selectOneMenu id="mnuCat" value="#{formFormatController.formCategory}" >
+                        <f:selectItem itemLabel="Select Form" ></f:selectItem>
+                        <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                        <f:ajax event="change" execute="mnuCat" render="gpStaffForm" listener="#{staffController.listFormItems()}" />
+                    </p:selectOneMenu>
+
+                    <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
+
+
+                    <table >
+                        <tr>
+
+                            <th>
+                                <h:outputText  value="Name" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Full Name" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Name with Initials" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="NIC No" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Gender" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Finger Print Id" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Code" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="EPF" ></h:outputText>
+                            </th>
+                            <th>
+                                <p:inputText autocomplete="off"  value="#{staffController.current.epfNo}"  />
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Qualification" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <p:outputLabel value="Date Joined "/>
+                            </th>
+
+                            <th>
+                                <h:outputText value="Speciality" />
+                            </th>
+
+                            <ui:repeat value="#{formFormatController.formItems}" var="fi" >
+                                <th>
+                                    <h:outputLabel value="#{fi.name}" ></h:outputLabel>
+                                </th>
+                            </ui:repeat>
+
+                        </tr>
+
+                        <ui:repeat value="#{formFormatController.staffes}" var="staff"  >
+                            <tr>
+                                <th>
+                                    <h:outputLabel value="#{staff.person.name}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel value="#{staff.person.fullName}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel value="#{staff.person.nameWithInitials}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel  value="#{staff.person.nic}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel   value="#{staff.person.sex}" >
+                                    </h:outputLabel>
+                                </th>
+                                <th>
+                                    <h:outputLabel  value="#{staff.acNo}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel   value="#{staff.code}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel  value="#{staff.epfNo}"  />
+                                </th>
+                                <th>
+                                    <h:outputLabel  value="#{staff.registration}"  />             
+                                </th>
+                                <th>
+                                    <h:outputLabel  value="#{staff.qualification}"  />                
+                                </th>
+                                <th>
+                                    <h:outputLabel value="#{staff.dateJoined}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </th>
+                                <th>
+                                    <h:outputLabel value="#{staff.speciality}" >
+                                    </h:outputLabel>
+                                </th>
+
+                                <ui:repeat value="#{formFormatController.formItems}" var="fiv" >
+                                    <th>
+                                        <h:outputLabel value="#{staffController.formItemValue(fiv, staff.person)}" ></h:outputLabel>
+                                    </th>
+                                </ui:repeat>
+
+                            </tr>
+
+
+
+                        </ui:repeat>
+
+                    </table>
+
+
+                    <h:panelGrid  columns="2">
+                        <h:outputLabel value="Title"/>
+                        <p:selectOneMenu value="#{staffController.current.person.title}"  >
+                            <f:selectItem itemLabel="Select Title" />
+                            <f:selectItems value="#{billController.title}"/>
+                        </p:selectOneMenu>
+
+                        <h:outputText  value="Name" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.person.name}"  />
+
+                        <h:outputText  value="Full Name" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.person.fullName}"  />
+
+                        <h:outputText  value="Name with Initials" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.person.nameWithInitials}"  />
+
+                        <h:outputText  value="NIC No" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.person.nic}"  />
+
+                        <h:outputText  value="Gender" ></h:outputText>
+                        <p:selectOneMenu id="txtNewSex"  value="#{staffController.current.person.sex}" >
+                            <f:selectItem itemLabel="Select Gender"/>
+                            <f:selectItems value="#{enumController.gender}"/>
+                        </p:selectOneMenu>
+
+                        <h:outputText  value="Finger Print Id" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.acNo}"  />
+                        <h:outputText  value="Code" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.code}"  />
+                        <h:outputText  value="EPF" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.epfNo}"  />
+                        <h:outputText value="Registration" ></h:outputText>
+                        <p:inputText autocomplete="off"  value="#{staffController.current.registration}"  />             
+                        <h:outputText  value="Qualification" ></h:outputText>
+                        <p:inputTextarea  value="#{staffController.current.qualification}"  />                
+                        <p:outputLabel value="Date Joined "/>
+                        <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MMMM yyyy" >
+                        </p:calendar>
+                        <h:outputText value="Speciality" />
+                        <h:selectOneListbox size="1" value="#{staffController.current.speciality}" >
+                            <f:selectItem itemLabel="Please select a speciality"/>
+                            <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </h:selectOneListbox>
+
+                    </h:panelGrid> 
+
+
+                    <h:panelGroup id="gpStaffForm"  >
+
+                        <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
+                            <ui:repeat value="#{staffController.formItems}" var="myIi" >
+                                <div style="#{myIi.cssStyle}; position:absolute ;">
+                                    <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
+                                </div>
+                            </ui:repeat>
+
+                            <ui:repeat value="#{staffController.fivs}" var="myFiv" >
+                                <div style="#{myFiv.reportItem.cssStyle}; position:absolute ;">
+                                    <h:inputText id="txtValue" 
+                                                 rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Varchar' and myFiv.reportItem.retired eq false}"  
+                                                 value="#{myFiv.strValue}" 
+                                                 style="color: #{myFiv.reportItem.cssColor}"  >
+                                        <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                    </h:inputText>
+                                    <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                    <h:inputText id="txtdValue" 
+                                                 rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Double' and myFiv.reportItem.retired eq false}"  
+                                                 value="#{myFiv.doubleValue}" 
+                                                 style="color: #{myFiv.reportItem.cssColor}"  >
+                                        <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                    </h:inputText>
+                                    <p:watermark for="txtdValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                    <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
+                                        <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
+                                            <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
+                                            <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc.name}" ></f:selectItems>
+                                        </h:selectOneMenu>
+                                    </h:panelGroup>
+
+
+
+
+
+                                </div>
+                            </ui:repeat>
+
+
+
+                        </div>
+
+                    </h:panelGroup>
+
+
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

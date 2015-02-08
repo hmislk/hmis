@@ -8,13 +8,22 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.InvestigationItemType;
+import com.divudi.entity.Category;
 import java.util.TimeZone;
 import com.divudi.facade.FormFormatFacade;
 import com.divudi.entity.FormFormat;
+import com.divudi.entity.Staff;
+import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.facade.CommonReportItemFacade;
+import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -23,7 +32,7 @@ import javax.enterprise.context.SessionScoped;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -39,6 +48,57 @@ public class FormFormatController implements Serializable {
     private List<FormFormat> items = null;
     String selectText = "";
 
+    List<Staff> staffes;
+    @EJB
+    StaffFacade staffFacade;
+    @EJB
+    private CommonReportItemFacade criFacade;
+    Category formCategory;
+    private List<CommonReportItem> formItems = null;
+
+    public void fillStaffDetailReport() {
+        if (formCategory == null) {
+            JsfUtil.addErrorMessage("Form ?");
+            return;
+        }
+        String j;
+        Map m = new HashMap();
+        
+        j = "select s from Staff s where s.retired=false order by s.person.name";
+        staffes = staffFacade.findBySQL(j);
+
+        j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
+        m.put("cat", formCategory);
+        formItems = criFacade.findBySQL(j, m);
+
+    }
+
+    public Category getFormCategory() {
+        return formCategory;
+    }
+
+    public void setFormCategory(Category formCategory) {
+        this.formCategory = formCategory;
+    }
+
+    public List<Staff> getStaffes() {
+        return staffes;
+    }
+
+    public void setStaffes(List<Staff> staffes) {
+        this.staffes = staffes;
+    }
+
+    public List<CommonReportItem> getFormItems() {
+        return formItems;
+    }
+
+    public void setFormItems(List<CommonReportItem> formItems) {
+        this.formItems = formItems;
+    }
+
+    
+    
     public List<FormFormat> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from FormFormat c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;

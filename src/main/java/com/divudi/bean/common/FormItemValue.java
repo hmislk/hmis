@@ -21,13 +21,13 @@ import javax.persistence.ManyToOne;
 /**
  *
  * @author Buddhika
- * 
- * 
- * Table creation sql for MySQL 
- * 
- * 
- * 
- * 
+ *
+ *
+ * Table creation sql for MySQL
+ *
+ *
+ *
+ *
  */
 @Entity
 public class FormItemValue implements Serializable {
@@ -64,10 +64,7 @@ public class FormItemValue implements Serializable {
 
     public FormItemValue() {
     }
-    
-    
-    
-    
+
     public String getStrValue() {
         if (strValue != null) {
             strValue = strValue.trim();
@@ -184,8 +181,6 @@ public class FormItemValue implements Serializable {
         this.referringPerson = referringPerson;
     }
 
-    
-
     public PatientReport getPatientReport() {
         return patientReport;
     }
@@ -224,6 +219,19 @@ public class FormItemValue implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.PatientInvestigationItemValue[ id=" + id + " ]";
+        String s = "";
+        if (this.doubleValue != null) {
+            s = s + this.doubleValue;
+        }
+        if (this.lobValue != null) {
+            s = s + this.lobValue;
+        }
+        if (this.longValue != null) {
+            s = s + this.longValue;
+        }
+        if (this.strValue != null) {
+            s = s + this.strValue;
+        }
+        return s;
     }
 }
