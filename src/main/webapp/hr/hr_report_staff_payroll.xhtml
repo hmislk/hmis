@@ -56,12 +56,7 @@
             <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlocked()}" styleClass="noPrintButton" ></p:commandButton>
 
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
-            <p:commandLink style="padding: .3em 1em;" 
-                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" 
-                           ajax="false" value="Download as Excel" 
-                           download="staff_payroll" 
-                           onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
-
+           
             <a download="staff_payroll.xls" href="#" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
                style="padding: .3em 1em;  background: #D7D0C0; " 
                styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Export to Excel</a>
