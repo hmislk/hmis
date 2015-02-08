@@ -143,6 +143,7 @@ public class CommonFunctions {
 
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
+        System.err.println(frm+" : "+to+" DAY COUNT " + inDays);
         return inDays;
 
     }

@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.dataStructure.ShiftTable;
+import com.divudi.data.hr.DayType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
@@ -70,6 +71,21 @@ public class ShiftTableController implements Serializable {
 
         return false;
     }
+    
+    @Inject
+    PhDateController phDateController;
+
+    public void fetchAndSetDayType(StaffShift ss) {
+        ss.setDayType(null);
+
+        DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(dtp);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
+    }
 
     private void saveStaffShift() {
         for (ShiftTable st : shiftTables) {
@@ -78,6 +94,7 @@ public class ShiftTableController implements Serializable {
 //                    continue;
 //                }
 
+                fetchAndSetDayType(ss);
                 ss.calShiftStartEndTime();
                 ss.calLieu();
                 if (ss.getId() == null) {
