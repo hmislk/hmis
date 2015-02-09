@@ -284,7 +284,8 @@ public class HumanResourceBean {
     StaffLeaveEntitleFacade staffLeaveEntitleFacade;
 
     public double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
-        String sql = "select l.count from StaffLeaveEntitle l"
+        String sql = " select l.count "
+                + " from StaffLeaveEntitle l "
                 + " where l.retired=false "
                 + " and l.staff=:stf "
                 + " and l.leaveType in :ltp "

@@ -26,9 +26,11 @@ import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.StaffFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -96,6 +98,10 @@ public class ServiceSummery implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     List<BillItem> billItems;
+    
+    List<Staff>staffs;
+    @EJB
+    StaffFacade staffFacade;
 
     public double getCount() {
         return count;
@@ -117,6 +123,17 @@ public class ServiceSummery implements Serializable {
      * Creates a new instance of ServiceSummery
      */
     public ServiceSummery() {
+    }
+
+    public void createStaffWelfare() {
+        String sql;
+        sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and s.annualWelfareQualified>0 "
+                + " order by s.codeInterger ";
+        
+        staffs=getStaffFacade().findBySQL(sql);
+        
     }
 
     public double calServiceTot(BillType billType, FeeType feeType, boolean discharged) {
@@ -158,14 +175,14 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public double calServiceTot(BillType billType, FeeType feeType) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
                 + " where bi.bill.billType= :bTp "
-                + " and bi.fee.feeType=:ftp "                
+                + " and bi.fee.feeType=:ftp "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -179,12 +196,12 @@ public class ServiceSummery implements Serializable {
             temMap.put("pm4", PaymentMethod.Slip);
 
         }
-        
+
         if (service != null) {
-            sql +=" and bi.billItem.item=:itm ";
+            sql += " and bi.billItem.item=:itm ";
             temMap.put("itm", getService());
         }
-        
+
         if (institution != null) {
             sql += " and  bi.bill.institution=:ins";
             temMap.put("ins", getInstitution());
@@ -196,12 +213,11 @@ public class ServiceSummery implements Serializable {
         }
 
         temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());        
+        temMap.put("fromDate", getFromDate());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
-        
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
+        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -375,13 +391,13 @@ public class ServiceSummery implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private long calCount(Bill bill, BillType billType) {
         String sql;
         Map temMap = new HashMap();
         sql = "select count(bi) FROM BillItem bi "
-                + " where bi.bill.billType=:bType "                
-                + " and type(bi.bill)=:billClass "                
+                + " where bi.bill.billType=:bType "
+                + " and type(bi.bill)=:billClass "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -395,12 +411,12 @@ public class ServiceSummery implements Serializable {
             temMap.put("pm4", PaymentMethod.Slip);
 
         }
-        
+
         if (service != null) {
             sql += " and bi.item=:itm ";
             temMap.put("itm", getService());
         }
-        
+
         if (institution != null) {
             sql += " and  bi.bill.institution=:ins";
             temMap.put("ins", getInstitution());
@@ -410,14 +426,13 @@ public class ServiceSummery implements Serializable {
             sql += " and  bi.bill.department=:dep ";
             temMap.put("dep", getDepartment());
         }
-        
+
         sql += " order by bi.item.name";
         temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());        
+        temMap.put("fromDate", getFromDate());
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", billType);
 
-        
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -432,7 +447,7 @@ public class ServiceSummery implements Serializable {
         count = billed - (refunded + cancelled);
 
     }
-    
+
     public void calCountTotalItem(BillType billType) {
         count = 0;
 
@@ -482,13 +497,13 @@ public class ServiceSummery implements Serializable {
         return tmp;
 
     }
-    
+
     private List<BillItem> getBillItem(BillType billType, Item item) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bi FROM BillItem bi "
-                + " where bi.bill.billType= :bTp  "                
+                + " where bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -503,12 +518,12 @@ public class ServiceSummery implements Serializable {
             temMap.put("pm4", PaymentMethod.Slip);
 
         }
-        
+
         if (item != null) {
             sql += " and bi.item=:itm ";
             temMap.put("itm", item);
         }
-        
+
         if (institution != null) {
             sql += " and  bi.bill.institution=:ins";
             temMap.put("ins", getInstitution());
@@ -518,11 +533,11 @@ public class ServiceSummery implements Serializable {
             sql += " and  bi.bill.department=:dep ";
             temMap.put("dep", getDepartment());
         }
-        
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        
-        temMap.put("bTp", billType);        
+
+        temMap.put("bTp", billType);
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
@@ -627,11 +642,11 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
 
     }
-    
-    List<Bill>bills;
+
+    List<Bill> bills;
     @EJB
     BillFacade billFacade;
-    
+
     double totalBill;
 
     public double getTotalBill() {
@@ -641,7 +656,7 @@ public class ServiceSummery implements Serializable {
     public void setTotalBill(double totalBill) {
         this.totalBill = totalBill;
     }
-    
+
     public List<Bill> getBills() {
         return bills;
     }
@@ -649,48 +664,47 @@ public class ServiceSummery implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
-    public void opdPharmacyStaffWelfarebills(){
+
+    public void opdPharmacyStaffWelfarebills() {
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select b from Bill b where "
+        Map m = new HashMap();
+
+        sql = " select b from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-        
-        bills=billFacade.findBySQL(sql, m);
+
+        bills = billFacade.findBySQL(sql, m);
         System.out.println("bills = " + bills);
-        
+
         calTotal();
-        
+
     }
-    
-    public void calTotal(){
+
+    public void calTotal() {
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select sum(b.netTotal) from Bill b where "
+        Map m = new HashMap();
+
+        sql = " select sum(b.netTotal) from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-        
-        totalBill=billFacade.findDoubleByJpql(sql, m);
+
+        totalBill = billFacade.findDoubleByJpql(sql, m);
         System.out.println("totalBill = " + totalBill);
     }
 
@@ -857,7 +871,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
     }
-    
+
     public void createServiceSummeryInwardAddedDate() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service)) {
@@ -1553,8 +1567,6 @@ public class ServiceSummery implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
-    
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -1706,6 +1718,22 @@ public class ServiceSummery implements Serializable {
 
     public void setOutSideFeeTotoalGT(double outSideFeeTotoalGT) {
         this.outSideFeeTotoalGT = outSideFeeTotoalGT;
+    }
+
+    public List<Staff> getStaffs() {
+        return staffs;
+    }
+
+    public void setStaffs(List<Staff> staffs) {
+        this.staffs = staffs;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
 }

@@ -255,13 +255,17 @@ public class StaffLeaveEntitleController implements Serializable {
         if (selectedItems == null) {
             return;
         }
-        if (date == null) {
+        if (fromDate == null) {
+            return;
+        }
+        
+        if (toDate == null) {
             return;
         }
 
         for (StaffLeaveEntitle s : selectedItems) {
-            s.setFromDate(commonFunctions.getFirstDayOfYear(date));
-            s.setToDate(commonFunctions.getFirstDayOfYear(date));
+            s.setFromDate(commonFunctions.getFirstDayOfYear(fromDate));
+            s.setToDate(commonFunctions.getLastDayOfYear(toDate));
             ejbFacade.edit(s);
         }
     }

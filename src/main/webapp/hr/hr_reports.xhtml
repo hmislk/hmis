@@ -212,7 +212,7 @@
                                              styleClass="linkButton" ajax="false" />
                         </p:panel>
 
-                        <p:panel header="(11) Hr Edit">
+                        <p:panel header="(11) Hr Edit" rendered="#{webUserController.hasPrivilege('Developers')}">
                             <p:commandButton value="Edit Leave" action="hr_staff_leave_edit_search" styleClass="linkButton" ajax="false" />
                             <p:commandButton value="Edit Shift" action="hr_shift_staff_edit_search" styleClass="linkButton" ajax="false" />
                             <p:commandButton value="Edit Finger Print Record" action="hr_staff_finger_edit_search" styleClass="linkButton" ajax="false" />
@@ -220,6 +220,10 @@
 
                         <p:panel header="(12) Hr Holydays">
                             <p:commandButton value="Holyday Report" action="hr_report_ph_date" styleClass="linkButton" ajax="false" />
+                        </p:panel>
+                        
+                          <p:panel header="(13) Staff Reports">
+                            <p:commandButton value="Staff Details" action="/hr/report_staff_details" styleClass="linkButton" ajax="false" />
                         </p:panel>
 
                     </h:panelGrid>

@@ -192,6 +192,29 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                <p:column headerText="Retired Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retired Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.retiredAt}"  >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Comment">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comment"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.comments}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Retired Person">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retired Person"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.retirer.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
 
                             </p:dataTable>
                         </h:panelGroup>
