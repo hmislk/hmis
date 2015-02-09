@@ -207,7 +207,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String loginAction() {
         if (login()) {
-            return "index.xhtml";
+            return "/index.xhtml";
         } else {
             UtilityController.addErrorMessage("Login Failure. Please try again");
             return "";
