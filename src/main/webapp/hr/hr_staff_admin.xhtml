@@ -107,6 +107,12 @@
                                             <p:outputLabel value="Date Joined "/>
                                             <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MMMM yyyy" >
                                             </p:calendar>
+                                               <p:outputLabel value="Date Resigned "/>
+                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MMMM yyyy" >
+                                            </p:calendar>
+                                                  <p:outputLabel value="Date Retired "/>
+                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MMMM yyyy" >
+                                            </p:calendar>
                                             <h:outputText value="Speciality" />
                                             <h:selectOneListbox size="1" value="#{staffController.current.speciality}" >
                                                 <f:selectItem itemLabel="Please select a speciality"/>

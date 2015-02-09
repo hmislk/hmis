@@ -65,7 +65,7 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}" onclick="onSubmitButton();"/>
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>

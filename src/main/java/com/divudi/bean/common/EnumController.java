@@ -72,6 +72,7 @@ public class EnumController implements Serializable {
             LeaveType.Casual,
             LeaveType.CasualHalf,
             LeaveType.DutyLeave,
+            LeaveType.DutyLeaveHalf,
             LeaveType.Lieu,
             LeaveType.LieuHalf,
             LeaveType.Maternity1st,
