@@ -1270,9 +1270,10 @@ public class SalaryCycleController implements Serializable {
         
         sql= "Select d From Department d where "
                 + " d.retired=false "
-                + " and d.institution=:ins ";
+//                + " and d.institution=:ins "
+                + " order by d.department.name ";
         
-        m.put("ins", getSessionController().getLoggedUser().getInstitution());
+//        m.put("ins", getSessionController().getLoggedUser().getInstitution());
         return departmentFacade.findBySQL(sql, m);
         
     }
