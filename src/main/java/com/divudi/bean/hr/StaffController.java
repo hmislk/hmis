@@ -412,7 +412,7 @@ public class StaffController implements Serializable {
                     + " d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrent().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm, 20);
+            d = getDepartmentFacade().findBySQL(sql, hm);
         }
 
         return d;
