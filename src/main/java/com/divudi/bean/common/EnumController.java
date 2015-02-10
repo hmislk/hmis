@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
+import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
@@ -16,6 +17,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
+import com.divudi.data.TextTransform;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
@@ -395,6 +397,14 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+    
+    public CssVerticalAlign[] getCssVerticalAlign() {
+        return CssVerticalAlign.values();
+    }
+
+    public TextTransform[] getTextTransforms() {
+        return TextTransform.values();
     }
 
 }

@@ -87,6 +87,17 @@ public class CommonReportItemController implements Serializable {
         getItems().remove(getCurrent());
 
     }
+    
+    public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
+        String temSql;
+
+        temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
+        Map m = new HashMap();
+        m.put("cat", commenReportFormat);
+        items = getFacade().findBySQL(temSql, m);
+        return items;
+    }
+    
 
     public void addNewValue() {
         current = new CommonReportItem();

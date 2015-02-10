@@ -832,4 +832,22 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.webUser = webUser;
     }
 
+    String phoneNo;
+    String billNo;
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
 }

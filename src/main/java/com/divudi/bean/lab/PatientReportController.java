@@ -1,11 +1,3 @@
-/*
- * MSc(Biomedical Informatics) Project
- *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ItemForItemController;
@@ -43,18 +35,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
 /**
  *
@@ -99,6 +90,32 @@ public class PatientReportController implements Serializable {
     List<PatientReportItemValue> patientReportItemValuesFlags;
     List<PatientReportItemValue> patientReportItemValuesDynamicLabels;
     List<PatientReportItemValue> patientReportItemValuesCalculations;
+    List<PatientReport> customerReports = new ArrayList<>();
+
+    List<PatientInvestigation> customerPis;
+
+    public List<PatientInvestigation> getCustomerPis() {
+        return customerPis;
+    }
+
+    public void setCustomerPis(List<PatientInvestigation> customerPis) {
+        this.customerPis = customerPis;
+    }
+
+    public String fillPatientReports() {
+        String sql;
+        Map m = new HashMap();
+        m.put("phone", getSessionController().getPhoneNo());
+        m.put("billno", getSessionController().getBillNo().toUpperCase());
+        sql = "select pr from PatientInvestigation pr where pr.retired=false and "
+                + "upper(pr.billItem.bill.patient.person.phone)=:phone and "
+                + " (upper(pr.billItem.bill.insId)=:billno or upper(pr.billItem.bill.deptId)=:billno)  "
+                + "order by pr.id desc ";
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        customerPis = getPiFacade().findBySQL(sql, m, 50);
+        return "/reports_list";
+    }
 
     public String patientReportSearch() {
         if (currentPatientReport == null || currentPatientReport.getPatientInvestigation() == null || currentPatientReport.getPatientInvestigation().getPatient() == null) {
@@ -219,7 +236,7 @@ public class PatientReportController implements Serializable {
         }
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                String sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + priv.getInvestigationItem().getId();
+                String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
                 //System.out.println("ixcals size is " + ixCals.size());
@@ -270,11 +287,7 @@ public class PatientReportController implements Serializable {
                     if (c.getCalculationType() == CalculationType.Comma) {
                         calString = calString + ",";
                     }
-
-                    if (c.getCalculationType() == CalculationType.Space) {
-                        calString = calString + " ";
-                    }
-
+                    
                     if (c.getCalculationType() == CalculationType.AgeInDays) {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeDays();
                     }
@@ -286,6 +299,7 @@ public class PatientReportController implements Serializable {
                     }
                     ScriptEngineManager mgr = new ScriptEngineManager();
                     ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                    System.out.println("calString = " + calString);
                     try {
                         result = (double) engine.eval(calString);
                     } catch (ScriptException ex) {
@@ -303,7 +317,8 @@ public class PatientReportController implements Serializable {
         }
 //        getFacade().edit(currentPatientReport);
     }
-
+ 
+    
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
 //        ////System.out.println("pr is " + pr + " and details");
 //        ////System.out.println("ii is " + ii);
@@ -347,9 +362,9 @@ public class PatientReportController implements Serializable {
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
-            //System.err.println("AgeInMonths is a" + a);
-            //System.err.println("From AgeInMonths is " + f.getFromAge());
-            //System.err.println("To AgeInMonths is " + f.getToAge());
+            //System.err.println("Age is a" + a);
+            //System.err.println("From Age is " + f.getFromAge());
+            //System.err.println("To Age is " + f.getToAge());
 
             ////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
@@ -461,18 +476,18 @@ public class PatientReportController implements Serializable {
     }
 
     public void savePatientReportItemValues() {
-        if (currentPatientReport != null) {
-            for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
-                //System.out.println("saving ptrtiv + " + v);
-                //System.out.println("saving ptrtiv Stre " + v.getStrValue());
-                //System.out.println("saving ptrtiv Double " + v.getDoubleValue());
-                //System.out.println("saving ptrtiv Lob " + v.getLobValue());
-                getPirivFacade().edit(v);
-            }
-        }
 //        if (currentPatientReport != null) {
-//            getFacade().edit(currentPatientReport);
+//            for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
+//                //System.out.println("saving ptrtiv + " + v);
+//                //System.out.println("saving ptrtiv Stre " + v.getStrValue());
+//                //System.out.println("saving ptrtiv Double " + v.getDoubleValue());
+//                //System.out.println("saving ptrtiv Lob " + v.getLobValue());
+//                getPirivFacade().edit(v);
+//            }
 //        }
+        if (currentPatientReport != null) {
+            getFacade().edit(currentPatientReport);
+        }
     }
 
     public void savePatientReport() {
@@ -496,16 +511,10 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setDataEntryInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setDataEntryUser(getSessionController().getLoggedUser());
 
-        if (currentPatientReport.getId() == 0) {
-            getFacade().create(currentPatientReport);
-        } else {
-            getFacade().edit(currentPatientReport);
-        }
-        if (currentPtIx.getId() == null) {
-            getPiFacade().create(currentPtIx);
-        } else {
-            getPiFacade().edit(currentPtIx);
-        }
+        getFacade().edit(currentPatientReport);
+        getPiFacade().edit(currentPtIx);
+
+        //UtilityController.addSuccessMessage("Saved");
     }
 
     public void approvePatientReport() {
@@ -564,14 +573,6 @@ public class PatientReportController implements Serializable {
         this.selectText = selectText;
     }
 
-    public PatientReportFacade getEjbFacade() {
-        return ejbFacade;
-    }
-
-    public void setEjbFacade(PatientReportFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -605,13 +606,10 @@ public class PatientReportController implements Serializable {
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
-
-            getEjbFacade().create(r);
+            getFacade().create(r);
             r.setPatientInvestigation(pi);
-
             getPrBean().addPatientReportItemValuesForReport(r);
-
-            getEjbFacade().edit(r);
+//            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
@@ -622,17 +620,17 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        System.err.println("creating a new microbiology report");
+        //System.err.println("creating a new microbiology report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
-            getEjbFacade().create(r);
+            getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addMicrobiologyReportItemValuesForReport(r);
-            getEjbFacade().edit(r);
+//            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
@@ -687,8 +685,6 @@ public class PatientReportController implements Serializable {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
         currentPtIx = pi;
-        System.out.println("ix = " + ix.getName());
-        System.out.println("pi = " + pi.getInvestigation().getName());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {
@@ -704,6 +700,14 @@ public class PatientReportController implements Serializable {
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
         return "/lab_patient_report";
+    }
+
+    public List<PatientReport> getCustomerReports() {
+        return customerReports;
+    }
+
+    public void setCustomerReports(List<PatientReport> customerReports) {
+        this.customerReports = customerReports;
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
@@ -740,7 +744,7 @@ public class PatientReportController implements Serializable {
             }
             PatientReportController controller = (PatientReportController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "patientReportController");
-            return controller.getEjbFacade().find(getKey(value));
+            return controller.getFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {

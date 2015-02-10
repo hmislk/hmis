@@ -7,7 +7,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.InvestigationValidator;
-import com.divudi.facade.InvestigationItemValidatorFacade;
+import com.divudi.facade.InvestigationValidatorFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -24,16 +24,16 @@ import javax.faces.convert.FacesConverter;
  */
 @Named
 @SessionScoped
-public class InvestigationItemValidatorController implements Serializable {
+public class InvestigationValidatorController implements Serializable {
 
     /**
      * Creates a new instance of InvestigationItemValidatorController
      */
-    public InvestigationItemValidatorController() {
+    public InvestigationValidatorController() {
     }
     private InvestigationValidator current;
     @EJB
-    private InvestigationItemValidatorFacade investigationItemValidatorFacade;
+    private InvestigationValidatorFacade investigationItemValidatorFacade;
    
     
     public void updateValidator() {
@@ -48,11 +48,11 @@ public class InvestigationItemValidatorController implements Serializable {
         this.current = current;
     }
 
-    public InvestigationItemValidatorFacade getInvestigationItemValidatorFacade() {
+    public InvestigationValidatorFacade getInvestigationItemValidatorFacade() {
         return investigationItemValidatorFacade;
     }
 
-    public void setInvestigationItemValidatorFacade(InvestigationItemValidatorFacade investigationItemValidatorFacade) {
+    public void setInvestigationItemValidatorFacade(InvestigationValidatorFacade investigationItemValidatorFacade) {
         this.investigationItemValidatorFacade = investigationItemValidatorFacade;
     }
 
@@ -66,7 +66,7 @@ public class InvestigationItemValidatorController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            InvestigationItemValidatorController controller = (InvestigationItemValidatorController) facesContext.getApplication().getELResolver().
+            InvestigationValidatorController controller = (InvestigationValidatorController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "investigationValidatorController");
             return controller.investigationItemValidatorFacade.find(getKey(value));
         }
@@ -99,7 +99,7 @@ public class InvestigationItemValidatorController implements Serializable {
     }
        
     
-    @FacesConverter(forClass = InvestigationTube.class)
+    @FacesConverter(forClass = InvestigationValidator.class)
     public static class InvestigationValidatorControllerConverter implements Converter {
 
         @Override
@@ -107,7 +107,7 @@ public class InvestigationItemValidatorController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            InvestigationItemValidatorController controller = (InvestigationItemValidatorController) facesContext.getApplication().getELResolver().
+            InvestigationValidatorController controller = (InvestigationValidatorController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "investigationValidatorController");
             return controller.investigationItemValidatorFacade.find(getKey(value));
         }
