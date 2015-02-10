@@ -39,7 +39,7 @@
                 <p:printer target="tbl" ></p:printer>
             </p:commandButton>
             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                <pe:exporter type="xlsx" target="tb1" fileName="salary_sheet"  />
+                <pe:exporter type="xlsx" target="tbl" fileName="salary_sheet"  />
             </p:commandButton>
 
             <p:dataTable id="tbl" value="#{salaryCycleController.salaryByDepartments}" var="scc" >
