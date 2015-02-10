@@ -48,6 +48,15 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        
+                                        <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
+
+                                        <h:outputLabel value="Canceled Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.insId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
@@ -139,7 +148,8 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >     
+                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >   
+                                            <f:selectItem itemLabel="Payment Method"/>
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
                                             <f:ajax event="change" execute="@this" render="acCreditCompany" />
                                         </p:selectOneMenu>
