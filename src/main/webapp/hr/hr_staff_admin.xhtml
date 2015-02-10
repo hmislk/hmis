@@ -86,7 +86,7 @@
                                             <h:outputText  value="Address" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.address}"  />
                                             <p:outputLabel value="Birthday "/>
-                                            <p:calendar value="#{staffController.current.person.dob}" pattern="dd MMMM yyyy" >
+                                            <p:calendar value="#{staffController.current.person.dob}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                             <h:outputText  value="Gender" ></h:outputText>
                                             <p:selectOneMenu id="txtNewSex"  value="#{staffController.current.person.sex}" >
@@ -105,13 +105,13 @@
                                             <h:outputText  value="Qualification" ></h:outputText>
                                             <p:inputTextarea  value="#{staffController.current.qualification}"  />                
                                             <p:outputLabel value="Date Joined "/>
-                                            <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MMMM yyyy" >
+                                            <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                                <p:outputLabel value="Date Resigned "/>
-                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MMMM yyyy" >
+                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                                   <p:outputLabel value="Date Retired "/>
-                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MMMM yyyy" >
+                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                             <h:outputText value="Speciality" />
                                             <h:selectOneListbox size="1" value="#{staffController.current.speciality}" >

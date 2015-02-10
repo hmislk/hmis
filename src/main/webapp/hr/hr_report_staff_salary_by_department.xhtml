@@ -34,23 +34,23 @@
                 </p:column>
             </p:selectOneMenu>
 
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffSalary()}" ></p:commandButton>
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffSalaryByDepartment()}" ></p:commandButton>
             <p:commandButton value="Print" ajax="false" action="#" >
                 <p:printer target="tbl" ></p:printer>
             </p:commandButton>
             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                <pe:exporter type="xlsx" target="tbl" fileName="all_staff_salary_summery"  />
+                <pe:exporter type="xlsx" target="tbl" fileName="all_staff_salary_summery_by_department"  />
             </p:commandButton>
 
-            <p:dataTable id="tbl" value="#{salaryCycleController.staffSalary}" var="scc" >
+            <p:dataTable id="tbl" value="#{salaryCycleController.salaryByDepartments}" var="scc" >
                 <f:facet name="header">
-                    <h:outputLabel value="All Staff Salary Summery"></h:outputLabel>
+                    <h:outputLabel value="All Staff Salary Summery(By Department)"></h:outputLabel>
                 </f:facet>
-                <p:column headerText="Name" >
+                <p:column headerText="Department Name" >
                     <f:facet name="header">
-                        <h:outputLabel value="Name"></h:outputLabel>
+                        <h:outputLabel value="Department Name"></h:outputLabel>
                     </f:facet>
-                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
+                    <h:outputLabel value="#{scc.department.name}" ></h:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="Total"></h:outputLabel>
                     </f:facet>
@@ -105,7 +105,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="No Pay"></h:outputLabel>
                     </f:facet>
-                    <h:outputLabel value="#{scc.noPayValueBasic+scc.noPayValueAllowance}" >
+                    <h:outputLabel value="#{scc.noPay}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                     <f:facet name="footer">
@@ -120,7 +120,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="Holiday Allowance"></h:outputLabel>
                     </f:facet>
-                    <h:outputLabel value="#{scc.merchantileAllowanceValue+scc.poyaAllowanceValue}" >
+                    <h:outputLabel value="#{scc.holidayAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                     <f:facet name="footer">
@@ -135,7 +135,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="Day Off Allownace"></h:outputLabel>
                     </f:facet>
-                    <h:outputLabel value="#{scc.dayOffAllowance+scc.sleepingDayAllowance}" >
+                    <h:outputLabel value="#{scc.dayOffAllownace}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                     <f:facet name="footer">
