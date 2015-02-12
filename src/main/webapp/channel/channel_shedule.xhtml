@@ -43,7 +43,7 @@
 
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                         <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
-                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
+                            <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                             </f:ajax>
                         </p:commandButton>
                         <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
