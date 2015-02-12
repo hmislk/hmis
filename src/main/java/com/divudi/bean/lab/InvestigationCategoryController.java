@@ -11,12 +11,15 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.lab.Machine;
 import com.divudi.facade.InvestigationCategoryFacade;
+import com.divudi.facade.MachineFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-import javax.inject.Named; import javax.ejb.EJB;
+import javax.inject.Named;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
@@ -28,20 +31,23 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class InvestigationCategoryController implements Serializable {
+public class InvestigationCategoryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
     private InvestigationCategoryFacade ejbFacade;
+    @EJB
+    MachineFacade machineFacade;
     List<InvestigationCategory> selectedItems;
     private InvestigationCategory current;
     private List<InvestigationCategory> items = null;
+    private List<Machine> machines;
     String selectText = "";
 
     public List<InvestigationCategory> getSelectedItems() {
@@ -135,6 +141,11 @@ public  class InvestigationCategoryController implements Serializable {
     public List<InvestigationCategory> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+    
+    public List<Machine> getMachines() {
+        machines = machineFacade.findAll("name", true);
+        return machines;
     }
 
     /**
