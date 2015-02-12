@@ -23,16 +23,16 @@ import javax.persistence.ManyToOne;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Investigation extends Item implements Serializable {
 
-     static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
     //Main Properties
     @ManyToOne
-     InvestigationCategory investigationCategory;
+    InvestigationCategory investigationCategory;
     @ManyToOne
-     InvestigationTube investigationTube;
+    InvestigationTube investigationTube;
     @ManyToOne
-     Sample sample;
-     Double SampleVolume;
-
+    Sample sample;
+    Double SampleVolume;
+    
     public InvestigationCategory getInvestigationCategory() {
         return investigationCategory;
     }
@@ -64,7 +64,7 @@ public class Investigation extends Item implements Serializable {
     public void setSampleVolume(Double SampleVolume) {
         this.SampleVolume = SampleVolume;
     }
-    
+
     @Enumerated(EnumType.STRING)
     InvestigationReportType reportType;
 
@@ -75,9 +75,9 @@ public class Investigation extends Item implements Serializable {
     public void setReportType(InvestigationReportType reportType) {
         this.reportType = reportType;
     }
-    
+
     @Override
-    public SymanticType getSymanticType(){
+    public SymanticType getSymanticType() {
         return SymanticType.Laboratory_Procedure;
     }
 }

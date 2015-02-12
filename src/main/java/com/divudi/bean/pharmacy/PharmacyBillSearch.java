@@ -705,6 +705,11 @@ public class PharmacyBillSearch implements Serializable {
                 UtilityController.addErrorMessage("Item for this bill already recieve");
                 return true;
             }
+            if (getBill().getDepartment()!=getSessionController().getLoggedUser().getDepartment()) {
+                UtilityController.addErrorMessage("You Can't Cancel This Transfer Using "+getSessionController().getLoggedUser().getDepartment().getName()
+                        +" Department. Please Log "+getBill().getDepartment().getName()+" Deaprtment.");
+                return true;
+            }
         }
 
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {

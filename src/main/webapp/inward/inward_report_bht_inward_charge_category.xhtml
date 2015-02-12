@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" styleClass="alignTop" >
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputText value="Inward Charge Category" ></h:outputText>
+                            <p:selectOneMenu id="cmbInward" value="#{bhtSummeryFinalizedController.inwardChargeType}" >
+                                <f:selectItem itemLabel="Please select Charge"/>
+                                <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <p:panelGrid columns="3">
+                            <p:commandButton value="Print" ajax="false" action="#{bhtSummeryFinalizedController.createBhtInwardChargeTypeTable()}" />
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl,tbl3,tbl4" fileName="newly_added_report"  />
+                            </p:commandButton>  
+                        </p:panelGrid>
+
+
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview">
+                        <p:dataTable value="#{bhtSummeryFinalizedController.billItemsInward}" var="bip" id="tbl"
+                                     >
+                            <f:facet name="header">
+                                <h:outputLabel value="Bill Items"/>
+                            </f:facet>
+                            <p:column headerText="BHT No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bip.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Inward Charge Type">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Inward Charge Type"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
+                            </p:column>
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Total Value"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bip.grossValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.grantTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                            
+                            <p:column headerText="Discount Value"  style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount Value"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bip.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Net Value"  style="text-align: right;" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Net Value"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bip.netValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>
