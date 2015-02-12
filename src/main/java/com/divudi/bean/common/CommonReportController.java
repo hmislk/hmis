@@ -126,7 +126,7 @@ public class CommonReportController {
                 + " from Bill b "
                 + " where b.billType in :bts "
                 + " and b.createdAt between :fd and :td "
-                + " and "
+                + " and ";
     }
 
     public class billSummeryRow {
