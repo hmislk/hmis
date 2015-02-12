@@ -108,6 +108,16 @@ public class SheduleController implements Serializable {
 
         return hos;
     }
+    
+    public ItemFee createAgencyFee() {
+        ItemFee agency = new ItemFee();
+        agency.setName("Agency Fee");
+        agency.setFeeType(FeeType.OtherInstitution);
+        agency.setFee(0.0);
+        agency.setFfee(0.0);
+        agency.setServiceSession(current);
+        return agency;
+    }
 
     public ItemFee createScanFee() {
         ItemFee scn = new ItemFee();
@@ -121,8 +131,9 @@ public class SheduleController implements Serializable {
     }
 
     private void createFees() {
-        getItemFees().add(createHospitalFee());
         getItemFees().add(createStaffFee());
+        getItemFees().add(createHospitalFee());
+        getItemFees().add(createAgencyFee());
         getItemFees().add(createScanFee());
     }
 
