@@ -25,6 +25,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,36 +60,41 @@ public class StaffAdditionalFormController implements Serializable {
     Staff approvedStaff;
     Date fromDate;
     Date toDate;
-    
+
     public boolean errorCheckAdditionalForm() {
-        if(getCurrentAdditionalForm() == null){
+        if (getCurrentAdditionalForm() == null) {
             JsfUtil.addErrorMessage("Nothing to Delete");
             return true;
         }
-        
-        if(getCurrentAdditionalForm().getRetireComments()==null ){
+
+        if (getCurrentAdditionalForm().getRetireComments() == null) {
             JsfUtil.addErrorMessage("Nothing to Delete");
             return true;
         }
-        
-        if(getCurrentAdditionalForm().getStaffShift()==null ){
+
+        if (getCurrentAdditionalForm().getStaffShift() == null) {
             JsfUtil.addErrorMessage("Nothing to Delete");
             return true;
         }
-        
+
         return false;
+    }
+
+    public void onDateSelect() {
+        getCurrentAdditionalForm().setFromTime(date);
+        getCurrentAdditionalForm().setToTime(date);
     }
 
     public void deleteAdditionalForm() {
         if (getCurrentAdditionalForm() != null) {
             if (getCurrentAdditionalForm().getStaffShift() != null) {
                 getCurrentAdditionalForm().getStaffShift().resetExtraTime();
-                
-                if(getCurrentAdditionalForm().getStaffShift() instanceof StaffShiftExtra){
+
+                if (getCurrentAdditionalForm().getStaffShift() instanceof StaffShiftExtra) {
                     getCurrentAdditionalForm().getStaffShift().setRetired(true);
-                    getCurrentAdditionalForm().getStaffShift().setRetirer(sessionController.getLoggedUser());                    
+                    getCurrentAdditionalForm().getStaffShift().setRetirer(sessionController.getLoggedUser());
                 }
-                
+
                 staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift());
             }
 
@@ -360,18 +366,25 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
+
+        Long timePeriod = commonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        if (timePeriod < 0 || (timePeriod / 24) > 1) {
+            JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
+            return true;
+        }
+
         if (currentAdditionalForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
         }
-        if (currentAdditionalForm.getApprovedAt() == null) {
-            JsfUtil.addErrorMessage("Please Select Approved Date");
-            return true;
-        }
-        if (currentAdditionalForm.getComments() == null || "".equals(currentAdditionalForm.getComments())) {
-            JsfUtil.addErrorMessage("Please Add Comment");
-            return true;
-        }
+//        if (currentAdditionalForm.getApprovedAt() == null) {
+//            JsfUtil.addErrorMessage("Please Select Approved Date");
+//            return true;
+//        }
+//        if (currentAdditionalForm.getComments() == null || "".equals(currentAdditionalForm.getComments())) {
+//            JsfUtil.addErrorMessage("Please Add Comment");
+//            return true;
+//        }
 
         if (currentAdditionalForm.getTimes() == null) {
             JsfUtil.addErrorMessage("Please Select Time Type");
@@ -414,6 +427,11 @@ public class StaffAdditionalFormController implements Serializable {
         }
         if (currentAdditionalForm.getToTime() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
+            return true;
+        }
+        Long timePeriod = commonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        if (timePeriod <= 0 || (timePeriod / 24) > 1) {
+            JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
         }
         if (currentAdditionalForm.getApprovedStaff() == null) {
@@ -500,9 +518,9 @@ public class StaffAdditionalFormController implements Serializable {
 
             DayType dayType = phDateController.getHolidayType(date);
             shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
-            
-            if(shift==null){
-                shift=fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.Extra);
+
+            if (shift == null) {
+                shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.Extra);
             }
 
         } else {
@@ -529,7 +547,7 @@ public class StaffAdditionalFormController implements Serializable {
             currentAdditionalForm.getStaffShift().setRetiredAt(new Date());
             currentAdditionalForm.getStaffShift().setRetirer(sessionController.getLoggedUser());
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
-        }else{
+        } else {
             staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
             staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
             staffShiftExtra.setShift(shift);
@@ -647,7 +665,6 @@ public class StaffAdditionalFormController implements Serializable {
         this.shifts = shifts;
     }
 
-  
 //    public void fetchShift() {
 //        if (getCurrentAdditionalForm().getStaff() == null) {
 //            UtilityController.addErrorMessage("Please Select Staff");

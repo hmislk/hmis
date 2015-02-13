@@ -1,0 +1,284 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml" 
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="print"> 
+            <h:panelGrid columns="2" >
+                <h:outputLabel value="Salary Cycle"/>
+                <p:selectOneMenu id="advanced" 
+                                 value="#{salaryCycleController.current}" 
+                                 converter="salaryCycleConverter" 
+                                 effect="fade" var="t" 
+                                 filter="true" 
+                                 filterMatchMode="startsWith">
+
+                    <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                   var="theme" 
+                                   itemLabel="#{theme.name}" 
+                                   itemValue="#{theme}" ></f:selectItems>
+
+                    <p:column style="width:10%" headerText="Name">
+                        <h:outputText value="#{t.name}" />
+                    </p:column>
+
+                    <p:column headerText="Year">
+                        <h:outputText value="#{t.salaryYear}" />
+                    </p:column>
+                    <p:column headerText="Month">
+                        <h:outputText value="#{t.salaryMonth}" />
+                    </p:column>
+                </p:selectOneMenu>
+                <h:outputLabel value="Institution"/>
+                <hr:institution value="#{salaryCycleController.reportKeyWord.institution}"/>
+                <h:outputLabel value="Department : "/>
+                <hr:department value="#{salaryCycleController.reportKeyWord.department}"/>
+                <h:outputLabel value="Employee : "/>
+                <hr:completeStaff value="#{salaryCycleController.reportKeyWord.staff}"/>
+                <h:outputLabel value="Staff Category : "/>
+                <hr:completeStaffCategory value="#{salaryCycleController.reportKeyWord.staffCategory}"/>
+                <h:outputLabel value="Staff Designation : "/>
+                <hr:completeDesignation value="#{salaryCycleController.reportKeyWord.designation}"/>
+                <h:outputLabel value="Staff Roster : "/>
+                <hr:completeRoster value="#{salaryCycleController.reportKeyWord.roster}"/>
+            </h:panelGrid>
+
+            <p:commandButton value="Print" ajax="false" action="#"  >
+                <p:printer target="print" ></p:printer>
+            </p:commandButton>
+
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
+            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                <pe:exporter type="xlsx" target="tbl" fileName="hr_report_pay_roll"  />
+            </p:commandButton>
+
+                            
+                <p:dataTable id="tbl"  value="#{salaryCycleController.staffSalarys}" var="scc">
+                    <p:column style="text-align: right;" headerText="Code">
+                        <h:outputLabel value="#{scc.staff.codeInterger}" />
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="EPF">
+                        <h:outputLabel value="#{scc.staff.epfNo}" /> </p:column>
+                    <p:column style="text-align: right;" headerText="Join">
+                        <h:outputLabel value="#{scc.staff.dateJoined}" >
+                            <f:convertDateTime pattern="dd MM yy" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Name">
+                        <h:outputLabel value="#{scc.staff.person.name}" /> </p:column>                                
+                    <p:column style="text-align: right;" headerText="Des">
+                        <h:outputLabel value="#{scc.staff.designation}" /> </p:column>  
+                    <p:column style="text-align: right;" headerText="Basic">
+                        <h:outputText value="#{scc.basicValue-scc.brValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>    
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.basicVal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="BR">
+                        <h:outputText value="#{scc.brValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.brVal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Merch">
+                        <h:outputText value="#{scc.merchantileAllowanceValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.mercAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Poya">
+                        <h:outputText value="#{scc.poyaAllowanceValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.poyaAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="DayOff">
+                        <h:outputText value="#{scc.dayOffAllowance}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.dayOffAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Adj">
+                        <h:outputText value="#{scc.adjustmentToBasic}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.adjstBasic}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Gross">
+                        <h:outputText value="#{scc.transGrossSalary}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.tranGrossSal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="NoPay">
+                        <h:outputText value="#{scc.noPayValueBasic}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.noPayBasic}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="EPF/ETF Sal">
+                        <h:outputText value="#{scc.transEpfEtfDiductableSalary}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{salaryCycleController.epfDeduct}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    
+                    <p:columns value="#{scc.transStaffSalaryComponantsAddition}"  var="col1">
+                        <p:column style="text-align: right;" headerText="#{col1.paysheetComponent.name}">
+                            <h:outputText value="#{col1.componantValue}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{col1.transValue}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:columns>
+                    <p:column style="text-align: right;" headerText="Allow">
+                        <h:outputText value="#{scc.adjustmentToAllowance}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.adjustAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="NoPay">
+                        <h:outputText value="#{scc.noPayValueAllowance}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.noPayValAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="TotAllo">
+                        <h:outputText value="#{scc.transTotalAllowance}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.transTotAll}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="EPF">
+                        <h:outputLabel value="#{scc.epfStaffValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.epfStaffVal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:columns value="#{scc.transStaffSalaryComponantsSubtraction}"  var="col2">
+                        <p:column style="text-align: right;" headerText="#{col2.paysheetComponent.name}">
+                            <h:outputText value="#{col2.componantValue}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{col2.transValue}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:columns>
+                    <p:column style="text-align: right;" headerText="ToDiduct">
+                        <h:outputLabel value="#{scc.transTotalDeduction}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.transTotDeduct}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="Net">
+                        <h:outputLabel value="#{scc.transNetSalry}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.transNetSal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="EPF ">
+                        <h:outputLabel value="#{scc.epfCompanyValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.epfComVal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" headerText="ETF">
+                        <h:outputLabel value="#{scc.etfCompanyValue}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{salaryCycleController.etfComVal}" >
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                </p:dataTable>
+
+
+            </p:panel>
+
+
+        </h:form>        
+    </ui:define>
+
+</ui:composition>

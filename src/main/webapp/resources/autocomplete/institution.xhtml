@@ -16,12 +16,12 @@
                         var="dept" itemLabel="#{dept.name}"
                         itemValue="#{dept}" forceSelection="true" 
                         value="#{cc.attrs.value}" 
-                        converter="dep" >
+                        converter="institutionConverter" >
             <p:column headerText="Name">
                 <h:outputLabel value="#{dept.name}"/>
             </p:column>
             <p:column headerText="Code">
-                <h:outputLabel value="#{dept.code}"/>
+                <h:outputLabel value="#{dept.institutionCode}"/>
             </p:column>
         </p:autoComplete>
     </cc:implementation>

@@ -10,7 +10,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.MonthEndRecord;
 import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
-import com.divudi.facade.FormFacade;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
@@ -20,38 +19,45 @@ import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Form;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
+import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
+import com.divudi.facade.FormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -70,7 +76,7 @@ public class HrReportController implements Serializable {
     @EJB
     StaffFacade staffFacade;
     List<StaffShift> staffShifts;
-    List<StaffShift> staffShiftsAllowance;
+    List<StaffShift> staffShiftsHoliday;
     List<Staff> staffs;
     List<Shift> shiftLists;
     List<FingerPrintRecord> fingerPrintRecords;
@@ -176,12 +182,12 @@ public class HrReportController implements Serializable {
 
     }
 
-    public List<StaffShift> getStaffShiftsAllowance() {
-        return staffShiftsAllowance;
+    public List<StaffShift> getStaffShiftsHoliday() {
+        return staffShiftsHoliday;
     }
 
-    public void setStaffShiftsAllowance(List<StaffShift> staffShiftsAllowance) {
-        this.staffShiftsAllowance = staffShiftsAllowance;
+    public void setStaffShiftsHoliday(List<StaffShift> staffShiftsHoliday) {
+        this.staffShiftsHoliday = staffShiftsHoliday;
     }
 
     public StaffPaysheetComponentFacade getStaffPaysheetComponentFacade() {
@@ -401,7 +407,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -437,7 +443,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep";
+            sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -477,7 +483,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep";
+            sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -510,11 +516,21 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select ss from Staff ss "
-                + " where ss.retired=false ";
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and ss.codeInterger!=0 "
+                + " and LENGTH(ss.code) > 0 ";
+
+        hm.put("class", Consultant.class);
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
@@ -550,7 +566,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -581,7 +597,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         sql = "select ss from StaffSalary ss "
                 + " where ss.retired=false "
-                + " and ss.salaryCycle=:scl";
+                + " and ss.salaryCycle=:scl "
+                + " and ss.blocked=false ";
         hm.put("scl", getReportKeyWord().getSalaryCycle());
 
         if (getReportKeyWord().getStaff() != null) {
@@ -589,8 +606,18 @@ public class HrReportController implements Serializable {
             hm.put("stf", getReportKeyWord().getStaff());
         }
 
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and ss.staff.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -612,6 +639,57 @@ public class HrReportController implements Serializable {
         return sql;
     }
 
+    public String createStaffSalaryComponentQuary(HashMap hm) {
+        String sql = "";
+        sql = "select ss from StaffSalaryComponant ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl "
+                + " and ss.staffSalary.blocked=false ";
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staffSalary.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getPaysheetComponent() != null) {
+            sql += " and ss.staffPaysheetComponent.paysheetComponent=:pt ";
+            hm.put("pt", getReportKeyWord().getPaysheetComponent());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staffSalary.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and ss.staffSalary.staff.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staffSalary.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staffSalary.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staffSalary.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staffSalary.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        return sql;
+    }
+
     public String createStaffShiftExtraQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffShiftExtra ss "
@@ -626,7 +704,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -696,7 +774,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -742,7 +820,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -834,15 +912,69 @@ public class HrReportController implements Serializable {
     }
 
     private List<StaffShift> staffShiftsNoPay;
+    SalaryCycle salaryCycle;
+
+    public SalaryCycle getSalaryCycle() {
+        return salaryCycle;
+    }
+
+    public void setSalaryCycle(SalaryCycle salaryCycle) {
+        this.salaryCycle = salaryCycle;
+    }
+
+    List<StaffShift> staffShiftsNormal;
+
+    public List<StaffShift> getStaffShiftsNormal() {
+        return staffShiftsNormal;
+    }
+
+    public void setStaffShiftsNormal(List<StaffShift> staffShiftsNormal) {
+        this.staffShiftsNormal = staffShiftsNormal;
+    }
+
+    List<StaffShift> staffShiftsDayOff;
+
+    public List<StaffShift> getStaffShiftsDayOff() {
+        return staffShiftsDayOff;
+    }
+
+    public void setStaffShiftsDayOff(List<StaffShift> staffShiftsDayOff) {
+        this.staffShiftsDayOff = staffShiftsDayOff;
+    }
 
     public void createStaffWrokedDetail() {
-        if (getReportKeyWord().getStaff() != null) {
+        if (getReportKeyWord().getStaff() == null) {
+            UtilityController.addErrorMessage("Please Select  Staff");
             return;
         }
+        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getReportKeyWord().getStaff());
+        System.err.println("Sh Normal " + staffShiftsNormal);
+        staffShiftsHoliday = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
+                getSalaryCycle().getSalaryToDate(),
+                getReportKeyWord().getStaff(),
+                Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya}));
+        System.err.println("Sh Holiday " + staffShiftsHoliday);
+        staffShiftsDayOff = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
+                getSalaryCycle().getSalaryToDate(),
+                getReportKeyWord().getStaff(),
+                Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        System.err.println("Sh Day Off " + staffShiftsDayOff);
+        staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
+        System.err.println("Sh Extra Duty " + staffShiftExtraDuties);
+        staffLeavesNoPay = humanResourceBean.fetchStaffLeaveAddedLeaveList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+        System.err.println("User Leave " + staffLeavesNoPay);
+        staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+        System.err.println("System Leave " + staffLeaveSystem);
+    }
 
-        staffShiftsAllowance = humanResourceBean.fetchStaffShiftAllowance(fromDate, toDate, getReportKeyWord().getStaff());
-        staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
+    List<StaffLeave> staffLeaveSystem;
+
+    public List<StaffLeave> getStaffLeaveSystem() {
+        return staffLeaveSystem;
+    }
+
+    public void setStaffLeaveSystem(List<StaffLeave> staffLeaveSystem) {
+        this.staffLeaveSystem = staffLeaveSystem;
     }
 
     public void createStaffLeaveDetail() {
@@ -903,6 +1035,25 @@ public class HrReportController implements Serializable {
         return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
+//    public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
+//        if (leaveType == null || staff == null) {
+//            return null;
+//        }
+//
+//        String sql = "";
+//        HashMap hm = new HashMap();
+//        sql = "select ss from StaffLeave ss "
+//                + " where ss.retired=false "
+//                + " and ss.leaveDate between :frm  and :to "
+//                + " and ss.staff=:stf"
+//                + " and ss.leaveType in :ltp ";
+//        hm.put("frm", fromDate);
+//        hm.put("to", toDate);
+//        hm.put("stf", staff);
+//        hm.put("ltp", leaveType.getLeaveTypes());
+//
+//        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+//    }
     List<StaffLeaveBallance> staffLeaveBallances;
 
     public List<StaffLeaveBallance> getStaffLeaveBallances() {
@@ -929,7 +1080,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -964,7 +1115,7 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.department,"
+        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.workingDepartment,"
                 + "FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -985,7 +1136,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1004,8 +1155,8 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " group by FUNC('Date',ss.shiftDate),ss.staff.department"
-                + " order by ss.shiftDate,ss.staff.department.name";
+        sql += " group by FUNC('Date',ss.shiftDate),ss.staff.workingDepartment"
+                + " order by ss.shiftDate,ss.staff.workingDepartment.name";
 
         departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
         calTotal();
@@ -1046,6 +1197,7 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
+        
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
@@ -1053,7 +1205,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1098,7 +1250,7 @@ public class HrReportController implements Serializable {
 //            hm.put("stf", getReportKeyWord().getStaff());
 //        }
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1126,12 +1278,14 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
-                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
-                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
+                + " sum(ss.workedWithinTimeFrameVarified),"
+                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ss.staff=:stf "
+                + " and ss.staff=:stf"
+                + " and ss.leavedTime=0 "
+                + " and ss.dayType not in :dtp "
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null) ) "
@@ -1139,14 +1293,15 @@ public class HrReportController implements Serializable {
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
-
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+        
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1189,7 +1344,7 @@ public class HrReportController implements Serializable {
                 + " sum(ss.leavedTimeNoPay),"
                 + " sum(ss.leavedTimeOther)"
                 + " from StaffShift ss "
-                + " where ss.retired=false"
+                + " where ss.retired=false "
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null)) "
@@ -1198,7 +1353,7 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1230,7 +1385,7 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)>0"
+                + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)>0"
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null) ) "
@@ -1245,7 +1400,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1291,7 +1446,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1338,7 +1493,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1385,7 +1540,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1435,6 +1590,7 @@ public class HrReportController implements Serializable {
             monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getFromDate(), getToDate()));
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf));
             monthEnd.setLatedays(fetchLateDays(stf));
+            monthEnd.setLateNoPays(humanResourceBean.calStaffLeaveSystem(stf, LeaveType.No_Pay, getFromDate(), getToDate()));
             monthEnd.setDayoff(fetchWorkedDays(stf, DayType.DayOff));
             monthEnd.setSleepingDays(fetchWorkedDays(stf, DayType.SleepingDay));
             monthEnd.setPoyaDays(fetchWorkedDays(stf, DayType.Poya));
@@ -1649,7 +1805,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1794,7 +1950,82 @@ public class HrReportController implements Serializable {
 
     }
 
+    @Inject
+    StaffSalaryController staffSalaryController;
+
+    public void updateStaffPaysheetComponent() {
+        String sql = "select s from StaffPaysheetComponent s "
+                + " where s.retired=false ";
+
+        List<StaffPaysheetComponent> staffPaysheetComponents = staffPaysheetComponentFacade.findBySQL(sql);
+
+        if (staffPaysheetComponents == null) {
+            return;
+        }
+
+        for (StaffPaysheetComponent spc : staffPaysheetComponents) {
+            if (spc.getStaffPaySheetComponentValue() != 0) {
+                continue;
+            }
+
+            if (spc.getModifiedValue() != 0) {
+                spc.setStaffPaySheetComponentValue(spc.getModifiedValue());
+            } else {
+                spc.setStaffPaySheetComponentValue(spc.getCreatedValue());
+            }
+
+            staffPaysheetComponentFacade.edit(spc);
+        }
+
+    }
+
+    public void updateLateLeaveData() {
+        String sql = "select s from StaffSalary s "
+                + " where s.retired=false"
+                + " and s.salaryCycle.retired=false "
+                + " and s.blocked=false";
+
+        List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffSalary ss : list) {
+//            double noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+//            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
+//            if (all != 0) {
+//                ss.setNoPayValueAllowance(0 - noPayCount * (all / finalVariables.getWorkingDaysPerMonth()));
+//            } else {
+//                ss.setNoPayValueAllowance(0);
+//            }
+//
+//            ////////
+//            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+//            ss.setLateNoPayCount(noPayCountLate);
+//            ss.setLateNoPayBasicValue(0 - (ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+//            ss.setLateNoPayAllovanceValue(0.0);
+
+            staffSalaryController.setSalaryCycle(ss.getSalaryCycle());
+            staffSalaryController.setCurrent(ss);
+            staffSalaryController.setOT();
+            ss.calculateComponentTotal();
+            ss.calcualteEpfAndEtf();
+
+            staffSalaryFacade.edit(ss);
+
+        }
+
+    }
+
     public void createStaffShift() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftQuary(hm);        
+        sql += " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+      public void createStaffShiftWorked() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
@@ -1803,7 +2034,28 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+    
+      public void createStaffShiftLieAllowed() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftQuary(hm);
+        sql += " and ss.lieuAllowed=true ";
+        sql += " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
 
+         public void createStaffShiftLieAllowedWorked() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftQuary(hm);
+        sql += " and ss.lieuAllowed=true "
+                + "  and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
+        sql += " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+      
     List<StaffSalary> staffSalarys;
 
     public List<StaffSalary> getStaffSalarys() {
@@ -1816,6 +2068,26 @@ public class HrReportController implements Serializable {
 
     @EJB
     StaffSalaryFacade staffSalaryFacade;
+    private boolean netSalary;
+    private boolean otPayment;
+
+    public void createStaffSalaryNetSalary() {
+        netSalary = true;
+        otPayment = false;
+        createStaffSalary();
+    }
+
+    public void createStaffSalaryOtPayment() {
+        netSalary = false;
+        otPayment = true;
+        createStaffSalary();
+    }
+
+    public void createStaffSalaryNetAndOtPayment() {
+        netSalary = true;
+        otPayment = true;
+        createStaffSalary();
+    }
 
     public void createStaffSalary() {
         String sql = "";
@@ -1823,6 +2095,236 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+        calTotalNoPay();
+        calTableTotal(staffSalarys);
+
+    }
+    List<StaffSalaryComponant> staffSalaryComponants;
+    @EJB
+    StaffSalaryComponantFacade staffSalaryComponantFacade;
+
+    public void createStaffSalaryComponent() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffSalaryComponentQuary(hm);
+        sql += " order by ss.staffSalary.staff.codeInterger ";
+        staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+    public List<StaffSalaryComponant> getStaffSalaryComponants() {
+        return staffSalaryComponants;
+    }
+
+    public void setStaffSalaryComponants(List<StaffSalaryComponant> staffSalaryComponants) {
+        this.staffSalaryComponants = staffSalaryComponants;
+    }
+
+    public StaffSalaryComponantFacade getStaffSalaryComponantFacade() {
+        return staffSalaryComponantFacade;
+    }
+
+    public void setStaffSalaryComponantFacade(StaffSalaryComponantFacade staffSalaryComponantFacade) {
+        this.staffSalaryComponantFacade = staffSalaryComponantFacade;
+    }
+
+//    public void createStaffSalaryForBanking() {
+//        String sql = "";
+//        HashMap hm = new HashMap();
+//        sql = createStaffSalaryQuary(hm);
+//        sql += " order by ss.staff.codeInterger";
+//        staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+//        calTotalNoPay();
+//        calTableTotal(staffSalarys);
+//
+//    }
+    double totalOvertimeMinit = 0.0; //overTimeMinute
+    double totalExtraDutyNormalMinute = 0.0; //extraDutyNormalMinute
+    double totalRatePerMinut = 0.0;  //overTimeRatePerMinute*1.5
+    double totalOtValue = 0.0; //overTimeValue+ss.extraDutyNormalValue
+    double totalPhOtMin = 0.0; //extraDutyPoyaMinute+ss.extraDutyMerchantileMinute
+    double totalRatePerMinutPhOt = 0.0;  //ss.overTimeRatePerMinute*1.5
+    double totalPhOtValue = 0.0;//extraDutyMerchantileValue+ss.extraDutyPoyaValue
+    double totalOffDayOtMin = 0.0; //extraDutySleepingDayMinute+ss.extraDutyDayOffMinute
+    double totalRatePerMinuts = 0.0;  //overTimeRatePerMinute*2.5
+    double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
+    double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
+    double totalTransNetSalary = 0.0; //total of the transNetSalary;
+    double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
+    double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
+    double totaldayOffAllowance = 0.0;
+    double totaldayOffCount = 0.0;
+
+    public void calTableTotal(List<StaffSalary> stfSal) {
+
+        totalOvertimeMinit = 0.0; //overTimeMinute
+        totalExtraDutyNormalMinute = 0.0; //extraDutyNormalMinute
+        totalRatePerMinut = 0.0;  //overTimeRatePerMinute*1.5
+        totalOtValue = 0.0; //overTimeValue+ss.extraDutyNormalValue
+        totalPhOtMin = 0.0; //extraDutyPoyaMinute+ss.extraDutyMerchantileMinute
+        totalRatePerMinutPhOt = 0.0;  //ss.overTimeRatePerMinute*1.5
+        totalPhOtValue = 0.0;//extraDutyMerchantileValue+ss.extraDutyPoyaValue
+        totalOffDayOtMin = 0.0; //extraDutySleepingDayMinute+ss.extraDutyDayOffMinute
+        totalRatePerMinuts = 0.0;  //overTimeRatePerMinute*2.5
+        totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
+        totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
+        totalTransNetSalary = 0.0;//total of transNetSalary
+        totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
+        totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
+        totaldayOffAllowance = 0.0;
+        totaldayOffCount = 0.0;
+
+        for (StaffSalary totStaffSalary : stfSal) {
+            totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
+            totalExtraDutyNormalMinute += totStaffSalary.getExtraDutyNormalMinute();
+            totalRatePerMinut += totStaffSalary.getOverTimeRatePerMinute() * 1.5;
+            totalOtValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue();
+            totalPhOtMin += totStaffSalary.getExtraDutyPoyaMinute() + totStaffSalary.getExtraDutyMerchantileMinute();
+            totalRatePerMinutPhOt += totStaffSalary.getOverTimeMinute() * 1.5;
+            totalPhOtValue += totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue();
+            totalOffDayOtMin += totStaffSalary.getExtraDutySleepingDayMinute() + totStaffSalary.getExtraDutyDayOffMinute();
+            totalRatePerMinuts += totStaffSalary.getOverTimeRatePerMinute() * 2.5;
+            totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
+            totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
+            totalTransNetSalary += totStaffSalary.getTransNetSalry();
+            totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
+            totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
+            totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
+            totaldayOffCount += totStaffSalary.getDayOffCount();
+
+        }
+
+    }
+
+    double merchantileAllowanceValueTotal = 0;
+    double merchantileCountTotal = 0;
+    double poyaAllowanceValueTotal = 0;
+    double poyaCountTotal = 0;
+    double lateNoPayAllovanceValueTotal = 0;
+    double lateNoPayBasicValueTotal = 0;
+    double noPayValueAllowanceTotal = 0;
+    double noPayValueBasicTotal = 0;
+    double lateNoPayCountTotal = 0;
+    double noPayCountTotal = 0;
+
+    private void calTotalNoPay() {
+        if (staffSalarys == null) {
+            return;
+        }
+
+        merchantileAllowanceValueTotal = 0;
+        merchantileCountTotal = 0;
+        poyaAllowanceValueTotal = 0;
+        poyaCountTotal = 0;
+        lateNoPayAllovanceValueTotal = 0;
+        lateNoPayBasicValueTotal = 0;
+        noPayValueAllowanceTotal = 0;
+        noPayValueBasicTotal = 0;
+        lateNoPayCountTotal = 0;
+        noPayCountTotal = 0;
+
+        for (StaffSalary s : staffSalarys) {
+            merchantileAllowanceValueTotal += s.getMerchantileAllowanceValue();
+            merchantileCountTotal += s.getMerchantileCount();
+            poyaAllowanceValueTotal += s.getPoyaAllowanceValue();
+            poyaCountTotal += s.getPoyaCount();
+            lateNoPayAllovanceValueTotal += s.getLateNoPayAllovanceValue();
+            lateNoPayBasicValueTotal += s.getLateNoPayBasicValue();
+            noPayValueAllowanceTotal += s.getNoPayValueAllowance();
+            noPayValueBasicTotal += s.getNoPayValueBasic();
+            lateNoPayCountTotal += s.getLateNoPayCount();
+            noPayCountTotal += s.getNoPayCount();
+
+        }
+
+    }
+
+    public StaffSalaryController getStaffSalaryController() {
+        return staffSalaryController;
+    }
+
+    public void setStaffSalaryController(StaffSalaryController staffSalaryController) {
+        this.staffSalaryController = staffSalaryController;
+    }
+
+    public double getMerchantileAllowanceValueTotal() {
+        return merchantileAllowanceValueTotal;
+    }
+
+    public void setMerchantileAllowanceValueTotal(double merchantileAllowanceValueTotal) {
+        this.merchantileAllowanceValueTotal = merchantileAllowanceValueTotal;
+    }
+
+    public double getMerchantileCountTotal() {
+        return merchantileCountTotal;
+    }
+
+    public void setMerchantileCountTotal(double merchantileCountTotal) {
+        this.merchantileCountTotal = merchantileCountTotal;
+    }
+
+    public double getPoyaAllowanceValueTotal() {
+        return poyaAllowanceValueTotal;
+    }
+
+    public void setPoyaAllowanceValueTotal(double poyaAllowanceValueTotal) {
+        this.poyaAllowanceValueTotal = poyaAllowanceValueTotal;
+    }
+
+    public double getPoyaCountTotal() {
+        return poyaCountTotal;
+    }
+
+    public void setPoyaCountTotal(double poyaCountTotal) {
+        this.poyaCountTotal = poyaCountTotal;
+    }
+
+    public double getLateNoPayAllovanceValueTotal() {
+        return lateNoPayAllovanceValueTotal;
+    }
+
+    public void setLateNoPayAllovanceValueTotal(double lateNoPayAllovanceValueTotal) {
+        this.lateNoPayAllovanceValueTotal = lateNoPayAllovanceValueTotal;
+    }
+
+    public double getLateNoPayBasicValueTotal() {
+        return lateNoPayBasicValueTotal;
+    }
+
+    public void setLateNoPayBasicValueTotal(double lateNoPayBasicValueTotal) {
+        this.lateNoPayBasicValueTotal = lateNoPayBasicValueTotal;
+    }
+
+    public double getNoPayValueAllowanceTotal() {
+        return noPayValueAllowanceTotal;
+    }
+
+    public void setNoPayValueAllowanceTotal(double noPayValueAllowanceTotal) {
+        this.noPayValueAllowanceTotal = noPayValueAllowanceTotal;
+    }
+
+    public double getNoPayValueBasicTotal() {
+        return noPayValueBasicTotal;
+    }
+
+    public void setNoPayValueBasicTotal(double noPayValueBasicTotal) {
+        this.noPayValueBasicTotal = noPayValueBasicTotal;
+    }
+
+    public double getLateNoPayCountTotal() {
+        return lateNoPayCountTotal;
+    }
+
+    public void setLateNoPayCountTotal(double lateNoPayCountTotal) {
+        this.lateNoPayCountTotal = lateNoPayCountTotal;
+    }
+
+    public double getNoPayCountTotal() {
+        return noPayCountTotal;
+    }
+
+    public void setNoPayCountTotal(double noPayCountTotal) {
+        this.noPayCountTotal = noPayCountTotal;
     }
 
     public void createShiftTable() {
@@ -1930,7 +2432,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -2004,7 +2506,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -2349,6 +2851,150 @@ public class HrReportController implements Serializable {
 
     public void setStaffShiftsNoPay(List<StaffShift> staffShiftsNoPay) {
         this.staffShiftsNoPay = staffShiftsNoPay;
+    }
+
+    public double getTotalOvertimeMinit() {
+        return totalOvertimeMinit;
+    }
+
+    public void setTotalOvertimeMinit(double totalOvertimeMinit) {
+        this.totalOvertimeMinit = totalOvertimeMinit;
+    }
+
+    public double getTotalExtraDutyNormalMinute() {
+        return totalExtraDutyNormalMinute;
+    }
+
+    public void setTotalExtraDutyNormalMinute(double totalExtraDutyNormalMinute) {
+        this.totalExtraDutyNormalMinute = totalExtraDutyNormalMinute;
+    }
+
+    public double getTotalRatePerMinut() {
+        return totalRatePerMinut;
+    }
+
+    public void setTotalRatePerMinut(double totalRatePerMinut) {
+        this.totalRatePerMinut = totalRatePerMinut;
+    }
+
+    public double getTotalOtValue() {
+        return totalOtValue;
+    }
+
+    public void setTotalOtValue(double totalOtValue) {
+        this.totalOtValue = totalOtValue;
+    }
+
+    public double getTotalPhOtMin() {
+        return totalPhOtMin;
+    }
+
+    public void setTotalPhOtMin(double totalPhOtMin) {
+        this.totalPhOtMin = totalPhOtMin;
+    }
+
+    public double getTotalRatePerMinutPhOt() {
+        return totalRatePerMinutPhOt;
+    }
+
+    public void setTotalRatePerMinutPhOt(double totalRatePerMinutPhOt) {
+        this.totalRatePerMinutPhOt = totalRatePerMinutPhOt;
+    }
+
+    public double getTotalPhOtValue() {
+        return totalPhOtValue;
+    }
+
+    public void setTotalPhOtValue(double totalPhOtValue) {
+        this.totalPhOtValue = totalPhOtValue;
+    }
+
+    public double getTotalOffDayOtMin() {
+        return totalOffDayOtMin;
+    }
+
+    public void setTotalOffDayOtMin(double totalOffDayOtMin) {
+        this.totalOffDayOtMin = totalOffDayOtMin;
+    }
+
+    public double getTotalRatePerMinuts() {
+        return totalRatePerMinuts;
+    }
+
+    public void setTotalRatePerMinuts(double totalRatePerMinuts) {
+        this.totalRatePerMinuts = totalRatePerMinuts;
+    }
+
+    public double getTotalOffdyOtValue() {
+        return totalOffdyOtValue;
+    }
+
+    public void setTotalOffdyOtValue(double totalOffdyOtValue) {
+        this.totalOffdyOtValue = totalOffdyOtValue;
+    }
+
+    public double getTotalValue() {
+        return totalValue;
+    }
+
+    public void setTotalValue(double totalValue) {
+        this.totalValue = totalValue;
+    }
+
+    public boolean isNetSalary() {
+        return netSalary;
+    }
+
+    public void setNetSalary(boolean netSalary) {
+        this.netSalary = netSalary;
+    }
+
+    public boolean isOtPayment() {
+        return otPayment;
+    }
+
+    public void setOtPayment(boolean otPayment) {
+        this.otPayment = otPayment;
+    }
+
+    public double getTotalTransNetSalary() {
+        return totalTransNetSalary;
+    }
+
+    public void setTotalTransNetSalary(double totalTransNetSalary) {
+        this.totalTransNetSalary = totalTransNetSalary;
+    }
+
+    public double getTotalOverTime() {
+        return totalOverTime;
+    }
+
+    public void setTotalOverTime(double totalOverTime) {
+        this.totalOverTime = totalOverTime;
+    }
+
+    public double getTotalofTotals() {
+        return totalofTotals;
+    }
+
+    public void setTotalofTotals(double totalofTotals) {
+        this.totalofTotals = totalofTotals;
+    }
+
+    public double getTotaldayOffAllowance() {
+        return totaldayOffAllowance;
+    }
+
+    public void setTotaldayOffAllowance(double totaldayOffAllowance) {
+        this.totaldayOffAllowance = totaldayOffAllowance;
+    }
+
+    public double getTotaldayOffCount() {
+        return totaldayOffCount;
+    }
+
+    public void setTotaldayOffCount(double totaldayOffCount) {
+        this.totaldayOffCount = totaldayOffCount;
     }
 
 }

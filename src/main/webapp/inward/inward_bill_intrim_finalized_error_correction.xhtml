@@ -683,7 +683,34 @@
                         </p:tab>
                         <p:tab  title="Room Detail" >                              
                             <p:dataTable id="room"    value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">                                
+                                <p:column>
+                                    <p:commandButton ajax="false" value="Update" action="#{bhtSummeryFinalizedController.updateRoom(rm)}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                </p:column> 
+                                <p:column headerText="Linen Charge">
+                                    <h:panelGrid style="text-align: right;" columns="2">
+                                        <h:outputLabel value="Calculated"/>
+                                        <h:outputLabel value="#{rm.calculatedLinenCharge-rm.addedLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedLinenCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
+                                        <h:outputLabel value="Gross"/>
+                                        <p:inputText value="#{rm.calculatedLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText> 
+                                        <h:outputLabel value="Discount"/>
+                                        <h:outputLabel value="#{rm.discountLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedLinenCharge-rm.discountLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
 
+                                    </h:panelGrid> 
+                                </p:column> 
                                 <p:column headerText="Room Charge">  
                                     <h:panelGrid  style="text-align: right;" columns="2">
                                         <h:outputLabel value="Calculated"/>
@@ -786,31 +813,7 @@
 
                                     </h:panelGrid>                                   
                                 </p:column> 
-                                <p:column headerText="Linen Charge">
-                                    <h:panelGrid style="text-align: right;" columns="2">
-                                        <h:outputLabel value="Calculated"/>
-                                        <h:outputLabel value="#{rm.calculatedLinenCharge-rm.addedLinenCharge}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel> 
-                                        <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedLinenCharge}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:inputText>
-                                        <h:outputLabel value="Gross"/>
-                                        <p:inputText value="#{rm.calculatedLinenCharge}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText> 
-                                        <h:outputLabel value="Discount"/>
-                                        <h:outputLabel value="#{rm.discountLinenCharge}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel> 
-                                        <h:outputLabel value="Net"/>
-                                        <h:outputLabel value="#{rm.calculatedLinenCharge-rm.discountLinenCharge}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel> 
-
-                                    </h:panelGrid> 
-                                </p:column> 
+                               
                                 <p:column headerText="Administration Charge">
                                     <h:panelGrid style="text-align: right;" columns="2">
                                         <h:outputLabel value="Calculated"/>
@@ -861,9 +864,7 @@
 
                                     </h:panelGrid>
                                 </p:column>   
-                                <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{bhtSummeryFinalizedController.updateRoom(rm)}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
-                                </p:column>
+                                
                             </p:dataTable>
                         </p:tab>
 

@@ -245,7 +245,8 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.extraDutyNormalMinute}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutyNormalMinute}min"> 
+                                <f:convertNumber pattern="0.00"></f:convertNumber>
                             </h:outputText>
                         </td>
                         <td>
@@ -350,7 +351,8 @@
                         </td>
                         <td style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.overTimeMinute+cc.attrs.bill.extraDutyNormalMinute+
-                                                   cc.attrs.bill.extraDutyMerchantileMinute+cc.attrs.bill.extraDutyPoyaMinute}min">                                 
+                                                   cc.attrs.bill.extraDutyMerchantileMinute+cc.attrs.bill.extraDutyPoyaMinute}min">
+                                <f:convertNumber pattern="0.00"></f:convertNumber>
                             </h:outputText>
                         </td>
                         <td></td>
@@ -545,7 +547,8 @@
                         <td style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.overTimeMinute+cc.attrs.bill.extraDutyNormalMinute+
                                                    cc.attrs.bill.extraDutyMerchantileMinute+cc.attrs.bill.extraDutyPoyaMinute+
-                                                   cc.attrs.bill.extraDutySleepingDayMinute+cc.attrs.bill.extraDutyDayOffMinute}min">                                 
+                                                   cc.attrs.bill.extraDutySleepingDayMinute+cc.attrs.bill.extraDutyDayOffMinute}min"> 
+                                <f:convertNumber pattern="0.00"></f:convertNumber>
                             </h:outputText>
                         </td>
                         <td></td>
@@ -1053,7 +1056,8 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.overTimeValue}">                                 
+                            <h:outputText value="#{cc.attrs.bill.overTimeValue}"> 
+                                <f:convertNumber pattern="0.00"></f:convertNumber>
                             </h:outputText>
                         </td>
                         <td></td>
@@ -1075,7 +1079,8 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.transExtraDutyValue}">                                 
+                            <h:outputText value="#{cc.attrs.bill.transExtraDutyValue}"> 
+                                <f:convertNumber pattern="0.00" />
                             </h:outputText>
                         </td>
                         <td></td>

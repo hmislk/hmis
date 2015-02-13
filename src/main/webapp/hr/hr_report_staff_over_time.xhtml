@@ -62,50 +62,136 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff Over Time"/>
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}">                                        
+                                    </h:outputLabel>
+
+
+                                </f:facet>
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                    <p:outputLabel value="#{ss.staff.code}" >
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
+                                    </p:outputLabel>
                                 </p:column>                              
-                                <p:column headerText="Over 45 OT Minute">
-                                    #{ss.overTimeMinute}
+                                <p:column headerText="Over 45 OT Minute" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOvertimeMinit}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="Extra Normal OT Minute">
-                                    #{ss.extraDutyNormalMinute}
+                                <p:column headerText="Extra Normal OT Minute" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.extraDutyNormalMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalExtraDutyNormalMinute}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute">
-                                    #{ss.overTimeRatePerMinute*1.5}
+                                <p:column headerText="Rate Per Minute" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinut}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="OT Value">
-                                    #{ss.overTimeValue+ss.extraDutyNormalValue}
+                                <p:column headerText="OT Value" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column/>
-                               
-                                <p:column headerText="PH OT Min">
-                                    #{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}
+
+                                <p:column headerText="PH OT Min" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtMin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute">
-                                    #{ss.overTimeRatePerMinute*1.5}
+                                <p:column headerText="RPM OT(1.5)" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinutPhOt}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                 <p:column headerText="PH OT Value">
-                                    #{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}
+                                <p:column headerText="PH OT Value" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column/>
+                                <p:column headerText="OFF DAY OT Min" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffDayOtMin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="RPM(2.5)" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*2.5}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinuts}">                                            
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="OFF DAY OT Value" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffdyOtValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column/>
-                                
-                                <p:column headerText="OFF DAY OT Min">
-                                    #{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}
-                                </p:column>
-                                <p:column headerText="Rate Per Minute">
-                                    #{ss.overTimeRatePerMinute*2.5}
-                                </p:column>
-                                 <p:column headerText="OFF DAY OT Value">
-                                    #{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}
-                                </p:column>
-                                <p:column/>
-                                
-                                <p:column headerText="Total">
-                                    #{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}
+
+                                <p:column headerText="Total" style="text-align: right;">
+                                    <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

@@ -15,8 +15,10 @@
                         <h:panelGrid columns="2">                            
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
-                            <h:outputLabel value="Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.date}"/>
+                            <h:outputLabel value="From Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <h:outputLabel value="To Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
                             <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
@@ -27,7 +29,8 @@
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              action="#{staffLeaveEntitleController.saveSelected()}"/>
 
-                            <p:commandButton ajax="false" value="Delete" action="#{staffLeaveEntitleController.delete()}"/>
+                            <p:commandButton ajax="false" value="Delete" 
+                                             action="#{staffLeaveEntitleController.delete()}"/>
 
                         </h:panelGrid>
                     </p:panel>
@@ -35,8 +38,10 @@
                         <h:panelGrid columns="2">                           
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>   
-                            <h:outputLabel value="Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.date}"/>    
+                            <h:outputLabel value="From Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <h:outputLabel value="To Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
                             <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
@@ -53,6 +58,12 @@
                                     <f:ajax execute="@this" render="@all"/> 
                                     <f:setPropertyActionListener target="#{staffLeaveEntitleController.current}" value="#{add}"/>
                                 </p:commandButton>
+                            </p:column>
+                            <p:column headerText="From">
+                                #{add.fromDate}
+                            </p:column>
+                             <p:column headerText="To">
+                                #{add.toDate}
                             </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
