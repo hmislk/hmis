@@ -7,6 +7,8 @@ package com.divudi.entity.hr;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -41,6 +43,10 @@ public class SalaryCycle implements Serializable {
     private Date extraDutyFromDate;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date extraDutyToDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date workedToDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date workedFromDate;
     private int salaryYear;
     private int salaryMonth;
     private int salaryDate;
@@ -57,6 +63,43 @@ public class SalaryCycle implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private String name;
+
+    public void processName() {
+        name = "";
+        if (salaryFromDate != null) {
+            name = new SimpleDateFormat("yyyy-MM-dd").format(salaryFromDate);
+        }
+
+        if (salaryToDate != null) {
+            name += " to " + new SimpleDateFormat("yyyy-MM-dd").format(salaryToDate);
+        }
+
+        if (salaryFromDate != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(salaryFromDate);
+            salaryYear = cal.get(Calendar.YEAR);
+            salaryMonth = cal.get(Calendar.MONTH);
+            salaryDate = cal.get(Calendar.DATE);
+        }
+
+    }
+
+    public Date getWorkedToDate() {
+        return workedToDate;
+    }
+
+    public void setWorkedToDate(Date workedToDate) {
+        this.workedToDate = workedToDate;
+    }
+
+    public Date getWorkedFromDate() {
+        return workedFromDate;
+    }
+
+    public void setWorkedFromDate(Date workedFromDate) {
+        this.workedFromDate = workedFromDate;
+    }
 
     public Long getId() {
 
@@ -92,7 +135,6 @@ public class SalaryCycle implements Serializable {
         return "com.divudi.data.hr.SalaryCycle[ id=" + id + " ]";
     }
 
-    
     public int getSalaryYear() {
         return salaryYear;
     }
@@ -213,7 +255,12 @@ public class SalaryCycle implements Serializable {
         this.overTimeToDate = overTimeToDate;
     }
 
-   
-    
-    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

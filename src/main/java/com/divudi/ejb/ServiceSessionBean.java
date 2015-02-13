@@ -8,6 +8,7 @@ import com.divudi.data.BillType;
 import static com.divudi.data.SessionNumberType.ByCategory;
 import static com.divudi.data.SessionNumberType.ByItem;
 import static com.divudi.data.SessionNumberType.BySubCategory;
+import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -15,6 +16,8 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,7 +117,6 @@ public class ServiceSessionBean {
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
         // //System.out.println("bill item session switch - pre");
 
-        
         int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
         System.err.println("COUNT " + count);
         bs.setSerialNo(count);
@@ -229,7 +231,7 @@ public class ServiceSessionBean {
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
         System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
-        
+
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
             BillType.ChannelOnCall,
@@ -247,11 +249,130 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
+        System.out.println("sql = " + sql);
+        System.out.println("hh = " + hh);
+        System.out.println("lgValue= " + lgValue);
+
         if (lgValue == null) {
             return 1;
         }
 
         return lgValue.intValue() + 1;
+    }
+
+    public int getSessionNumber(ServiceSession serviceSession, Date sessionDate, BillSession billSession) {
+        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+
+        BillType[] billTypes = {BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs From BillSession bs where "
+                + " bs.serviceSession.sessionNumberGenerator=:ss "
+                + " and bs.bill.billType in :bt "
+                + " and type(bs.bill)=:class"
+                + " and bs.sessionDate= :ssDate";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", sessionDate);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", serviceSession.getSessionNumberGenerator());
+
+        List<BillSession> lgValue = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("sql = " + sql);
+        System.out.println("hh = " + hh);
+        System.out.println("lgValue.size() = " + lgValue.size());
+
+        List<Integer> availabeNumbers;
+        String temStr = "";
+        if (billSession.getBill().getBillType() == BillType.ChannelAgent) {
+            temStr = serviceSession.getAgencyNumbers();
+        } else if (billSession.getBill().getBillType() == BillType.ChannelCash) {
+            temStr = serviceSession.getCashNumbers();
+        } else if (billSession.getBill().getBillType() == BillType.ChannelOnCall) {
+            temStr = serviceSession.getCreditNumbers();
+        }
+
+        System.out.println("temStr = " + temStr);
+        availabeNumbers = stringNumbersToInts(temStr);
+        System.out.println("availableNumbers = " + availabeNumbers.toString().substring(10));
+
+        for (Integer i : availabeNumbers) {
+            System.out.println("i = " + i);
+            for (BillSession bs : lgValue) {
+                System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
+                if (i != bs.getSerialNo()) {
+                    return i;
+                }
+            }
+        }
+        return getSessionNumber(serviceSession, sessionDate);
+    }
+
+    private void addToIntList(Integer fromInt, Integer toInt, List<Integer> lst) {
+        for (int i = fromInt; i <= toInt; i++) {
+            lst.add(i);
+        }
+    }
+
+    public List<Integer> stringNumbersToInts(String str) {
+        List<Integer> nits = new ArrayList();
+        if (str == null || str.trim().equals("")) {
+            addToIntList(1, 1000, nits);
+            return nits;
+        }
+        if (str.contains(">")) {
+            str = str.replace(">", "");
+            String strs[] = str.split(" ");
+            for (String s : strs) {
+                if (isNumeric(s)) {
+                    Integer i;
+                    try {
+                        i = Integer.valueOf(s);
+                    } catch (Exception e) {
+                        i = 1;
+                    }
+                    addToIntList(i + 1, 1000, nits);
+                    return nits;
+                }
+            }
+        }
+        if (str.contains("-")) {
+            str = str.replace("-", " ");
+            String strs[] = str.split(" ");
+            Integer fromNo = null;
+            Integer toNo = null;
+            for (String s : strs) {
+                if (isNumeric(s)) {
+                    Integer i;
+
+                    try {
+                        i = Integer.valueOf(s);
+                    } catch (Exception e) {
+                        i = 1;
+                    }
+
+                    if (fromNo == null) {
+                        fromNo = i;
+                    } else {
+                        toNo = i;
+                    }
+
+                }
+            }
+            addToIntList(fromNo, toNo, nits);
+            return nits;
+        }
+        return nits;
+    }
+
+    public static boolean isNumeric(String str) {
+        NumberFormat formatter = NumberFormat.getInstance();
+        ParsePosition pos = new ParsePosition(0);
+        formatter.parse(str, pos);
+        return str.length() == pos.getIndex();
     }
 
 }

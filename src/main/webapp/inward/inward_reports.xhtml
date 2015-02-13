@@ -61,8 +61,7 @@
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment(By Bill Item)" action="report_doctor_payment" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery for Discharged or Not Discharged Patients" action="report_doctor_payment_summery_discharged_and_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery for Discharged or Not Discharged Patients BHT" action="report_doctor_payment_summery_discharged_and_notdischarged_with_bht" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Discharged/Not Discharged Doctor Payment Summery" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                             </h:panelGrid>
@@ -83,6 +82,7 @@
                         <p:panel header="All Summerries">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="NEWLY ADDED REPORT" action="inward_report_bht_bil"  styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="BHT Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />

@@ -44,11 +44,9 @@ public class PaysheetComponentController implements Serializable {
     @EJB
     private PaysheetComponentFacade ejbFacade;
     List<PaysheetComponent> selectedItems;
-    private PaysheetComponent current;    
+    private PaysheetComponent current;
     private List<PaysheetComponent> items = null;
     String selectText = "";
-
-   
 
     public List<PaysheetComponent> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -58,7 +56,10 @@ public class PaysheetComponentController implements Serializable {
     public List<PaysheetComponent> completePaysheetComponent(String qry) {
         List<PaysheetComponent> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findBySQL("select c "
+                    + " from PaysheetComponent"
+                    + " c where c.retired=false "
+                    + " and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<PaysheetComponent>();
@@ -86,28 +87,16 @@ public class PaysheetComponentController implements Serializable {
         String sql = "";
         sql = "Select s From PaysheetComponent s "
                 + " where s.retired=false "
-                + " and s.componentType=:ct ";
+                + " and s.componentType in :ct ";
         HashMap hm = new HashMap();
-        switch (getCurrent().getComponentType()) {
-            case BasicSalary:
-                hm.put("ct", PaysheetComponentType.BasicSalary);
-                break;
-            case OT:
-                hm.put("ct", PaysheetComponentType.OT);
-                break;
-            case ExtraDuty:
-                hm.put("ct", PaysheetComponentType.ExtraDuty);
-                break;
-            case No_Pay_Deduction:
-                hm.put("ct", PaysheetComponentType.No_Pay_Deduction);
-                break;
-            default:
-                hm.put("ct", null);
-        }
+
+        hm.put("ct", PaysheetComponentType.addition.getSystemDefinedComponents());
 
         PaysheetComponent tmp = getEjbFacade().findFirstBySQL(sql, hm);
 
         if (tmp != null) {
+            System.err.println("Name " + tmp.getName());
+
             return true;
         } else {
             return false;
@@ -116,11 +105,6 @@ public class PaysheetComponentController implements Serializable {
     }
 
     public void saveSelected() {
-        if (checkComponent()) {
-            UtilityController.addErrorMessage("This Component Type Already Exist");
-            return;
-        }
-
 
         if (getCurrent().getComponentType() == null) {
             UtilityController.addErrorMessage("Pls Select Compnent Type");
@@ -128,10 +112,20 @@ public class PaysheetComponentController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
         } else {
+            boolean flag = false;
+            for (PaysheetComponentType p : PaysheetComponentType.addition.getSystemDefinedComponents()) {
+                if (p == getCurrent().getComponentType()) {
+                    flag = true;
+                }
+            }
+            if (flag && checkComponent()) {
+                UtilityController.addErrorMessage("This Component Type Already Exist");
+                return;
+            }
+
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -197,7 +191,12 @@ public class PaysheetComponentController implements Serializable {
     }
 
     public List<PaysheetComponent> getItems() {
-        items = getFacade().findAll("name", true);
+        String sql = "Select s from PaysheetComponent s"
+                + " where s.retired=false "
+                + " and s.componentType  in :tp ";
+        HashMap hm = new HashMap();
+        hm.put("tp", PaysheetComponentType.addition.getUserDefinedComponents());
+        items = ejbFacade.findBySQL(sql, hm);
         return items;
     }
 

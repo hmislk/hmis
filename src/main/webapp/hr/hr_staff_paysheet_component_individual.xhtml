@@ -52,14 +52,12 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                        <h:outputLabel value="To : " />
-                        <p:calendar value="#{staffPaySheetComponentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentController.paysheetComponent}">                        
                             <f:selectItems value="#{staffPaySheetComponentController.compnent}"
                                            var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                         </p:selectOneMenu>
-                        <p:calendar value="#{staffPaySheetComponentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                      
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffPaySheetComponentController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
@@ -81,6 +79,20 @@
 
                         <p:ajax event="rowEdit" listener="#{staffPaySheetComponentController.onEdit}" />  
 
+                        <p:column headerText="Staff" filterBy="#{i.staff}"  
+                                  filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.person.name}" >
+
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Code" filterBy="#{i.staff}"  
+                                  filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.codeInterger}" >
+
+                            </h:outputLabel>
+                        </p:column>
+
                         <p:column headerText="From" filterBy="#{i.fromDate}"  filterMatchMode="contains" >
                             <h:outputLabel value="#{i.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy"/>
@@ -101,7 +113,10 @@
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{i.paysheetComponent.name}"/>
+                                    <p:selectOneMenu value="#{i.paysheetComponent}">                        
+                                        <f:selectItems value="#{staffPaySheetComponentController.compnent}"
+                                                       var="ii"  itemLabel="#{ii.name}" itemValue="#{ii}"/>
+                                    </p:selectOneMenu>                                  
                                 </f:facet>
                             </p:cellEditor>
 

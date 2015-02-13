@@ -55,11 +55,21 @@
 
                             <p:commandButton ajax="false" value="Process Lie Shift" 
                                              action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
-                            <p:selectOneMenu id="s1" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
+                            <p:selectOneMenu id="s1"
+                                             var="t"
+                                             value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffLeaveApplicationFormController.staffShiftsLie}"
-                                               var="itm" itemLabel="#{itm.shiftDate}|#{itm.shift.name}" 
+                                               var="itm" itemLabel="#{itm.shift.name}" 
                                                itemValue="#{itm}" />
+                                <p:column  headerText="Shift Date">
+                                    <h:outputLabel value="#{t.shiftDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Shift Name">
+                                    <h:outputLabel value="#{t.shift.name}"/>
+                                </p:column>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Requested Date"/>
@@ -84,6 +94,9 @@
                                                  action="#{staffLeaveApplicationFormController.clear}"/>
                                 <p:commandButton ajax="false" value="Delete" 
                                                  action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                                <p:inputText id="recomment" value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"/>
+                                <p:watermark for="recomment" value="Comment"/>
+                                
                             </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 

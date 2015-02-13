@@ -1,4 +1,3 @@
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -8,6 +7,7 @@ package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
+import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -85,6 +85,10 @@ public class StaffShift implements Serializable {
     StaffShift nextStaffShift;
     @ManyToOne
     StaffShift referenceStaffShift;
+    @ManyToOne
+    private StaffShift referenceStaffShiftLateIn;
+    @ManyToOne
+    private StaffShift referenceStaffShiftEarlyOut;
 
     //Multiplying Factor Always come by subtrating 1
     // if Multiplying Factor for Salary is 1 ,but actual value is 2
@@ -135,6 +139,7 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
+    private boolean autoLeave;
     @ManyToOne
 //    @Column(name = "hrForm")
     HrForm additionalForm;
@@ -149,11 +154,13 @@ public class StaffShift implements Serializable {
     boolean lieuPaid;
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
-    boolean consideredForLateEarlyAttendance;
+//    boolean consideredForLateEarlyAttendance;
+    boolean considerForLateIn;
+    boolean considerForEarlyOut;
     @Transient
     boolean transChecked;
     int dayOfWeek;
-    int leaveDivident;
+//    int leaveDivident;
 
     public DayType getDayType() {
         return dayType;
@@ -161,14 +168,6 @@ public class StaffShift implements Serializable {
 
     public void setDayType(DayType dayType) {
         this.dayType = dayType;
-    }
-
-    public int getLeaveDivident() {
-        return leaveDivident;
-    }
-
-    public void setLeaveDivident(int leaveDivident) {
-        this.leaveDivident = leaveDivident;
     }
 
     public HrForm getLeaveForm() {
@@ -187,12 +186,27 @@ public class StaffShift implements Serializable {
         this.amendmentForm = amendmentForm;
     }
 
-    public boolean isConsideredForLateEarlyAttendance() {
-        return consideredForLateEarlyAttendance;
+//    public boolean isConsideredForLateEarlyAttendance() {
+//        return consideredForLateEarlyAttendance;
+//    }
+//
+//    public void setConsideredForLateEarlyAttendance(boolean consideredForLateEarlyAttendance) {
+//        this.consideredForLateEarlyAttendance = consideredForLateEarlyAttendance;
+//    }
+    public boolean isConsiderForLateIn() {
+        return considerForLateIn;
     }
 
-    public void setConsideredForLateEarlyAttendance(boolean consideredForLateEarlyAttendance) {
-        this.consideredForLateEarlyAttendance = consideredForLateEarlyAttendance;
+    public void setConsiderForLateIn(boolean considerForLateIn) {
+        this.considerForLateIn = considerForLateIn;
+    }
+
+    public boolean isConsiderForEarlyOut() {
+        return considerForEarlyOut;
+    }
+
+    public void setConsiderForEarlyOut(boolean considerForEarlyOut) {
+        this.considerForEarlyOut = considerForEarlyOut;
     }
 
     public int getDayOfWeek() {
@@ -214,7 +228,7 @@ public class StaffShift implements Serializable {
     public void resetLeaveData(LeaveType leaveType) {
         if (leaveType == LeaveType.Lieu || leaveType == LeaveType.LieuHalf) {
             lieuQty = 0;
-            lieuPaymentAllowed = false;
+//            lieuPaymentAllowed = false;
         }
 
         switch (leaveType) {
@@ -274,6 +288,8 @@ public class StaffShift implements Serializable {
         resetFingerPrintRecordTime();
         resetExtraTime();
 //        resetLeaveData();
+//        considerForLateIn = false;
+//        considerForEarlyOut = false;
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
         overTimeValuePerSecond = 0;
@@ -343,18 +359,18 @@ public class StaffShift implements Serializable {
             lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
 
-        if (getStartRecord() != null
-                && getEndRecord() != null
-                && getStartRecord().getRecordTimeStamp() != null
-                && getEndRecord().getRecordTimeStamp() != null) {
-
-            DayType dayType = getShift().getDayType();
-            if (dayType == DayType.DayOff) {
-                lieuAllowed = true;
-                lieuPaymentAllowed = true;
-                lieuQty = getShift().isHalfShift() ? 0.5 : 1;
-            }
+//        if (getStartRecord() != null
+//                && getEndRecord() != null
+//                && getStartRecord().getRecordTimeStamp() != null
+//                && getEndRecord().getRecordTimeStamp() != null) {
+        DayType dtp = getShift().getDayType();
+        if (dtp == DayType.DayOff
+                || dtp == DayType.SleepingDay) {
+            lieuAllowed = true;
+            lieuPaymentAllowed = true;
+            lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
+//        }
     }
 
     public Roster getRoster() {
@@ -381,38 +397,33 @@ public class StaffShift implements Serializable {
         if (shift == null) {
             return;
         }
-        int div = leaveDivident;
-
-        if (div == 0) {
-            div = 1;
-        }
 
         switch (getLeaveType()) {
             case Annual:
             case Casual:
             case Lieu:
             case DutyLeave:
-                setLeavedTime((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTime((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case Maternity1st:
             case Maternity2nd:
             case Medical:
-                setLeavedTimeOther((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTimeOther((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case No_Pay:
-                setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
-                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case Maternity1stHalf:
             case Maternity2ndHalf:
-                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case No_Pay_Half:
-                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60));
                 break;
         }
     }
@@ -906,6 +917,11 @@ public class StaffShift implements Serializable {
 
     public void setStartRecord(FingerPrintRecord startRecord) {
         this.startRecord = startRecord;
+        if (startRecord != null) {
+            if (startRecord.getLoggedRecord() != null) {
+                startRecord.getLoggedRecord().setTimes(Times.inTime);
+            }
+        }
     }
 
     public FingerPrintRecord getEndRecord() {
@@ -914,6 +930,11 @@ public class StaffShift implements Serializable {
 
     public void setEndRecord(FingerPrintRecord endRecord) {
         this.endRecord = endRecord;
+        if (endRecord != null) {
+            if (endRecord.getLoggedRecord() != null) {
+                endRecord.getLoggedRecord().setTimes(Times.outTime);
+            }
+        }
     }
 
     public Long getId() {
@@ -987,10 +1008,10 @@ public class StaffShift implements Serializable {
         setShiftStartTime(sDate.getTime());
 
         eTime.setTime(getShift().getEndingTime());
-        eDate.setTime(shiftDate);
-        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
-        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
+        eDate.setTime(shiftStartTime);
+//        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.MINUTE, (int) getShift().getDurationMin());
+//        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }
@@ -1184,23 +1205,23 @@ public class StaffShift implements Serializable {
         // if one and half day  payment= 0.5
         switch (dayType) {
             case MurchantileHoliday:
-                multiplyingFactorSalary = 1.0;//two day payments
+                multiplyingFactorSalary = 2.0;//two day payments
                 multiplyingFactorOverTime = 1.5;
                 break;
             case Poya:
-                multiplyingFactorSalary = 0.5;// One and Half Payment
+                multiplyingFactorSalary = 1.5;// One and Half Payment
                 multiplyingFactorOverTime = 1.5;
                 break;
             case DayOff:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             case SleepingDay:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             default:
-                multiplyingFactorSalary = 0.0;
+                multiplyingFactorSalary = getShift().isHalfShift() == true ? 1 : 2;
                 multiplyingFactorOverTime = 1.5;
                 break;
         }
@@ -1237,6 +1258,30 @@ public class StaffShift implements Serializable {
 
     public void setConsideredForSalary(boolean consideredForSalary) {
         this.consideredForSalary = consideredForSalary;
+    }
+
+    public StaffShift getReferenceStaffShiftLateIn() {
+        return referenceStaffShiftLateIn;
+    }
+
+    public void setReferenceStaffShiftLateIn(StaffShift referenceStaffShiftLateIn) {
+        this.referenceStaffShiftLateIn = referenceStaffShiftLateIn;
+    }
+
+    public StaffShift getReferenceStaffShiftEarlyOut() {
+        return referenceStaffShiftEarlyOut;
+    }
+
+    public void setReferenceStaffShiftEarlyOut(StaffShift referenceStaffShiftEarlyOut) {
+        this.referenceStaffShiftEarlyOut = referenceStaffShiftEarlyOut;
+    }
+
+    public boolean isAutoLeave() {
+        return autoLeave;
+    }
+
+    public void setAutoLeave(boolean autoLeave) {
+        this.autoLeave = autoLeave;
     }
 
 }

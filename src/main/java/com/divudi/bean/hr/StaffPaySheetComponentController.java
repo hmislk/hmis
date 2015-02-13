@@ -13,6 +13,7 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -86,12 +87,16 @@ public class StaffPaySheetComponentController implements Serializable {
 
     private boolean checkStaff() {
 
-        String sql = "Select s From StaffPaysheetComponent s where s.retired=false"
-                + " and s.paysheetComponent=:tp and s.staff=:st and s.toDate>:dt";
+        String sql = "Select s From StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
         HashMap hm = new HashMap();
         hm.put("tp", getCurrent().getPaysheetComponent());
         hm.put("st", getCurrent().getStaff());
-        hm.put("dt", getCurrent().getToDate());
+        hm.put("cu", getCurrent().getToDate());
         List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (!tmp.isEmpty()) {
@@ -104,9 +109,7 @@ public class StaffPaySheetComponentController implements Serializable {
 
     private boolean errorCheck() {
 
-        if (checkStaff()) {
-            return true;
-        }
+     
 
         if (getCurrent().getPaysheetComponent() == null) {
             UtilityController.addErrorMessage("Check Component Name");
@@ -119,6 +122,10 @@ public class StaffPaySheetComponentController implements Serializable {
 
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
+            return true;
+        }
+        
+           if (checkStaff()) {
             return true;
         }
 
@@ -146,6 +153,7 @@ public class StaffPaySheetComponentController implements Serializable {
             getStaffPaysheetComponentFacade().edit(getCurrent());
         }
 
+        UtilityController.addSuccessMessage("Succesfully Saved");
         makeItemNull();
     }
 
@@ -168,18 +176,22 @@ public class StaffPaySheetComponentController implements Serializable {
 
     public void createTable() {
 
+        if (getPaysheetComponent() == null) {
+            JsfUtil.addErrorMessage("Set Pay Sheet Component");
+        }
+
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                + " and ss.staff=:st "
-                + " and ss.fromDate >=:fd "
-                + " and ss.toDate <=:td ";
+                // + " and ss.staff=:st "
+                + " and ss.fromDate <=:fd "
+                + " and ss.toDate >=:fd ";
         HashMap hm = new HashMap();
-        hm.put("td", getToDate());
+//        hm.put("td", getToDate());
         hm.put("fd", getFromDate());
 
         if (getPaysheetComponent() != null) {
-            sql += " ss.paysheetComponent=:pt ";
+            sql += " and ss.paysheetComponent=:pt ";
             hm.put("pt", getPaysheetComponent());
         }
 
@@ -189,7 +201,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -208,6 +220,7 @@ public class StaffPaySheetComponentController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
+        sql += " order by ss.staff.codeInterger";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -223,14 +236,15 @@ public class StaffPaySheetComponentController implements Serializable {
 
     public void makeItemNull() {
         items = null;
+        current = null;
     }
 
     public List<PaysheetComponent> getCompnent() {
-        String sql = "Select pc From PaysheetComponent pc where pc.retired=false and "
-                + " (pc.componentType!=:tp1 and pc.componentType!=:tp2) ";
+        String sql = "Select pc From PaysheetComponent pc "
+                + " where pc.retired=false "
+                + " and pc.componentType not in :tp1";
         HashMap hm = new HashMap();
-        hm.put("tp1", PaysheetComponentType.BasicSalary);
-        hm.put("tp2", PaysheetComponentType.LoanInstallemant);
+        hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
     }

@@ -55,7 +55,7 @@
                             </p:column>
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" action="bill_reprint">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
@@ -66,6 +66,9 @@
                             </p:column> 
                             <p:column headerText="Billed For"  >                                
                                 <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Billed At"  >                                
+                                <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >

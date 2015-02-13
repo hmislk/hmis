@@ -358,6 +358,16 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    public double findDoubleByJpql(String temSQL) {
+        TypedQuery<Double> qry = (TypedQuery<Double>) getEntityManager().createQuery(temSQL);
+      
+        try {
+            return (double) qry.getSingleResult();
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+    
     public Date findDateByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<Date> qry = (TypedQuery<Date>) getEntityManager().createQuery(temSQL);
         Set s = parameters.entrySet();

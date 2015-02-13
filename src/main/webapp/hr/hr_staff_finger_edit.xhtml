@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Leave Application Form">
+                <h:panelGrid columns="2" >
+                    <p:panel header="Leave Form Details">
+                        <h:panelGrid columns="1">
+                            <h:outputLabel value="Staff : "/>
+                            <au:completeStaff value="#{fingerPrintRecordController.fingerPrintRecord.staff}"/>
+                            <h:outputLabel value="Finger Print Record Type"/>
+                            <p:selectOneMenu  value="#{fingerPrintRecordController.fingerPrintRecord.fingerPrintRecordType}">
+                                <f:selectItem itemLabel="Select Finger Print Record Type"/>
+                                <f:selectItems value="#{fingerPrintRecordController.fingerPrintRecordType}"/>                                
+                            </p:selectOneMenu>     
+                            <h:outputLabel value="Day Type"/>
+                            <p:selectOneMenu  value="#{fingerPrintRecordController.fingerPrintRecord.dayType}">
+                                <f:selectItem itemLabel="Select Day Type"/>
+                                <f:selectItems value="#{fingerPrintRecordController.dayTypes}"/>                                
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Time Type"/>
+                            <p:selectOneMenu  value="#{fingerPrintRecordController.fingerPrintRecord.times}">
+                                <f:selectItem itemLabel="Select Time Type"/>
+                                <f:selectItems value="#{fingerPrintRecordController.timeses}"/>                                
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Record Time Stamp Date"/>
+                            <p:calendar id="toDate" value="#{fingerPrintRecordController.fingerPrintRecord.recordTimeStamp}"
+                                        pattern="dd MM yy">
+                            </p:calendar>   
+                            <h:outputLabel value="Staff : "/>
+                            <h:selectBooleanCheckbox value="#{fingerPrintRecordController.fingerPrintRecord.retired}" />
+                            <h:panelGroup>
+                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                 action="#{fingerPrintRecordController.saveStaffFinger()}"/>
+                            </h:panelGroup>                     
+                        </h:panelGrid>
+                    </p:panel> 
+                </h:panelGrid>              
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>

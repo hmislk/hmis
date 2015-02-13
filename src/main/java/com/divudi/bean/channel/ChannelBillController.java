@@ -570,7 +570,7 @@ public class ChannelBillController implements Serializable {
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
         for (BillFee bf : billFees) {
-            System.err.println("Change Val "+bf.getTmpChangedValue());
+            System.err.println("Change Val " + bf.getTmpChangedValue());
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
                 newBf.copy(bf);
@@ -760,17 +760,16 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 
-        if (patientTabId.equals("tabNewPt")) {
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
-                UtilityController.addErrorMessage("Can not bill without Patient ");
-                return true;
-            }
-            if (area == null){
-                UtilityController.addErrorMessage("Select Area");
-                return true;
-            }
-        }
-
+//        if (patientTabId.equals("tabNewPt")) {
+//            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
+//                UtilityController.addErrorMessage("Can not bill without Patient ");
+//                return true;
+//            }
+//            if (area == null){
+//                UtilityController.addErrorMessage("Select Area");
+//                return true;
+//            }
+//        }
         if (patientTabId.equals("tabSearchPt")) {
             if (getSearchPatient() == null) {
                 UtilityController.addErrorMessage("Please select Patient");
@@ -849,6 +848,8 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
+    
+    
     public void add() {
         if (errorCheck()) {
             return;
@@ -883,7 +884,7 @@ public class ChannelBillController implements Serializable {
         bs.setSessionTime(getbookingController().getSelectedServiceSession().getSessionTime());
         bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
-        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt());
+        int count = getServiceSessionBean().getSessionNumber( getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt() , bs);
         System.err.println("count" + count);
         bs.setSerialNo(count);
 
@@ -921,13 +922,21 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(billItem);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            bf.setDepartment(getSessionController().getDepartment());
+            if (f.getFeeType() == FeeType.OwnInstitution) {
+                bf.setInstitution(f.getInstitution());
+                bf.setDepartment(f.getDepartment());
+            }else if (f.getFeeType()==FeeType.OtherInstitution){
+                bf.setInstitution(institution);
+            }else if (f.getFeeType()==FeeType.Staff){
+                bf.setSpeciality(f.getSpeciality());
+                bf.setStaff(f.getStaff());
+            }
             bf.setFee(f);
             bf.setFeeAt(new Date());
             bf.setFeeDiscount(0.0);
             bf.setOrderNo(0);
             bf.setPatient(bill.getPatient());
-            bf.setSpeciality(f.getSpeciality());
+            
             if (bf.getPatienEncounter() != null) {
                 bf.setPatienEncounter(bill.getPatientEncounter());
             }
@@ -996,6 +1005,9 @@ public class ChannelBillController implements Serializable {
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
                 break;
+            case Credit:
+                bill.setBillType(BillType.ChannelCredit);
+                break;
         }
 
         bill.setInsId(getBillNumberBean().institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
@@ -1024,6 +1036,7 @@ public class ChannelBillController implements Serializable {
         Bill savingBill = createBill();
         BillItem savingBillItem = createBillItem(savingBill);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
+        
         List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
@@ -1283,5 +1296,4 @@ public class ChannelBillController implements Serializable {
         this.area = area;
     }
 
-    
 }

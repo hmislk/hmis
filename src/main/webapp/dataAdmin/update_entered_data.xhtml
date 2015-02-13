@@ -69,8 +69,16 @@
                             <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Code to Integer"
                                              action="#{staffController.updateCodeToIntege}"/>
                             <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Shift Start End Time"
-                                             action="#{staffShiftController.updateStaffShiftStartTimeAndEndTime}"/>
-                        </p:panel>
+                                             action="#{staffShiftController.updateStaffShiftStartTimeAndEndTime}"/>                            
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Over Time Value Per Sec Staff Shift"
+                                             action="#{hrReportController.updateOverTimeValuePerSecond}" rendered="false"/>
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Automatic Leave Date"
+                                             action="#{hrReportController.updateAutomaticData}" rendered="false"/>
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Late No Pay"
+                                             action="#{hrReportController.updateLateLeaveData}" rendered="false"/>
+                               <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Paysheet Componet"
+                                             action="#{hrReportController.updateStaffPaysheetComponent}"/>
+                       </p:panel>
 
 
 

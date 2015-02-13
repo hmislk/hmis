@@ -69,6 +69,11 @@
                                     <h:inputText autocomplete="off" id="txtFullName"  class="pdInputText" value="#{investigationController.current.fullName}"  ></h:inputText>
                                     <p:outputLabel value="Item Code"/>
                                     <p:inputText autocomplete="off" value="#{investigationController.current.code}"/>
+                                    <h:outputText value="Machine" ></h:outputText>
+                                    <h:selectOneListbox id="cmbMac"  size="1" value="#{investigationController.current.machine}" >
+                                        <f:selectItem itemLabel="Please select a Machine"/>
+                                        <f:selectItems value="#{investigationCategoryController.machines}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </h:selectOneListbox>
                                     <p:outputLabel value="Report Format"/>
                                     <h:selectOneListbox  size="1" value="#{investigationController.current.reportType}" >                               
                                         <f:selectItem itemLabel="General" itemValue="General"/>

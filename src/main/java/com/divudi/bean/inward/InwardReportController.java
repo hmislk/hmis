@@ -76,6 +76,23 @@ public class InwardReportController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
+    // for disscharge book
+    boolean dischargeDate=true;
+    boolean bhtNo=true;
+    boolean paymentMethord=true;
+    boolean creditCompany=true;
+    boolean person=true;
+    boolean room=true;
+    boolean refDoctor=true;
+    boolean AddmitDetails=true;
+    boolean billedBy=true;
+    boolean finalBillTotal=true;
+    boolean paidByPatient=true;
+    boolean creditPaidAmount=true;
+    boolean dueAmount=true;
+    boolean calculatedAmount=true;
+    boolean differentAmount=true;
+    // for disscharge book
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -1067,6 +1084,126 @@ public class InwardReportController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
+    }
+
+    public boolean isDischargeDate() {
+        return dischargeDate;
+    }
+
+    public void setDischargeDate(boolean dischargeDate) {
+        this.dischargeDate = dischargeDate;
+    }
+
+    public boolean isBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(boolean bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public boolean isPaymentMethord() {
+        return paymentMethord;
+    }
+
+    public void setPaymentMethord(boolean paymentMethord) {
+        this.paymentMethord = paymentMethord;
+    }
+
+    public boolean isCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(boolean creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+    public boolean isPerson() {
+        return person;
+    }
+
+    public void setPerson(boolean person) {
+        this.person = person;
+    }
+
+    public boolean isRoom() {
+        return room;
+    }
+
+    public void setRoom(boolean room) {
+        this.room = room;
+    }
+
+    public boolean isRefDoctor() {
+        return refDoctor;
+    }
+
+    public void setRefDoctor(boolean refDoctor) {
+        this.refDoctor = refDoctor;
+    }
+
+    public boolean isAddmitDetails() {
+        return AddmitDetails;
+    }
+
+    public void setAddmitDetails(boolean AddmitDetails) {
+        this.AddmitDetails = AddmitDetails;
+    }
+
+    public boolean isBilledBy() {
+        return billedBy;
+    }
+
+    public void setBilledBy(boolean billedBy) {
+        this.billedBy = billedBy;
+    }
+
+    public boolean isFinalBillTotal() {
+        return finalBillTotal;
+    }
+
+    public void setFinalBillTotal(boolean finalBillTotal) {
+        this.finalBillTotal = finalBillTotal;
+    }
+
+    public boolean isPaidByPatient() {
+        return paidByPatient;
+    }
+
+    public void setPaidByPatient(boolean paidByPatient) {
+        this.paidByPatient = paidByPatient;
+    }
+
+    public boolean isCreditPaidAmount() {
+        return creditPaidAmount;
+    }
+
+    public void setCreditPaidAmount(boolean creditPaidAmount) {
+        this.creditPaidAmount = creditPaidAmount;
+    }
+
+    public boolean isDueAmount() {
+        return dueAmount;
+    }
+
+    public void setDueAmount(boolean dueAmount) {
+        this.dueAmount = dueAmount;
+    }
+
+    public boolean isCalculatedAmount() {
+        return calculatedAmount;
+    }
+
+    public void setCalculatedAmount(boolean calculatedAmount) {
+        this.calculatedAmount = calculatedAmount;
+    }
+
+    public boolean isDifferentAmount() {
+        return differentAmount;
+    }
+
+    public void setDifferentAmount(boolean differentAmount) {
+        this.differentAmount = differentAmount;
     }
 
 }

@@ -33,13 +33,10 @@ import com.divudi.entity.hr.StaffGrade;
 import com.divudi.entity.hr.StaffStaffCategory;
 import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FormFacade;
 import com.divudi.facade.FormItemValueFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import java.io.ByteArrayInputStream;
@@ -59,6 +56,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.TemporalType;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -251,22 +249,53 @@ public class StaffController implements Serializable {
         this.criFacade = criFacade;
     }
 
-    public void createTable() {
+    Date fromDate;
+    Date toDate;
+
+    public FormItemValueFacade getFivFacade() {
+        return fivFacade;
+    }
+
+    public void setFivFacade(FormItemValueFacade fivFacade) {
+        this.fivFacade = fivFacade;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public void createActiveStaffTable() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
-        String sql = "select p from Staff p "
-                + " where p.retired=false "
-                + " and type(p)!=:class "
-                + " and LENGTH(p.code) > 0 "
-                + " and LENGTH(p.person.name) > 0 ";
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 "
+                + " and (ss.dateLeft> :to "
+                + " or ss.dateRetired> :to )";
+        
+        hm.put("to", toDate);
 
         if (getReportKeyWord().getStaff() != null) {
-            sql += " and ss.staff=:stf ";
+            sql += " and ss=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -285,6 +314,47 @@ public class StaffController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
+        sql += " order by ss.codeInterger ";
+        //System.out.println(sql);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+    public void createTable() {
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 ";
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.codeInterger ";
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
@@ -342,7 +412,7 @@ public class StaffController implements Serializable {
                     + " d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrent().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm, 20);
+            d = getDepartmentFacade().findBySQL(sql, hm);
         }
 
         return d;
@@ -577,6 +647,25 @@ public class StaffController implements Serializable {
         for (Staff stf : selectedItems) {
             stf.setWorkingTimeForOverTimePerWeek(45);
             stf.setWorkingTimeForNoPayPerWeek(28);
+            getFacade().edit(stf);
+        }
+
+    }
+
+    public void resetLateInEarlyOutLeaveAllowed() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select c from Staff c "
+                + " where c.retired=false "
+                + " and type(c)!=:class"
+                + " order by c.person.name";
+
+        hm.put("class", Consultant.class);
+        selectedItems = getFacade().findBySQL(sql, hm);
+
+        for (Staff stf : selectedItems) {
+            stf.setAllowedEarlyOutLeave(true);
+            stf.setAllowedLateInLeave(true);
             getFacade().edit(stf);
         }
 

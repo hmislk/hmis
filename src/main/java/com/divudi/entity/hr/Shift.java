@@ -63,7 +63,7 @@ public class Shift implements Serializable {
     @Transient
     private double durationHour;
     @Transient
-    private int durationMin;
+    private double durationMin;
     double shiftDuration;
     double leaveHourFull;
     double leaveHourHalf;
@@ -85,6 +85,24 @@ public class Shift implements Serializable {
     @ManyToOne
     Shift nextShift;
     boolean halfShift;
+    boolean firstShift;
+    boolean lastShift;
+
+    public boolean isFirstShift() {
+        return firstShift;
+    }
+
+    public void setFirstShift(boolean firstShift) {
+        this.firstShift = firstShift;
+    }
+
+    public boolean isLastShift() {
+        return lastShift;
+    }
+
+    public void setLastShift(boolean lastShift) {
+        this.lastShift = lastShift;
+    }
 
     public boolean isHalfShift() {
         return halfShift;
@@ -169,25 +187,31 @@ public class Shift implements Serializable {
         return durationHour;
     }
 
-    public int getDurationMin() {
-
-        if (getStartingTime() == null && getEndingTime() == null) {
+    public double getDurationMin() {
+        if (getStartingTime() == null || getEndingTime() == null) {
             return 0;
         }
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(getStartingTime());
-        int sMin = cal.get(Calendar.MINUTE);
+        int sHour = cal.get(Calendar.HOUR_OF_DAY);
         cal.setTime(getEndingTime());
-        int eMin = cal.get(Calendar.MINUTE);
+        int eHour = cal.get(Calendar.HOUR_OF_DAY);
 
-        if (sMin < eMin) {
-            durationMin = eMin - sMin;
-        } else if (sMin == eMin) {
-            durationMin = 0;
-        } else {
-            durationMin = sMin - eMin;
+        System.err.println("S Time " + startingTime);
+        System.err.println("E Time " + endingTime);
+
+        System.err.println("S H " + sHour);
+        System.err.println("E H " + eHour);
+        durationMin = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60));
+        System.err.println(durationMin);
+        if (sHour > eHour) {
+            System.err.println("1 ");
+            durationMin = (durationMin + (24 * 60));
+            System.err.println("2 " + durationMin);
         }
+
+        durationMin = Math.floor(durationMin);
 
         return durationMin;
     }

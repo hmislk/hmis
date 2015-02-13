@@ -111,12 +111,15 @@ public class Staff implements Serializable {
     Date dateJoined;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateLeft;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date dateRetired;
     @Transient
     double basic;
     @Transient
     double transWorkedDays;
-    @OneToOne(cascade = CascadeType.ALL)
-    BankAccount bankAccount;
+    @ManyToOne
+    private Institution bankBranch;
+    private String accountNo;
     String epfNo;
 
     String acNo;
@@ -128,6 +131,34 @@ public class Staff implements Serializable {
     double workingTimeForOverTimePerWeek;
     double workingTimeForNoPayPerWeek;
     Integer codeInterger;
+    boolean allowedLateInLeave = true;
+    boolean allowedEarlyOutLeave = true;
+
+    public Date getDateRetired() {
+        return dateRetired;
+    }
+
+    public void setDateRetired(Date dateRetired) {
+        this.dateRetired = dateRetired;
+    }
+    
+    
+
+    public boolean isAllowedLateInLeave() {
+        return allowedLateInLeave;
+    }
+
+    public void setAllowedLateInLeave(boolean allowedLateInLeave) {
+        this.allowedLateInLeave = allowedLateInLeave;
+    }
+
+    public boolean isAllowedEarlyOutLeave() {
+        return allowedEarlyOutLeave;
+    }
+
+    public void setAllowedEarlyOutLeave(boolean allowedEarlyOutLeave) {
+        this.allowedEarlyOutLeave = allowedEarlyOutLeave;
+    }
 
     public double getWorkingTimeForNoPayPerWeek() {
         return workingTimeForNoPayPerWeek;
@@ -533,15 +564,20 @@ public class Staff implements Serializable {
         this.basic = basic;
     }
 
-    public BankAccount getBankAccount() {
-        if (bankAccount == null) {
-            bankAccount = new BankAccount();
-        }
-        return bankAccount;
+    public Institution getBankBranch() {
+        return bankBranch;
     }
 
-    public void setBankAccount(BankAccount bankAccount) {
-        this.bankAccount = bankAccount;
+    public void setBankBranch(Institution bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
     }
 
     public String getEpfNo() {

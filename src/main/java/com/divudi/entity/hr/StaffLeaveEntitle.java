@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.LeaveType;
@@ -19,6 +18,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement
 public class StaffLeaveEntitle implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,7 +37,7 @@ public class StaffLeaveEntitle implements Serializable {
     Staff staff;
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
-     //Created Properties
+    //Created Properties
     @ManyToOne
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -49,6 +50,10 @@ public class StaffLeaveEntitle implements Serializable {
     Date retiredAt;
     String retireComments;
     double count;
+    @Temporal(TemporalType.DATE)
+    private Date fromDate;
+    @Temporal(TemporalType.DATE)
+    private Date toDate;
 
     public double getCount() {
         return count;
@@ -57,8 +62,6 @@ public class StaffLeaveEntitle implements Serializable {
     public void setCount(double count) {
         this.count = count;
     }
-    
-    
 
     public WebUser getCreater() {
         return creater;
@@ -107,8 +110,6 @@ public class StaffLeaveEntitle implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
 
     public Staff getStaff() {
         return staff;
@@ -125,8 +126,6 @@ public class StaffLeaveEntitle implements Serializable {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
-    
-    
 
     public Long getId() {
         return id;
@@ -160,5 +159,21 @@ public class StaffLeaveEntitle implements Serializable {
     public String toString() {
         return "com.divudi.entity.hr.StaffLeaveEntitle[ id=" + id + " ]";
     }
-    
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
 }

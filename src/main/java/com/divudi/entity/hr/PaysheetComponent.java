@@ -19,6 +19,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -62,6 +63,18 @@ public class PaysheetComponent implements Serializable {
     @ManyToOne
     private Institution sendingInstitution;
     int orderNo;
+    @Transient
+    double transValue;
+
+    public double getTransValue() {
+        return transValue;
+    }
+
+    public void setTransValue(double transValue) {
+        this.transValue = transValue;
+    }
+    
+    
 
     public boolean isIncludeForAllowance() {
         return includeForAllowance;

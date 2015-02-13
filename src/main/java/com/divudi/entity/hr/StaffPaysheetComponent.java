@@ -36,9 +36,9 @@ public class StaffPaysheetComponent implements Serializable {
     @ManyToOne
     private Staff staff;
     private double createdValue;
-    private double modifiedValue;
-    @Transient
+    private double modifiedValue;    
     private double staffPaySheetComponentValue;
+    double dblValue;
     @Temporal(TemporalType.DATE)
     private Date fromDate;
     @Temporal(TemporalType.DATE)
@@ -67,6 +67,16 @@ public class StaffPaysheetComponent implements Serializable {
     private String loanNo;
     private double loanFullAmount;
     private String comment;
+
+    public double getDblValue() {
+        return dblValue;
+    }
+
+    public void setDblValue(double dblValue) {
+        this.dblValue = dblValue;
+    }
+    
+    
 
     public Long getId() {
         return id;
@@ -117,22 +127,11 @@ public class StaffPaysheetComponent implements Serializable {
         this.staff = staff;
     }
 
-    public double getStaffPaySheetComponentValue() {
-        if (modifiedValue != 0.0) {
-            staffPaySheetComponentValue = modifiedValue;
-        } else {
-            staffPaySheetComponentValue = createdValue;
-        }
+    public double getStaffPaySheetComponentValue() {       
         return staffPaySheetComponentValue;
     }
 
     public void setStaffPaySheetComponentValue(double staffPaySheetComponentValue) {
-        if (createdValue == 0.0) {
-            createdValue = staffPaySheetComponentValue;
-        } else {
-            modifiedValue = staffPaySheetComponentValue;
-        }
-
         this.staffPaySheetComponentValue = staffPaySheetComponentValue;
     }
 
