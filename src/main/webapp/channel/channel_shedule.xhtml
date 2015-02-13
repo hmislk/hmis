@@ -100,9 +100,21 @@
                                         var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                         converter="genConvert">                            
                         </p:autoComplete>
+                        
                         <p:outputLabel value="Refundable"/>
                         <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
-                        <p:outputLabel value="#{sheduleController.current.id}"/>
+
+                        <p:outputLabel value="Credit Numbers"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>
+                        <p:outputLabel value="Cash Numbers"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.cashNumbers}"/>
+                        <p:outputLabel value="Agent Numbers"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.agencyNumbers}"/>
+                        <p:outputLabel value="Reserved Numbers"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.reserveNumbers}"/>
+                        <p:outputLabel value="Reserver Name"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
+
                     </p:panelGrid>
                     <br/>
                     <p:tabView  >
