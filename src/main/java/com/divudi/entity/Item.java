@@ -156,6 +156,7 @@ public class Item implements Serializable {
     String cashNumbers;
     String agencyNumbers;
     String reserveName;
+    String reserveNumbers;
 
     public String getCreditNumbers() {
         return creditNumbers;
@@ -828,6 +829,14 @@ public class Item implements Serializable {
 
     public void setMachine(Machine machine) {
         this.machine = machine;
+    }
+
+    public String getReserveNumbers() {
+        return reserveNumbers;
+    }
+
+    public void setReserveNumbers(String reserveNumbers) {
+        this.reserveNumbers = reserveNumbers;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
