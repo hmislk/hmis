@@ -884,7 +884,7 @@ public class ChannelBillController implements Serializable {
         bs.setSessionTime(getbookingController().getSelectedServiceSession().getSessionTime());
         bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
-        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt());
+        int count = getServiceSessionBean().getSessionNumber( getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt() , bs);
         System.err.println("count" + count);
         bs.setSerialNo(count);
 
@@ -1036,6 +1036,7 @@ public class ChannelBillController implements Serializable {
         Bill savingBill = createBill();
         BillItem savingBillItem = createBillItem(savingBill);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
+        
         List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
