@@ -11,6 +11,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
@@ -48,6 +49,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
     @EJB
     CommonFunctions commonFunctions;
     List<Bill> labBills;
+    List<Bill> billedBills;
     List<Bill>billBills;
     List<Bill>canBills;
     List<Bill>refBills;
@@ -785,10 +787,45 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBills;
     }
-
     public List<Bill> getBills() {
         return bills;
     }
+    
+    public List<Bill> getLabBilledBillsOwns() {
+        if (billedBills == null) {
+            if (institution == null) {
+                return new ArrayList<>();
+            }
+            String sql = "select f from BilledBill f "
+                    + " where f.retired=false "
+                    + " and f.billType = :billType "
+                    + " and f.createdAt between :fromDate and :toDate "
+                    + " and f.toInstitution=:toIns "
+                    + " order by type(f), f.insId";
+            Map tm = new HashMap();
+            tm.put("fromDate", fromDate);
+            tm.put("toDate", toDate);
+            tm.put("billType", BillType.OpdBill);
+            //tm.put("billedBillCalss", BilledBill.class);
+            //  tm.put("ins", getSessionController().getInstitution());
+            tm.put("toIns", getInstitution());
+            billedBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            calTotals();
+        }
+        return billedBills;
+    }
+    
+//    public double calPaidTotal(List<Bill> bills) {
+//        double bhtTotal = 0.0;
+//        System.out.println("Items = " + bills);
+//        for (Bill billsOwn : bills) {
+//            bhtTotal += billsOwn.get;
+//        }
+//        return bhtTotal;
+//    } 
+
+    
+
 
     public List<Bill> getLabBills() {
         if (labBills == null) {
@@ -1019,8 +1056,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
         tm.put("billType", BillType.OpdBill);
-        tm
-                .put("billClass", BilledBill.class);
+        tm.put("billClass", BilledBill.class);
         hosTotB = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
         sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
@@ -1317,4 +1353,13 @@ public class LabReportSearchByInstitutionController implements Serializable {
     public void setTotalRef(double totalRef) {
         this.totalRef = totalRef;
     }
+
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
 }

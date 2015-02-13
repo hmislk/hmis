@@ -524,6 +524,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillFee> createDocDueFeeTableDischarged() {
 
+        
         String sql;
         Map temMap = new HashMap();
         billFeeDueDischarged = new ArrayList<>();
@@ -534,7 +535,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=true "
                 + " and (b.feeValue - b.paidValue) > 0"
-                + " and  b.bill.billDate between :fromDate and :toDate "
+                + " and b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
         temMap.put("toDate", getToDate());

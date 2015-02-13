@@ -53,11 +53,17 @@
                                     </f:facet>
                                     <p:outputLabel value="#{i+1}" />
                                 </p:column>                               
-                                <p:column headerText="EMP NAME" >
+                                <p:column headerText="Full Name" >
                                     <f:facet name="header" >
-                                        <p:outputLabel value="EMP NAME" />
+                                        <p:outputLabel value="Full Name" />
                                     </f:facet>
-                                    <p:outputLabel value="#{s.person.nameWithTitle}" />
+                                    <p:outputLabel value="#{s.person.fullName}" />
+                                </p:column>
+                                <p:column headerText="Name with Initials" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Name with Initials" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.nameWithInitials}" />
                                 </p:column>
                                 <p:column headerText="Code NO" >
                                     <f:facet name="header" >

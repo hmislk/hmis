@@ -20,6 +20,9 @@
                                 <p:commandButton value="(2) All Staff Salary Summery" 
                                                  action="/hr/hr_report_staff_salary" 
                                                  styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(2.1) All Staff Salary Summery(By Department)" 
+                                                 action="/hr/hr_report_staff_salary_by_department" 
+                                                 styleClass="linkButton" ajax="false" /> 
                                 <p:commandButton value="(3) Staff Payroll" 
                                                  action="/hr/hr_report_staff_payroll" 
                                                  styleClass="linkButton" ajax="false" />                                 
@@ -170,7 +173,6 @@
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-
                             <p:commandButton value="(4) Leave Report Extra " 
                                              action="hr_report_leave_system" 
                                              actionListener="#{hrReportController.makeNull()}" 
@@ -220,6 +222,10 @@
 
                         <p:panel header="(12) Hr Holydays">
                             <p:commandButton value="Holyday Report" action="hr_report_ph_date" styleClass="linkButton" ajax="false" />
+                        </p:panel>
+                        
+                          <p:panel header="(13) Staff Reports">
+                            <p:commandButton value="Staff Details" action="/hr/report_staff_details" styleClass="linkButton" ajax="false" />
                         </p:panel>
 
                     </h:panelGrid>

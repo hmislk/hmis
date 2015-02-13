@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:growl autoUpdate="true" />
+                <p:panel header="Staff Details Report" >
+
+                    <h:panelGrid columns="4" >
+
+                        <p:selectOneMenu id="mnuCat" value="#{formFormatController.formCategory}" >
+                            <f:selectItem itemLabel="Select Form" ></f:selectItem>
+                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                        </p:selectOneMenu>
+
+                        <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
+
+
+                        <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
+                        <a download="staff_detail.xls" href="#" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
+                           style="padding: .3em 1em;  background: #D7D0C0; " 
+                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Export to Excel</a>
+
+                    </h:panelGrid>
+
+
+                    <table class="standardTable" id="tbl" >
+                        <tr>
+
+                            <th>
+                                <h:outputText  value="Name" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Full Name" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Name with Initials" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="NIC No" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Gender" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Finger Print Id" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="Code" ></h:outputText>
+                            </th>
+
+                            <th>
+                                <h:outputText  value="EPF" ></h:outputText>
+                            </th>
+                            <th>
+                                <h:outputText  value="Registration" ></h:outputText>
+                            </th>
+                            <th>
+                                <h:outputText  value="Qualification" ></h:outputText>
+                            </th>
+                            <th>
+                                <p:outputLabel value="Date Joined "/>
+                            </th>
+
+                            <th>
+                                <h:outputText value="Speciality" />
+                            </th>
+
+                            <ui:repeat value="#{formFormatController.formItems}" var="fi" >
+                                <th>
+                                    <h:outputText value="#{fi.name}" ></h:outputText>
+                                </th>
+                            </ui:repeat>
+
+                        </tr>
+
+                        <ui:repeat value="#{formFormatController.staffes}" var="staff"  >
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="#{staff.person.name}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{staff.person.fullName}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{staff.person.nameWithInitials}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel  value="#{staff.person.nic}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel   value="#{staff.person.sex}" >
+                                    </h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel  value="#{staff.acNo}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel   value="#{staff.code}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel  value="#{staff.epfNo}"  />
+                                </td>
+                                <td>
+                                    <h:outputLabel  value="#{staff.registration}"  />             
+                                </td>
+                                <td>
+                                    <h:outputLabel  value="#{staff.qualification}"  />                
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{staff.dateJoined}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{staff.speciality}" >
+                                    </h:outputLabel>
+                                </td>
+
+                                <ui:repeat value="#{formFormatController.formItems}" var="fiv" >
+                                    <td>
+                                        <h:outputLabel value="#{staffController.formItemValue(fiv, staff.person)}" ></h:outputLabel>
+                                    </td>
+                                </ui:repeat>
+
+                            </tr>
+
+
+
+                        </ui:repeat>
+
+                    </table>
+
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

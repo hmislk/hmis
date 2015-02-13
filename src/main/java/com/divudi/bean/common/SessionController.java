@@ -207,7 +207,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String loginAction() {
         if (login()) {
-            return "";
+            return "/index.xhtml";
         } else {
             UtilityController.addErrorMessage("Login Failure. Please try again");
             return "";
@@ -353,6 +353,15 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     }
 
+    public boolean isFirstLogin() {
+        if (getFacede().count() <= 1) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
