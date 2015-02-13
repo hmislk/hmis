@@ -297,15 +297,25 @@ public class ServiceSessionBean {
 
         System.out.println("temStr = " + temStr);
         availabeNumbers = stringNumbersToInts(temStr);
-        System.out.println("availableNumbers = " + availabeNumbers.toString().substring(10));
+        System.out.println("availableNumbers = " + availabeNumbers.toString());
+
+        boolean numberGiven;
 
         for (Integer i : availabeNumbers) {
             System.out.println("i = " + i);
+            numberGiven = false;
             for (BillSession bs : lgValue) {
                 System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
-                if (i != bs.getSerialNo()) {
-                    return i;
+                if (i == bs.getSerialNo()) {
+                    System.out.println("break");
+                    numberGiven = true;
+                    break;
                 }
+            }
+            System.out.println("i = " + i);
+            System.out.println("numberGiven = " + numberGiven);
+            if (numberGiven == false) {
+                return i;
             }
         }
         return getSessionNumber(serviceSession, sessionDate);
@@ -318,15 +328,18 @@ public class ServiceSessionBean {
     }
 
     public List<Integer> stringNumbersToInts(String str) {
+        int maxNo = 100;
         List<Integer> nits = new ArrayList();
         if (str == null || str.trim().equals("")) {
-            addToIntList(1, 1000, nits);
+            addToIntList(1, maxNo, nits);
             return nits;
         }
         if (str.contains(">")) {
+            System.out.println("contains > ");
             str = str.replace(">", "");
             String strs[] = str.split(" ");
             for (String s : strs) {
+                System.out.println("s = " + s);
                 if (isNumeric(s)) {
                     Integer i;
                     try {
@@ -334,17 +347,19 @@ public class ServiceSessionBean {
                     } catch (Exception e) {
                         i = 1;
                     }
-                    addToIntList(i + 1, 1000, nits);
+                    addToIntList(i + 1, maxNo, nits);
                     return nits;
                 }
             }
         }
         if (str.contains("-")) {
+            System.out.println("contains - ");
             str = str.replace("-", " ");
             String strs[] = str.split(" ");
             Integer fromNo = null;
             Integer toNo = null;
             for (String s : strs) {
+                System.out.println("s = " + s);
                 if (isNumeric(s)) {
                     Integer i;
 
@@ -362,6 +377,8 @@ public class ServiceSessionBean {
 
                 }
             }
+            System.out.println("fromNo = " + fromNo);
+            System.out.println("toNo = " + toNo);
             addToIntList(fromNo, toNo, nits);
             return nits;
         }
