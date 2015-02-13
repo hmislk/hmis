@@ -709,6 +709,8 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
+        Person p = new Person();
+        current.setPerson(p);
     }
 
     public void delete() {
