@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+
+
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing.css" />
+
+
+                <h:form>
+                    <p:panel id="panelReport" styleClass="noBorder summeryBorder" >
+
+                        <p:panel  styleClass="tem nonPrintBlock" >
+
+                            <f:facet name="header">
+                                <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
+                                <p:spacer width="20" height="0"/>
+                                <h:panelGrid columns="67">
+                                    <h:outputLabel value="From Date" />
+                                    <p:spacer width="10" height="0"/>
+
+                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    </p:calendar>
+                                    <p:spacer width="30" height="0"/>
+                                    <h:outputLabel value="To Date" />
+                                     <p:spacer width="10" height="0"/>
+                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    </p:calendar>
+                                      <p:spacer width="20" height="0"/>
+                                    <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
+                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
+                                                     requiredMessage="You must select a institution" >
+                                        <f:selectItem itemLabel="Select Institution"/>
+                                        <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                    </p:selectOneMenu>
+
+                                     <p:spacer width="140" height="0"/>
+                                    <h:panelGrid columns="4" >
+                                        <p:commandButton styleClass="noPrintButton" id="btnRefresh" value="Refresh" ajax="false" />
+                                        <p:defaultCommand target="btnRefresh"/>
+
+                                        <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                                            <p:printer target="panelReport" />
+                                        </p:commandButton>             
+
+                                        <p:commandButton value="Excel" ajax="false">
+                                            <pe:exporter type="xlsx" target="tbl" fileName="Hand_Over_Ins"
+                                                         facetBackground="#008000" facetFontSize="15" 
+                                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                                         fontName="Courier New" />
+                                        </p:commandButton>
+
+                                    </h:panelGrid>
+                                </h:panelGrid>
+                            </f:facet>
+                        </p:panel>
+
+                        <p:panel styleClass="printBlock" >
+
+                            <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
+                            <br/>
+                            <h:outputLabel value="#{labReportSearchByInstitutionController.institution.name}"  >
+                            </h:outputLabel>
+                            <h:outputLabel value=" - Handover Report" />
+                            <br/>
+                            <h:outputLabel value="From : " />
+                            <h:outputLabel value="#{labReportSearchByInstitutionController.fromDate}"  >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                            </h:outputLabel>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <h:outputLabel value="To : "  ></h:outputLabel>
+                            <h:outputLabel value="#{labReportSearchByInstitutionController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                            </h:outputLabel>
+
+                        </p:panel>
+
+
+                        <p:dataTable id="tbl" value="#{labReportSearchByInstitutionController.labBilledBillsOwns}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Hand Over Report "/>
+                                <h:outputLabel value=" #{labReportSearchByInstitutionController.institution.name}"/>
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/>
+                                </f:facet>
+                                 <h:outputLabel value="#{i+1}" />
+                                
+                            </p:column>
+                            <p:column headerText="Bill Id" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill Id"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.insId}" />
+
+                                <h:outputLabel value="// #{b.billedBill.insId}" ></h:outputLabel>
+                            </p:column>                           
+
+
+                            <p:column headerText="Name" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.patient.person.name}"    ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Hospital Fee" style="text-align: right;" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital Fee"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.total - b.staffFee}"    >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Dis." style="text-align: right;" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Dis."/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.discount}"   >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Prof. Fee" style="text-align: right;"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Prof. Fee"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.staffFee}"   >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net Total"  style="text-align: right;" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Net Total"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.netTotal}"  >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <f:facet name="footer" >
+                                <p:row>
+                                    <p:panelGrid columns="2" style="text-align: right;">
+                                        <h:outputLabel  value="Gross Fee Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{labReportSearchByInstitutionController.hosTot + labReportSearchByInstitutionController.profTot }" style="text-align: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{labReportSearchByInstitutionController.disTot}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Fee Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{labReportSearchByInstitutionController.netTot}" >                                        
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Professional Fee Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{labReportSearchByInstitutionController.profTot}" style="text-align: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel style="font-weight: bolder; " value="Net Department Income"/>
+                                        <h:outputLabel style="font-weight: bolder; " value="#{labReportSearchByInstitutionController.labHandover}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:row>
+                            </f:facet>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
