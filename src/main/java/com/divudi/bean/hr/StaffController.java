@@ -711,6 +711,7 @@ public class StaffController implements Serializable {
         current = new Staff();
         Person p = new Person();
         current.setPerson(p);
+        //Error
     }
 
     public void delete() {
