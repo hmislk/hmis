@@ -97,6 +97,7 @@ public class BookingController implements Serializable {
 
     public String nurse() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "channel_nurse_view";
         } else {
             return "";
@@ -105,6 +106,7 @@ public class BookingController implements Serializable {
 
     public String doctor() {
         if (preSet()) {
+            getChannelReportController().fillDoctorView();
             return "channel_doctor_view";
         } else {
             return "";
@@ -503,8 +505,8 @@ public class BookingController implements Serializable {
             UtilityController.addErrorMessage("Please select Service Session");
             return false;
         }
-
         getChannelReportController().setServiceSession(selectedServiceSession);
+        
         return true;
     }
 
