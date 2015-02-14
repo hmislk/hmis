@@ -281,9 +281,9 @@ public class ServiceSessionBean {
         hh.put("ss", serviceSession.getSessionNumberGenerator());
 
         List<BillSession> lgValue = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        //System.out.println("sql = " + sql);
-        //System.out.println("hh = " + hh);
-        //System.out.println("lgValue.size() = " + lgValue.size());
+        System.out.println("sql = " + sql);
+        System.out.println("hh = " + hh);
+        System.out.println("lgValue.size() = " + lgValue.size());
 
         List<Integer> availabeNumbers;
         String temStr = "";
@@ -295,25 +295,25 @@ public class ServiceSessionBean {
             temStr = serviceSession.getCreditNumbers();
         }
 
-        //System.out.println("temStr = " + temStr);
+        System.out.println("temStr = " + temStr);
         availabeNumbers = stringNumbersToInts(temStr);
-        //System.out.println("availableNumbers = " + availabeNumbers.toString());
+        System.out.println("availableNumbers = " + availabeNumbers.toString());
 
         boolean numberGiven;
 
         for (Integer i : availabeNumbers) {
-            //System.out.println("i = " + i);
+            System.out.println("i = " + i);
             numberGiven = false;
             for (BillSession bs : lgValue) {
-                //System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
+                System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
                 if (i == bs.getSerialNo()) {
-                    //System.out.println("break");
+                    System.out.println("break");
                     numberGiven = true;
                     break;
                 }
             }
-            //System.out.println("i = " + i);
-            //System.out.println("numberGiven = " + numberGiven);
+            System.out.println("i = " + i);
+            System.out.println("numberGiven = " + numberGiven);
             if (numberGiven == false) {
                 return i;
             }
@@ -335,17 +335,23 @@ public class ServiceSessionBean {
             return nits;
         }
         if (str.contains(">")) {
-            //System.out.println("contains > ");
+            System.out.println("contains > ");
             str = str.replace(">", "");
             String strs[] = str.split(" ");
             for (String s : strs) {
-                //System.out.println("s = " + s);
+                System.out.println("s = " + s);
+                if (s.trim().equals("")) {
+                    continue;
+                }
                 if (isNumeric(s)) {
+                    System.out.println("is numeric");
                     Integer i;
                     try {
                         i = Integer.valueOf(s);
+                        System.out.println("i = " + i);
                     } catch (Exception e) {
                         i = 1;
+                        System.out.println("e = " + e);
                     }
                     addToIntList(i + 1, maxNo, nits);
                     return nits;
@@ -353,19 +359,25 @@ public class ServiceSessionBean {
             }
         }
         if (str.contains("-")) {
-            //System.out.println("contains - ");
+            System.out.println("contains - ");
             str = str.replace("-", " ");
             String strs[] = str.split(" ");
             Integer fromNo = null;
             Integer toNo = null;
             for (String s : strs) {
-                //System.out.println("s = " + s);
+                System.out.println("s = " + s);
+                if (s.trim().equals("")) {
+                    continue;
+                }
                 if (isNumeric(s)) {
+                    System.out.println("is numeric");
                     Integer i;
 
                     try {
                         i = Integer.valueOf(s);
+                        System.out.println("i = " + i);
                     } catch (Exception e) {
+                        System.out.println("e = " + e);
                         i = 1;
                     }
 
@@ -377,8 +389,8 @@ public class ServiceSessionBean {
 
                 }
             }
-            //System.out.println("fromNo = " + fromNo);
-            //System.out.println("toNo = " + toNo);
+            System.out.println("fromNo = " + fromNo);
+            System.out.println("toNo = " + toNo);
             addToIntList(fromNo, toNo, nits);
             return nits;
         }
