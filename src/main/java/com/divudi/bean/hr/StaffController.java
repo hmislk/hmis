@@ -284,8 +284,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and (ss.dateLeft> :to "
-                + " or ss.dateRetired> :to )";
+                + " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
         
         hm.put("to", toDate);
 

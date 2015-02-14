@@ -447,16 +447,89 @@ public class ChannelReportController implements Serializable {
         valueList = null;
     }
 
+    List<BillSession> nurseViewSessions;
+    List<BillSession> doctorViewSessions;
+
+    public List<BillSession> getNurseViewSessions() {
+        return nurseViewSessions;
+    }
+
+    public void setNurseViewSessions(List<BillSession> nurseViewSessions) {
+        this.nurseViewSessions = nurseViewSessions;
+    }
+
+    public List<BillSession> getDoctorViewSessions() {
+        return doctorViewSessions;
+    }
+
+    public void setDoctorViewSessions(List<BillSession> doctorViewSessions) {
+        this.doctorViewSessions = doctorViewSessions;
+    }
+    
+    
+
+    public void fillNurseView() {
+        nurseViewSessions = new ArrayList<>();
+        if (serviceSession != null) {
+            String sql = "Select bs From BillSession bs "
+                    + " where bs.retired=false and "
+                    + " bs.bill.cancelled=false and "
+                    + " bs.bill.refunded=false and "
+                    + " bs.bill.billType in :tbs and "
+                    + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
+                    + " order by bs.serialNo";
+            HashMap hh = new HashMap();
+            hh.put("ssDate", serviceSession.getSessionAt());
+            List<BillType> bts = new ArrayList<>();
+            bts.add(BillType.ChannelAgent);
+            bts.add(BillType.ChannelCash);
+            bts.add(BillType.ChannelOnCall);
+            hh.put("tbs", bts);
+            nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        }
+    }
+
+    public void fillDoctorView() {
+        doctorViewSessions = new ArrayList<>();
+        if (serviceSession != null) {
+            String sql = "Select bs From BillSession bs "
+                    + " where bs.retired=false and "
+                    + " bs.bill.cancelled=false and "
+                    + " bs.bill.refunded=false and "
+                    + " bs.bill.billType in :tbs and "
+                    + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
+                    + " order by bs.serialNo";
+            HashMap hh = new HashMap();
+            hh.put("ssDate", serviceSession.getSessionAt());
+            List<BillType> bts = new ArrayList<>();
+            bts.add(BillType.ChannelAgent);
+            bts.add(BillType.ChannelCash);
+            bts.add(BillType.ChannelOnCall);
+            hh.put("tbs", bts);
+            doctorViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        }
+    }
+
+    
     public List<BillSession> getBillSessionsNurse() {
         billSessions = new ArrayList<>();
         if (serviceSession != null) {
-            String sql = "Select bs From BillSession bs where bs.retired=false and bs.bill.cancelled=false and bs.bill.refunded=false and bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate";
+            String sql = "Select bs From BillSession bs "
+                    + " where bs.retired=false and "
+                    + " bs.bill.cancelled=false and "
+                    + " bs.bill.refunded=false and "
+                    + " bs.bill.billType in :tbs and "
+                    + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
+                    + " order by bs.serialNo";
             HashMap hh = new HashMap();
             hh.put("ssDate", serviceSession.getSessionAt());
+            List<BillType> bts = new ArrayList<>();
+            bts.add(BillType.ChannelAgent);
+            bts.add(BillType.ChannelCash);
+            bts.add(BillType.ChannelOnCall);
+            hh.put("tbs", bts);
             billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-
         }
-
         return billSessions;
     }
 

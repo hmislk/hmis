@@ -131,7 +131,6 @@
 
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
-                                <!--<f:selectItem itemLabel="Select Paymentmethod"/>-->
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt " event="change" />
                             </p:selectOneMenu>
@@ -260,15 +259,12 @@
                                 <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
                                     <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" >
                                     </f:convertDateTime>
-
                                 </p:outputLabel>
                                 <p:outputLabel value="Appointment Time">
-
                                 </p:outputLabel>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
                                     <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
-
                             </h:panelGrid>                            
                         </p:tab>
 
@@ -353,6 +349,28 @@
                         <p:tab title="Settle" id="settle">
                             <p:panel  id="set">
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
+
+                                <p:outputLabel value="Payment Method"/>
+                                <p:selectOneMenu  id="cmbSettlePs" value="#{channelBillController.settlePaymentMethod}">  
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                    <f:ajax execute="@this" render="settleAgent settleAgent2 settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt" event="change" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel id="settleAgent" value="Agent"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                <p:autoComplete id="settleAgent2" forceSelection="true" style="display: #{channelBillController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "
+                                                value="#{channelBillController.settleInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                    <f:ajax  event="itemSelect" execute="@this"  render="settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt"/>
+                                    <p:column>#{ix.institutionCode}</p:column>
+                                    <p:column>#{ix.name}</p:column>                                
+                                </p:autoComplete> 
+
+                                <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
+                                <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{channelBillController.settleAgentRefNo}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+
+                                <h:outputLabel id="settleBallance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+
 
                                 <p:commandButton id="setBtn" ajax="false" value="Settle Credit"
                                                  action="#{channelBillController.settleCredit}" 
