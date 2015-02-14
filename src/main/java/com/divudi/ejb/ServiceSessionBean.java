@@ -44,28 +44,28 @@ public class ServiceSessionBean {
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public List<BillSession> getBillSessions(Item i, Date d) {
-        //   System.out.println("getting bill sessions");
+        //   //System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   System.out.println("by cat");
+                //   //System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   System.out.println("by cat 2");
+                    //   //System.out.println("by cat 2");
                     billSessions = getBillSessionsByCat(i.getCategory(), d);
                     return billSessions;
                 } else {
-                    //   System.out.println("by cat 3");
+                    //   //System.out.println("by cat 3");
                     billSessions = getBillSessionsByCat(i.getCategory().getParentCategory(), d);
                     return billSessions;
                 }
             case BySubCategory:
-                //   System.out.println("by sc");
+                //   //System.out.println("by sc");
                 billSessions = getBillSessionsByCat(i.getCategory(), d);
                 return billSessions;
             case ByItem:
-                //   System.out.println("by items 3");
+                //   //System.out.println("by items 3");
                 billSessions = getBillSessionsByItem(i, d);
                 return billSessions;
             default:
@@ -91,9 +91,9 @@ public class ServiceSessionBean {
 //        }
 //    }
     public BillSession createBillSession(BillItem bi) {
-        //   System.out.println("Going to saving bill item sessions");
+        //   //System.out.println("Going to saving bill item sessions");
         if (bi == null || bi.getItem() == null || bi.getItem().getSessionNumberType() == null) {
-            //   System.out.println("Bil items sessions not save because of null values");
+            //   //System.out.println("Bil items sessions not save because of null values");
             return null;
         }
         Item i = bi.getItem();
@@ -115,20 +115,20 @@ public class ServiceSessionBean {
         bi.setSessionDate(sessDate);
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
-        // //System.out.println("bill item session switch - pre");
+        // ////System.out.println("bill item session switch - pre");
 
         int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
         System.err.println("COUNT " + count);
         bs.setSerialNo(count);
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   System.out.println("by cat");
+                //   //System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   System.out.println("by cat only ");
+                    //   //System.out.println("by cat only ");
                     bs.setCategory(i.getCategory());
 //                    bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
                 } else {
-                    //   System.out.println("by parent cat");
+                    //   //System.out.println("by parent cat");
                     bs.setCategory(i.getCategory().getParentCategory());
 //                    bs.setSerialNo(getIdByCat(i.getCategory().getParentCategory(), bi.getSessionDate()) + 1);
                 }
@@ -195,7 +195,7 @@ public class ServiceSessionBean {
 //        try {
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //System.out.println("Error in converting double to int is" + e.getMessage());
+//            ////System.out.println("Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }
@@ -212,12 +212,12 @@ public class ServiceSessionBean {
 //        m.put("catId", c.getId());
 //        m.put("sd", d);
 //        Double sn = getBillSessionFacade().findDoubleByJpql(s, m, TemporalType.DATE);
-//        //System.out.println("id by cat count is " + sn );
+//        ////System.out.println("id by cat count is " + sn );
 //        try {
-//            //System.out.println("int val of ount is " + sn.intValue());
+//            ////System.out.println("int val of ount is " + sn.intValue());
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //System.out.println("Error in converting double to int is" + e.getMessage());
+//            ////System.out.println("Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }
@@ -230,7 +230,7 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
-        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+        //System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
 
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -249,9 +249,9 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
-        System.out.println("sql = " + sql);
-        System.out.println("hh = " + hh);
-        System.out.println("lgValue= " + lgValue);
+        //System.out.println("sql = " + sql);
+        //System.out.println("hh = " + hh);
+        //System.out.println("lgValue= " + lgValue);
 
         if (lgValue == null) {
             return 1;
@@ -261,7 +261,7 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate, BillSession billSession) {
-        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+        //System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
 
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -297,15 +297,25 @@ public class ServiceSessionBean {
 
         System.out.println("temStr = " + temStr);
         availabeNumbers = stringNumbersToInts(temStr);
-        System.out.println("availableNumbers = " + availabeNumbers.toString().substring(10));
+        System.out.println("availableNumbers = " + availabeNumbers.toString());
+
+        boolean numberGiven;
 
         for (Integer i : availabeNumbers) {
             System.out.println("i = " + i);
+            numberGiven = false;
             for (BillSession bs : lgValue) {
                 System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
-                if (i != bs.getSerialNo()) {
-                    return i;
+                if (i == bs.getSerialNo()) {
+                    System.out.println("break");
+                    numberGiven = true;
+                    break;
                 }
+            }
+            System.out.println("i = " + i);
+            System.out.println("numberGiven = " + numberGiven);
+            if (numberGiven == false) {
+                return i;
             }
         }
         return getSessionNumber(serviceSession, sessionDate);
@@ -318,39 +328,56 @@ public class ServiceSessionBean {
     }
 
     public List<Integer> stringNumbersToInts(String str) {
+        int maxNo = 100;
         List<Integer> nits = new ArrayList();
         if (str == null || str.trim().equals("")) {
-            addToIntList(1, 1000, nits);
+            addToIntList(1, maxNo, nits);
             return nits;
         }
         if (str.contains(">")) {
+            System.out.println("contains > ");
             str = str.replace(">", "");
             String strs[] = str.split(" ");
             for (String s : strs) {
+                System.out.println("s = " + s);
+                if (s.trim().equals("")) {
+                    continue;
+                }
                 if (isNumeric(s)) {
+                    System.out.println("is numeric");
                     Integer i;
                     try {
                         i = Integer.valueOf(s);
+                        System.out.println("i = " + i);
                     } catch (Exception e) {
                         i = 1;
+                        System.out.println("e = " + e);
                     }
-                    addToIntList(i + 1, 1000, nits);
+                    addToIntList(i + 1, maxNo, nits);
                     return nits;
                 }
             }
         }
         if (str.contains("-")) {
+            System.out.println("contains - ");
             str = str.replace("-", " ");
             String strs[] = str.split(" ");
             Integer fromNo = null;
             Integer toNo = null;
             for (String s : strs) {
+                System.out.println("s = " + s);
+                if (s.trim().equals("")) {
+                    continue;
+                }
                 if (isNumeric(s)) {
+                    System.out.println("is numeric");
                     Integer i;
 
                     try {
                         i = Integer.valueOf(s);
+                        System.out.println("i = " + i);
                     } catch (Exception e) {
+                        System.out.println("e = " + e);
                         i = 1;
                     }
 
@@ -362,6 +389,8 @@ public class ServiceSessionBean {
 
                 }
             }
+            System.out.println("fromNo = " + fromNo);
+            System.out.println("toNo = " + toNo);
             addToIntList(fromNo, toNo, nits);
             return nits;
         }

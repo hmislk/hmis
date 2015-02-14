@@ -1456,6 +1456,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayDischarged() {
+        if(docFeePayDischarged == null){
+            docFeePayDischarged = new ArrayList<>();
+        }
         return docFeePayDischarged;
     }
 
@@ -1464,6 +1467,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayNotDischarged() {
+        if(docFeePayNotDischarged == null){
+            docFeePayNotDischarged = new ArrayList<>();
+        }
         return docFeePayNotDischarged;
     }
 
@@ -1472,6 +1478,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueDischarged() {
+         if(docFeeDueDischarged == null){
+             docFeeDueDischarged = new ArrayList<>();
+         }
         return docFeeDueDischarged;
     }
 
@@ -1480,6 +1489,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueNotDischarged() {
+        if(docFeeDueNotDischarged == null){
+            docFeeDueNotDischarged = new ArrayList<>();
+        }
         return docFeeDueNotDischarged;
     }
 
