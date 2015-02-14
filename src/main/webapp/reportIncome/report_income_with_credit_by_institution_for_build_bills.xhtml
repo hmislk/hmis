@@ -86,7 +86,7 @@
                         </p:panel>
 
 
-                        <p:dataTable rendered="#{b.billedBill.insId ne true or b.billedBill.cancelled eq false}" id="tbl"  value="#{labReportSearchByInstitutionController.labBilledBillsOwns}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                        <p:dataTable rendered="#{b.cancelled ne true}" id="tbl"  value="#{labReportSearchByInstitutionController.labBilledBillsOwns}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                             <f:facet name="header">
                                 <h:outputLabel value="Hand Over Report "/>
                                 <h:outputLabel value=" #{labReportSearchByInstitutionController.institution.name}"/>
@@ -103,7 +103,7 @@
                                     <h:outputLabel value="Bill Id"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.insId}"/>
-                                <h:outputLabel value="// #{b.billedBill.insId}"/>
+                                
                             </p:column>                           
 
 
