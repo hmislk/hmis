@@ -61,6 +61,13 @@ public class StaffSalaryComponant implements Serializable {
     private WebUser lastEditor;
     @Transient
     String transName;
+    private boolean paid;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paidAt;
+    @ManyToOne
+    private WebUser paidBy;
+    
+    
 
     private double roundOff(double d) {
         DecimalFormat newFormat = new DecimalFormat("#.##");
@@ -260,6 +267,30 @@ public class StaffSalaryComponant implements Serializable {
 
     public void setEtfCompanyValue(double etfCompanyValue) {
         this.etfCompanyValue = roundOff(etfCompanyValue);
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+
+    public Date getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Date paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public WebUser getPaidBy() {
+        return paidBy;
+    }
+
+    public void setPaidBy(WebUser paidBy) {
+        this.paidBy = paidBy;
     }
 
 }

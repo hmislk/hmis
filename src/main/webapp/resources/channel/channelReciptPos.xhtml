@@ -25,28 +25,33 @@
 
 
                 <div class="posbill" style="margin-left: 50px; page-break-after: always;">
-                    <div>
-                        <p:graphicImage style="width: 1cm!important;height: 1cm!important;" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                    <div style="position: absolute; padding-left: 165px;">
+                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
                     </div>
-                    <div class="institutionName">
+                    <div>
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
                     </div>
-                    <div class="institutionContact">
+                    <div>
                         <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
                         <div>
                             <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
                         </div>
                         <div>
-                            <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone2}" ></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
                         </div>
                     </div>
                     <p:spacer height="15"/>
-                    <div class="headingBill" style="text-align: center; font-weight: bold;">
+                    <div style="font-weight: bold;">
                         <h:outputLabel value="Channell Bill"   />    
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                        <br></br>
+                        <h:outputLabel value="(Customer Copy)"   /> 
                     </div>
-                    <div class="billline">
+                    <div>
                         <h:outputLabel value="--------------------------" ></h:outputLabel>
                     </div>
                     <p:spacer height="30"/>
@@ -167,8 +172,8 @@
                             </td>
                             <td>
                                 <b>
-                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.sessionAt}" >
-                                        <f:convertDateTime pattern="hh:mm A" ></f:convertDateTime>
+                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" >
+                                        <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </b>
                             </td>
@@ -190,7 +195,6 @@
                             <td>
                                 <b>
                                     <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" >
-                                        <f:convertDateTime pattern="hh:mm A" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </b>
                             </td>
@@ -269,14 +273,14 @@
                             </td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd MM yy hh:mm A" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <h:outputLabel value="Cashier Signature" ></h:outputLabel>
+                                <h:outputLabel value="Cashier Sign." ></h:outputLabel>
                             </td>
                             <td>
                                 <p:spacer width="10" ></p:spacer>
@@ -292,16 +296,16 @@
 
                         <tr>
                             <td>
+                                <h:outputLabel value="Cashier Name" ></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" ></h:outputLabel>
+                            </td>
+                            <td>
                                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></h:outputLabel>
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-
                             </td>
                         </tr>
 
@@ -312,13 +316,33 @@
 
 
                 <div class="posbill" style="margin-left: 50px; page-break-after: always;">
-
-                    <div class="headingBill" style="text-align: center; font-weight: bold;">
+                    <div style="position: absolute; padding-left: 165px;">
+                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone2}" ></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
+                        </div>
+                    </div>
+                    <p:spacer height="15"/>
+                    <div style="font-weight: bold;">
                         <h:outputLabel value="Channell Bill"   />    
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
-                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                        <br></br>
+                        <h:outputLabel value="(Hospital Copy)"   />  
                     </div>
-                    <div class="billline">
+                    <div>
                         <h:outputLabel value="--------------------------" ></h:outputLabel>
                     </div>
                     <p:spacer height="30"/>
@@ -439,8 +463,8 @@
                             </td>
                             <td>
                                 <b>
-                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.sessionAt}" >
-                                        <f:convertDateTime pattern="hh:mm A" ></f:convertDateTime>
+                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" >
+                                        <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </b>
                             </td>
@@ -462,7 +486,6 @@
                             <td>
                                 <b>
                                     <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" >
-                                        <f:convertDateTime pattern="hh:mm A" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </b>
                             </td>
@@ -517,14 +540,14 @@
                             </td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd MM yy hh:mm A" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <h:outputLabel value="Cashier Signature" ></h:outputLabel>
+                                <h:outputLabel value="Cashier Sign." ></h:outputLabel>
                             </td>
                             <td>
                                 <p:spacer width="10" ></p:spacer>
@@ -540,16 +563,16 @@
 
                         <tr>
                             <td>
+                                <h:outputLabel value="Cashier Name" ></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" ></h:outputLabel>
+                            </td>
+                            <td>
                                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></h:outputLabel>
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-
                             </td>
                         </tr>
 
