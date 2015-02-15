@@ -20,7 +20,7 @@
                             <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar  id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
                             </p:calendar>
                             <h:outputText value="Inward Charge Category" ></h:outputText>
                             <p:selectOneMenu id="cmbInward" value="#{bhtSummeryFinalizedController.inwardChargeType}" >
@@ -30,7 +30,7 @@
                         </h:panelGrid>
 
                         <p:panelGrid columns="3">
-                            <p:commandButton value="Print" ajax="false" action="#{bhtSummeryFinalizedController.createBhtInwardChargeTypeTable()}" />
+                            <p:commandButton value="Search" ajax="false" action="#{bhtSummeryFinalizedController.createBhtInwardChargeTypeTable()}" />
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
