@@ -220,7 +220,7 @@
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-
+                        
                         <p:commandButton value="Print" ajax="false" action="#">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
@@ -228,12 +228,12 @@
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
                             <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
                             <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
@@ -285,8 +285,23 @@
 
 
                         <p:tab title="Reprint" id="rePrint">
-                            <h:panelGroup id="panelReBillPrint" styleClass="noBorder">
-                                <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+
+                            <p:commandButton value="Print" ajax="false" action="#">
+                                <p:printer target="panelAddedBillPrintRe" ></p:printer>
+                            </p:commandButton>
+
+
+                            <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                    </h:panelGroup>
+                                </div>
                             </h:panelGroup>
 
                         </p:tab>
