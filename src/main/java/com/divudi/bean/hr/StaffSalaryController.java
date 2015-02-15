@@ -740,12 +740,12 @@ public class StaffSalaryController implements Serializable {
 
             if (listSub != null) {
                 for (StaffPaysheetComponent spc : listSub) {
-                    System.err.println(spc.getPaysheetComponent().getName());
+                    System.err.println("Loop 1 " + spc.getPaysheetComponent().getName());
                     if ((spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanInstallemant
                             && spc.isCompleted())
                             || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanNetSalary
                             || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Salary_Advance_Deduction) {
-                        System.err.println("Inside " + spc.getPaysheetComponent().getName());
+                        System.err.println("Loop 2 " + spc.getPaysheetComponent().getName());
                         continue;
                     }
 
@@ -753,8 +753,9 @@ public class StaffSalaryController implements Serializable {
                     getCurrent().calcualteEpfAndEtf();
 
                     double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
-
-                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
+                    System.err.println(" Salary Value Diduction " + salaryValueForDiduction);
+                    System.err.println(" Component Value " + spc.getStaffPaySheetComponentValue());
+                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) < 0) {
                         continue;
                     }
 
@@ -896,7 +897,7 @@ public class StaffSalaryController implements Serializable {
             for (int i = 0; i < shiftCount; i++) {
 
                 StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
-                System.err.println("Late In Shift ID " + lateShift.getId());
+//                System.err.println("Late In Shift ID " + lateShift.getId());
                 lateShift.setReferenceStaffShiftLateIn(stfCurrent);
                 lateShift.setConsiderForLateIn(true);
                 staffShiftFacade.edit(lateShift);
@@ -909,8 +910,7 @@ public class StaffSalaryController implements Serializable {
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
         }
 
-        System.err.println("Automatic Late In End " + stfCurrent.getStaff().getCodeInterger());
-
+//        System.err.println("Automatic Late In End " + stfCurrent.getStaff().getCodeInterger());
     }
 
     @Inject
@@ -929,7 +929,7 @@ public class StaffSalaryController implements Serializable {
         if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
             for (int i = 0; i < shiftCount; i++) {
                 StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
-                System.err.println("Early Out  Shift ID " + earlyOut.getId());
+//                System.err.println("Early Out  Shift ID " + earlyOut.getId());
                 earlyOut.setReferenceStaffShiftEarlyOut(stfCurrent);
                 earlyOut.setConsiderForEarlyOut(true);
                 staffShiftFacade.edit(earlyOut);
@@ -941,13 +941,13 @@ public class StaffSalaryController implements Serializable {
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
         }
 
-        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
+//        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     public void calStaffLeaveFromEarlyOut(StaffShift stfCurrent, double fromTime) {
 
 //        if (stfCurrent.getEarlyOutLogged() >= fromTime) {
-        System.err.println("Early Out  Shift ID " + stfCurrent.getId());
+//        System.err.println("Early Out  Shift ID " + stfCurrent.getId());
         stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
         stfCurrent.setConsiderForEarlyOut(true);
         staffShiftFacade.edit(stfCurrent);
@@ -957,13 +957,13 @@ public class StaffSalaryController implements Serializable {
         staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
 
 //        }
-        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
+//        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {
 
         stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
-        System.err.println("Late In  Shift ID " + stfCurrent.getId());
+//        System.err.println("Late In  Shift ID " + stfCurrent.getId());
         stfCurrent.setConsiderForLateIn(true);
         staffShiftFacade.edit(stfCurrent);
 
@@ -972,7 +972,7 @@ public class StaffSalaryController implements Serializable {
         staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
         staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
 
-        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
+//        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     private void generateAutoLeave(Staff staff, Date fromDate, Date toDate) {
@@ -990,7 +990,7 @@ public class StaffSalaryController implements Serializable {
 
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
-                System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
+//                System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
 
                 if (ss.getLateInVarified() > fromMinute) {
                     calStaffLeaveFromLateIn(ss, 90 * 60);
@@ -1001,7 +1001,7 @@ public class StaffSalaryController implements Serializable {
 
             if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()) {
-                System.err.println("******Automatic Early Out Leave " + ss.getStaff().getCodeInterger());
+//                System.err.println("******Automatic Early Out Leave " + ss.getStaff().getCodeInterger());
 //                        calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
                 if (ss.getEarlyOutVarified() > fromMinute) {
                     calStaffLeaveFromEarlyOut(ss, 90 * 60);
@@ -1015,14 +1015,14 @@ public class StaffSalaryController implements Serializable {
         for (StaffShift ss : staffShiftsTmp) {
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
-                System.err.println("******Automatic Late In Leave (Out) " + ss.getStaff().getCodeInterger());
+//                System.err.println("******Automatic Late In Leave (Out) " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 3);
 
             }
 
             if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()) {
-                System.err.println("******Automatic Early Out Leave (Out) " + ss.getStaff().getCodeInterger());
+//                System.err.println("******Automatic Early Out Leave (Out) " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
 
             }
