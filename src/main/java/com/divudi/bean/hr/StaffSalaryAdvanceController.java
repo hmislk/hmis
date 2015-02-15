@@ -143,6 +143,7 @@ public class StaffSalaryAdvanceController implements Serializable {
                 ss = createStaffSalaryComponant(PaysheetComponentType.Salary_Advance_Deduction);
             }
 
+            ss.setStaff(getCurrent().getStaff());
             ss.setComponantValue(getCurrent().getTransAdvanceSalary());
             getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
             getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
@@ -328,12 +329,18 @@ public class StaffSalaryAdvanceController implements Serializable {
             return 0;
         }
 
-        double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-
+        double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
+        System.err.println("Value " + value);
+        System.err.println("Worked Days " + workedDays);
         if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
             return value;
         } else {
-            return (value / finalVariables.getWorkingDaysPerMonth()) / workedDays;
+            double dbl = (value / finalVariables.getWorkingDaysPerMonth());
+            System.err.println("DBL 1 " + dbl);
+            dbl = dbl * workedDays;
+
+            System.err.println("DBL 2 " + dbl);
+            return dbl;
         }
 
     }
@@ -710,6 +717,7 @@ public class StaffSalaryAdvanceController implements Serializable {
                 for (StaffPaysheetComponent spc : listAdd) {
                     StaffSalaryComponant ss = new StaffSalaryComponant();
                     ss.setCreatedAt(new Date());
+                    ss.setStaff(getCurrent().getStaff());
                     ss.setSalaryCycle(salaryCycle);
                     ss.setCreater(getSessionController().getLoggedUser());
                     ss.setStaffPaysheetComponent(spc);
@@ -1070,7 +1078,8 @@ public class StaffSalaryAdvanceController implements Serializable {
         String sql = "Select s from StaffPaysheetComponent s"
                 + " where s.retired=false "
                 + " and s.paysheetComponent.componentType= :tp"
-                + " and s.completed=false"
+                + " and s.completed=false "
+                + " and s.staff=:stf "
                 + " and s.bankBranch is not null"
                 + " and s.accountNo is not null ";
         HashMap hm = new HashMap();

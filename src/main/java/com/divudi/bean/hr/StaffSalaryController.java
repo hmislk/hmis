@@ -347,7 +347,7 @@ public class StaffSalaryController implements Serializable {
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
                 return value;
             } else {
-                return (value / finalVariables.getWorkingDaysPerMonth()) / workedDays;
+                return (value / finalVariables.getWorkingDaysPerMonth()) * workedDays;
             }
 
         } else {
@@ -531,7 +531,8 @@ public class StaffSalaryController implements Serializable {
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
-                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                if (staffSalaryComponant == null
+                        || staffSalaryComponant.getStaffPaysheetComponent() == null
                         || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
                     continue;
                 }
@@ -568,7 +569,8 @@ public class StaffSalaryController implements Serializable {
             count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
             double salaryValue = 0;
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
-                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                if (staffSalaryComponant == null
+                        || staffSalaryComponant.getStaffPaysheetComponent() == null
                         || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
                     continue;
                 }
@@ -609,7 +611,8 @@ public class StaffSalaryController implements Serializable {
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
-                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                if (staffSalaryComponant == null
+                        || staffSalaryComponant.getStaffPaysheetComponent() == null
                         || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
                     continue;
                 }
@@ -737,10 +740,12 @@ public class StaffSalaryController implements Serializable {
 
             if (listSub != null) {
                 for (StaffPaysheetComponent spc : listSub) {
+                    System.err.println(spc.getPaysheetComponent().getName());
                     if ((spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanInstallemant
                             && spc.isCompleted())
                             || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanNetSalary
                             || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Salary_Advance_Deduction) {
+                        System.err.println("Inside " + spc.getPaysheetComponent().getName());
                         continue;
                     }
 
@@ -817,7 +822,10 @@ public class StaffSalaryController implements Serializable {
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
         StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstBySQL(sql, hm);
-        getCurrent().getStaffSalaryComponants().add(salaryComponant);
+
+        if (salaryComponant != null) {
+            getCurrent().getStaffSalaryComponants().add(salaryComponant);
+        }
     }
 
     public void deleteAll() {
@@ -1059,7 +1067,8 @@ public class StaffSalaryController implements Serializable {
         String sql = "Select s from StaffPaysheetComponent s"
                 + " where s.retired=false "
                 + " and s.paysheetComponent.componentType= :tp"
-                + " and s.completed=false"
+                + " and s.completed=false "
+                + " and s.staff=:stf "
                 + " and s.bankBranch is not null"
                 + " and s.accountNo is not null ";
         HashMap hm = new HashMap();
