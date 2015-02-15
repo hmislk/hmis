@@ -375,7 +375,8 @@ public class BookingController implements Serializable {
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
-                + " and bs.sessionDate= :ssDate";
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
