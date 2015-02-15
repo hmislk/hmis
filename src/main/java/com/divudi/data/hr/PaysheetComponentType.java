@@ -46,7 +46,10 @@ public enum PaysheetComponentType {
     @Deprecated
     VariableDeductionToBasicSalary(subtraction),
     LoanInstallemant(subtraction),
+    LoanNetSalary(subtraction),
     Institution_Deduction(subtraction),
+    Advance_Payment_Deduction(subtraction),
+    Salary_Advance_Deduction(subtraction),
     @Deprecated
     No_Pay_Deduction(subtraction),
     No_Pay_Deduction_Basic(subtraction),
@@ -113,6 +116,7 @@ public enum PaysheetComponentType {
             PaysheetComponentType.ExtraDutyDayOff,
             PaysheetComponentType.ExtraDutySleepingDay,
             PaysheetComponentType.No_Pay_Deduction_Basic,
+            PaysheetComponentType.Salary_Advance_Deduction,
             PaysheetComponentType.No_Pay_Deduction_Allowance,
             PaysheetComponentType.OT,
             PaysheetComponentType.MerchantileAllowance,
@@ -130,7 +134,9 @@ public enum PaysheetComponentType {
             PaysheetComponentType.FixedAllowance,
             PaysheetComponentType.FixedDeduction,
             PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.Advance_Payment_Deduction,
             PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.LoanNetSalary,
             PaysheetComponentType.VariableAllowance,
             PaysheetComponentType.VariableDeduction});
 
@@ -149,7 +155,9 @@ public enum PaysheetComponentType {
         return Arrays.asList(new PaysheetComponentType[]{
             PaysheetComponentType.FixedDeduction,
             PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.Advance_Payment_Deduction,
             PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.LoanNetSalary,
             PaysheetComponentType.VariableDeduction});
 
     }
