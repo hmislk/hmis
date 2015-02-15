@@ -202,6 +202,8 @@ public class SalaryCycleController implements Serializable {
     public void setSalaryCycles(List<SalaryCycle> salaryCycles) {
         this.salaryCycles = salaryCycles;
     }
+    
+    
 
     private boolean errorCheck() {
         if (current == null) {
@@ -1147,55 +1149,55 @@ public class SalaryCycleController implements Serializable {
             Object[] obj = fillStaffSalaryByDepartment(d);
             staffSalaryByDepartment ssbd = new staffSalaryByDepartment();
             ssbd.setDepartment(d);
-            boolean flag=false;
+            boolean flag = false;
             for (int i = 0; i < 14; i++) {
-                if (obj[i]!=null) {
-                    flag=true;
+                if (obj[i] != null) {
+                    flag = true;
                 }
             }
-            if (obj[0]!=null) {
+            if (obj[0] != null) {
                 ssbd.setBasicValue((double) obj[0]);
             }
-            if (obj[1]!=null) {
+            if (obj[1] != null) {
                 ssbd.setOverTimeValue((double) obj[1]);
             }
-            if (obj[2]!=null) {
+            if (obj[2] != null) {
                 ssbd.setTransExtraDutyValue((double) obj[2]);
             }
-            if (obj[3]!=null) {
+            if (obj[3] != null) {
                 ssbd.setNoPay((double) obj[3]);
             }
-            if (obj[4]!=null) {
+            if (obj[4] != null) {
                 ssbd.setHolidayAllowance((double) obj[4]);
             }
-            if (obj[5]!=null) {
+            if (obj[5] != null) {
                 ssbd.setDayOffAllownace((double) obj[5]);
             }
-            if (obj[6]!=null) {
+            if (obj[6] != null) {
                 ssbd.setComponentValueAddition((double) obj[6]);
             }
-            if (obj[7]!=null) {
+            if (obj[7] != null) {
                 ssbd.setComponentValueSubstraction((double) obj[7]);
             }
-            if (obj[8]!=null) {
+            if (obj[8] != null) {
                 ssbd.setAdjustmentToBasic((double) obj[8]);
             }
-            if (obj[9]!=null) {
+            if (obj[9] != null) {
                 ssbd.setAdjustmentToAllowance((double) obj[9]);
             }
-            if (obj[10]!=null) {
+            if (obj[10] != null) {
                 ssbd.setEpfStaffValue((double) obj[10]);
             }
-            if (obj[11]!=null) {
+            if (obj[11] != null) {
                 ssbd.setEpfCompanyValue((double) obj[11]);
             }
-            if (obj[12]!=null) {
+            if (obj[12] != null) {
                 ssbd.setEtfSatffValue((double) obj[12]);
             }
-            if (obj[13]!=null) {
+            if (obj[13] != null) {
                 ssbd.setEtfCompanyValue((double) obj[13]);
             }
-            
+
             if (flag) {
                 salaryByDepartments.add(ssbd);
             }
@@ -1266,16 +1268,16 @@ public class SalaryCycleController implements Serializable {
 
     public List<Department> departments() {
         String sql;
-        Map m=new HashMap();
-        
-        sql= "Select d From Department d where "
+        Map m = new HashMap();
+
+        sql = "Select d From Department d where "
                 + " d.retired=false "
-//                + " and d.institution=:ins "
+                //                + " and d.institution=:ins "
                 + " order by d.name ";
-        
+
 //        m.put("ins", getSessionController().getLoggedUser().getInstitution());
         return departmentFacade.findBySQL(sql, m);
-        
+
     }
 
     public class staffSalaryByDepartment {
@@ -1653,7 +1655,11 @@ public class SalaryCycleController implements Serializable {
 
         java.lang.Long getKey(String value) {
             java.lang.Long key;
-            key = Long.valueOf(value);
+            try {
+                key = Long.valueOf(value);
+            } catch (NumberFormatException exception) {
+                key = 0l;
+            }
             return key;
         }
 

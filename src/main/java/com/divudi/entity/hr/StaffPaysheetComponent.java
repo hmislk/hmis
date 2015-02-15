@@ -65,9 +65,57 @@ public class StaffPaysheetComponent implements Serializable {
     @ManyToOne
     private Institution bankBranch;
     private String loanNo;
+    String accountNo;
     private double loanFullAmount;
     private String comment;
+    boolean completed;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date dateAffectFrom;
+    double numberOfInstallment;
+//    boolean sentNetSalaryToBaBank;
 
+    public double getNumberOfInstallment() {
+        return numberOfInstallment;
+    }
+
+    public void setNumberOfInstallment(double numberOfInstallment) {
+        this.numberOfInstallment = numberOfInstallment;
+    }
+
+//    public boolean isSentNetSalaryToBaBank() {
+//        return sentNetSalaryToBaBank;
+//    }
+//
+//    public void setSentNetSalaryToBaBank(boolean sentNetSalaryToBaBank) {
+//        this.sentNetSalaryToBaBank = sentNetSalaryToBaBank;
+//    }
+    
+    
+    
+    
+    
+    
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+    
+    
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
+    }
+
+    
+    
     public double getDblValue() {
         return dblValue;
     }
@@ -273,5 +321,13 @@ public class StaffPaysheetComponent implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Date getDateAffectFrom() {
+        return dateAffectFrom;
+    }
+
+    public void setDateAffectFrom(Date dateAffectFrom) {
+        this.dateAffectFrom = dateAffectFrom;
     }
 }
