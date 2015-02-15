@@ -219,9 +219,24 @@
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+
+                        <p:commandButton value="Print" ajax="false" action="#">
+                            <p:printer target="panelAddedBillPrint" ></p:printer>
+                        </p:commandButton>
+
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
-                            <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                            <div >
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                </h:panelGroup>
+                            </div>
+                            <div >
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
+                                </h:panelGroup>
+                            </div>
                         </h:panelGroup>
 
                     </p:dialog>  
