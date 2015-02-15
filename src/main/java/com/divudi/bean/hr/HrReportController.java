@@ -517,11 +517,8 @@ public class HrReportController implements Serializable {
 
         sql = "select ss from Staff ss "
                 + " where ss.retired=false "
-                + " and type(ss)!=:class "
-                + " and ss.codeInterger!=0 "
-                + " and LENGTH(ss.code) > 0 ";
+                + " and ss.codeInterger!=0 ";
 
-        hm.put("class", Consultant.class);
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
@@ -2455,9 +2452,8 @@ public class HrReportController implements Serializable {
             sql += " and ss.shift=:sh ";
             hm.put("sh", getReportKeyWord().getShift());
         }
-
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
-        sql += " order by ss.staffShift.id,ss.createdAt";
+        sql += " order by ss.staffShift.id,ss.shiftDate";
         staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }

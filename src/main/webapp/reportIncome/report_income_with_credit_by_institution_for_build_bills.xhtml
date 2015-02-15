@@ -86,7 +86,7 @@
                         </p:panel>
 
 
-                        <p:dataTable id="tbl" value="#{labReportSearchByInstitutionController.labBilledBillsOwns}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                        <p:dataTable rendered="#{b.}" id="tbl"  value="#{labReportSearchByInstitutionController.labBilledBillsOwns}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                             <f:facet name="header">
                                 <h:outputLabel value="Hand Over Report "/>
                                 <h:outputLabel value=" #{labReportSearchByInstitutionController.institution.name}"/>
@@ -96,16 +96,14 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="No"/>
                                 </f:facet>
-                                 <h:outputLabel value="#{i+1}" />
-                                
+                                 <h:outputLabel value="#{i+1}" />                                
                             </p:column>
                             <p:column headerText="Bill Id" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Id"/>
                                 </f:facet>
-                                <h:outputLabel value="#{b.insId}" />
-
-                                <h:outputLabel value="// #{b.billedBill.insId}" ></h:outputLabel>
+                                <h:outputLabel value="#{b.insId}"/>
+                                
                             </p:column>                           
 
 
