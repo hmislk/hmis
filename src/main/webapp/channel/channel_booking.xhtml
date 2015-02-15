@@ -219,9 +219,24 @@
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+
+                        <p:commandButton value="Print" ajax="false" action="#">
+                            <p:printer target="panelAddedBillPrint" ></p:printer>
+                        </p:commandButton>
+
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
-                            <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                            <div >
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                </h:panelGroup>
+                            </div>
+                            <div >
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
+                                </h:panelGroup>
+                            </div>
                         </h:panelGroup>
 
                     </p:dialog>  
@@ -389,6 +404,10 @@
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                                 <p:outputLabel value="Patient"/>
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
+                                <p:outputLabel value="Serial No"/>
+                                <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                    <p:inputText autocomplete="off" value="#{bis.billSession.serialNo}"/>
+                                </ui:repeat>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
