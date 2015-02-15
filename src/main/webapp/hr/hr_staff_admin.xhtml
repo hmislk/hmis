@@ -41,6 +41,8 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{staffController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
+                                        </f:ajax>
                                     </p:commandButton>
 
                                     <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -54,17 +56,22 @@
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputLabel value="Details" ></h:outputLabel>
-                                <p:commandButton style="text-align: center;" id="btnSave" 
-                                                 ajax="false" value="Save"  
+                                <p:commandButton style="text-align: center;" id="btnSave" ajax="false"
+                                                 value="Save"  
                                                  action="#{staffController.saveSelected()}" 
                                                  styleClass="buttons" onclick="onSubmitButton();">
                                 </p:commandButton>
-                                <p:defaultCommand target="btnSave"/>
                             </f:facet>
                             <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop" >
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
+                                            
+                                            <h:outputLabel value="Staff ID"/>
+                                            <h:outputLabel value="#{staffController.current.id}"/>
+                                            <h:outputLabel value="Person ID"/>
+                                            <h:outputLabel value="#{staffController.current.person.id}"/>
+                                            
                                             <h:outputLabel value="Title"/>
                                             <p:selectOneMenu value="#{staffController.current.person.title}"  >
                                                 <f:selectItem itemLabel="Select Title" />
@@ -252,6 +259,10 @@
                                             <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}"  />
+<!--                                            <p:outputLabel value="Epf Bank Branch"/>                                           
+                                            <autocomplete:completeBank_Branch value="#{staffController.current.epfBankBranch}"/>                                           
+                                            <h:outputText  value="Epf Account No" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.epfAccountNo}"  />-->
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Working Time">

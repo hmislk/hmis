@@ -12,15 +12,16 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -50,10 +51,10 @@ public class StaffLoanController implements Serializable {
             UtilityController.addErrorMessage("Check Loan Name");
             return true;
         }
-        if (getCurrent().getFromDate() == null) {
-            UtilityController.addErrorMessage("Check Date");
-            return true;
-        }
+//        if (getCurrent().getDa() == null) {
+//            UtilityController.addErrorMessage("Check Date");
+//            return true;
+//        }
 
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
@@ -96,11 +97,13 @@ public class StaffLoanController implements Serializable {
     public List<StaffPaysheetComponent> getItems() {
         if (items == null) {
             String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp"
-                    + " and (s.toDate> :current or s.toDate is null) ";
+                    + " where s.retired=false "
+                    + " and s.paysheetComponent.componentType in :tp ";
             HashMap hm = new HashMap();
-            hm.put("current", new Date());
-            hm.put("tp", PaysheetComponentType.LoanInstallemant);
+//            hm.put("current", new Date());
+            hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.Advance_Payment_Deduction}));
 
             items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
         }
@@ -108,10 +111,12 @@ public class StaffLoanController implements Serializable {
         return items;
     }
 
-    public List<PaysheetComponent> getLoanCompnent() {
-        String sql = "Select pc From PaysheetComponent pc where pc.retired=false and pc.componentType=:tp";
+    public List<PaysheetComponent> getCompnent() {
+        String sql = "Select pc From PaysheetComponent pc "
+                + " where pc.retired=false "
+                + " and pc.componentType in :tp";
         HashMap hm = new HashMap();
-        hm.put("tp", PaysheetComponentType.LoanInstallemant);
+        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,PaysheetComponentType.LoanNetSalary,PaysheetComponentType.Advance_Payment_Deduction}));
 
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
