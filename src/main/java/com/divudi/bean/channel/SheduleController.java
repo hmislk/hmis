@@ -78,7 +78,7 @@ public class SheduleController implements Serializable {
                 + " where f.retired=false "
                 + " and (f.serviceSession=:ses "
                 + " or f.item=:ses )"
-                + " order by f.serialNo";
+                + " order by f.id";
         m.put("ses", current);
         System.err.println("Fill  Fees");
         itemFees = itemFeeFacade.findBySQL(sql, m);
