@@ -757,7 +757,7 @@ public class StaffController implements Serializable {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }
-        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
+        if ((current.getId()==null || current.getId()== 0) && (current.getPerson().getId() == null || current.getPerson().getId() == 0)) {
             getPersonFacade().create(current.getPerson());
         } else {
             getPersonFacade().edit(current.getPerson());
