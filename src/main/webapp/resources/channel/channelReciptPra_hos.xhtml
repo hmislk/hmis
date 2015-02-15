@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:cc="http://java.sun.com/jsf/composite">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup>
+            <h:outputStylesheet library="css" name="pharmacypos.css"></h:outputStylesheet>
+
+            <h:panelGroup id="panelAddedBillPrint">
+                <div>
+                    
+                    <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 7cm; margin: auto; " ></h:graphicImage>
+                    
+<!--                    <div class="institutionName">
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                    </div>
+                    
+                    <div class="institutionContact">
+                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
+                        <div>
+                        <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                        </div>
+                        <div>
+                        <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
+                        </div>
+                    </div>-->
+                    <p:spacer height="15"/>
+                    
+                    <div class="headingBill" style="text-align: center; font-weight: bold;">
+                        <h:outputLabel value="Channell Bill"   />    
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    </div>
+                    
+                    
+                    <div class="billline">
+                        <h:outputLabel value="--------------------------" ></h:outputLabel>
+                    </div>
+                    <p:spacer height="30"/>
+                    
+                    
+                    <table >
+
+                       
+                        <td>
+                            <td>
+                                
+                                                         
+                                <table >
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Appoinment Number" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                                                <h:outputLabel value="#{cbi.billSession.serialNo}" ></h:outputLabel>
+                                            </ui:repeat>
+
+                                        </td>
+
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Name" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Telephone Number" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Consultant" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                                                <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
+                                            </ui:repeat>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                                        <tr>
+                                            <td>
+                                                <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <p:spacer width="10" ></p:spacer>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value=":" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{cbif.feeValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </td>
+
+                                        </tr>
+                                    </ui:repeat>
+                                    
+                                    
+
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </td>
+
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Session Name" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
+                                        </td>
+
+                                    </tr>
+
+                                </table>
+                            </td>
+                        </td>
+                    </table>
+                </div>
+            </h:panelGroup>
+            <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+
+            <p:commandButton value="Print" ajax="false" action="#">
+                <p:printer target="panelAddedBillPrint" ></p:printer>
+            </p:commandButton>
+
+
+        </h:panelGroup>
+    </cc:implementation>
+</html>
