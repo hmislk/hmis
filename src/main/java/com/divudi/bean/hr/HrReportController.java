@@ -8,6 +8,8 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.MonthEndRecord;
+import com.divudi.data.Sex;
+import static com.divudi.data.SymanticType.Cell;
 import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.DepartmentAttendance;
@@ -47,6 +49,10 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,11 +60,17 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -96,6 +108,100 @@ public class HrReportController implements Serializable {
     @EJB
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
+
+    private UploadedFile file;
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
+    public String importToExcel() throws IOException {
+
+        String zoneCode;
+        String employerNumber;
+        String epfNumber;
+        String empNo;
+        String nicNo;
+        String fullname;
+        String initials;
+        String surnames;
+        String name;
+        String address;
+        Sex sex;
+        Date dob;
+        Date doj;
+        String department;
+        String designation;
+        String acNo;
+
+        int zoneCodeCol=0;
+        int employerNumberCol=1;
+        int epfNumberCol;
+        int empNoCol;
+        int nicNoCol;
+        int fullnameCol;
+        int initialsCol;
+        int surnamesCol;
+        int nameCol;
+        int addressCol;
+        int sexCol;
+        int dobCol;
+        int dojCol;
+        int departmentCol;
+        int designationCol;
+        int acNoCol;
+
+        int startRow =2 ;
+       
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                //Category
+                cell = sheet.getCell(employerNumberCol, i);
+                acNo = cell.getContents();
+                
+                
+            }
+
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException | BiffException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        }
+    }
 
     public SessionController getSessionController() {
         return sessionController;
@@ -511,6 +617,16 @@ public class HrReportController implements Serializable {
 
     }
 
+    public void createStaffListAll() {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and ss.codeInterger!=0 "
+                + " order by ss.codeInterger ";
+        staffs = getStaffFacade().findBySQL(sql);
+    }
+
     public void createStaffList() {
         String sql;
         HashMap hm = new HashMap();
@@ -518,7 +634,6 @@ public class HrReportController implements Serializable {
         sql = "select ss from Staff ss "
                 + " where ss.retired=false "
                 + " and ss.codeInterger!=0 ";
-
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
@@ -1194,7 +1309,6 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
@@ -1291,7 +1405,7 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
@@ -2017,12 +2131,12 @@ public class HrReportController implements Serializable {
     public void createStaffShift() {
         String sql = "";
         HashMap hm = new HashMap();
-        sql = createStaffShiftQuary(hm);        
+        sql = createStaffShiftQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-      public void createStaffShiftWorked() {
+
+    public void createStaffShiftWorked() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
@@ -2031,9 +2145,8 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-    
-      public void createStaffShiftLieAllowed() {
+
+    public void createStaffShiftLieAllowed() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
@@ -2042,7 +2155,7 @@ public class HrReportController implements Serializable {
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
-         public void createStaffShiftLieAllowedWorked() {
+    public void createStaffShiftLieAllowedWorked() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
@@ -2052,7 +2165,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-      
+
     List<StaffSalary> staffSalarys;
 
     public List<StaffSalary> getStaffSalarys() {
