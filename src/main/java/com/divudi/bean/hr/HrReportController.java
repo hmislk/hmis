@@ -2563,7 +2563,7 @@ public class HrReportController implements Serializable {
             hm.put("sh", getReportKeyWord().getShift());
         }
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
-        sql += " order by ss.staffShift.id,ss.shiftDate";
+        sql += " order by ss.staffShift.id,ss.staffShift.shiftDate";
         staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
