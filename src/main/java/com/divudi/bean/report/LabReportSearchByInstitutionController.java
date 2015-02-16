@@ -796,8 +796,10 @@ public class LabReportSearchByInstitutionController implements Serializable {
             if (institution == null) {
                 return new ArrayList<>();
             }
+            
             String sql = "select f from BilledBill f "
                     + " where f.retired=false "
+                    + " and f.cancelled=false "
                     + " and f.billType = :billType "
                     + " and f.createdAt between :fromDate and :toDate "
                     + " and f.toInstitution=:toIns "

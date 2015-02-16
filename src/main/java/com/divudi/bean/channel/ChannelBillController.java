@@ -1076,6 +1076,9 @@ public class ChannelBillController implements Serializable {
             savingBill.setBalance(savingBill.getNetTotal());
         }
 
+        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillSession(savingBillSession);
+        
         getBillFacade().edit(savingBill);
         
         return savingBill;
