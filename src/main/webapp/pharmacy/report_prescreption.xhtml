@@ -22,7 +22,7 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" 
                                                  value="Search" 
-                                                 action="#{searchController.createPharmacyTable}"/>
+                                                 action="#{searchController.createPharmacyPrescriptionBillTable}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                             </h:panelGrid>
@@ -94,9 +94,9 @@
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Paymentmethod"   >
+<!--                            <p:column headerText="Paymentmethod"   >
                                 <h:outputLabel value="#{bill.paymentScheme.paymentMethod}" />
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="Paymentscheme" >
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
