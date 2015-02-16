@@ -11,45 +11,48 @@
     <ui:define name="content">
 
         <h:panelGroup >
-            <h:form  >
-                <h:outputLabel value="Loan"/>
-                <h:panelGrid columns="2" >
-                    <h:outputLabel value="Loan And Advances"/>
-                    <p:selectOneMenu value="#{staffLoanController.current.paysheetComponent}">
-                        <f:selectItem itemLabel="Select Component"/>
-                        <f:selectItems value="#{staffLoanController.compnent}"
-                                       var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
-                    </p:selectOneMenu>
-                    <h:outputLabel value="From"/>
-                    <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MMMM yyyy">                            
-                    </p:calendar>
-                    <h:outputLabel value="To"/>
-                    <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MMMM yyyy">                            
-                    </p:calendar>
-                    
-                    <h:outputLabel value="Loan No"/>
-                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanNo}"/>
-                    <p:outputLabel value="Bank Branch"/>                                           
-                    <hr:completeBank_Branch value="#{staffLoanController.current.bankBranch}"/>                                           
-                    <h:outputLabel value="Account No"/>
-                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.accountNo}"/>
-                    <h:outputLabel value="Full Loan Amount"/>
-                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanFullAmount}"/>
-                    <h:outputLabel value="Staff "/>
-                    <hr:completeStaff value="#{staffLoanController.current.staff}"/>
-                    <h:outputLabel value="Monthly Installment"/>
-                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.staffPaySheetComponentValue}"/>
-                    <h:outputText/>
-                    <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
-                                             itemLabel="Completed"/>
+            <h:form  >  
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Loan And Advances"/>
+                    </f:facet>
 
-                    <h:outputLabel value="Comments"/>
-                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.comment}"/>
-
-                    <p:commandButton value="Add"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
-                    <p:commandButton value="Remove"  action="#{staffLoanController.remove}" ajax="false" onclick="onSubmitButton();"/>
-                </h:panelGrid>
-
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="ID "/>
+                        <h:outputText value="#{staffLoanController.current.id}"/>
+                        <h:outputLabel value="Component "/>
+                        <p:selectOneMenu value="#{staffLoanController.current.paysheetComponent}">
+                            <f:selectItem itemLabel="Select Component"/>
+                            <f:selectItems value="#{staffLoanController.compnent}"
+                                           var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="From"/>
+                        <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MMMM yyyy">                            
+                        </p:calendar>
+                        <h:outputLabel value="To"/>
+                        <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MMMM yyyy">                            
+                        </p:calendar>
+                        <h:outputLabel value="Staff "/>
+                        <hr:completeStaff value="#{staffLoanController.current.staff}"/>
+                        <h:outputLabel value="Loan No"/>
+                        <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanNo}"/>
+                        <h:outputLabel value="Account No"/>
+                        <p:inputText autocomplete="off"  value="#{staffLoanController.current.accountNo}"/>
+                        <p:outputLabel value="Bank Branch"/>                                           
+                        <hr:completeBank_Branch value="#{staffLoanController.current.bankBranch}"/>                                           
+                        <h:outputLabel value="Full Amount"/>
+                        <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanFullAmount}"/>                        
+                        <h:outputLabel value="Monthly Installment"/>                        
+                        <p:inputText autocomplete="off"  value="#{staffLoanController.current.staffPaySheetComponentValue}"/>                    
+                        <h:outputLabel value="Comments"/>
+                        <p:inputText autocomplete="off"  value="#{staffLoanController.current.comment}"/>
+                       <h:outputLabel/>
+                        <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
+                                                 itemLabel="Completed"/>
+                        <p:commandButton value="Add"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Remove"  action="#{staffLoanController.remove}" ajax="false" onclick="onSubmitButton();"/>
+                    </h:panelGrid>
+                </p:panel>
                 <p:spacer height="30" />
 
                 <p:dataTable value="#{staffLoanController.items}" 
@@ -90,7 +93,6 @@
                         <p:commandButton value="Edit" ajax="false" onclick="onSubmitButton();">
                             <f:setPropertyActionListener target="#{staffLoanController.current}"  value="#{i}" />
                         </p:commandButton>
-
                     </p:column>
 
                 </p:dataTable>

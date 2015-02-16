@@ -155,7 +155,15 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Net Salary">
-                        </p:column>                    
+                            <h:outputLabel value="#{i.transNetSalry}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>   
+                        <p:column headerText="OT Payment">
+                            <h:outputLabel value="#{i.transExtraDutyValue+i.overTimeValue}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>   
                         <p:column>
                             <p:commandButton process="@this" 
                                              update=":#{p:component('lst')}" 
@@ -200,7 +208,12 @@
                                 <f:facet name="input">
                                     <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
                                 </f:facet>
-                            </p:cellEditor>                         
+                            </p:cellEditor> 
+                            <!--                            <f:facet name="footer">
+                                                        <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>  
+                                                        </f:facet>-->
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}">
@@ -240,14 +253,7 @@
                         </p:column>  
                     </p:dataTable>
                 </p:tab>
-                <p:tab title="Value">
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="Gross Salary : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>                        
-                    </h:panelGrid>
-                </p:tab>
+
                 <p:tab title="Preview">
                     <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
                 </p:tab>

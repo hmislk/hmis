@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+
+                <h:form enctype="multipart/form-data">
+                    <p:panel header="Employe List - Import From Excel" >
+
+
+                        <p:panel>
+
+                            <p:commandButton ajax="false" action="#{hrReportController.createStaffListAll()}" value="Fill" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                            <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                            </p:commandButton> 
+
+                        </p:panel>
+                        <p:panel header="Upload" >
+                            
+                            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcel}"/>
+                            
+                        </p:panel>
+                        
+                        <p:panel header="Employee List" id="reportPrint">
+
+
+                            <p:dataTable value="#{hrReportController.staffs}" 
+                                         var="s" 
+                                         id="tbl2" 
+                                         rowIndexVar="i"
+                                         rowKey="#{s.id}"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         rows="10"
+                                         >
+                                <p:column headerText="Id" filterBy="#{s.id}" >
+                                    #{s.id}
+                                </p:column>
+                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id">
+                                    <p:outputLabel value="#{s.id}" />
+                                </p:column>   
+
+                                <p:column filterBy="#{s.person.id}" headerText="Person Id">
+                                    <p:outputLabel value="#{s.person.id}" />
+                                </p:column>   
+
+                                <p:column filterBy="#{s.person.name}" headerText="Name">
+                                    <p:outputLabel value="#{s.person.name}" />
+                                </p:column>
+                                <p:column headerText="Full Name" >
+                                    <p:outputLabel value="#{s.person.fullName}" />
+                                </p:column>
+                                <p:column headerText="Name with Initials" >
+                                    <p:outputLabel value="#{s.person.nameWithInitials}" />
+                                </p:column>
+                                <p:column headerText="Code NO" >
+                                    <p:outputLabel value="#{s.codeInterger}" />
+                                </p:column>
+                                <p:column headerText="EPF Code" >
+                                    <p:outputLabel value="#{s.epfNo}" />
+                                </p:column>
+                                <p:column headerText="Roster" >
+                                    <p:outputLabel value="#{s.roster.name}" />
+                                </p:column>
+                                <p:column headerText="ADDRESS" >
+                                    <p:outputLabel value="#{s.person.address}" />
+                                </p:column>
+                                <p:column headerText="Sex" >
+                                    <p:outputLabel value="#{s.person.sex}" />
+                                </p:column>
+                                <p:column headerText="NIC No" >
+                                    <p:outputLabel value="#{s.person.nic}" />
+                                </p:column>
+                                <p:column headerText="DOB" >
+                                    <p:outputLabel value="#{s.person.dob}" >
+                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="DO Join" >
+                                    <p:outputLabel value="#{s.dateJoined}" >
+                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="DEPARTMENT" >
+                                    <p:outputLabel value="#{s.workingDepartment.name}" />
+                                </p:column>
+                                <p:column headerText="Account Number" >
+                                    <p:outputLabel value="#{s.accountNo}" />
+                                </p:column>
+                                <p:column headerText="Bank" >
+                                    <p:outputLabel value="#{s.bankBranch.institution.name}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

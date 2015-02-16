@@ -202,6 +202,8 @@ public class SalaryCycleController implements Serializable {
     public void setSalaryCycles(List<SalaryCycle> salaryCycles) {
         this.salaryCycles = salaryCycles;
     }
+    
+    
 
     private boolean errorCheck() {
         if (current == null) {

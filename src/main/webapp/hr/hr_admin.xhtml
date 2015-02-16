@@ -17,62 +17,69 @@
                     <h:panelGrid columns="3"  >
                         <h:panelGrid columns="1">
                             <f:facet name="header">
-                                <p:outputLabel value="Manage Component" />
+                                <p:outputLabel value="1) Manage Component" />
                             </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_roster" value="Manage Roster"/>
-                            <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_shift" value="Manage Shift"/>                                                    
-                            <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_paysheet_component" value="Manage Paysheet Component"  />
-                            <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_paysheet_component_system" value="Manage Paysheet Component(System Generated)"  />
-                            <p:commandButton styleClass="linkButton" ajax="false"  action="/hr/hr_hrm_variables" value="Manage HRM Variable"  />
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Holiday Date" action="/hr/hr_ph_date" onclick="onSubmitButton();"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Salary Cycle" action="/hr/hr_salary_cycle" onclick="onSubmitButton();"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             action="/hr/hr_roster" value=" 1) Manage Roster "/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             action="/hr/hr_shift" value=" 2) Manage Shift"/>                                                    
+                            <p:commandButton styleClass="linkButton" ajax="false"  
+                                             action="/hr/hr_paysheet_component" value=" 3) Manage Paysheet Component"  />
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             action="/hr/hr_paysheet_component_system" value=" 4) Manage Paysheet Component(System Generated)"  />
+                            <p:commandButton styleClass="linkButton" ajax="false"  
+                                             action="/hr/hr_hrm_variables" value="5) Manage HRM Variable"  />
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="6) Holiday Date" action="/hr/hr_ph_date" onclick="onSubmitButton();"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="7) Salary Cycle" action="/hr/hr_salary_cycle" onclick="onSubmitButton();"/>
 
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Staff"/>
+                                <p:outputLabel value=" 2) Staff "/>
                             </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Staff Admin" 
+                            <p:commandButton styleClass="linkButton" ajax="false" value=" 1) Staff Admin" 
                                              action="/hr/hr_staff_admin" onclick="onSubmitButton();"/>                                 
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Change Staff" 
+                            <p:commandButton styleClass="linkButton" ajax="false" value=" 2) Change Staff" 
                                              action="/hr/hr_change_staff" onclick="onSubmitButton();"/>                             
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Manage Staff Category" 
+                            <p:commandButton styleClass="linkButton" ajax="false" value=" 3) Manage Staff Category" 
                                              action="/hr/hr_staff_category" onclick="onSubmitButton();"/> 
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Manage Staff Grade"
+                            <p:commandButton styleClass="linkButton" ajax="false" value=" 4) Manage Staff Grade"
                                              action="/hr/hr_staff_grade" onclick="onSubmitButton();"/>                             
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Manage Staff Designation" 
+                            <p:commandButton styleClass="linkButton" ajax="false" value=" 5) Manage Staff Designation" 
                                              action="/hr/hr_staff_designation" onclick="onSubmitButton();"/>                             
                             <p:commandButton styleClass="linkButton"  ajax="false"
-                                             action="/hr/hr_staff_roster" value="Staff Roster"  />
+                                             action="/hr/hr_staff_roster" value=" 6) Staff Roster"  />
                             <p:commandButton styleClass="linkButton" ajax="false"  
-                                             action="/hr/hr_form_staff_transfer" value="Roster Transfer"  />                                        
+                                             action="/hr/hr_form_staff_transfer" value=" 7) Roster Transfer"  />                                        
                         </h:panelGrid>
 
 
 
                         <h:panelGrid columns="1">
                             <f:facet name="header">
-                                <p:outputLabel value="Hr Component By Staff "/>
+                                <p:outputLabel value=" 3) Hr Component By Staff "/>
                             </f:facet>        
                             <p:commandButton styleClass="linkButton"  ajax="false"  
                                              action="/hr/hr_staff_basic_individual" 
-                                             value="Staff Basic " 
+                                             value=" 1) Staff Basic " 
                                              actionListener="#{staffBasicController.makeNull}" />    
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_paysheet_component_individual" 
-                                             value=" Staff Paysheet Component Individual " 
+                                             value=" 2) Staff Paysheet Component Individual " 
                                              actionListener="#{staffBasicController.makeNull}" />    
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_paysheet_component_all" 
-                                             value=" Staff Paysheet Component All " 
+                                             value=" 3) Staff Paysheet Component All " 
                                              actionListener="#{staffBasicController.makeNull}" />    
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_loan_installment" 
-                                             value=" Staff Loan and Advance Payment " 
+                                             value=" 4) Staff Loan and Advance Payment " 
                                              actionListener="#{staffLoanController.makeNull}"  />                                                                                                           
                             <p:commandButton styleClass="linkButton" ajax="false" 
-                                             value="Staff Leave Entitle"
+                                             value=" 5) Staff Leave Entitle"
                                              action="hr_staff_leave_entitle" /> 
                         </h:panelGrid>
 

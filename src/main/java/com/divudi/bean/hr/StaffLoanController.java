@@ -51,10 +51,10 @@ public class StaffLoanController implements Serializable {
             UtilityController.addErrorMessage("Check Loan Name");
             return true;
         }
-        if (getCurrent().getDateAffectFrom() == null) {
-            UtilityController.addErrorMessage("Check Date");
-            return true;
-        }
+//        if (getCurrent().getDa() == null) {
+//            UtilityController.addErrorMessage("Check Date");
+//            return true;
+//        }
 
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
