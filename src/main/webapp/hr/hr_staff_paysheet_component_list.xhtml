@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="lst1"> 
+                <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="Date"/>
+                    <p:calendar value="#{staffBasicController.date}" pattern="dd MMMM yyyy" >                                                                                
+                    </p:calendar>
+                    <h:outputLabel value="Select User Defined Component"/>
+                    <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
+                        <f:selectItem itemLabel="Please select component Type "/>
+                        <f:selectItems value="#{paysheetComponentController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                    </p:selectOneMenu> 
+                    <h:outputLabel value="Select System Defined Component"/>
+                    <p:selectOneMenu   value="#{staffBasicController.paysheetComponent2}">
+                        <f:selectItem itemLabel="Please select component Type "/>
+                        <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>                    
+                    </p:selectOneMenu> 
+                </h:panelGrid>
+                <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="lst" ></p:printer>
+                </p:commandButton>
+
+
+
+
+
+                <p:dataTable  value="#{staffBasicController.items}" id="lst" 
+                              filteredValue="#{staffBasicController.filteredStaffPaysheet}"
+                              var="i"   rowKey="#{i.id}"  >
+
+                    <f:facet name="header">
+                        <h:outputLabel value="Staff Paysheet Component List"/>
+                        <br/>
+                        <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" style="text-align: right;">
+                        <h:outputLabel value="#{i.fromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains" style="text-align: right;">
+                        <p:cellEditor>  
+                            <f:facet name="output">
+                                <h:outputLabel value="#{i.toDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                            </f:facet>
+                        </p:cellEditor>
+
+                    </p:column>
+                    <p:column headerText="Component Name" filterBy="#{i.paysheetComponent.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
+                    </p:column>
+
+                    <p:column headerText="Grade" filterBy="#{i.staff.grade}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.grade}"/>                           
+                    </p:column>
+
+                    <p:column headerText="Category" filterBy="#{i.staff.staffCategory.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Designtion" filterBy="#{i.staff.designation.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.designation.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Department" filterBy="#{i.staff.workingDepartment.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Staff" filterBy="#{i.staff.person.nameWithTitle}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.code}"/>
+                    </p:column>
+                    <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains"  style="text-align: right;">
+
+                        <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <p:outputLabel value="#{staffBasicController.totalStaffPaySheetComponentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

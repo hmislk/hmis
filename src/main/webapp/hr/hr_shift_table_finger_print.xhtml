@@ -32,14 +32,23 @@
                                    var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
                     <f:ajax event="change" execute="@this" render="lst" 
                             listener="#{shiftFingerPrintAnalysisController.selectRosterLstener()}" />
+                    
                 </p:selectOneMenu>
-                <p:commandButton value="Fill"
-                                 process="@this frmDate toDate roster"
-                                 update="lst"
-                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
-                                 onclick="onSubmitButton();" /> 
+                <h:panelGroup>
+                    <p:commandButton value="Fill"
+                                     process="@this frmDate toDate roster"
+                                     update="lst"
+                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
+                                     onclick="onSubmitButton();" /> 
 
+                    <p:commandButton value="Fill Additional Only"
+                                     process="@this frmDate toDate roster"
+                                     update="lst"
+                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
+                                     onclick="onSubmitButton();" /> 
+                </h:panelGroup>
 
                 <p:commandButton value="SAVE"
                                  process="lst"
@@ -69,7 +78,7 @@
                     <p:column headerText="Shift Name" styleClass="singleLine">
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
-                    <p:column headerText="ID" styleClass="singleLine">
+                    <p:column headerText="ID" styleClass="singleLine"  rendered="false">
                         <h:outputLabel value="#{sts.id}" />
                     </p:column>
                     <p:column headerText="Leave/Replace" styleClass="singleLine">                       
@@ -81,6 +90,7 @@
                             <h:outputLabel value="Staff Name"/>
                         </f:facet>
                         <h:outputLabel value="#{sts.staff.person.name}"/>
+                        
                     </p:column> 
                     <p:column>
                         <f:facet name="header">
@@ -101,7 +111,7 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-                           
+
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
@@ -116,7 +126,7 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
-                           
+
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                     </p:column>
@@ -125,19 +135,12 @@
 
                         <h:panelGroup id="strRc"       >
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
-                                <p:calendar 
-                                    rendered="#{sts.previousStaffShift eq null}"
+                                <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 
                                     pattern="dd MM yy hh mm ss a"  >                           
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
-
-                                <p:outputLabel     
-                                    rendered="#{sts.previousStaffShift ne null}"
-                                    value="#{sts.startRecord.recordTimeStamp}" >                           
-                                    <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
-                                </p:outputLabel>
                                 <h:panelGroup rendered="#{sts.startRecord.allowedExtraDuty}">
                                     <h:outputLabel value="Extra"/>
                                 </h:panelGroup>
@@ -152,18 +155,12 @@
                         <h:panelGroup id="endRc">
 
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
-                                <p:calendar 
-                                    rendered="#{sts.nextStaffShift eq null}"
+                                <p:calendar                                    
                                     value="#{sts.endRecord.recordTimeStamp}" 
                                     pattern="dd MM yy hh mm ss a" >          
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
-                                </p:calendar>
-                                <p:outputLabel     
-                                    rendered="#{sts.nextStaffShift ne null}"
-                                    value="#{sts.endRecord.recordTimeStamp}" >                           
-                                    <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
-                                </p:outputLabel>
+                                </p:calendar>                             
                                 <h:panelGroup rendered="#{sts.endRecord.allowedExtraDuty}">
                                     <h:outputLabel value="Extra"/>
                                 </h:panelGroup>

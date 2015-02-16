@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Unit Issue Report" >
+
+                        <h:panelGrid columns="4" >
+                            <h:outputLabel value="Issue From" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
+                            </p:autoComplete>
+                            <h:outputLabel value="Issue To" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.toDepartment}" converter="dep" >
+                            </p:autoComplete>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentUnitIssueByBillItemStore}" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Unit_Issue_Report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.transferItems}" var="i"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Unit Issue From "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
+                                    <h:outputLabel value=" To "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/>
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+                                
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>                                    
+                                </p:column>
+                                
+                                <p:column headerText="Request No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Request No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.invoiceNumber}" ></h:outputLabel>                                    
+                                </p:column>
+                                
+                                <p:column headerText="Item">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}" ></h:outputLabel>                                    
+                                </p:column>
+                                
+                                <p:column headerText="Item">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.qty}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Cancelled No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cancelled No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.cancelledBill.deptId}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.bill.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Rate" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.rate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{storeReportsTransfer.totalsValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    </f:facet>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Discount" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Remarks"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.discount}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{storeReportsTransfer.discountsValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    </f:facet>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Net Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Remarks"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.netValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel> 
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{storeReportsTransfer.netTotalValues}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    </f:facet>
+                                </p:column>
+
+
+<!--                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="3" footerText="Totals">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Totals" ></h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;"  footerText="#{storeReportsTransfer.netTotalValues}" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{storeReportsTransfer.netTotalValues}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>-->
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

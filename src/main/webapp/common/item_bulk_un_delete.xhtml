@@ -14,10 +14,10 @@
             <h:form id="form"  >
                 <p:growl autoUpdate="true" />
                 
-                <p:commandButton value="Fill Deleted Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
-                <p:commandButton value="Un-Delete Selected Services" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
+                <p:commandButton value="Fill Inactive Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
+                <p:commandButton value="Un-Activate Selected Services" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
 
-                <p:panel header="Service Bulk Un-Delete" >
+                <p:panel header="Inactive Services" >
                 
                     <p:dataTable value="#{serviceController.deletedServices}" var="item" rowKey="#{item.id}"
                                  paginator="true" paginatorAlwaysVisible="true"

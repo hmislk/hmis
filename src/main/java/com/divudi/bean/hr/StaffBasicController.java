@@ -7,13 +7,12 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffBasics;
 import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
@@ -57,6 +56,9 @@ public class StaffBasicController implements Serializable {
     ////////
     @Inject
     private SessionController sessionController;
+    private Date fromDate;
+    private Date toDate;
+    private ReportKeyWord reportKeyWord;
 
     public void removeAll() {
         for (StaffPaysheetComponent spc : getSelectedStaffComponent()) {
@@ -72,14 +74,17 @@ public class StaffBasicController implements Serializable {
     private boolean checkStaff() {
         repeatedComponent = null;
 
-        String sql = "Select s From StaffPaysheetComponent s where s.retired=false"
-                + " and s.paysheetComponent.componentType=:tp and s.staff=:st "
-                + " and s.toDate>:dt";
+        String sql = "Select s From StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent.componentType=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
 
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.BasicSalary);
         hm.put("st", getCurrent().getStaff());
-        hm.put("dt", getCurrent().getFromDate());
+        hm.put("cu", getCurrent().getToDate());
         List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (!tmp.isEmpty()) {
@@ -115,6 +120,11 @@ public class StaffBasicController implements Serializable {
             return true;
         }
 
+        if (getCurrent().getToDate() == null) {
+            UtilityController.addErrorMessage("Select To Date");
+            return true;
+        }
+
         if (checkStaff()) {
             return true;
         }
@@ -135,8 +145,10 @@ public class StaffBasicController implements Serializable {
     }
 
     private void updateExistingSalary() {
-        String sql = "Select s From StaffPaysheetComponent s where s.retired=false"
-                + " and s.paysheetComponent.componentType=:tp and s.staff=:st "
+        String sql = "Select s From StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent.componentType=:tp "
+                + " and s.staff=:st "
                 + " and s.fromDate<:dt and s.toDate is null";
 
         HashMap hm = new HashMap();
@@ -160,10 +172,14 @@ public class StaffBasicController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
-        getStaffPaysheetComponentFacade().create(getCurrent());
+        if (getCurrent().getId() == null) {
+            getStaffPaysheetComponentFacade().create(getCurrent());
+        } else {
+            staffPaysheetComponentFacade.edit(current);
+        }
 
-        updateStaffEmployment();
-        updateExistingSalary();
+//        updateStaffEmployment();
+//        updateExistingSalary();
 
         Staff s = getCurrent().getStaff();
         current = null;
@@ -226,39 +242,126 @@ public class StaffBasicController implements Serializable {
         items = null;
     }
 
-    public List<StaffPaysheetComponent> getItems() {
-        if (items == null) {
-            String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp"
-                    + " and s.staff=:st order by s.fromDate";
-            //and (s.toDate>= :td or s.toDate is null)
-            HashMap hm = new HashMap();
-            // hm.put("td", getToDate());
-            //    hm.put("fd", getFromDate());
-            hm.put("st", getCurrent().getStaff());
-            hm.put("tp", PaysheetComponentType.BasicSalary);
+    public void createBasicTable() {
+        String sql = "Select ss from StaffPaysheetComponent ss"
+                + " where ss.retired=false"
+                + "  and ss.paysheetComponent.componentType=:tp"
+                //                + " and ss.staff=:st"
+                + " and ss.fromDate <=:fd"
+                + " and ss.toDate >=:fd ";
+        //and (s.toDate>= :td or s.toDate is null)
+        HashMap hm = new HashMap();
+//        hm.put("td", getToDate());
+        hm.put("fd", getFromDate());
+//        hm.put("st", getCurrent().getStaff());
+        hm.put("tp", PaysheetComponentType.BasicSalary);
 
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
 
-            if (!getRepeatedComponent().isEmpty()) {
-                for (StaffPaysheetComponent sp : items) {
-                    for (StaffPaysheetComponent err : getRepeatedComponent()) {
-                        if (sp.getId() == err.getId()) {
-                            sp.setExist(true);
-                            //System.out.println("settin");
-                        }
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (!getRepeatedComponent().isEmpty()) {
+            for (StaffPaysheetComponent sp : items) {
+                for (StaffPaysheetComponent err : getRepeatedComponent()) {
+                    if (sp.getId().equals(err.getId())) {
+                        sp.setExist(true);
+                        //System.out.println("settin");
                     }
                 }
             }
         }
+    }
+
+    public List<StaffPaysheetComponent> getItems() {
 
         return items;
+    }
+
+    PaysheetComponent paysheetComponent;
+
+    PaysheetComponent paysheetComponent2;
+
+    public PaysheetComponent getPaysheetComponent() {
+        return paysheetComponent;
+    }
+
+    public PaysheetComponent getPaysheetComponent2() {
+        return paysheetComponent2;
+    }
+
+    public void setPaysheetComponent2(PaysheetComponent paysheetComponent2) {
+        this.paysheetComponent2 = paysheetComponent2;
+    }
+
+    public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
+        this.paysheetComponent = paysheetComponent;
+    }
+
+    double totalStaffPaySheetComponentValue = 0.0;
+
+    public void createTable() {
+        String sql = "Select s"
+                + " from StaffPaysheetComponent s"
+                + " where s.retired=false"
+                + " and s.staffPaySheetComponentValue!=0"
+                + " and s.fromDate<= :cu"
+                + " and s.toDate>:cu";
+
+        HashMap hm = new HashMap();
+
+        hm.put("cu", date);
+        if (paysheetComponent != null) {
+            sql += " and s.paysheetComponent=:tp ";
+            hm.put("tp", paysheetComponent);
+        }
+
+        if (paysheetComponent2 != null) {
+            sql += " and s.paysheetComponent=:tp2 ";
+            hm.put("tp2", paysheetComponent2);
+        }
+
+        sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
+        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        calTotal(items);
+
+    }
+
+    public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents) {
+        totalStaffPaySheetComponentValue = 0.0;
+        for (StaffPaysheetComponent spc : staffPaysheetComponents) {
+            totalStaffPaySheetComponentValue += spc.getStaffPaySheetComponentValue();
+        }
     }
 
     public List<StaffPaysheetComponent> getItems2() {
         if (items == null) {
             String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp";
+                    + " where s.retired=false "
+                    + " and s.paysheetComponent.componentType=:tp "
+                    + " order by s.staff.codeInterger";
             //and (s.toDate>= :td or s.toDate is null)
             HashMap hm = new HashMap();
             // hm.put("td", getToDate());
@@ -272,30 +375,31 @@ public class StaffBasicController implements Serializable {
 
         return items;
     }
-    
+
+    private Date date;
+
     public void resetDate() {
-        
-        for(StaffPaysheetComponent stf : items){
+
+        for (StaffPaysheetComponent stf : items) {
             Calendar date = Calendar.getInstance();
-            if(stf.getFromDate()!=null){
-            date.setTime(stf.getFromDate());
-            date.set(Calendar.YEAR, 2014);
-            date.set(Calendar.MONTH, 01);
-              stf.setFromDate(date.getTime());
+            if (stf.getFromDate() != null) {
+                date.setTime(stf.getFromDate());
+                date.set(Calendar.YEAR, 2014);
+                date.set(Calendar.MONTH, 01);
+                stf.setFromDate(date.getTime());
             }
-            
-            if(stf.getToDate()!=null){
-              
-              date.setTime(stf.getToDate());
-            date.setTime(stf.getToDate());
-            date.set(Calendar.YEAR, 2015);
-            date.set(Calendar.MONTH, 11);
-            stf.setToDate(date.getTime());
+
+            if (stf.getToDate() != null) {
+
+                date.setTime(stf.getToDate());
+                date.setTime(stf.getToDate());
+                date.set(Calendar.YEAR, 2015);
+                date.set(Calendar.MONTH, 11);
+                stf.setToDate(date.getTime());
             }
-            
+
             getStaffPaysheetComponentFacade().edit(stf);
-            
-          
+
         }
     }
 
@@ -400,5 +504,48 @@ public class StaffBasicController implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public double getTotalStaffPaySheetComponentValue() {
+        return totalStaffPaySheetComponentValue;
+    }
+
+    public void setTotalStaffPaySheetComponentValue(double totalStaffPaySheetComponentValue) {
+        this.totalStaffPaySheetComponentValue = totalStaffPaySheetComponentValue;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

@@ -11,6 +11,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.facade.PhDateFacade;
 import com.divudi.entity.hr.PhDate;
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -44,8 +46,17 @@ public class PhDateController implements Serializable {
     SessionController sessionController;
     @EJB
     private PhDateFacade ejbFacade;
+    @EJB
+    CommonFunctions commonFunctions;
     private PhDate current;
     private List<PhDate> items = null;
+
+    List<PhDate> phDates;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date frDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date toDate;
 
     public List<PhDate> completePhDate(String qry) {
         List<PhDate> a = null;
@@ -72,6 +83,21 @@ public class PhDateController implements Serializable {
 
         return dbl;
 
+    }
+
+    public void createHollydays() {
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "Select d From PhDate d "
+                + " Where d.retired=false "
+                + " and d.phDate between :fd and :td ";
+        
+        m.put("fd", frDate);
+        m.put("td", toDate);
+        
+        phDates=getFacade().findBySQL(sql, m);
+        
     }
 
     public DayType getHolidayType(Date d) {
@@ -164,6 +190,36 @@ public class PhDateController implements Serializable {
     public List<PhDate> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+
+    public Date getFrDate() {
+        if (frDate == null) {
+            frDate = commonFunctions.getStartOfMonth(new Date());
+        }
+        return frDate;
+    }
+
+    public void setFrDate(Date frDate) {
+        this.frDate = frDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<PhDate> getPhDates() {
+        return phDates;
+    }
+
+    public void setPhDates(List<PhDate> phDates) {
+        this.phDates = phDates;
     }
 
     /**

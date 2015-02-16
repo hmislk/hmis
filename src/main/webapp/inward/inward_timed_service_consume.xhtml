@@ -89,6 +89,11 @@
 
                     <p:panel header="Consumed Timed Sevice" id="con">                          
                         <p:dataTable value="#{inwardTimedItemController.items}" var="ti">
+                            
+                            <p:column headerText="ID">
+                                #{ti.id}
+                            </p:column>
+                            
                             <p:column headerText="Service Name">
                                 #{ti.item.name}
                             </p:column>

@@ -43,6 +43,12 @@
                                 <h:outputLabel value="GRN Detaied" ></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.grnBillDetailed}" />
                                 
+                                <h:outputLabel value="Bill Number Generate From To Department" ></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.depNumGenFromToDepartment}" />
+                                
+                                <h:outputLabel value="Transfer NetTotal by retailRate"></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.tranferNetTotalbyRetailRate}" />
+                                
                             </h:panelGrid>
 
                         </h:panelGrid>

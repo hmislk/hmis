@@ -10,12 +10,15 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.LeaveType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.entity.hr.StaffLeaveEntitle;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -81,7 +84,23 @@ public class StaffLeaveEntitleController implements Serializable {
         current = null;
     }
 
+    @EJB
+    CommonFunctions commonFunctions;
+
     public void saveSelected() {
+
+        if (fromDate == null) {
+            UtilityController.addErrorMessage("Please Select From Date");
+            return;
+        }
+
+        if (toDate == null) {
+            UtilityController.addErrorMessage("Please Select To Date");
+            return;
+        }
+
+        current.setFromDate(fromDate);
+        current.setToDate(toDate);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -161,20 +180,96 @@ public class StaffLeaveEntitleController implements Serializable {
         this.staff = staff;
     }
 
+    LeaveType leaveType;
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+
+    Date date;
+    Date fromDate;
+    Date toDate;
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
     public void createItems() {
         HashMap hm = new HashMap();
         String sql = "select c from StaffLeaveEntitle c "
-                + " where c.retired=false "
-                + " and c.staff= :stf "
-                + "  order by c.staff.code";
+                + " where c.retired=false ";
+//
+//        if (date != null) {
+//            sql += " and c.fromDate=:fd "
+//                    + " and c.toDate=:td ";
+//        }
 
         if (staff != null) {
+            sql += " and c.staff= :stf ";
             hm.put("stf", staff);
         }
 
+        if (leaveType != null) {
+            sql += " and c.leaveType= :ltp ";
+            hm.put("ltp", staff);
+        }
+
+        sql += "  order by c.staff.code";
+
         selectedItems = getFacade().findBySQL(sql, hm);
     }
-    
+
+    public void resetDate() {
+        if (selectedItems == null) {
+            return;
+        }
+        if (fromDate == null) {
+            return;
+        }
+        
+        if (toDate == null) {
+            return;
+        }
+
+        for (StaffLeaveEntitle s : selectedItems) {
+            s.setFromDate(commonFunctions.getFirstDayOfYear(fromDate));
+            s.setToDate(commonFunctions.getLastDayOfYear(toDate));
+            ejbFacade.edit(s);
+        }
+    }
+
     public void createAllItems() {
         HashMap hm = new HashMap();
         String sql = "select c from StaffLeaveEntitle c "
@@ -196,8 +291,6 @@ public class StaffLeaveEntitleController implements Serializable {
     public void setSelectedAllItems(List<StaffLeaveEntitle> selectedAllItems) {
         this.selectedAllItems = selectedAllItems;
     }
-    
-    
 
     /**
      *

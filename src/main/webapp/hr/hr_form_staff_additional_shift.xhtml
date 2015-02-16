@@ -12,7 +12,7 @@
             <p:panel header="Additional Working Shift Sheet">
                 <h:panelGrid columns="2">
                     <p:panel header="Additional Working Details">
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="2">                           
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
                             <h:outputLabel value="Staff : "/>
@@ -20,8 +20,10 @@
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar> 
-                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
+                            </p:calendar>  
+                            <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
+                            <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
                             <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
@@ -38,13 +40,7 @@
                             </p:calendar> 
 
                             <h:outputLabel value="Approved Staff"/>
-                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>
-                            <h:outputLabel value="Time Type"/>
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
-                                <f:selectItem itemLabel="Select Time Type"/>
-                                <f:selectItems value="#{enumController.timeses}" />
-                            </p:selectOneMenu>
-
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>                          
                             <h:outputLabel value="Approved Date"/>
                             <p:calendar id="approvedDate" 
                                         value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
@@ -53,7 +49,8 @@
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                             action="#{staffAdditionalFormController.saveAdditionalForm()}"/>
+                                             disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
+                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
@@ -74,11 +71,9 @@
                             <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
                             <h:outputLabel value="Approved Person"/>
                             <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
-                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
-                            <h:panelGroup>
-                                <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
-                                <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDate()}" />
-                            </h:panelGroup>
+
+                            <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShift()}" />
+
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
                                      rowStyleClass="#{add.retired eq true ? 'redText':''}"
@@ -93,7 +88,7 @@
                             <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
-                           
+
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.fromTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />

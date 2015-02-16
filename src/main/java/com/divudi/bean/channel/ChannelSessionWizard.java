@@ -9,17 +9,13 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
@@ -29,6 +25,7 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -272,7 +269,9 @@ public class ChannelSessionWizard implements Serializable {
         hospitalFee.setFee(0.0);
         hospitalFee.setFfee(0.0);
         hospitalFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        hospitalFee.setServiceSession(current);
+        if (current != null && current.getId() != null) {
+            hospitalFee.setServiceSession(current);
+        }
         getItemFeeFacade().create(hospitalFee);
     }
 
@@ -328,18 +327,20 @@ public class ChannelSessionWizard implements Serializable {
     }
 
     public void feesListner() {
-        System.out.println("view");
-        fillFees();
-        System.out.println("fees = " + fees);
-        if (fees.isEmpty()) {
-            System.out.println("Create New Fees");
-            createHospitalFee();
-            createStaffFee();
 
-            if (current.isScanFee()) {
-                createScanFee();
-            }
+//        System.out.println("view");
+//        fillFees();
+//        System.out.println("fees = " + fees);
+//        if (fees.isEmpty()) {
+//            System.out.println("Create New Fees");
+        createHospitalFee();
+        createStaffFee();
+
+        if (current.isScanFee()) {
+            createScanFee();
         }
+//        }
+
         fillFees();
     }
 
@@ -348,10 +349,38 @@ public class ChannelSessionWizard implements Serializable {
         UtilityController.addSuccessMessage("Sucessfull Updated");
     }
 
+    private void createNewSession() {
+        current = new ServiceSession();
+        current.setCreatedAt(new Date());
+        current.setCreater(sessionController.getLoggedUser());
+        current.setSpeciality(speciality);
+        current.setStaff(currentStaff);
+        serviceSessionFacade.create(current);
+    }
+
     public String onFlowProcess(FlowEvent event) {
 
-        if (current != null) {
-            feesListner();
+        String phase = event.getPhaseId().getName();
+        System.err.println(event.getNewStep());
+        System.err.println(event.getOldStep());
+        System.err.println(event.getPhaseId().toString());
+        System.err.println(event.getSource());
+        System.out.println(phase);
+
+        switch (event.getNewStep()) {
+            case "speciality":
+                break;
+            case "doctor":
+                break;
+            case "check":
+                if (createNewSession && current != null) {
+                    createNewSession();
+                    feesListner();
+                    break;
+                }
+            default:
+                break;
+
         }
 
         return event.getNewStep();

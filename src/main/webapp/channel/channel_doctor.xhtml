@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <p:outputLabel value="Doctor View"/>
+        <h:form>
+        <p:commandButton value="Print" ajax="fasle" action="#">
+            <p:printer target="doctorView"/>           
+        </p:commandButton>
+            <p:panel id="doctorView">
+            <f:facet name="header">
+                <h:panelGrid columns="2">
+                    <p:outputLabel value="Consultant"/>
+                    <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
+                    <p:outputLabel value="Date"/>
+                    <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
+                        <f:convertDateTime pattern="dd MM yyyy"/>
+                    </h:outputLabel>
+                    <p:outputLabel value="Session Name"/>
+                    <h:outputLabel value="#{channelReportController.serviceSession.name}" />
+                </h:panelGrid>
+            </f:facet>
+
+            <p:dataTable value="#{channelReportController.billSessionsDoctor}" var="bs" sortBy="#{bs.bill.billClass}">
+
+                <p:column headerText="No">#{bs.serialNo}</p:column>               
+                <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                <p:column headerText="Fee">
+                    <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue}"/>
+                </p:column>
+                <p:column headerText="Repay">
+                    <h:outputLabel value="#{bs.doctorFee.prevFee.feeValue}"/>
+                </p:column>
+                <p:column headerText="Net Fee">
+                    <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue+bs.doctorFee.prevFee.feeValue}"/>
+                </p:column>
+                <p:column headerText="Tax">
+                    <h:outputLabel value="#{bs.tax.billedFee.feeValue}"/>
+                </p:column>
+                <p:column headerText="Paid or Not">
+                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                </p:column>               
+
+                <p:summaryRow >
+                    <p:column colspan="2"/>
+                    <p:column style="text-align: right;">
+                        <h:outputLabel value="#{channelReportController.billedTotalFee}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>                                            
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <h:outputLabel value="#{channelReportController.repayTotalFee}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>                                            
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <h:outputLabel value="#{channelReportController.billedTotalFee+channelReportController.repayTotalFee}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>                                            
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <h:outputLabel value="#{channelReportController.taxTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>                                            
+                    </p:column>
+                </p:summaryRow>
+
+            </p:dataTable>
+
+        </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

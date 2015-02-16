@@ -2076,7 +2076,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createDueFeeTableAll() {
+   public void createDueFeeTableAll() {
 
         String sql;
         Map temMap = new HashMap();

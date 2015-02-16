@@ -48,6 +48,15 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        
+                                        <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
+
+                                        <h:outputLabel value="Canceled Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.insId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
@@ -139,7 +148,8 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >     
+                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >   
+                                            <f:selectItem itemLabel="Payment Method"/>
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
                                             <f:ajax event="change" execute="@this" render="acCreditCompany" />
                                         </p:selectOneMenu>
@@ -175,22 +185,21 @@
                                         <h:outputLabel value="Edited By :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.editor.webUserPerson.name}" ></h:outputLabel>
 
-                                        <h:outputLabel value="Update Bill :" ></h:outputLabel>
-                                        <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
-
                                         <h:outputLabel value="Retired :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.retired}" ></p:selectBooleanCheckbox>
 
-
                                         <h:outputLabel value="Update Bill :" ></h:outputLabel>
-                                        <p:commandButton value="Bill Retired" action="#{billSearch.updateBillRetierd()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                        <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
 
+
+                                        <h:outputLabel value="Rset Value"/>
+                                        <p:commandButton value="Reset Value" action="#{billSearch.updateValue()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
                             <p:panel header="Bill Fee Detail">
                                 <p:dataTable rowIndexVar="rowIndex"
-                                             editable="true" value="#{billSearch.billFees2}" var="bip" >
+                                             editable="true" value="#{billSearch.billFeesList}" var="bip" >
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
                                     <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" />  
                                     <p:column>
@@ -249,7 +258,7 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>  
-                                     <p:column>
+                                    <p:column>
                                         <f:facet name="header">Adjusted Value</f:facet>
                                         <p:cellEditor>
                                             <f:facet name="output" >
@@ -297,7 +306,7 @@
                                 </p:dataTable>
                             </p:panel>
                             <p:panel header="Bill Item Detail">
-                                <p:dataTable value="#{billSearch.billItems}" editable="true"  var="bip21" emptyMessage="No Items" rowIndexVar="rowIndex">
+                                <p:dataTable value="#{billSearch.billItemList}" editable="true"  var="bip21" emptyMessage="No Items" rowIndexVar="rowIndex">
 
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
                                     <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" />  
@@ -325,6 +334,26 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
+                                    <p:column headerText="Gross" >
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.grossValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.grossValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column headerText="Discount" >
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.discount}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.discount}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
                                     <p:column headerText="Fee" >
                                         <p:cellEditor>
                                             <f:facet name="output" >
@@ -335,7 +364,7 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
-                                     <p:column headerText="Fee Adjusted" >
+                                    <p:column headerText="Fee Adjusted" >
                                         <p:cellEditor>
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip21.adjustedValue}" />
