@@ -6,6 +6,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
@@ -112,7 +113,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     
     List<BillItem> bhtBillItemList;
     
-
+    private SearchKeyword searchKeyword;
+    
     public void makenull() {
         currentStaff = null;
         speciality = null;
@@ -432,13 +434,67 @@ public class InwardStaffPaymentBillController implements Serializable {
         return bhtTotal;
     }
     
+    public void createDocFeeTableDischargedAndNoDischarged() {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BillFee b where b.retired=false and "
+                + " b.bill.billType=:btp "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 and"
+                + "  b.bill.createdAt between :fromDate"
+                + " and :toDate ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.bill.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.feeValue) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(b.staff.speciality.name) like :special )";
+            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.staff.person.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(b.billItem.item.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += "  order by b.staff.id    ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", BillType.OpdBill);
+
+        billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
     public List<BillItem> inwardDoctorPaySummeryWithBHT(boolean dischargeDate) {
 
         String sql;
         Map m = new HashMap();
+ 
 
-        sql = "select bf from BillItem bf "
+        sql = "select bf from BillFee bf "
                 + " where bf.retired=false "
+                + " and (bf.feeValue - bf.paidValue) > 0 and"
                 + " and bf.bill.billType=:btp"
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
@@ -1217,6 +1273,14 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setBhtBillItemList(List<BillItem> bhtBillItemList) {
         this.bhtBillItemList = bhtBillItemList;
+    }
+
+    public SearchKeyword getSearchKeyword() {
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
     }
 
    
