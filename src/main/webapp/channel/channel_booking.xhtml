@@ -426,9 +426,9 @@
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
-                                <!--            <p:outputLabel value="REMOVE"/>
-                                            <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.retired}" >
-                                            </p:selectBooleanCheckbox>-->
+                            <!--    <p:outputLabel value="REMOVE"/>
+                                <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.retired}" >
+                                </p:selectBooleanCheckbox>-->
                                 <p:outputLabel/>
                                 <p:commandButton ajax="false" value="Update" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
