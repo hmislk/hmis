@@ -21,13 +21,16 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.StaffFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -95,6 +98,10 @@ public class ServiceSummery implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     List<BillItem> billItems;
+    
+    List<Staff>staffs;
+    @EJB
+    StaffFacade staffFacade;
 
     public double getCount() {
         return count;
@@ -116,6 +123,17 @@ public class ServiceSummery implements Serializable {
      * Creates a new instance of ServiceSummery
      */
     public ServiceSummery() {
+    }
+
+    public void createStaffWelfare() {
+        String sql;
+        sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and s.annualWelfareQualified>0 "
+                + " order by s.codeInterger ";
+        
+        staffs=getStaffFacade().findBySQL(sql);
+        
     }
 
     public double calServiceTot(BillType billType, FeeType feeType, boolean discharged) {
@@ -154,6 +172,52 @@ public class ServiceSummery implements Serializable {
         temMap.put("itm", getService());
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calServiceTot(BillType billType, FeeType feeType) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(bi.feeValue) FROM BillFee bi "
+                + " where bi.bill.billType= :bTp "
+                + " and bi.fee.feeType=:ftp "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        if (service != null) {
+            sql += " and bi.billItem.item=:itm ";
+            temMap.put("itm", getService());
+        }
+
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", billType);
+        temMap.put("ftp", feeType);
+
+        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -328,12 +392,68 @@ public class ServiceSummery implements Serializable {
 
     }
 
+    private long calCount(Bill bill, BillType billType) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi "
+                + " where bi.bill.billType=:bType "
+                + " and type(bi.bill)=:billClass "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        if (service != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", getService());
+        }
+
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+
+        sql += " order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bType", billType);
+
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     public void calCountTotalItem(BillType billType, boolean discharged) {
         count = 0;
 
         long billed = calCount(new BilledBill(), billType, discharged);
         long cancelled = calCount(new CancelledBill(), billType, discharged);
         long refunded = calCount(new RefundBill(), billType, discharged);
+
+        count = billed - (refunded + cancelled);
+
+    }
+
+    public void calCountTotalItem(BillType billType) {
+        count = 0;
+
+        long billed = calCount(new BilledBill(), billType);
+        long cancelled = calCount(new CancelledBill(), billType);
+        long refunded = calCount(new RefundBill(), billType);
 
         count = billed - (refunded + cancelled);
 
@@ -372,6 +492,52 @@ public class ServiceSummery implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("itm", item);
+        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return tmp;
+
+    }
+
+    private List<BillItem> getBillItem(BillType billType, Item item) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select bi FROM BillItem bi "
+                + " where bi.bill.billType= :bTp  "
+                + " and  bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        if (item != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", item);
+        }
+
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        temMap.put("bTp", billType);
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
@@ -476,11 +642,11 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
 
     }
-    
-    List<Bill>bills;
+
+    List<Bill> bills;
     @EJB
     BillFacade billFacade;
-    
+
     double totalBill;
 
     public double getTotalBill() {
@@ -490,7 +656,7 @@ public class ServiceSummery implements Serializable {
     public void setTotalBill(double totalBill) {
         this.totalBill = totalBill;
     }
-    
+
     public List<Bill> getBills() {
         return bills;
     }
@@ -498,52 +664,52 @@ public class ServiceSummery implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
-    public void opdPharmacyStaffWelfarebills(){
+
+    public void opdPharmacyStaffWelfarebills() {
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select b from Bill b where "
+        Map m = new HashMap();
+
+        sql = " select b from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-        
-        bills=billFacade.findBySQL(sql, m);
+
+        bills = billFacade.findBySQL(sql, m);
         System.out.println("bills = " + bills);
-        
+
         calTotal();
-        
+
     }
-    
-    public void calTotal(){
+
+    public void calTotal() {
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select sum(b.netTotal) from Bill b where "
+        Map m = new HashMap();
+
+        sql = " select sum(b.netTotal) from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-        
-        totalBill=billFacade.findDoubleByJpql(sql, m);
+
+        totalBill = billFacade.findDoubleByJpql(sql, m);
         System.out.println("totalBill = " + totalBill);
     }
 
     Department department;
+    Institution institution;
     PaymentMethod paymentMethod;
 
     @EJB
@@ -703,6 +869,26 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff, false);
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
+
+    }
+
+    public void createServiceSummeryInwardAddedDate() {
+        serviceSummery = new ArrayList<>();
+        for (BillItem i : getBillItem(BillType.InwardBill, service)) {
+            BillItemWithFee bi = new BillItemWithFee();
+            bi.setBillItem(i);
+            bi.setProFee(calFee(i, FeeType.Staff));
+            bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
+            bi.setReagentFee(calFee(i, FeeType.Chemical));
+            serviceSummery.add(bi);
+        }
+
+        calCountTotalItem(BillType.InwardBill);
+        proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff);
+        hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution);
+        outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
+        reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
 
     }
 
@@ -1374,6 +1560,14 @@ public class ServiceSummery implements Serializable {
         this.department = department;
     }
 
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1524,6 +1718,22 @@ public class ServiceSummery implements Serializable {
 
     public void setOutSideFeeTotoalGT(double outSideFeeTotoalGT) {
         this.outSideFeeTotoalGT = outSideFeeTotoalGT;
+    }
+
+    public List<Staff> getStaffs() {
+        return staffs;
+    }
+
+    public void setStaffs(List<Staff> staffs) {
+        this.staffs = staffs;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
 }

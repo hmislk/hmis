@@ -65,7 +65,7 @@
             </div>
 
             <p:spacer height="30"/>
-            
+
             <div >
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
 
@@ -83,7 +83,7 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;">
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}">
                         <f:facet name="header">
                             <h:outputLabel value="Free QTY"/>
                         </f:facet>
@@ -91,7 +91,7 @@
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
@@ -100,7 +100,7 @@
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>
-                    
+
                 </p:dataTable>
             </div>
 

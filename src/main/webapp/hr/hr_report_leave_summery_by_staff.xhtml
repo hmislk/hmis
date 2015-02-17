@@ -1,0 +1,292 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Leave Report" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To : " />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="Staff : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>                          
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeaveDetail()}"/>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1, tb2, tb3, tb4, tb5, tb6, tb7, tb8" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview">                     
+                            <p:dataTable id="tb1" value="#{hrReportController.staffLeavesAnnual}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Annual "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.annualEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.annualUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.annualEntitle - hrReportController.annualUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb2" value="#{hrReportController.staffLeavesCashual}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Casual "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.casualEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.casualUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.casualEntitle - hrReportController.casualUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb3" value="#{hrReportController.staffLeavesNoPay}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="No Pay "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.nopayEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.nopayUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.nopayEntitle - hrReportController.nopayUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb4" value="#{hrReportController.staffLeavesDutyLeave}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Duty Leave "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.dutyLeaveEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.dutyLeaveUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.dutyLeaveEntitle - hrReportController.dutyLeaveUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb5" value="#{hrReportController.staffLeavesLieu}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Lieu Leave "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.lieuEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.lieuUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.lieuEntitle - hrReportController.lieuUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb6" value="#{hrReportController.staffLeavesMedical}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Medical Leave "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.medicalEntitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.medicalUtilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.medicalEntitle - hrReportController.medicalUtilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb7" value="#{hrReportController.staffLeavesMaternity1st}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Maternity ist Leave "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.maternity1Entitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.maternity1Utilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.maternity1Entitle - hrReportController.maternity1Utilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column> 
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+                            <p:dataTable id="tb8" value="#{hrReportController.staffLeavesMaternity2nd}" var="ss">
+                                <f:facet name="header" >
+                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                        <h:outputLabel value="Maternity 2nd Leave "/>
+                                        <h:outputLabel value="Entitle - #{hrReportController.maternity2Entitle}"/>
+                                        <h:outputLabel value="Utilized - #{hrReportController.maternity2Utilized}"/>
+                                        <h:outputLabel value="Balance - #{hrReportController.maternity2Entitle - hrReportController.maternity2Utilized}"/>
+                                    </h:panelGrid>
+                                </f:facet>
+                                <p:column headerText="Staff No">
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff Name">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                </p:column>                                                            
+                                <p:column headerText="Crated Date" >
+                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <p:outputLabel value="#{ss.qty}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Comments" >
+                                    <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
+                                </p:column>  
+
+                            </p:dataTable>
+                            <p:spacer width="30px"></p:spacer>
+
+
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

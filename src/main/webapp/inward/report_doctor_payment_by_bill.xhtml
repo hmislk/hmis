@@ -68,7 +68,7 @@
 
                         </p:panelGrid>
                         <p:panel id="gpBillPreview">
-                            <p:panelGrid columns="3" style="width: 100%;">
+                            
                                 <p:dataTable id="tbl" value="#{inwardStaffPaymentBillController.bills}" var="b" >
 
                                     <f:facet name="header">
@@ -107,6 +107,8 @@
                                         </f:facet>
                                         <p:outputLabel value="#{b.insId}" >
                                         </p:outputLabel>
+                                        <p:outputLabel value=" - #{b.cancelledBill.insId}" rendered="#{b.cancelled}">
+                                        </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Paid Amount" style="text-align: right;font-size: 10px;">
@@ -127,7 +129,66 @@
 
 
                                 </p:dataTable>
-                            </p:panelGrid>
+                                <p:dataTable id="tbl1" value="#{inwardStaffPaymentBillController.billsCan}" var="b" >
+
+                                    <f:facet name="header">
+
+                                        <h:outputLabel value="Inward Doctor Payment Cancel"/>
+                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" -- "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+
+                                    <p:column headerText="Paid By" style="font-size: 10px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Paid By" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Date/Time" style="font-size: 10px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Date/Time" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" style="font-size: 10px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bill No" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.insId}" >
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" - #{b.billedBill.insId}">
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Paid Amount" style="text-align: right;font-size: 10px;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Paid Amount" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardStaffPaymentBillController.totalPayingCan}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+
+
+                                    </p:column>
+
+
+                                </p:dataTable>
                         </p:panel>
                     </p:panel>
                 </h:form>

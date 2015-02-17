@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <body>
 
@@ -14,94 +15,103 @@
             <ui:define name="content">
 
                 <h:form>
-                    <p:panel header="Department List" >
+                    <p:panel header="Employe List" >
                         <p:panel>
+                            <h:panelGrid columns="2" >  
+                                <h:outputLabel value="Institution"/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Staff Category : "/>
+                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Designation : "/>
+                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                <h:outputLabel value="Staff Roster : "/>
+                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            </h:panelGrid>
                             <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl1" fileName="hr_report_department"  />
+                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
                             </p:commandButton> 
                         </p:panel>
-                        <p:panel header="Department List" id="reportPrint">
+                        <p:panel header="Employee List" id="reportPrint">
 
-                            <p:dataTable value="#{hrReportController.staffs}" var="s" id="tbl1" rowIndexVar="i">
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Department List" />
-                                </f:facet>
-                                <p:column headerText="No">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="No" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i+1}" />
+
+                            <p:dataTable value="#{hrReportController.staffs}" 
+                                         var="s" 
+                                         id="tbl2" 
+                                         rowIndexVar="i"
+                                         rowKey="#{s.id}"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         rows="10"
+                                         >
+                                <p:column headerText="Id" filterBy="#{s.id}" >
+                                    #{s.id}
                                 </p:column>
-                                <p:column headerText="EMP NO" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="EMP NO" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.staffCode}" />
+                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id">
+                                    <p:outputLabel value="#{s.id}" />
+                                </p:column>   
+
+                                <p:column filterBy="#{s.person.id}" headerText="Person Id">
+                                    <p:outputLabel value="#{s.person.id}" />
+                                </p:column>   
+
+                                <p:column filterBy="#{s.person.name}" headerText="Name">
+                                    <p:outputLabel value="#{s.person.name}" />
                                 </p:column>
-                                <p:column headerText="EMP NAME" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="EMP NAME" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.person.nameWithTitle}" />
+                                <p:column headerText="Full Name" >
+                                    <p:outputLabel value="#{s.person.fullName}" />
+                                </p:column>
+                                <p:column headerText="Name with Initials" >
+                                    <p:outputLabel value="#{s.person.nameWithInitials}" />
                                 </p:column>
                                 <p:column headerText="Code NO" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Code NO" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.code}" />
+                                    <p:outputLabel value="#{s.codeInterger}" />
                                 </p:column>
-                                  <p:column headerText="Roster" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Roster" />
-                                    </f:facet>
-                                      <p:outputLabel value="#{s.roster.name}" />
+                                <p:column headerText="EPF Code" >
+                                    <p:outputLabel value="#{s.epfNo}" />
+                                </p:column>
+                                <p:column headerText="Roster" >
+                                    <p:outputLabel value="#{s.roster.name}" />
                                 </p:column>
                                 <p:column headerText="ADDRESS" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="ADDRESS" />
-                                    </f:facet>
                                     <p:outputLabel value="#{s.person.address}" />
                                 </p:column>
                                 <p:column headerText="Sex" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Sex" />
-                                    </f:facet>
                                     <p:outputLabel value="#{s.person.sex}" />
                                 </p:column>
                                 <p:column headerText="NIC No" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="NIC No" />
-                                    </f:facet>
                                     <p:outputLabel value="#{s.person.nic}" />
                                 </p:column>
                                 <p:column headerText="DOB" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="DOB" />
-                                    </f:facet>
                                     <p:outputLabel value="#{s.person.dob}" >
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="DOJoin" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="DOJoin" />
-                                    </f:facet>
+                                <p:column headerText="DO Join" >
                                     <p:outputLabel value="#{s.dateJoined}" >
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DEPARTMENT" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="DEPARTMENT" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.department.name}" />
+                                    <p:outputLabel value="#{s.workingDepartment.name}" />
                                 </p:column>
+                                <p:column headerText="Account Number" >
+                                    <p:outputLabel value="#{s.accountNo}" />
+                                </p:column>
+                                <p:column headerText="Bank" >
+                                    <p:outputLabel value="#{s.bankBranch.institution.name}" />
+                                </p:column>
+
                             </p:dataTable>
+
+
                         </p:panel>
                     </p:panel>
                 </h:form>

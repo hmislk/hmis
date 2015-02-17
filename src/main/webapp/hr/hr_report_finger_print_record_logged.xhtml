@@ -51,11 +51,11 @@
                                     #{ss.staff.person.nameWithTitle}
                                 </p:column>
                                 <p:column headerText="Time Type">
-                                    #{ss.times}
+                                    #{ss.verifiedRecord.times}
                                 </p:column>
                                 <p:column headerText="Logged Date">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/yy/mm"/>
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Logged Time">
@@ -65,7 +65,7 @@
                                 </p:column>
                                  <p:column headerText="Verified Date">
                                      <h:outputLabel  value="#{ss.verifiedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/yy/mm"/>
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Verified Time">

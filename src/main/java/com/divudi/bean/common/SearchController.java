@@ -19,6 +19,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
@@ -464,6 +465,56 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
     }
 
+    List<Bill> prescreptionBills;
+    Department department;
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    
+    
+
+    public List<Bill> getPrescreptionBills() {
+        return prescreptionBills;
+    }
+
+    public void setPrescreptionBills(List<Bill> prescreptionBills) {
+        this.prescreptionBills = prescreptionBills;
+    }
+
+    public void createPharmacyPrescriptionBillTable() {
+        Map m = new HashMap();
+        m.put("bt", BillType.PharmacyPre);
+        m.put("rBt", BillType.PharmacySale);
+        m.put("class", PreBill.class);
+        m.put("rClass", BilledBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        String sql;
+        sql = "Select b from Bill b "
+                + " where b.retired=false and b.createdAt between :fd and :td and b.billType=:bt "
+                + " and b.referredBy is not null "
+                + " and b.institution=:ins "
+                + " and b.referenceBill.billType=:rBt "
+                + " and type(b)=:class "
+                + " and type(b.referenceBill)=:rClass ";
+
+        if (department != null) {
+            sql += " and b.department=:dept ";
+            m.put("dept", department);
+        }
+
+        sql += " order by b.createdAt ";
+
+        prescreptionBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public void createPharmacyTable() {
 
         Map m = new HashMap();
@@ -472,13 +523,15 @@ public class SearchController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
+        m.put("ldep", getSessionController().getLoggedUser().getDepartment());
         String sql;
 
         sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
                 + " and b.billedBill is null "
-                + " and b.institution=:ins ";
+                + " and b.institution=:ins "
+                + " and b.department=:ldep";
         //  + " and type(b)=:class ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -839,7 +892,8 @@ public class SearchController implements Serializable {
     }
 
     public void createIssuePharmacyReport() {
-        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+//        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+        fetchPharmacyBillsNew(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
     }
 
     public void createIssueStoreReport() {
@@ -864,6 +918,52 @@ public class SearchController implements Serializable {
         sql = "Select b From BilledBill b "
                 + " where b.retired=false "
                 //+ " and b.toDepartment=:dep "
+                + " and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.toStaff.person.name) like :stf )";
+            tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and b.department=:frmdep";
+            tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
+        }
+
+        if (getSearchKeyword().getTooDepartment() != null) {
+            sql += " and b.toDepartment=:tdep";
+            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        List<Bill> list = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
+        bills = new ArrayList<>();
+        netTotalValue = 0.0;
+        for (Bill b : list) {
+//            System.out.println("b = ");
+
+            Bill refBill = getActiveRefBillnotApprove(b, billType2);
+            if (refBill == null) {
+                System.out.println("b = " + refBill);
+                netTotalValue += b.getNetTotal();
+                bills.add(b);
+            }
+        }
+
+    }
+
+    public void fetchPharmacyBillsNew(BillType billType, BillType billType2) {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        //tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", billType);
+        sql = "Select b From BilledBill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and b.billType= :bTp "
                 + " and b.createdAt between :fromDate and :toDate ";
 
@@ -3705,6 +3805,56 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.insId desc ";
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createInwardServiceTablebyLoggedDepartment() {
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select (b.bill) from BillItem b where "
+                + " b.bill.billType = :billType "
+                + " and b.bill.createdAt between :fromDate and :toDate"
+                + " and b.bill.retired=false  "
+                + " and b.bill.department = :dep";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.bill.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  (upper(b.bill.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.bill.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.bill.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(b.item.name) like :item )";
+            temMap.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.bill.insId desc ";
+        temMap.put("dep", getSessionController().getDepartment());
         temMap.put("billType", BillType.InwardBill);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);

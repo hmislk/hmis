@@ -91,7 +91,7 @@ public class InwardRefundController implements Serializable {
         }
 
         if ((getPaidAmount() < getCurrent().getTotal())) {
-            double different = Math.abs((getPaidAmount() - getCurrent().getTotal()));
+            double different = Math.abs((getPaidAmount() - Math.abs(getCurrent().getTotal())));
 
             if (different > 0.1) {
                 UtilityController.addErrorMessage("Check Refuning Amount");
@@ -247,7 +247,8 @@ public class InwardRefundController implements Serializable {
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
-                + " and b.patientEncounter=:pe";
+                + " and b.patientEncounter=:pe"
+                + " order by b.id desc";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
@@ -259,20 +260,22 @@ public class InwardRefundController implements Serializable {
             return;
         }
 
-        double paidByPatient = Math.abs(b.getPaidAmount());
+        paidAmount = b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
 
-        if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Cash) {
-            paidAmount = paidByPatient - Math.abs(b.getNetTotal());
-            return;
-        }
-
-        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
-        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
-        double netCredit = creditUsedAmount - creditPaidAmount;
-
-        if (getCurrent().getPatientEncounter().getCreditLimit() != 0) {
-            paidAmount = (paidByPatient + netCredit) - Math.abs(b.getNetTotal());
-        }
+//        double paidByPatient = Math.abs(b.getPaidAmount());
+//
+//        if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Cash) {
+//            paidAmount = paidByPatient - Math.abs(b.getNetTotal());
+//            return;
+//        }
+//
+//        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
+//        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
+//        double netCredit = creditUsedAmount - creditPaidAmount;
+//
+//        if (getCurrent().getPatientEncounter().getCreditLimit() != 0) {
+//            paidAmount = (paidByPatient + netCredit) - Math.abs(b.getNetTotal());
+//        }
     }
 
     public double getPaidAmount() {

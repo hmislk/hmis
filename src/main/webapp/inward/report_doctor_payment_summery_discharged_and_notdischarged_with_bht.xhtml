@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Doctor Payment" >
+                        <p:panel>
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="From" />
+                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                                <p:outputLabel value="To" />
+                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                                <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                converter="specilityCon"   >
+                                </p:autoComplete>
+                                <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                                <p:selectOneMenu  id="lstAdmissionType"   
+                                                  value="#{inwardStaffPaymentBillController.admissionType}" >
+                                    <f:selectItem itemLabel="All Admission Types"/>
+                                    <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                                <p:selectOneMenu   id="cmbBhtType" value="#{inwardStaffPaymentBillController.paymentMethod}"  >
+                                    <f:selectItem itemLabel="All BHT Types" />                           
+                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                                <p:selectOneMenu  id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
+                                    <f:selectItem itemLabel="All Credit Companies"/>
+                                    <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                    itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                </p:selectOneMenu>   
+                            </h:panelGrid>
+                            <p:watermark for="fdate" value="From Date" />
+                            <p:watermark for="tdate" value="To Date" />
+                            <p:watermark for="acSpeciality" value="Speciality" />
+                        </p:panel>
+                        <p:panel>
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                            </p:commandButton>
+                        </p:panel>
+                        <p:panel id="gpBillPreview">
+                            <p:panelGrid columns="3" style="width: 100%;" styleClass="alignTop">
+                                <p:dataTable id="tb1" value="#{inwardStaffPaymentBillController.docBhtPayListDischarged}" var="bi" >
+
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Doctor Payments For Discharged patients"/>
+                                    </f:facet>
+
+                                    <p:column headerText="Code">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Code" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.patienEncounter.bhtNo}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Name">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Name" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.staff.person.name}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Paid Amount" style="text-align: right;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Paid Amount" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.feeValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="Total  "/>
+                                            <p:column>
+                                            </p:column>
+                                            <p:column footerText="#{inwardStaffPaymentBillController.totalBhtDocPayListDischarged}" style="text-align: right;">
+                                                <f:facet name="footer" >
+                                                    <h:outputLabel value="#{inwardStaffPaymentBillController.totalBhtDocPayListDischarged}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                                <p:dataTable id="tb2" value="#{inwardStaffPaymentBillController.docBhtPayListnotDischarged}" var="bi" >
+
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Doctor Payments For Not Discharged patients"/>
+                                    </f:facet>
+
+                                    <p:column headerText="Code">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Code" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.patienEncounter.bhtNo}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Name">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Name" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.staff.person.name}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Paid Amount" style="text-align: right;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Paid Amount" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bi.paidForBillFee.feeValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="Total  "/>
+                                            <p:column>
+                                            </p:column>
+                                            <p:column footerText="#{inwardStaffPaymentBillController.totalBhtDocPayListNotDischarged}" style="text-align: right;">
+                                                <f:facet name="footer" >
+                                                    <h:outputLabel value="#{inwardStaffPaymentBillController.totalBhtDocPayListNotDischarged}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel>
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Doctor payment Total for Discharged Patients"></p:outputLabel>
+                                <p:outputLabel value="#{inwardStaffPaymentBillController.totalBhtDocPayListDischarged}"></p:outputLabel>
+                                <p:outputLabel value="Doctor payment Total for Not Discharged"></p:outputLabel>
+                                <p:outputLabel value="#{inwardStaffPaymentBillController.totalBhtDocPayListNotDischarged}"></p:outputLabel>
+                                <p:outputLabel value="Net Total"></p:outputLabel>
+                                <p:outputLabel style="color: blue; font-style: italic;" value="#{inwardStaffPaymentBillController.totalBhtDocPayListDischarged - inwardStaffPaymentBillController.totalBhtDocPayListNotDischarged}"></p:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -20,6 +20,23 @@ import java.util.TimeZone;
 @Singleton
 public class CommonFunctions {
 
+    public long calTimePeriod(Date frDate, Date tDate) {
+
+        if (frDate == null || tDate == null) {
+            return 0;
+        }
+
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(tDate);
+        cal2.setTime(frDate);
+
+        Long minCount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60);
+
+//        System.out.println("daycount = " + daycount);
+        return minCount;
+    }
+
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
         Date startOfThisMonth = getStartOfMonth(date);
@@ -123,11 +140,13 @@ public class CommonFunctions {
 //        System.err.println("TO " + to);
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
 //        System.err.println("INDAYS " + inDays);
+
+        //we need to 1 because date rangs is missing one day as it between days
+        inDays++;
+        System.err.println(frm+" : "+to+" DAY COUNT " + inDays);
         return inDays;
 
     }
-    
-
 
     public Date guessDob(String docStr) {
         //System.out.println("year string is " + docStr);
@@ -309,13 +328,13 @@ public class CommonFunctions {
         calendar.set(year, month, 1, 0, 0, 0);
         //System.err.println("DDDD " + calendar.getTime());
         calendar.add(Calendar.MONTH, 1);
-        calendar.add(Calendar.MILLISECOND, -1);
+        calendar.add(Calendar.SECOND, -1);
         //System.err.println("FFFF " + calendar.getTime());
         return calendar.getTime();
     }
 
     public Date getBeginningOfMonth(Date date) {
-        if(date==null){
+        if (date == null) {
             date = new Date();
         }
         Calendar calendar = Calendar.getInstance();

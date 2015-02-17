@@ -25,12 +25,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class Shift implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -58,9 +61,9 @@ public class Shift implements Serializable {
     private boolean dayOff;
 //    private int count;
     @Transient
-    private int durationHour;
+    private double durationHour;
     @Transient
-    private int durationMin;
+    private double durationMin;
     double shiftDuration;
     double leaveHourFull;
     double leaveHourHalf;
@@ -82,6 +85,24 @@ public class Shift implements Serializable {
     @ManyToOne
     Shift nextShift;
     boolean halfShift;
+    boolean firstShift;
+    boolean lastShift;
+
+    public boolean isFirstShift() {
+        return firstShift;
+    }
+
+    public void setFirstShift(boolean firstShift) {
+        this.firstShift = firstShift;
+    }
+
+    public boolean isLastShift() {
+        return lastShift;
+    }
+
+    public void setLastShift(boolean lastShift) {
+        this.lastShift = lastShift;
+    }
 
     public boolean isHalfShift() {
         return halfShift;
@@ -90,8 +111,6 @@ public class Shift implements Serializable {
     public void setHalfShift(boolean halfShift) {
         this.halfShift = halfShift;
     }
-    
-    
 
     public double getLeaveHourFull() {
         return leaveHourFull;
@@ -109,10 +128,6 @@ public class Shift implements Serializable {
         this.leaveHourHalf = leaveHourHalf;
     }
 
-   
-    
-    
-
     public double getShiftDuration() {
         return shiftDuration;
     }
@@ -120,8 +135,6 @@ public class Shift implements Serializable {
     public void setShiftDuration(double shiftDuration) {
         this.shiftDuration = shiftDuration;
     }
-    
-    
 
     private boolean hideShift;
 
@@ -145,7 +158,7 @@ public class Shift implements Serializable {
 
     }
 
-    public int getDurationHour() {
+    public double getDurationHour() {
         if (getStartingTime() == null && getEndingTime() == null) {
             return 0;
         }
@@ -161,38 +174,44 @@ public class Shift implements Serializable {
 
         System.err.println("S H " + sHour);
         System.err.println("E H " + eHour);
-
-        if (sHour < eHour) {
+        durationHour = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60 * 60));
+        System.err.println(durationHour);
+        if (sHour > eHour) {
             System.err.println("1 ");
-            durationHour = eHour - sHour;
+            durationHour = (durationHour + 24);
             System.err.println("2 " + durationHour);
-        } else {
-            durationHour = ((eHour - sHour) + 24);
-
         }
+
+        durationHour = Math.floor(durationHour);
 
         return durationHour;
     }
 
-    public int getDurationMin() {
-
-        if (getStartingTime() == null && getEndingTime() == null) {
+    public double getDurationMin() {
+        if (getStartingTime() == null || getEndingTime() == null) {
             return 0;
         }
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(getStartingTime());
-        int sMin = cal.get(Calendar.MINUTE);
+        int sHour = cal.get(Calendar.HOUR_OF_DAY);
         cal.setTime(getEndingTime());
-        int eMin = cal.get(Calendar.MINUTE);
+        int eHour = cal.get(Calendar.HOUR_OF_DAY);
 
-        if (sMin < eMin) {
-            durationMin = eMin - sMin;
-        } else if (sMin == eMin) {
-            durationMin = 0;
-        } else {
-            durationMin = sMin - eMin;
+        System.err.println("S Time " + startingTime);
+        System.err.println("E Time " + endingTime);
+
+        System.err.println("S H " + sHour);
+        System.err.println("E H " + eHour);
+        durationMin = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60));
+        System.err.println(durationMin);
+        if (sHour > eHour) {
+            System.err.println("1 ");
+            durationMin = (durationMin + (24 * 60));
+            System.err.println("2 " + durationMin);
         }
+
+        durationMin = Math.floor(durationMin);
 
         return durationMin;
     }
@@ -302,6 +321,7 @@ public class Shift implements Serializable {
         this.retireComments = retireComments;
     }
 
+    @XmlTransient
     public List<StaffShift> getStaffShifts() {
         return staffShifts;
     }

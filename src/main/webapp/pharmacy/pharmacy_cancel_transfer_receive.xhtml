@@ -62,7 +62,15 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+<!--                        <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
+                        
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                            <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                            <pharmacy:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

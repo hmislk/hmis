@@ -35,7 +35,9 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Finger Print Verified Record " action="#{hrReportController.createFingerPrintRecordVarified()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record All" action="#{hrReportController.createFingerPrintRecordVarifiedAll()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record With Logged Record" action="#{hrReportController.createFingerPrintRecordVarifiedWithLogged()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record Without Logged Record " action="#{hrReportController.createFingerPrintRecordVarifiedWithOutLogged()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -55,7 +57,7 @@
                                 </p:column>
                                 <p:column headerText="Verified Date">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/yy/mm"/>
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Verified Time">
@@ -65,7 +67,7 @@
                                 </p:column>
                                  <p:column headerText="Logged Date">
                                      <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/yy/mm"/>
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Logged Time">

@@ -34,12 +34,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author buddhika
  */
 @Entity
+@XmlRootElement
 public class Staff implements Serializable {
 
     @ManyToOne
@@ -109,24 +111,57 @@ public class Staff implements Serializable {
     Date dateJoined;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateLeft;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date dateRetired;
     @Transient
     double basic;
     @Transient
     double transWorkedDays;
-    @OneToOne(cascade = CascadeType.ALL)
-    BankAccount bankAccount;
+    @ManyToOne
+    private Institution bankBranch;
+    @ManyToOne
+    private Institution epfBankBranch;
+    private String epfAccountNo;
+    private String accountNo;
     String epfNo;
 
     String acNo;
 
 //    double workingHourPerShift;
 //    double leaveHour;
-
     double annualWelfareQualified;
     double annualWelfareUtilized;
     double workingTimeForOverTimePerWeek;
     double workingTimeForNoPayPerWeek;
     Integer codeInterger;
+    boolean allowedLateInLeave = true;
+    boolean allowedEarlyOutLeave = true;
+
+    public Date getDateRetired() {
+        return dateRetired;
+    }
+
+    public void setDateRetired(Date dateRetired) {
+        this.dateRetired = dateRetired;
+    }
+    
+    
+
+    public boolean isAllowedLateInLeave() {
+        return allowedLateInLeave;
+    }
+
+    public void setAllowedLateInLeave(boolean allowedLateInLeave) {
+        this.allowedLateInLeave = allowedLateInLeave;
+    }
+
+    public boolean isAllowedEarlyOutLeave() {
+        return allowedEarlyOutLeave;
+    }
+
+    public void setAllowedEarlyOutLeave(boolean allowedEarlyOutLeave) {
+        this.allowedEarlyOutLeave = allowedEarlyOutLeave;
+    }
 
     public double getWorkingTimeForNoPayPerWeek() {
         return workingTimeForNoPayPerWeek;
@@ -135,8 +170,6 @@ public class Staff implements Serializable {
     public void setWorkingTimeForNoPayPerWeek(double workingTimeForNoPayPerWeek) {
         this.workingTimeForNoPayPerWeek = workingTimeForNoPayPerWeek;
     }
-    
-    
 
     public double getTransWorkedDays() {
         return transWorkedDays;
@@ -153,8 +186,6 @@ public class Staff implements Serializable {
     public void setWorkingTimeForOverTimePerWeek(double workingTimeForOverTimePerWeek) {
         this.workingTimeForOverTimePerWeek = workingTimeForOverTimePerWeek;
     }
-    
-    
 
     public Integer getCodeInterger() {
         return codeInterger;
@@ -171,7 +202,7 @@ public class Staff implements Serializable {
 
         try {
             codeInterger = Integer.parseInt(code);
-            
+
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -193,7 +224,6 @@ public class Staff implements Serializable {
 //    public void setLeaveHour(double leaveHour) {
 //        this.leaveHour = leaveHour;
 //    }
-
     public byte[] getBaImage() {
         return baImage;
     }
@@ -420,6 +450,7 @@ public class Staff implements Serializable {
 
     public void setWorkingDepartment(Department workingDepartment) {
         this.workingDepartment = workingDepartment;
+        this.department = workingDepartment;
     }
 
     public EmployeeLeavingStatus getEmployeeLeavingStatus() {
@@ -536,15 +567,20 @@ public class Staff implements Serializable {
         this.basic = basic;
     }
 
-    public BankAccount getBankAccount() {
-        if (bankAccount == null) {
-            bankAccount = new BankAccount();
-        }
-        return bankAccount;
+    public Institution getBankBranch() {
+        return bankBranch;
     }
 
-    public void setBankAccount(BankAccount bankAccount) {
-        this.bankAccount = bankAccount;
+    public void setBankBranch(Institution bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
     }
 
     public String getEpfNo() {
@@ -578,7 +614,6 @@ public class Staff implements Serializable {
 //    public void setWorkingHourPerShift(double workingHourPerShift) {
 //        this.workingHourPerShift = workingHourPerShift;
 //    }
-
     public double getCharge() {
         return charge;
     }
@@ -601,6 +636,22 @@ public class Staff implements Serializable {
 
     public void setAnnualWelfareUtilized(double annualWelfareUtilized) {
         this.annualWelfareUtilized = annualWelfareUtilized;
+    }
+
+    public Institution getEpfBankBranch() {
+        return epfBankBranch;
+    }
+
+    public void setEpfBankBranch(Institution epfBankBranch) {
+        this.epfBankBranch = epfBankBranch;
+    }
+
+    public String getEpfAccountNo() {
+        return epfAccountNo;
+    }
+
+    public void setEpfAccountNo(String epfAccountNo) {
+        this.epfAccountNo = epfAccountNo;
     }
 
 }

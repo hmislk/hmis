@@ -164,6 +164,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);
         TreeNode node222 = new PrivilageNode("Lab Bill Cancell Special(after collecting sample can cancell)", node2, Privileges.LabBillCancelSpecial);
         TreeNode node223 = new PrivilageNode("Lab Bill Refund Special(after collecting sample can Refund)", node2, Privileges.LabBillRefundSpecial);
+        TreeNode node224 = new PrivilageNode("Add Inward Services", node2, Privileges.LabAddInwardServices);
 
         TreeNode node3 = new PrivilageNode("Pharmacy", tmproot);
         TreeNode node300 = new PrivilageNode("Pharmacy Menu", node3, Privileges.Pharmacy);
@@ -258,6 +259,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node9 = new PrivilageNode("Human Resource", tmproot);
         TreeNode node91 = new PrivilageNode("HR Menu", node9, Privileges.Hr);
         TreeNode node910 = new PrivilageNode("HR Anistration", node91, Privileges.HrAdmin);
+        TreeNode node911 = new PrivilageNode("HR Employee History Reports", node91, Privileges.EmployeeHistoryReport);
 
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);

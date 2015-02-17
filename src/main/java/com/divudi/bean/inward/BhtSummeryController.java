@@ -1160,6 +1160,13 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
+        //For update Printing room
+        setCurrent(getBillFacade().findByField("id", getCurrent().getId().toString(), false));
+        
+        System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
+        System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
+        System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
+        System.out.println("4." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getRoom().getName());
 
         UtilityController.addSuccessMessage("Bill Saved");
 
@@ -1393,11 +1400,11 @@ public class BhtSummeryController implements Serializable {
             return "";
         }
 
-        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
-            if (checkBill()) {
-                return "";
-            }
-        }
+//        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
+//            if (checkBill()) {
+//                return "";
+//            }
+//        }
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {

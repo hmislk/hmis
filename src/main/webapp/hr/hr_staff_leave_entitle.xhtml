@@ -15,7 +15,11 @@
                         <h:panelGrid columns="2">                            
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
-                            <h:outputLabel value="Leave Type"/>
+                            <h:outputLabel value="From Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <h:outputLabel value="To Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
+                            <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
@@ -25,24 +29,41 @@
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              action="#{staffLeaveEntitleController.saveSelected()}"/>
 
-                            <p:commandButton ajax="false" value="Clear" action="#{staffLeaveEntitleController.recreateModel}"/>
-                            <p:commandButton ajax="false" value="Delete" action="#{staffLeaveEntitleController.delete()}"/>
+                            <p:commandButton ajax="false" value="Delete" 
+                                             action="#{staffLeaveEntitleController.delete()}"/>
 
                         </h:panelGrid>
                     </p:panel>
                     <p:panel header="Search Forms">
-                        <h:panelGrid columns="3">                           
+                        <h:panelGrid columns="2">                           
                             <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>                                      
+                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>   
+                            <h:outputLabel value="From Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <h:outputLabel value="To Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
+                            <h:outputLabel value="Leave Type : "/>
+                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
+                                <f:selectItem itemLabel="Select Leave Type"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu>
                             <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
+                            <p:commandButton ajax="false" value="Reset " action="#{staffLeaveEntitleController.resetDate()}" />                            
                         </h:panelGrid>
-                        <p:dataTable value="#{staffLeaveEntitleController.items}" var="add" 
+                        <p:dataTable value="#{staffLeaveEntitleController.selectedItems}" var="add" 
                                      scrollable="true"
                                      scrollHeight="300" >
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View">
-                                    <f:ajax execute="@this" render="@all"/>                                    
+                                    <f:ajax execute="@this" render="@all"/> 
+                                    <f:setPropertyActionListener target="#{staffLeaveEntitleController.current}" value="#{add}"/>
                                 </p:commandButton>
+                            </p:column>
+                            <p:column headerText="From">
+                                #{add.fromDate}
+                            </p:column>
+                             <p:column headerText="To">
+                                #{add.toDate}
                             </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
@@ -50,12 +71,36 @@
                             <p:column headerText="Leave Type">
                                 <p:outputLabel value="#{add.leaveType}" ></p:outputLabel>
                             </p:column>                          
-                             <p:column headerText="Count">
+                            <p:column headerText="Count">
                                 <p:outputLabel value="#{add.count}" ></p:outputLabel>
-                            </p:column>       
+                            </p:column> 
+
                         </p:dataTable>
                     </p:panel>
                 </h:panelGrid>
+                <p:panel header="Forms">
+                    <h:panelGrid columns="1">                           
+                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" />                            
+                    </h:panelGrid>
+                    <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add">
+                        <p:column headerText="Staff">
+                            <p:outputLabel value="#{add.staff.code}" style="color: red;" rendered="#{add.leaveType eq 'Annual' and add.count ne 14}" ></p:outputLabel>
+                            <p:outputLabel value="#{add.staff.code}" style="color: green;" rendered="#{add.leaveType eq 'Casual' and add.count ne 7}" ></p:outputLabel>
+                            <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Annual' and add.count eq 14}" ></p:outputLabel>
+                            <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Casual' and add.count eq 7}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Leave Type">
+                            <p:outputLabel value="#{add.leaveType}" style="color: red;" rendered="#{add.leaveType eq 'Annual'}" ></p:outputLabel>
+                            <p:outputLabel value="#{add.leaveType}" style="color: green;" rendered="#{add.leaveType eq 'Casual'}" ></p:outputLabel>
+                        </p:column>                          
+                        <p:column headerText="Count">
+                            <p:outputLabel value="#{add.count}"></p:outputLabel>
+                        </p:column> 
+                        <p:column headerText="Staff">
+                            <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
             </p:panel>
         </h:form>
     </ui:define> 

@@ -21,7 +21,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Investigation" />
                             </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End summery" action="report_lab_investigation_month_end_summery"/>                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End summery" action="report_lab_investigation_month_end_summery"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre" action="report_lab_collection_centre.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor" action="report_lab_by_refering_doctor.xhtml"/>
@@ -38,7 +38,8 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summery by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summery by Month With Cash and Credit With Fee Types" action="report_lab_by_date_summery_cash_credit.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summery by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
 
                         </h:panelGrid>
                         
@@ -48,6 +49,14 @@
                             </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summery By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
                             <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summery" action="report_opd_service_summery"/> 
+
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="1">
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Summery Inward" />
+                            </f:facet>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summery by Added Date" action="report_inward_service_detail_added_lab"/> 
 
                         </h:panelGrid>
 

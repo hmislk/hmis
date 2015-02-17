@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Staff Shift Report (Staff Shift)" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >                            
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createShiftTable()}"/>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" >
+                            
+                            <p:dataTable id="tb1" value="#{hrReportController.shiftLists}" var="ss">
+                                <p:column headerText="Roster Name">
+                                    <h:outputLabel value="#{ss.roster.name}"/>
+                                </p:column>
+                                 <p:column headerText="Shift Name">
+                                     <h:outputLabel value="#{ss.name}"/>
+                                    
+                                </p:column>
+                                <p:column headerText="Day Type">
+                                    <h:outputLabel value="#{ss.dayType}"/>
+                                    
+                                </p:column>
+                              
+                                <p:column headerText="Starting Time">
+                                    <h:outputLabel value="#{ss.startingTime}" rendered="#{ss.startingTime ne null}">
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Ending Time">
+                                    <h:outputLabel value="#{ss.endingTime}" rendered="#{ss.endingTime ne null}">
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Previous Shift">
+                                    <h:outputLabel value="#{ss.previousShift.name}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Next Shift">
+                                    <h:outputLabel value="#{ss.nextShift.name}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Leave Hour Full">
+                                    <h:outputLabel value="#{ss.leaveHourFull}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Leave Hour Half">
+                                    <h:outputLabel value="#{ss.leaveHourHalf}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Duration Minutes">
+                                    <h:outputLabel value="#{ss.durationMin}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="First Shift">
+                                    <h:outputLabel value="#{ss.firstShift}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Last Shift">
+                                    <h:outputLabel value="#{ss.lastShift}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Half Shift">
+                                    <h:outputLabel value="#{ss.halfShift}"/>
+                                    
+                                </p:column>
+                                
+                                <p:column headerText="Hide Shift">
+                                    <h:outputLabel value="#{ss.hideShift}"/>
+                                    
+                                </p:column>
+                                
+
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

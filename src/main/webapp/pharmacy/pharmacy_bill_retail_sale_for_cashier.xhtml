@@ -328,11 +328,17 @@
 
                                 </f:facet>
 
-                                <h:panelGrid columns="1">
-                                    <p:inputText value="#{pharmacySaleController.comment}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
-                                </h:panelGrid>
-
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController.preBill.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" 
+                                                    var="ix" itemLabel="#{ix.person.name}" 
+                                                    itemValue="#{ix}" size="30"  
+                                                    >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{pharmacySaleController.comment}" id="comment"/>
+                                </p:panelGrid>
 
 
                                 <p:panel header="Bill Details" id="pBillDetails"  >
@@ -444,7 +450,7 @@
                                 </div>
 
                             </h:panelGroup>
-                            
+
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
                                 <div >
@@ -454,7 +460,7 @@
                                 </div>
 
                             </h:panelGroup>
-                            
+
                         </h:panelGroup>
 
 

@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGrid columns="2">
+                        <h:outputText value="Institution" ></h:outputText>
+                        <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" >
+                            <f:selectItem itemLabel="Please select a Institution"/>
+                            <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                        </p:selectOneMenu>
+                        <h:outputText value="Department" ></h:outputText>
+                        <p:selectOneMenu id="cmbDep" value="#{reorderController.department}" >
+                            <f:selectItem itemLabel="Please select a Department"/>
+                            <f:selectItems value="#{serviceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </p:selectOneMenu>
+                        <p:column colspan="2" >
+                            <p:dataTable value="#{ampController.items}" var="amp" rowKey="#{amp.id}" 
+                                         selection="#{reorderController.selectedItems}"      paginator="true" paginatorAlwaysVisible="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,30,50"
+                                         rows="10"     >
+                                <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+                                <p:column headerText="Item"  filterBy="#{amp.name}" filterMatchMode="contains"  >
+                                    #{amp.name}
+                                </p:column>
+                            </p:dataTable>
+                        </p:column>
+                                <h:panelGrid columns="1">
+                            <p:commandButton ajax="false" value="Create Reorder Level" action="#{reorderController.createDepartmentReorders()}"/>
+                            <p:commandButton ajax="false" value="Fill Reorder Levels" action="#{reorderController.fillDepartmentReorders()}"/>
+                        </h:panelGrid>
+                    </h:panelGrid>
+
+
+
+                    <p:dataTable value="#{reorderController.items}" var="i" editable="true" >
+                        <p:ajax event="rowEdit" listener="#{reorderController.onEdit}" />  
+                        <p:column headerText="Item">
+                            #{i.item.name}
+                        </p:column>
+                        <p:column headerText="Buffer Stock">
+                            <p:inputText  value="#{i.bufferStocks}"/>
+                        </p:column>
+                        <p:column headerText="Reorder Level">                           
+                            <p:inputText  value="#{i.rol}"/>
+                        </p:column>
+                        <p:column headerText="Reorder Quentity">
+                            <p:inputText  value="#{i.roq}"/>
+                        </p:column>
+                        <p:column headerText="Daily Usage">                           
+                            <p:inputText  value="#{i.demandInUnitsPerDay}"/>
+                        </p:column>
+                        <p:column headerText="Lead time in days">                           
+                            <p:inputText  value="#{i.leadTimeInDays}"/>
+                        </p:column>
+                        <p:column headerText="Purchase Cycle in Days">                           
+                            <p:inputText  value="#{i.purchaseCycleDurationInDays}"/>
+                        </p:column>
+                        <p:column headerText="Months considered for short term analysis">                           
+                            <p:inputText  value="#{i.monthsConsideredForShortTermAnalysis}"/>
+                        </p:column>
+                        <p:column headerText="Years considered for long term analysis">                           
+                            <p:inputText  value="#{i.yearsConsideredForLognTermAnalysis}"/>
+                        </p:column>                        
+                    </p:dataTable>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

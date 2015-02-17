@@ -21,9 +21,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@XmlRootElement
 public class HrForm extends Form implements Serializable {
 
     @ManyToOne
@@ -42,6 +44,28 @@ public class HrForm extends Form implements Serializable {
     Roster fromRoster;
     @ManyToOne
     Roster toRoster;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromTime;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toTime;
+
+    public Date getFromTime() {
+        return fromTime;
+    }
+
+    public void setFromTime(Date fromTime) {
+        this.fromTime = fromTime;
+    }
+
+    public Date getToTime() {
+        return toTime;
+    }
+
+    public void setToTime(Date toTime) {
+        this.toTime = toTime;
+    }
+    
+    
 
     public Times getTimes() {
         return times;
@@ -72,16 +96,14 @@ public class HrForm extends Form implements Serializable {
     }
 
     public void setStaff(Staff staff) {
-         if (staff == null) {
+        if (staff == null) {
             return;
         }
 
         this.staff = staff;
         setFromRoster(staff.getRoster());
-        
-    }
 
-   
+    }
 
     public Roster getFromRoster() {
         return fromRoster;

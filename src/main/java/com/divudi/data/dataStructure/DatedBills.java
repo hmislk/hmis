@@ -6,6 +6,8 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -17,12 +19,24 @@ public class DatedBills {
 
     private Date date;
     private List<Bill> bills;
+    List<BillItem> billItems;
     private List<Bill> bills2;
     private double sumNetTotal;
     private double sumDiscount;
     private double sumCashTotal;
     private double sumCreditTotal;
     private double sumCardTotal;
+
+    public List<BillItem> getBillItems() {
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
 
     public Date getDate() {
         return date;

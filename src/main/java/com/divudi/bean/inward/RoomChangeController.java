@@ -227,6 +227,25 @@ public class RoomChangeController implements Serializable {
         changeAt = null;
         createPatientRoom();
     }
+    
+     public void addNewRoom() {
+      
+
+        PatientRoom newPatientRoom = new PatientRoom();
+        newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom,  getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
+        getCurrent().setCurrentPatientRoom(newPatientRoom);
+        getEjbFacade().edit(getCurrent());
+
+      
+
+        UtilityController.addSuccessMessage("Successfully Room Changed");
+
+        // recreate();
+        newRoomFacilityCharge = null;
+        changeAt = null;
+        createPatientRoom();
+    }
+
 
     private PatientRoom getLastGuardianRoom() {
 

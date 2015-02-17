@@ -5,11 +5,13 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
@@ -47,8 +49,16 @@ public class LabReportSearchByInstitutionController implements Serializable {
     @EJB
     CommonFunctions commonFunctions;
     List<Bill> labBills;
+    List<Bill> billedBills;
+    List<Bill>billBills;
+    List<Bill>canBills;
+    List<Bill>refBills;
+    double totalBill;
+    double totalCan;
+    double totalRef;
     //   Department department;
     private Institution institution;
+    PaymentMethod paymentMethod;
     @EJB
     BillFacade billFacade;
     double hosTot;
@@ -547,6 +557,85 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBillsR;
     }
+    
+    public void createTableCashCreditBills() {
+        if (paymentMethod==null) {
+            UtilityController.addErrorMessage("Payment Methord...!");
+            return;
+        }
+        if (institution==null) {
+            UtilityController.addErrorMessage("Institution...!");
+            return;
+        }
+        
+        billBills=fetchOPDBills(new BilledBill());
+        canBills=fetchOPDBills(new CancelledBill());
+        refBills=fetchOPDBills(new RefundBill());
+        totalBill=fetchOPDBillTotal(new BilledBill());
+        totalCan=fetchOPDBillTotal(new CancelledBill());
+        totalRef=fetchOPDBillTotal(new RefundBill());
+        System.out.println("billBills = " + billBills);
+        System.out.println("canBills = " + canBills);
+        System.out.println("refBills = " + refBills);
+
+    }
+
+    public PaymentMethod[] getPaymentMethord() {
+        PaymentMethod[] tmp= {PaymentMethod.Cash,PaymentMethod.Credit,};
+        return tmp;
+    }
+    
+    public List<Bill> fetchOPDBills(Bill bill){
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "select b from Bill b where"
+                + " b.billType=:billType "
+                + " and b.toInstitution=:ins "
+                + " and type(b)=:dt "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.paymentMethod=:pm "
+                + " order by b.createdAt ";
+
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", institution);
+        m.put("pm", paymentMethod);
+        m.put("dt", bill.getClass());
+        System.out.println("institution = " + institution);
+        System.out.println("paymentMethod = " + paymentMethod);
+        System.out.println("bill.getClass() = " + bill.getClass());
+
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+    
+    public double fetchOPDBillTotal(Bill bill){
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType=:billType "
+                + " and b.toInstitution=:ins "
+                + " and type(b)=:dt "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.paymentMethod=:pm "
+                + " order by b.createdAt ";
+
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", institution);
+        m.put("pm", paymentMethod);
+        m.put("dt", bill.getClass());
+        System.out.println("institution = " + institution);
+        System.out.println("paymentMethod = " + paymentMethod);
+        System.out.println("bill.getClass() = " + bill.getClass());
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
     public double getHosTotB() {
         return hosTotB;
@@ -698,10 +787,47 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBills;
     }
-
     public List<Bill> getBills() {
         return bills;
     }
+    
+    public List<Bill> getLabBilledBillsOwns() {
+        if (billedBills == null) {
+            if (institution == null) {
+                return new ArrayList<>();
+            }
+            
+            String sql = "select f from BilledBill f "
+                    + " where f.retired=false "
+                    + " and f.cancelled=false "
+                    + " and f.billType = :billType "
+                    + " and f.createdAt between :fromDate and :toDate "
+                    + " and f.toInstitution=:toIns "
+                    + " order by type(f), f.insId";
+            Map tm = new HashMap();
+            tm.put("fromDate", fromDate);
+            tm.put("toDate", toDate);
+            tm.put("billType", BillType.OpdBill);
+            //tm.put("billedBillCalss", BilledBill.class);
+            //  tm.put("ins", getSessionController().getInstitution());
+            tm.put("toIns", getInstitution());
+            billedBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            calTotals();
+        }
+        return billedBills;
+    }
+    
+//    public double calPaidTotal(List<Bill> bills) {
+//        double bhtTotal = 0.0;
+//        System.out.println("Items = " + bills);
+//        for (Bill billsOwn : bills) {
+//            bhtTotal += billsOwn.get;
+//        }
+//        return bhtTotal;
+//    } 
+
+    
+
 
     public List<Bill> getLabBills() {
         if (labBills == null) {
@@ -932,8 +1058,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
         tm.put("billType", BillType.OpdBill);
-        tm
-                .put("billClass", BilledBill.class);
+        tm.put("billClass", BilledBill.class);
         hosTotB = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
         sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
@@ -1174,4 +1299,69 @@ public class LabReportSearchByInstitutionController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
+
+    public List<Bill> getBillBills() {
+        return billBills;
+    }
+
+    public void setBillBills(List<Bill> billBills) {
+        this.billBills = billBills;
+    }
+
+    public List<Bill> getCanBills() {
+        return canBills;
+    }
+
+    public void setCanBills(List<Bill> canBills) {
+        this.canBills = canBills;
+    }
+
+    public List<Bill> getRefBills() {
+        return refBills;
+    }
+
+    public void setRefBills(List<Bill> refBills) {
+        this.refBills = refBills;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public double getTotalBill() {
+        return totalBill;
+    }
+
+    public void setTotalBill(double totalBill) {
+        this.totalBill = totalBill;
+    }
+
+    public double getTotalCan() {
+        return totalCan;
+    }
+
+    public void setTotalCan(double totalCan) {
+        this.totalCan = totalCan;
+    }
+
+    public double getTotalRef() {
+        return totalRef;
+    }
+
+    public void setTotalRef(double totalRef) {
+        this.totalRef = totalRef;
+    }
+
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
 }

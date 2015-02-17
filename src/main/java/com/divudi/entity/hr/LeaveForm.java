@@ -15,9 +15,11 @@ import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@XmlRootElement
 public class LeaveForm extends HrForm {
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,6 +57,8 @@ public class LeaveForm extends HrForm {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
+
+    
     
     
   

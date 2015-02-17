@@ -29,6 +29,8 @@ import com.divudi.entity.Person;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -51,28 +53,38 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
-    public ApplicationInstitution[] getApplicationInstitutions(){
+    public ApplicationInstitution[] getApplicationInstitutions() {
         return ApplicationInstitution.values();
     }
-    
+
     public PaperType[] getPaperTypes() {
         return PaperType.values();
     }
-    
+
     public ReportItemType[] getReportItemTypes() {
         Person p;
         return ReportItemType.values();
     }
 
     public LeaveType[] getLeaveType() {
-        LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
-            LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
-            LeaveType.No_Pay, LeaveType.No_Pay_Half};
+        LeaveType[] ltp = {LeaveType.Annual,
+            LeaveType.AnnualHalf,
+            LeaveType.Casual,
+            LeaveType.CasualHalf,
+            LeaveType.DutyLeave,
+            LeaveType.DutyLeaveHalf,
+            LeaveType.Lieu,
+            LeaveType.LieuHalf,
+            LeaveType.Maternity1st,
+            LeaveType.Maternity2nd,
+            LeaveType.Medical,
+            LeaveType.No_Pay,
+            LeaveType.No_Pay_Half};
         return ltp;
     }
 
     public Times[] getTimeses() {
-        return Times.values();
+        return new Times[]{Times.inTime, Times.outTime};
     }
 
     public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {
@@ -84,7 +96,7 @@ public class EnumController implements Serializable {
     }
 
     public DayType[] getDayTypeForShift() {
-        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay};
+        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.PublicHoliday};
 
         return dayTypes;
     }
@@ -114,7 +126,25 @@ public class EnumController implements Serializable {
     }
 
     public PaysheetComponentType[] getPaysheetComponentTypes() {
-        return PaysheetComponentType.values();
+        List<PaysheetComponentType> list = new ArrayList<>();
+
+        for (PaysheetComponentType pct : PaysheetComponentType.addition.children()) {
+            list.add(pct);
+        }
+
+        for (PaysheetComponentType pct : PaysheetComponentType.subtraction.children()) {
+            list.add(pct);
+        }
+
+        return list.toArray(new PaysheetComponentType[list.size()]);
+    }
+
+    public List<PaysheetComponentType> getPaysheetComponentTypesUserDefinded() {
+        return PaysheetComponentType.addition.getUserDefinedComponents();
+    }
+    
+    public List<PaysheetComponentType> getPaysheetComponentTypesSystemDefinded() {
+        return PaysheetComponentType.addition.getSystemDefinedComponents();
     }
 
     public Title[] getTitle() {
@@ -195,7 +225,12 @@ public class EnumController implements Serializable {
             BillType.CashRecieveBill,
             BillType.AgentPaymentReceiveBill,
             BillType.InwardPaymentBill,
-            BillType.PharmacySale, //            BillType.PharmacyPurchaseBill,
+            BillType.PharmacySale, 
+            BillType.ChannelCash,
+            BillType.ChannelPaid,
+
+
+//            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -303,6 +338,12 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    
+    public PaymentMethod[] getPaymentMethodsForChannelSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
+        return p;
+    }
+    
 //    public boolean checkPaymentScheme(PaymentScheme scheme, String paymentMathod) {
 //        if (scheme != null && scheme.getPaymentMethod() != null) {
 //            //System.err.println("Payment Scheme : " + scheme.getPaymentMethod());

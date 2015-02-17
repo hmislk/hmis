@@ -9,8 +9,10 @@ import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.ReportItem;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import javax.persistence.Column;
@@ -23,12 +25,15 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
+@XmlRootElement
 public class FingerPrintRecord implements Serializable {
 
     @OneToOne(mappedBy = "loggedRecord")
@@ -45,6 +50,7 @@ public class FingerPrintRecord implements Serializable {
     Staff staff;
     @ManyToOne
     Roster roster;
+    
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date recordTimeStamp;
@@ -66,12 +72,64 @@ public class FingerPrintRecord implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    //Approving Properties
+    private boolean approved;
+    @ManyToOne
+    private WebUser approver;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date approvedAt;
+    private String approveComments;
+    
     //private Boolean begining;
     @Enumerated(EnumType.STRING)
     private Times times;
     @Enumerated(EnumType.STRING)
     DayType dayType;
     String comments = "";
+    @Transient
+    boolean transNew;
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public WebUser getApprover() {
+        return approver;
+    }
+
+    public void setApprover(WebUser approver) {
+        this.approver = approver;
+    }
+
+    public Date getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(Date approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getApproveComments() {
+        return approveComments;
+    }
+
+    public void setApproveComments(String approveComments) {
+        this.approveComments = approveComments;
+    }
+    
+    
+
+    public boolean isTransNew() {
+        return transNew;
+    }
+
+    public void setTransNew(boolean transNew) {
+        this.transNew = transNew;
+    }
 
     public Roster getRoster() {
         return roster;
@@ -80,8 +138,6 @@ public class FingerPrintRecord implements Serializable {
     public void setRoster(Roster roster) {
         this.roster = roster;
     }
-    
-    
 
     public DayType getDayType() {
         return dayType;
@@ -116,7 +172,7 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   System.out.println(pattern + " " + output);
         } catch (Exception e) {
-//            System.err.println("error in parsing");
+            System.err.println(e.getMessage());
 
         }
 
@@ -279,5 +335,7 @@ public class FingerPrintRecord implements Serializable {
     public void setAllowedExtraDuty(boolean allowedExtraDuty) {
         this.allowedExtraDuty = allowedExtraDuty;
     }
+
+  
 
 }

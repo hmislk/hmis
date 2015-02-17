@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
@@ -102,6 +103,8 @@ public class InwardBeanController implements Serializable {
     BillBeanController billBean;
     @Inject
     InwardReportControllerBht inwardReportControllerBht;
+    @Inject
+    SessionController sessionController;
 
     public List<BillItem> createBillItems(Item item, PatientEncounter patientEncounter) {
         String sql = "SELECT  b FROM BillItem b "
@@ -455,14 +458,14 @@ public class InwardBeanController implements Serializable {
     }
 
     public List<BillFee> createProfesionallFee(PatientEncounter patientEncounter) {
-
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter=:pe "
+                + " order by bt.feeAdjusted desc ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
@@ -1467,6 +1470,43 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
+        //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+
+        System.err.println("Mill " + patientRoom);
+
+        System.err.println("new " + newRoomFacilityCharge);
+        if (patientRoom == null) {
+            return null;
+        }
+
+        patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
+        patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
+        patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
+        patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
+        patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
+        patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
+
+        patientRoom.setCreatedAt(Calendar.getInstance().getTime());
+        patientRoom.setCreater(webUser);
+        patientRoom.setAdmittedAt(admittedAt);
+        patientRoom.setAddmittedBy(webUser);
+        patientRoom.setPatientEncounter(patientEncounter);
+        patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
+
+//        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() == false) {
+//            patientRoom.setDischarged(true);
+//        }
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+
+        return patientRoom;
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public PatientRoomFacade getPatientRoomFacade() {
@@ -1533,6 +1573,16 @@ public class InwardBeanController implements Serializable {
         this.inwardReportControllerBht = inwardReportControllerBht;
     }
 
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+    
+    
+
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
@@ -1559,7 +1609,12 @@ public class InwardBeanController implements Serializable {
         temp = temp + admissionType.getAdditionToCount();
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
+        
+        if(getSessionController().getInstitutionPreference().isBhtNumberWithYear()){
+        Calendar c = Calendar.getInstance();
 
+        bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+        }
         return bhtText;
     }
 

@@ -7,6 +7,7 @@ package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
+import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -26,12 +27,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class StaffShift implements Serializable {
 
     @ManyToOne
@@ -48,6 +51,8 @@ public class StaffShift implements Serializable {
     private Date shiftStartTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date shiftEndTime;
+    @Enumerated(EnumType.STRING)
+    DayType dayType;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -64,7 +69,7 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     private WorkingType workingType;
 //    private boolean consideredForOt;
-//    boolean consideredForSalary;
+    boolean consideredForSalary;
 //    boolean consideredForExtraDuty;
 
     @ManyToOne
@@ -80,6 +85,10 @@ public class StaffShift implements Serializable {
     StaffShift nextStaffShift;
     @ManyToOne
     StaffShift referenceStaffShift;
+    @ManyToOne
+    private StaffShift referenceStaffShiftLateIn;
+    @ManyToOne
+    private StaffShift referenceStaffShiftEarlyOut;
 
     //Multiplying Factor Always come by subtrating 1
     // if Multiplying Factor for Salary is 1 ,but actual value is 2
@@ -102,7 +111,8 @@ public class StaffShift implements Serializable {
     @Column(name = "overTimeCompleteRecordVarified")
     double extraTimeCompleteRecordVarified;
     //Logged Data
-    double basicPerSecond;
+    @Column(name = "basicPerSecond")
+    double overTimeValuePerSecond;
     double earlyInLogged;
     double earlyOutLogged;
     double workedWithinTimeFrameLogged;
@@ -120,7 +130,6 @@ public class StaffShift implements Serializable {
     double leavedTime;
     private double leavedTimeNoPay;
     double leavedTimeOther;
-
     private boolean dayOff;
     private boolean sleepingDay;
     @Transient
@@ -130,8 +139,14 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
+    private boolean autoLeave;
     @ManyToOne
-    HrForm hrForm;
+//    @Column(name = "hrForm")
+    HrForm additionalForm;
+    @ManyToOne
+    HrForm leaveForm;
+    @ManyToOne
+    HrForm amendmentForm;
     @ManyToOne
     Roster roster;
     double lieuQty;
@@ -139,9 +154,60 @@ public class StaffShift implements Serializable {
     boolean lieuPaid;
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
+//    boolean consideredForLateEarlyAttendance;
+    boolean considerForLateIn;
+    boolean considerForEarlyOut;
     @Transient
     boolean transChecked;
     int dayOfWeek;
+//    int leaveDivident;
+
+    public DayType getDayType() {
+        return dayType;
+    }
+
+    public void setDayType(DayType dayType) {
+        this.dayType = dayType;
+    }
+
+    public HrForm getLeaveForm() {
+        return leaveForm;
+    }
+
+    public void setLeaveForm(HrForm leaveForm) {
+        this.leaveForm = leaveForm;
+    }
+
+    public HrForm getAmendmentForm() {
+        return amendmentForm;
+    }
+
+    public void setAmendmentForm(HrForm amendmentForm) {
+        this.amendmentForm = amendmentForm;
+    }
+
+//    public boolean isConsideredForLateEarlyAttendance() {
+//        return consideredForLateEarlyAttendance;
+//    }
+//
+//    public void setConsideredForLateEarlyAttendance(boolean consideredForLateEarlyAttendance) {
+//        this.consideredForLateEarlyAttendance = consideredForLateEarlyAttendance;
+//    }
+    public boolean isConsiderForLateIn() {
+        return considerForLateIn;
+    }
+
+    public void setConsiderForLateIn(boolean considerForLateIn) {
+        this.considerForLateIn = considerForLateIn;
+    }
+
+    public boolean isConsiderForEarlyOut() {
+        return considerForEarlyOut;
+    }
+
+    public void setConsiderForEarlyOut(boolean considerForEarlyOut) {
+        this.considerForEarlyOut = considerForEarlyOut;
+    }
 
     public int getDayOfWeek() {
         return dayOfWeek;
@@ -159,12 +225,36 @@ public class StaffShift implements Serializable {
         this.transChecked = transChecked;
     }
 
-    public void resetLeaveData() {
-        leavedTime = 0;
-        leavedTimeNoPay = 0;
-        leavedTimeOther = 0;
-        lieuQty = 0;
-        lieuPaymentAllowed = false;
+    public void resetLeaveData(LeaveType leaveType) {
+        if (leaveType == LeaveType.Lieu || leaveType == LeaveType.LieuHalf) {
+            lieuQty = 0;
+//            lieuPaymentAllowed = false;
+        }
+
+        switch (leaveType) {
+            case Annual:
+            case AnnualHalf:
+            case Casual:
+            case CasualHalf:
+            case Lieu:
+            case LieuHalf:
+            case DutyLeave:
+                leavedTime = 0;
+                break;
+            case No_Pay:
+            case No_Pay_Half:
+                leavedTimeNoPay = 0;
+                break;
+            case Medical:
+            case Maternity1st:
+            case Maternity1stHalf:
+            case Maternity2nd:
+            case Maternity2ndHalf:
+                leavedTimeOther = 0;
+                break;
+
+        }
+
     }
 
     public void resetFingerPrintRecordTime() {
@@ -197,10 +287,12 @@ public class StaffShift implements Serializable {
     public void reset() {
         resetFingerPrintRecordTime();
         resetExtraTime();
-        resetLeaveData();
+//        resetLeaveData();
+//        considerForLateIn = false;
+//        considerForEarlyOut = false;
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
-        basicPerSecond = 0;
+        overTimeValuePerSecond = 0;
     }
 
     public void processLieuQtyUtilized(LeaveType leaveType) {
@@ -267,18 +359,18 @@ public class StaffShift implements Serializable {
             lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
 
-        if (getStartRecord() != null
-                && getEndRecord() != null
-                && getStartRecord().getRecordTimeStamp() != null
-                && getEndRecord().getRecordTimeStamp() != null) {
-
-            DayType dayType = getShift().getDayType();
-            if (dayType == DayType.DayOff) {
-                lieuAllowed = true;
-                lieuPaymentAllowed = true;
-                lieuQty = getShift().isHalfShift() ? 0.5 : 1;
-            }
+//        if (getStartRecord() != null
+//                && getEndRecord() != null
+//                && getStartRecord().getRecordTimeStamp() != null
+//                && getEndRecord().getRecordTimeStamp() != null) {
+        DayType dtp = getShift().getDayType();
+        if (dtp == DayType.DayOff
+                || dtp == DayType.SleepingDay) {
+            lieuAllowed = true;
+            lieuPaymentAllowed = true;
+            lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
+//        }
     }
 
     public Roster getRoster() {
@@ -310,15 +402,16 @@ public class StaffShift implements Serializable {
             case Annual:
             case Casual:
             case Lieu:
-                setLeavedTime(shift.getLeaveHourFull() * 60 * 60);
+            case DutyLeave:
+                setLeavedTime((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case Maternity1st:
             case Maternity2nd:
             case Medical:
-                setLeavedTimeOther(shift.getLeaveHourFull() * 60 * 60);
+                setLeavedTimeOther((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case No_Pay:
-                setLeavedTimeNoPay(shift.getLeaveHourFull() * 60 * 60);
+                setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case AnnualHalf:
             case CasualHalf:
@@ -335,12 +428,12 @@ public class StaffShift implements Serializable {
         }
     }
 
-    public HrForm getHrForm() {
-        return hrForm;
+    public HrForm getAdditionalForm() {
+        return additionalForm;
     }
 
-    public void setHrForm(HrForm hrForm) {
-        this.hrForm = hrForm;
+    public void setAdditionalForm(HrForm additionalForm) {
+        this.additionalForm = additionalForm;
     }
 
     private void calLoggedStartRecord() {
@@ -485,6 +578,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeWithStartOrEndRecord() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
@@ -494,7 +591,8 @@ public class StaffShift implements Serializable {
                 && getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
-            if (getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+            if (getShiftStartTime() != null
+                    && getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -508,7 +606,7 @@ public class StaffShift implements Serializable {
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
-            if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+            if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -518,9 +616,9 @@ public class StaffShift implements Serializable {
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
-        if (getStartRecord().isAllowedExtraDuty()) {
-
-            if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+        if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
+            if (getShiftStartTime() != null
+                    && getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -530,8 +628,8 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
-        if (getEndRecord().isAllowedExtraDuty()) {
-            if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
+        if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
+            if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -542,6 +640,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
 
@@ -815,6 +917,11 @@ public class StaffShift implements Serializable {
 
     public void setStartRecord(FingerPrintRecord startRecord) {
         this.startRecord = startRecord;
+        if (startRecord != null) {
+            if (startRecord.getLoggedRecord() != null) {
+                startRecord.getLoggedRecord().setTimes(Times.inTime);
+            }
+        }
     }
 
     public FingerPrintRecord getEndRecord() {
@@ -823,6 +930,11 @@ public class StaffShift implements Serializable {
 
     public void setEndRecord(FingerPrintRecord endRecord) {
         this.endRecord = endRecord;
+        if (endRecord != null) {
+            if (endRecord.getLoggedRecord() != null) {
+                endRecord.getLoggedRecord().setTimes(Times.outTime);
+            }
+        }
     }
 
     public Long getId() {
@@ -881,7 +993,9 @@ public class StaffShift implements Serializable {
         }
 
         Calendar sTime = Calendar.getInstance();
+        Calendar eTime = Calendar.getInstance();
         Calendar sDate = Calendar.getInstance();
+        Calendar eDate = Calendar.getInstance();
 
         if (getShift().getStartingTime() == null) {
             return;
@@ -893,10 +1007,11 @@ public class StaffShift implements Serializable {
         sDate.set(Calendar.MINUTE, sTime.get(Calendar.MINUTE));
         setShiftStartTime(sDate.getTime());
 
-        Calendar eDate = Calendar.getInstance();
-        eDate.setTime(getShiftStartTime());
-        eDate.add(Calendar.HOUR_OF_DAY, getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, 0);
+        eTime.setTime(getShift().getEndingTime());
+        eDate.setTime(shiftStartTime);
+//        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.MINUTE, (int) getShift().getDurationMin());
+//        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }
@@ -1090,23 +1205,23 @@ public class StaffShift implements Serializable {
         // if one and half day  payment= 0.5
         switch (dayType) {
             case MurchantileHoliday:
-                multiplyingFactorSalary = 1.0;//two day payments
+                multiplyingFactorSalary = 2.0;//two day payments
                 multiplyingFactorOverTime = 1.5;
                 break;
             case Poya:
-                multiplyingFactorSalary = 0.5;// One and Half Payment
+                multiplyingFactorSalary = 1.5;// One and Half Payment
                 multiplyingFactorOverTime = 1.5;
                 break;
             case DayOff:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             case SleepingDay:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             default:
-                multiplyingFactorSalary = 0.0;
+                multiplyingFactorSalary = getShift().isHalfShift() == true ? 1 : 2;
                 multiplyingFactorOverTime = 1.5;
                 break;
         }
@@ -1129,12 +1244,44 @@ public class StaffShift implements Serializable {
         this.leavedTimeOther = leavedTimeOther;
     }
 
-    public double getBasicPerSecond() {
-        return basicPerSecond;
+    public double getOverTimeValuePerSecond() {
+        return overTimeValuePerSecond;
     }
 
-    public void setBasicPerSecond(double basicPerSecond) {
-        this.basicPerSecond = basicPerSecond;
+    public void setOverTimeValuePerSecond(double OverTimeValuePerSecond) {
+        this.overTimeValuePerSecond = OverTimeValuePerSecond;
+    }
+
+    public boolean isConsideredForSalary() {
+        return consideredForSalary;
+    }
+
+    public void setConsideredForSalary(boolean consideredForSalary) {
+        this.consideredForSalary = consideredForSalary;
+    }
+
+    public StaffShift getReferenceStaffShiftLateIn() {
+        return referenceStaffShiftLateIn;
+    }
+
+    public void setReferenceStaffShiftLateIn(StaffShift referenceStaffShiftLateIn) {
+        this.referenceStaffShiftLateIn = referenceStaffShiftLateIn;
+    }
+
+    public StaffShift getReferenceStaffShiftEarlyOut() {
+        return referenceStaffShiftEarlyOut;
+    }
+
+    public void setReferenceStaffShiftEarlyOut(StaffShift referenceStaffShiftEarlyOut) {
+        this.referenceStaffShiftEarlyOut = referenceStaffShiftEarlyOut;
+    }
+
+    public boolean isAutoLeave() {
+        return autoLeave;
+    }
+
+    public void setAutoLeave(boolean autoLeave) {
+        this.autoLeave = autoLeave;
     }
 
 }

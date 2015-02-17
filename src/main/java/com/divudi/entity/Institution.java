@@ -21,12 +21,15 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author buddhika
  */
 @Entity
+@XmlRootElement
 public class Institution implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -335,6 +338,7 @@ public class Institution implements Serializable {
     
     
 
+    @XmlTransient
     public List<Institution> getBranch() {
         return branch;
     }

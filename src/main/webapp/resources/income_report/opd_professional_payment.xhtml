@@ -20,6 +20,9 @@
             <p:column>
                 <h:outputLabel value="#{a.department.name}" rendered="#{a.totalPayment!=0}"/>
             </p:column>
+            <p:column></p:column>
+            <p:column></p:column>
+            <p:column></p:column>
             <p:column style="text-align: right;">
                 <h:outputLabel value="#{0-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
                     <f:convertNumber pattern="#,##0.00"/>
@@ -27,7 +30,7 @@
             </p:column>                
             <p:columnGroup type="footer">
                 <p:row>
-                    <p:column colspan="1" footerText="Department Payment Total"/>
+                    <p:column colspan="5" footerText="Department Payment Total"/>
                     <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.departmentProfessionalPaymentTotal}">
                         <f:facet name="footer">
                             <h:outputLabel value="#{0-bookKeepingSummery.departmentProfessionalPaymentTotal}">

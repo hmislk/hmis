@@ -6,7 +6,6 @@ package com.divudi.ejb;
 
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.ExtraDutyCount;
-import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.ExtraDutyType;
 import com.divudi.data.hr.FingerPrintRecordType;
@@ -15,28 +14,34 @@ import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.PhDate;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveEntitle;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.PhDateFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,6 +84,18 @@ public class HumanResourceBean {
     @EJB
     private FinalVariables finalVariables;
 
+    public double getOverTimeFromRoster(double workingTimeForOverTimePerWeek, double numberOfWeeks, double totalWorkedTime) {
+        if (workingTimeForOverTimePerWeek != 0 && numberOfWeeks != 0) {
+            double normalWorkTime = numberOfWeeks * workingTimeForOverTimePerWeek * 60 * 60;
+            double overTime = totalWorkedTime - normalWorkTime;
+            if (overTime > 0) {
+                return overTime;
+            }
+        }
+
+        return 0.0;
+
+    }
 //    public StaffShift findInTime(FingerPrintRecord r) {
 //        Date recordedDate = r.getRecordTimeStamp();
 //        Calendar min = Calendar.getInstance();
@@ -104,6 +121,7 @@ public class HumanResourceBean {
 //        //   System.err.println("Fetch Staff 1 : " + ss);
 //        return ss;
 //    }
+
     public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
         if (staffShift == null) {
             return null;
@@ -124,7 +142,7 @@ public class HumanResourceBean {
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 1);
+        max.add(Calendar.HOUR, 2);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -138,11 +156,11 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+//        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
 
-    public FingerPrintRecord findInTimeRecord(AdditionalForm additionalForm) {
+    public FingerPrintRecord findInTimeRecord(HrForm additionalForm) {
         if (additionalForm == null) {
             return null;
         }
@@ -158,7 +176,7 @@ public class HumanResourceBean {
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 1);
+        max.add(Calendar.HOUR, 2);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -168,11 +186,10 @@ public class HumanResourceBean {
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                //                + " and ss.loggedRecord is not null"
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+//        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
 
@@ -192,7 +209,7 @@ public class HumanResourceBean {
         Date endTime = staffShift.getShiftEndTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-        min.add(Calendar.HOUR, -1);
+        min.add(Calendar.HOUR, -2);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
@@ -210,11 +227,11 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+//        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
 
-    public FingerPrintRecord findOutTimeRecord(AdditionalForm additionalForm) {
+    public FingerPrintRecord findOutTimeRecord(HrForm additionalForm) {
         if (additionalForm == null) {
             return null;
         }
@@ -226,7 +243,7 @@ public class HumanResourceBean {
         Date endTime = additionalForm.getToTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-        min.add(Calendar.HOUR, -1);
+        min.add(Calendar.HOUR, -2);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
@@ -244,7 +261,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+//        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
 
@@ -252,13 +269,282 @@ public class HumanResourceBean {
         Map m = new HashMap();
         m.put("date", date);
         m.put("s", staff);
+        m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                + " and ss.shiftDate=:date"
+                + " and ss.shiftDate=:date "
+                + " and type(ss)!=:tp"
                 + " order by ss.staff.codeInterger ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    @EJB
+    StaffLeaveEntitleFacade staffLeaveEntitleFacade;
+
+    public double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = " select l.count "
+                + " from StaffLeaveEntitle l "
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in :ltp "
+                + " and l.fromDate=:fd "
+                + " and l.toDate=:td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public double fetchStaffLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select sum(l.qty) "
+                + " from StaffLeave l"
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public List<StaffLeave> fetchStaffLeaveAddedLeaveList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select l "
+                + " from StaffLeave l"
+                + " where l.retired=false "
+                + " and type(l)!=:cl"
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("cl", StaffLeaveSystem.class);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+    public double fetchStaffLeaveAddedLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select sum(l.qty) "
+                + " from StaffLeave l"
+                + " where l.retired=false "
+                + " and type(l)!=:cl"
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("cl", StaffLeaveSystem.class);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+//    public double fetchStaffLeaveSystemLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+//        String sql = "select sum(l.qty) "
+//                + " from StaffLeaveSystem l"
+//                + " where l.retired=false "
+//                //                + " and type(l)!=:cl"
+//                + " and l.staff=:stf "
+//                + " and l.leaveType in  :ltp "
+//                + " and l.leaveDate between  :fd and :td ";
+//        HashMap hm = new HashMap();
+////        hm.put("l", StaffLeaveSystem.class)
+//        hm.put("stf", staff);
+//        hm.put("ltp", leaveType.getLeaveTypes());
+//        hm.put("fd", fromDate);
+//        hm.put("td", toDate);
+//
+//        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+//
+//    }
+    public double fetchStaffLeaveSystem(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select sum(l.qty) "
+                + " from StaffLeaveSystem l"
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select l "
+                + " from StaffLeaveSystem l"
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+    public List<StaffShift> fetchStaffShift(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+//        m.put("tp", StaffShiftExtra.class);
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate between :fd and :td "
+                //                + " and type(ss)!=:tp"
+                + " order by ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftForAutoLeave(Staff staff, Date fromDate, Date toDate) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType not in :dtp "
+                + " and ss.leaveType is null "
+                + " order by ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public LeaveType getLeaveType(Staff staff, Date fromDate, Date toDate) {
+        double staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, fromDate, toDate);
+
+        if (staffLeaveEntitle > fetchStaffLeave(staff, LeaveType.Annual, fromDate, toDate)) {
+            return LeaveType.AnnualHalf;
+        }
+
+        staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Casual, fromDate, toDate);
+
+        if (staffLeaveEntitle > fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
+            return LeaveType.CasualHalf;
+        }
+
+        return LeaveType.No_Pay_Half;
+
+    }
+
+    public List<StaffShift> fetchStaffShiftAllowance(Date fromDate, Date toDate, Staff staff, List<DayType> dayTypes) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("tp", dayTypes);
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType in :tp"
+                + " order by ss.dayType,ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftNormal(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday,
+            DayType.Poya,
+            DayType.DayOff,
+            DayType.SleepingDay}));
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType not in :tp"
+                + " order by ss.dayType,ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftExtraDuty(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+//        m.put("tp", StaffShiftExtra.class);
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s"
+                + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)>0 "
+                + " and ss.shiftDate between :fd and :td "
+                //                + " and type(ss)!=:tp"
+                + " order by ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftForAddingLeave(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        m.put("tp", StaffShiftExtra.class);
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shift.dayType not in :dtp"
+                + " and ss.leaveType is null  "
+                + " and ss.shiftDate between :fd and :td "
+                + " and type(ss)!=:tp"
+                + " order by ss.staff.codeInterger ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public List<Staff> fetchStaffShift(Date fromDate, Date toDate, Roster rs) {
+        Map m = new HashMap();
+        m.put("frm", fromDate);
+        m.put("to", toDate);
+        m.put("rs", rs);
+        String sql = "Select distinct(ss.staff) from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.roster=:rs "
+                + " and ss.shiftDate between :frm and :to "
+                + " order by ss.staff.codeInterger ";
+
+        return getStaffFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
     public List<StaffShift> fetchStaffShift(Date date, Roster roster) {
@@ -296,30 +582,29 @@ public class HumanResourceBean {
 //
 //        return getStaffFacade().findBySQL(sql, m, TemporalType.DATE);
 //    }
-    private StaffShift findOutTime(FingerPrintRecord r) {
-        Date recordedDate = r.getRecordTimeStamp();
-        Calendar min = Calendar.getInstance();
-        min.setTime(recordedDate);
-        min.add(Calendar.HOUR, -1);
-
-        Calendar max = Calendar.getInstance();
-        max.setTime(recordedDate);
-        max.add(Calendar.HOUR, 2);
-
-        Map m = new HashMap();
-        m.put("f", min.getTime());
-        m.put("t", max.getTime());
-        m.put("s", r.getStaff());
-
-        String sql = "Select ss from StaffShift ss "
-                + " where ss.retired=false "
-                + " and ss.staff=:s "
-                + " and ss.nextStaffShift is null "
-                + " and  ss.shiftEndTime between :f and :t";
-        StaffShift ss = getStaffShiftFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        return ss;
-    }
-
+//    private StaffShift findOutTime(FingerPrintRecord r) {
+//        Date recordedDate = r.getRecordTimeStamp();
+//        Calendar min = Calendar.getInstance();
+//        min.setTime(recordedDate);
+//        min.add(Calendar.HOUR, -1);
+//
+//        Calendar max = Calendar.getInstance();
+//        max.setTime(recordedDate);
+//        max.add(Calendar.HOUR, 2);
+//
+//        Map m = new HashMap();
+//        m.put("f", min.getTime());
+//        m.put("t", max.getTime());
+//        m.put("s", r.getStaff());
+//
+//        String sql = "Select ss from StaffShift ss "
+//                + " where ss.retired=false "
+//                + " and ss.staff=:s "
+//                + " and ss.nextStaffShift is null "
+//                + " and  ss.shiftEndTime between :f and :t";
+//        StaffShift ss = getStaffShiftFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+//        return ss;
+//    }
     public StaffShift fetchStaffShift(FingerPrintRecord r) {
 
         return null;
@@ -336,7 +621,7 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchPrevStaffShift(StaffShift tmp) {
-        System.err.println("Fetch Prev StaffShift");
+//        System.err.println("Fetch Prev StaffShift");
         if (tmp.getShift() == null) {
             return null;
         }
@@ -351,8 +636,29 @@ public class HumanResourceBean {
         hm.put("date", tmp.getShiftDate());
         hm.put("preSh", tmp.getShift().getPreviousShift());
 
-        return getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
 
+        if (stf != null) {
+            return stf;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(tmp.getShiftDate());
+        cal.add(Calendar.DATE, -1);
+        Date beforDate = cal.getTime();
+
+        sql = "Select s from StaffShift s "
+                + " where s.retired=false"
+                + " and s.staff=:st "
+                + " and s.shiftDate=:date "
+                + " and s.shift=:preSh "
+                + " and s.shift.lastShift=true";
+        hm = new HashMap();
+        hm.put("st", tmp.getStaff());
+        hm.put("date", beforDate);
+        hm.put("preSh", tmp.getShift().getPreviousShift());
+
+        return getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
 
     public StaffShift fetchStaffShift(Date date, Shift shift, Staff staff) {
@@ -370,68 +676,68 @@ public class HumanResourceBean {
 
     }
 
-    public StaffShift fetchPrevDayStaffShift(StaffShift ss) {
-        System.err.println("Fetch Prev Day Shift");
-        if (ss == null) {
-            return null;
-        }
-
-        if (ss.getShiftDate() == null) {
-            return null;
-        }
-
-        if (ss.getShift() == null) {
-            return null;
-        }
-
-        if (ss.getShift().getPreviousShift() != null) {
-            return null;
-        }
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(ss.getShiftDate());
-        cal.add(Calendar.DATE, -1);
-        Date beforDate = cal.getTime();
-        String sql = "select ss from  "
-                + " StaffShift ss "
-                + "where ss.shiftDate=:bDate"
-                + " and  ss.staff=:st "
-                + " and  ss.shift.nextShift is null";
-        HashMap hm = new HashMap();
-        hm.put("bDate", beforDate);
-        hm.put("st", ss.getStaff());
-
-        StaffShift tmp = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
-
-        if (tmp == null) {
-            return null;
-        }
-
-        if (tmp.getShift() == null) {
-            return null;
-        }
-
-        Calendar fetchShiftEndingTime = Calendar.getInstance();
-
-        if (tmp.getShift().getEndingTime() == null) {
-            return null;
-        }
-
-        fetchShiftEndingTime.setTime(tmp.getShift().getEndingTime());
-
-        Calendar shiftStartTime = Calendar.getInstance();
-
-        if (ss.getShift().getStartingTime() == null) {
-            return null;
-        }
-        shiftStartTime.setTime(ss.getShift().getStartingTime());
-
-        if (shiftStartTime.get(Calendar.HOUR_OF_DAY) == fetchShiftEndingTime.get(Calendar.HOUR_OF_DAY)) {
-            return tmp;
-        }
-
-        return null;
-    }
+//    public StaffShift fetchPrevDayStaffShift(StaffShift ss) {
+//        System.err.println("Fetch Prev Day Shift");
+//        if (ss == null) {
+//            return null;
+//        }
+//
+//        if (ss.getShiftDate() == null) {
+//            return null;
+//        }
+//
+//        if (ss.getShift() == null) {
+//            return null;
+//        }
+//
+////        if (ss.getShift().getPreviousShift() != null) {
+////            return null;
+////        }
+//
+//        Calendar cal = Calendar.getInstance();
+//        cal.setTime(ss.getShiftDate());
+//        cal.add(Calendar.DATE, -1);
+//        Date beforDate = cal.getTime();
+//        String sql = "select ss from  "
+//                + " StaffShift ss "
+//                + " where ss.shiftDate=:bDate"
+//                + " and  ss.staff=:st "
+//                + " and  ss.shift=:sh";
+//        HashMap hm = new HashMap();
+//        hm.put("bDate", beforDate);
+//        hm.put("st", ss.getStaff());
+//
+//        StaffShift tmp = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+//
+//        if (tmp == null) {
+//            return null;
+//        }
+//
+//        if (tmp.getShift() == null) {
+//            return null;
+//        }
+//
+//        Calendar fetchShiftEndingTime = Calendar.getInstance();
+//
+//        if (tmp.getShift().getEndingTime() == null) {
+//            return null;
+//        }
+//
+//        fetchShiftEndingTime.setTime(tmp.getShift().getEndingTime());
+//
+//        Calendar shiftStartTime = Calendar.getInstance();
+//
+//        if (ss.getShift().getStartingTime() == null) {
+//            return null;
+//        }
+//        shiftStartTime.setTime(ss.getShift().getStartingTime());
+//
+//        if (shiftStartTime.get(Calendar.HOUR_OF_DAY) == fetchShiftEndingTime.get(Calendar.HOUR_OF_DAY)) {
+//            return tmp;
+//        }
+//
+//        return null;
+//    }
 //
 //    public double getMaxShiftOrder(StaffShift ss) {
 //        Calendar cal = Calendar.getInstance();
@@ -455,7 +761,6 @@ public class HumanResourceBean {
 //        return max;
 //
 //    }
-
     public StaffShift fetchFrvDayStaffShift(StaffShift ss) {
         //   System.err.println("Fetch Forward Day Shift");
         if (ss == null) {
@@ -538,8 +843,30 @@ public class HumanResourceBean {
         hm.put("st", tmp.getStaff());
         hm.put("date", tmp.getShiftDate());
         hm.put("frwSh", tmp.getShift().getNextShift());
-        return getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
 
+        if (stf != null) {
+            return stf;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(tmp.getShiftDate());
+        cal.add(Calendar.DATE, 1);
+        Date afterDate = cal.getTime();
+
+        sql = "Select s from StaffShift s "
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                + " and s.shiftDate=:date  "
+                + " and s.shift=:frwSh"
+                + " and s.shift.firstShift=true";
+        hm = new HashMap();
+        hm.put("st", tmp.getStaff());
+        hm.put("date", afterDate);
+        hm.put("frwSh", tmp.getShift().getNextShift());
+        stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        return stf;
     }
 
 //    public List<StaffShift> fetchStaffShift(Date d, Roster roster) {
@@ -585,11 +912,11 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.shiftOrder,st.shift.id";
+                + " order by st.shift.id";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
-        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }
 
@@ -602,10 +929,48 @@ public class HumanResourceBean {
                 + " where st.retired=false"
                 + " and st.shiftDate=:dt "
                 + " and st.roster=:rs"
+                + " and st.shift is not null "
+                + " order by st.staff.codeInterger";
+        hm.put("dt", d);
+        hm.put("rs", roster);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+        return tmp;
+    }
+
+    public List<StaffShift> fetchStaffShiftWithShiftAdditional(Date d, Roster roster) {
+        // List<StaffShift> tmp=new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select st From StaffShift st "
+                + " where st.retired=false "
+                + " and st.additionalForm is not null"
+                + " and st.shiftDate=:dt "
+                + " and st.roster=:rs"
                 + " and st.shift is not null"
                 + " order by st.staff.codeInterger";
         hm.put("dt", d);
         hm.put("rs", roster);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+        return tmp;
+    }
+
+    public List<StaffShift> fetchStaffShiftWithShiftAdditional(Date d, Staff staff) {
+        // List<StaffShift> tmp=new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select st From StaffShift st "
+                + " where st.retired=false "
+                + " and st.additionalForm is not null"
+                + " and st.shiftDate=:dt "
+                + " and st.staff=:rs"
+                + " and st.shift is not null"
+                + " order by st.staff.codeInterger";
+        hm.put("dt", d);
+        hm.put("rs", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
 //        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
@@ -622,15 +987,7 @@ public class HumanResourceBean {
             return null;
         }
 
-        StaffShift preShift = fetchPrevStaffShift(tmp);
-        if (preShift != null) {
-            // System.err.println("This Staff continue From : " + preShift.getShift().getName());
-            return preShift;
-        }
-
-        StaffShift preDayStaffShift = fetchPrevDayStaffShift(tmp);
-
-        return preDayStaffShift;
+        return fetchPrevStaffShift(tmp);
 
     }
 
@@ -668,15 +1025,7 @@ public class HumanResourceBean {
             return null;
         }
 
-        StaffShift frwStaffShift = fetchFrwStaffShift(tmp);
-        if (frwStaffShift != null) {
-            //  System.err.println("This Staff continue To : " + frwStaffShift.getShift().getName());
-            return frwStaffShift;
-        }
-
-        StaffShift frwDayStaffShift = fetchFrvDayStaffShift(tmp);
-
-        return frwDayStaffShift;
+        return fetchFrwStaffShift(tmp);
 
     }
 
@@ -769,6 +1118,19 @@ public class HumanResourceBean {
 
     }
 
+    public List<Staff> fetchStaffFromShift(Date fromDate, Date toDate) {
+        Map m = new HashMap();
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        String sql = "Select ss.staff from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.shiftDate between :fromDate and :toDate"
+                + " order by ss.staff.code ";
+
+        return staffFacade.findBySQL(sql, m, TemporalType.DATE);
+
+    }
+
     public List<FingerPrintRecord> fetchMissedFingerFrintRecord(StaffShift sst) {
         //   System.err.println("Date : " + sst.getShiftDate());
         List<FingerPrintRecord> tmp;
@@ -790,8 +1152,8 @@ public class HumanResourceBean {
                 + " and fpr.retired=false"
                 + " and  fpr.staff=:st"
                 + " and fpr.recordTimeStamp between :fd and :td "
-                + " and fpr.loggedRecord is not null "
-                + " and fpr.staffShift is null ";
+                + " and fpr.loggedRecord is not null ";
+//                + " and fpr.staffShift is null ";
         hm.put("tp", FingerPrintRecordType.Varified);
         hm.put("st", sst.getStaff());
         hm.put("fd", frm.getTime());
@@ -822,7 +1184,7 @@ public class HumanResourceBean {
         m.put("t", timeStamp);
         m.put("p", fingerPrintRecordType);
         FingerPrintRecord fpr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Logged Fetched " + fpr);
+//        System.err.println("Logged Fetched " + fpr);
         return fpr;
     }
 
@@ -840,7 +1202,7 @@ public class HumanResourceBean {
         m.put("p", fingerPrintRecordType);
         m.put("lfr", fingerPrintRecordLogged);
         FingerPrintRecord fpr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Fetched Varified " + fpr);
+//        System.err.println("Fetched Varified " + fpr);
         return fpr;
     }
 
@@ -953,11 +1315,31 @@ public class HumanResourceBean {
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType in :ltp"
+                //                + " and s.leaveType in :ltp"
+                + " and s.leaveType in :ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", list);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("frm", frmDate);
+        hm.put("to", toDate);
+
+        return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calStaffLeaveSystem(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
+        String sql = "Select sum(s.qty) From StaffLeaveSystem s"
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                //                + " and s.leaveType in :ltp"
+                + " and s.leaveType in :ltp "
+                + " and (s.leaveDate between :frm and :to)";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType.getLeaveTypes());
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
@@ -968,7 +1350,8 @@ public class HumanResourceBean {
 
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
-                + " and s.form.retired=false"
+                //                + " and s.form.retired=false "
+                //                + " and s.retired=false "
                 + " and s.staff=:st"
                 + " and s.leaveDate=:date";
         HashMap hm = new HashMap();
@@ -1252,8 +1635,8 @@ public class HumanResourceBean {
         String sql = "Select s From StaffSalary s "
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.salaryCycle.salaryFromDate>=:fd "
-                + " and s.salaryCycle.salaryToDate<=:td";
+                + " and s.salaryCycle.salaryFromDate=:fd "
+                + " and s.salaryCycle.salaryToDate=:td";
 
         HashMap hm = new HashMap<>();
         hm.put("fd", fromDate);
@@ -1279,25 +1662,62 @@ public class HumanResourceBean {
 
     }
 
-    public List<StaffPaysheetComponent> fetchStaffPaysheetComponent(Staff staff, Date toDate) {
-        String sql = "Select s From StaffPaysheetComponent s "
+    public List<StaffPaysheetComponent> fetchStaffPaysheetComponent(Staff staff, Date date) {
+
+        String sql = " Select s From StaffPaysheetComponent s "
                 + " where s.retired=false "
-                + " and s.staff=:st"
-                + " and (s.paysheetComponent.componentType!=:bs1 "
-                + " and s.paysheetComponent.componentType!=:bs2"
-                + " and s.paysheetComponent.componentType!=:bs3 "
-                + " and s.paysheetComponent.componentType!=:bs4 )"
-                + " and (s.toDate>=:dt or s.toDate is null)";
+                + " and s.staff=:st "
+                + " and s.paysheetComponent.componentType in :bs1 "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("dt", toDate);
-        hm.put("bs1", PaysheetComponentType.BasicSalary);
-        hm.put("bs2", PaysheetComponentType.OT);
-        hm.put("bs3", PaysheetComponentType.ExtraDuty);
-        hm.put("bs4", PaysheetComponentType.No_Pay_Deduction);
+        hm.put("cu", date);
+        hm.put("bs1", PaysheetComponentType.addition.getUserDefinedComponents());
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
+    public List<StaffPaysheetComponent> fetchStaffPaysheetComponent(Staff staff, Date date, List<PaysheetComponentType> list) {
+
+        String sql = " Select s From StaffPaysheetComponent s "
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                + " and s.paysheetComponent.componentType in :bs1 "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("cu", date);
+        hm.put("bs1", list);
+        return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+//    public double calValueForOverTime(Staff staff, Date date) {
+//        double value = 0;
+//        StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
+//
+//        if (staffPaysheetComponent != null) {
+//            value = staffPaysheetComponent.getStaffPaySheetComponentValue();
+//        }
+//
+//        PaysheetComponentType[] paysheetComponentTypes = {PaysheetComponentType.BasicSalary,
+//            PaysheetComponentType.OT,
+//            PaysheetComponentType.ExtraDuty,
+//            PaysheetComponentType.No_Pay_Deduction};
+//
+//        String sql = " Select sum(s.staffPaySheetComponentValue)"
+//                + "  From StaffPaysheetComponent s "
+//                + " where s.retired=false "
+//                + " and s.staff=:st"
+//                + " and s.paysheetComponent.componentType not in :bs1 "
+//                + " and s.fromDate<=:cu  "
+//                + " and s.toDate>=:cu ";
+//        HashMap hm = new HashMap();
+//        hm.put("st", staff);
+//        hm.put("cu", date);
+//        hm.put("bs1", Arrays.asList(paysheetComponentTypes));
+//        return value + getStaffPaysheetComponentFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+//    }
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
 
@@ -1327,7 +1747,7 @@ public class HumanResourceBean {
         return getStaffShiftFacade().findBySQL(sql, hm);
     }
 
-    public StaffPaysheetComponent getBasic(Staff staff) {
+    public StaffPaysheetComponent getBasic(Staff staff, Date date) {
         //System.err.println("Getting Basic " + staff.getStaffEmployment());
 
         String sql;
@@ -1344,27 +1764,53 @@ public class HumanResourceBean {
         hm = new HashMap();
         hm.put("stf", staff);
         hm.put("type", PaysheetComponentType.BasicSalary);
-        hm.put("cu", new Date());
+        hm.put("cu", date);
         tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
 
-        if (tmp == null) {
-            sql = "Select s From StaffPaysheetComponent s "
-                    + " where s.retired=false and "
-                    + " s.staff=:stf "
-                    + " and s.paysheetComponent.componentType=:type"
-                    + " and s.fromDate<=:cu "
-                    + " and s.toDate is null ";
-
-            hm = new HashMap();
-            hm.put("stf", staff);
-            hm.put("type", PaysheetComponentType.BasicSalary);
-            hm.put("cu", new Date());
-            tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
-
-        }
-
+//        if (tmp == null) {
+//            sql = "Select s From StaffPaysheetComponent s "
+//                    + " where s.retired=false and "
+//                    + " s.staff=:stf "
+//                    + " and s.paysheetComponent.componentType=:type"
+//                    + " and s.fromDate<=:cu "
+//                    + " and s.toDate is null ";
+//
+//            hm = new HashMap();
+//            hm.put("stf", staff);
+//            hm.put("type", PaysheetComponentType.BasicSalary);
+//            hm.put("cu", date);
+//            tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+//
+//        }
         return tmp;
 
+    }
+
+    public double getBasicValue(Staff staff, Date date) {
+        //System.err.println("Getting Basic " + staff.getStaffEmployment());
+
+        String sql;
+        HashMap hm;
+        StaffPaysheetComponent tmp;
+
+        sql = "Select s From StaffPaysheetComponent s"
+                + " where s.retired=false "
+                + " and  s.staff=:stf "
+                + " and s.paysheetComponent.componentType=:type "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
+
+        hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("type", PaysheetComponentType.BasicSalary);
+        hm.put("cu", date);
+        tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null) {
+            return tmp.getStaffPaySheetComponentValue();
+        } else {
+            return 0;
+        }
     }
 
     public StaffPaysheetComponent getComponent(Staff staff, WebUser user, PaysheetComponentType paysheetComponentType) {
@@ -1458,7 +1904,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForOt(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForOtCalculation(fromDate, toDate, staff);
-        System.err.println("OT SHIFT  " + staffShifts);
+//        System.err.println("OT SHIFT  " + staffShifts);
 
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
@@ -1470,7 +1916,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForSalary(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForSlaryCalculation(fromDate, toDate, staff);
-        System.err.println("SALARY SHIFT  " + staffShifts);
+//        System.err.println("SALARY SHIFT  " + staffShifts);
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
 
@@ -1481,7 +1927,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForExtraDuty(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForExraDutyCalculation(fromDate, toDate, staff);
-        System.err.println("EXTRA DUTY SHIFT  " + staffShifts);
+//        System.err.println("EXTRA DUTY SHIFT  " + staffShifts);
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
 
@@ -1612,28 +2058,82 @@ public class HumanResourceBean {
 //        return otNormalSpecial;
 //
 //    }
-
-    public double calculateWorkTimeAndLeave(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum(ss.workedWithinTimeFrameVarified+ss.leavedTime) "
+    public double calculateWorkTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.workedWithinTimeFrameVarified) "
                 + " from StaffShift ss "
-                + " where ss.retired=false"
-                + " and ss.shiftDate>=:fd "
-                + " and ss.shiftDate<=:td "
+                + " where ss.retired=false "
+                + " and ss.leavedTime=0 "
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
 
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateLeaveTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.leavedTime) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.workedWithinTimeFrameVarified!=0 "
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", dayType);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", dayType);
+
+        Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        if (timeSecond != null) {
+            return (timeSecond.longValue() / 60);
+        } else {
+            return 0l;
+        }
     }
 
     public double calculateNoPay(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.leavedTimeNoPay) "
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ss.shiftDate>=:fd "
-                + " and ss.shiftDate<=:td "
+                + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
@@ -1643,12 +2143,176 @@ public class HumanResourceBean {
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
+    public List<StaffShift> fetchStaffShiftNoPay(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select ss"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf "
+                + " and ss.leavedTimeNoPay>0 ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public long calculateHolidayWork(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select count(distinct(ss.shiftDate)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.lieuAllowed=false "
+                + " and ss.lieuQtyUtilized=0"
+                + " and ( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.dayType in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.Poya, DayType.MurchantileHoliday}));
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public long calculateWorkedDaysForSalary(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select count(distinct(ss.shiftDate)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null )"
+                + " or ss.leaveType is not null) "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public long calculateHolidayWork(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+        String sql = "Select count(distinct(FUNC('Date',ss.shiftDate))) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.lieuAllowed=false "
+                + " and ss.lieuQtyUtilized=0"
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.dayType=:dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", dayType);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateHolidayWork(Date fromDate, Date toDate, Staff staff, DayType dayType, double salaryPerDay) {
+        String sql = "Select sum(ss.multiplyingFactorSalary*" + salaryPerDay + ")"
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.lieuAllowed=false "
+                + " and ss.lieuQtyUtilized=0"
+                + " and ( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.dayType=:dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", dayType);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+//    public long calculateDayOffWork(Date fromDate, Date toDate, Staff staff) {
+//        String sql = "Select count(distinct(ss.shiftDate)) "
+//                + " from StaffShift ss "
+//                + " where ss.retired=false "
+//                //                + " and ss.lieuPaymentAllowed=true "
+//                + " and ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null  "
+//                + " and ss.dayType in :dtp "
+//                + " and ss.shiftDate between :fd  and :td "
+//                + " and ss.staff=:stf ";
+//        HashMap hm = new HashMap();
+//        hm.put("fd", fromDate);
+//        hm.put("td", toDate);
+//        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+//        hm.put("stf", staff);
+//
+//        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+//    }
+    public long calculateOffDays(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+        String sql = "Select count(distinct(ss.shiftDate)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                //                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null  "
+                + " and ss.dayType = :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", dayType);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateOffDays(Date fromDate, Date toDate, Staff staff, DayType dayType, double salaryPerDay) {
+        String sql = "Select sum(ss.multiplyingFactorSalary*" + salaryPerDay + ")"
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                //                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null  "
+                + " and ss.dayType = :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", dayType);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftLiePaymentAllowed(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select ss "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.dayType in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay, DayType.MurchantileHoliday, DayType.Poya}));
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
     public double calculateExtraDutyTime(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime) "
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ss.shiftDate>=:fd "
-                + " and ss.shiftDate<=:td "
+                + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
@@ -1693,7 +2357,7 @@ public class HumanResourceBean {
              *
              *
              */
-            System.err.println("SETTING SALARY TRUE");
+//            System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }
     }
@@ -1716,7 +2380,7 @@ public class HumanResourceBean {
 //            workedMinute += netTime;
 
 //            ser.setConsideredForExtraDuty(Boolean.TRUE);
-            System.err.println("SETTING SALARY TRUE");
+//            System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }
     }
@@ -1867,40 +2531,37 @@ public class HumanResourceBean {
         return tmp;
     }
 
-    public StaffSalary getStaffSalary(Staff s, Date date) {
+//    public StaffSalary getStaffSalary(Staff s, Date date) {
+//
+//        String sql = "Select s From StaffSalary s "
+//                + " where s.retired=false "
+//                + " and s.staff=:s "
+//                + " and s.salaryCycle.salaryFromDate<=:fd "
+//                + " and s.salaryCycle.salaryToDate>=:td";
+//
+//        HashMap hm = new HashMap<>();
+//        hm.put("fd", getCommonFunctions().getStartOfMonth(date));
+//        hm.put("td", getCommonFunctions().getEndOfMonth(date));
+//        hm.put("s", s);
+//
+//        StaffSalary tmp = getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+//
+//        if (tmp == null) {
+//            tmp = new StaffSalary();
+//            tmp.setStaff(s);
+//        }
+//
+//        return tmp;
+//    }
+    public StaffSalary getStaffSalary(Staff s, SalaryCycle salaryCycle) {
 
         String sql = "Select s From StaffSalary s "
                 + " where s.retired=false "
                 + " and s.staff=:s "
-                + " and s.salaryCycle.salaryFromDate>=:fd "
-                + " and s.salaryCycle.salaryToDate<=:td";
+                + " and s.salaryCycle=:sal ";
 
         HashMap hm = new HashMap<>();
-        hm.put("fd", getCommonFunctions().getStartOfMonth(date));
-        hm.put("td", getCommonFunctions().getEndOfMonth(date));
-        hm.put("s", s);
-
-        StaffSalary tmp = getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
-
-        if (tmp == null) {
-            tmp = new StaffSalary();
-            tmp.setStaff(s);
-        }
-
-        return tmp;
-    }
-
-    public StaffSalary getStaffSalary(Staff s, Date fromDate, Date toDate) {
-
-        String sql = "Select s From StaffSalary s "
-                + " where s.retired=false "
-                + " and s.staff=:s "
-                + " and s.salaryCycle.salaryFromDate>=:fd "
-                + " and s.salaryCycle.salaryToDate<=:td";
-
-        HashMap hm = new HashMap<>();
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
+        hm.put("sal", salaryCycle);
         hm.put("s", s);
 
         StaffSalary tmp = getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);

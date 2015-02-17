@@ -47,12 +47,14 @@
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText value="Name" ></h:outputText>
                                     <p:inputText autocomplete="off" value="#{paysheetComponentController.current.name}"  />                              
+                                    <h:outputText value="Order No" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{paysheetComponentController.current.orderNo}"  />                              
                                     <p:outputLabel value="Component Type "/>
                                     <p:selectOneMenu value="#{paysheetComponentController.current.componentType}">
                                         <f:selectItem itemLabel="Please select component Type "/>
-                                        <f:selectItems value="#{enumController.paysheetComponentTypes}"/>
+                                        <f:selectItems value="#{enumController.paysheetComponentTypesUserDefinded}"/>
                                     </p:selectOneMenu>  
-                                    
+
                                     <h:outputText value="Included For EPF" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForEpf}" />
                                     <h:outputText value="Included For ETF" ></h:outputText>
@@ -61,8 +63,12 @@
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPayTax}" />
                                     <h:outputText value="Included For OT" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForOt}" />
+                                    <h:outputText value="Included For No Pay" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForNoPay}" />
                                     <h:outputText value="Included For PH" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPh}" />
+                                       <h:outputText value="Included For Allowances(For Dayment in PH and Dayoff)" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includeForAllowance}" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{paysheetComponentController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">

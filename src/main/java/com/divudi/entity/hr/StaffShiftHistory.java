@@ -15,12 +15,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class StaffShiftHistory implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -31,6 +33,10 @@ public class StaffShiftHistory implements Serializable {
     StaffShift staffShift;
     @ManyToOne
     Staff staff;
+    @ManyToOne
+    Shift shift;
+    @ManyToOne
+    Roster roster;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -43,6 +49,24 @@ public class StaffShiftHistory implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    public Shift getShift() {
+        return shift;
+    }
+
+    public void setShift(Shift shift) {
+        this.shift = shift;
+    }
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
+    
+    
 
     public Long getId() {
         return id;

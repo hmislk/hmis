@@ -45,6 +45,11 @@
                                     <p:commandButton rendered="false" ajax="false" value="Items Categories" action="pharmacy_items_categories" ></p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
+                            <p:panel header="Odering" >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton ajax="false" value="Manage Reordering Data" action="pharmacy_set_reorder_manage" ></p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
                             <p:panel header="Check Entered Data">
                                 <h:panelGrid columns="1">
                                     <p:commandButton ajax="false" value="Item Distributor" action="pharmacy_item_by_distributor" ></p:commandButton>
@@ -93,6 +98,7 @@
                                     <p:commandButton ajax="false" value="Import from Excel" action="pharmacy_item_import" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Import from Excel With Stock" action="/pharmacy/pharmacy_item_import_with_stock" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Import from Excel With Stock with barcode" action="/pharmacy/pharmacy_item_import_by_barcode" ></p:commandButton>
+                                     <p:commandButton ajax="false" value="Import from Excel With Stock with name" action="/pharmacy/pharmacy_item_import_stocks_by_name" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Purchase Openning Stock" action="/pharmacy/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Fix Categories from Excel" action="pharmacy_importer_category" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Fix Barcodes" action="pharmacy_item_import_barcode" ></p:commandButton>
@@ -107,6 +113,12 @@
                                                  action="pharmacy_variant_category_stock_by_item" />
                                 <p:commandButton ajax="false" value="2)Stock Variant Adjustment(After)" 
                                                  action="pharmacy_variant_ajustment_pre_list" />
+                            </p:panel>
+                            <p:panel header="Bulk Update"> 
+                                <p:commandButton ajax="false" value="Update Bulk Categery" 
+                                                 action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                <p:commandButton ajax="false" value="Update Bulk Discount Allowed" 
+                                                 action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                             </p:panel>
                           
                         </h:panelGrid>

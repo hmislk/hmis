@@ -276,8 +276,13 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+
+        if (getSessionController().getInstitutionPreference().isDepNumGenFromToDepartment()) {
+            getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        } else {
+            getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        }
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getSessionController().getDepartment());
@@ -312,9 +317,18 @@ public class TransferIssueController implements Serializable {
     private double calTotal() {
         double value = 0;
         int serialNo = 0;
-        for (BillItem b : getIssuedBill().getBillItems()) {
-            value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
-            b.setSearialNo(serialNo++);
+
+        if (sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate()) {
+            for (BillItem b : getIssuedBill().getBillItems()) {
+                value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
+                b.setSearialNo(serialNo++);
+            }
+        } else {
+            for (BillItem b : getIssuedBill().getBillItems()) {
+                value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
+                b.setSearialNo(serialNo++);
+            }
+
         }
 
         return value;
@@ -385,7 +399,6 @@ public class TransferIssueController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-  
     public SessionController getSessionController() {
         return sessionController;
     }

@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.dataStructure.ShiftTable;
+import com.divudi.data.hr.DayType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
@@ -60,7 +61,7 @@ public class ShiftTableController implements Serializable {
         dateRange = 0l;
         roster = null;
         shiftTables = null;
-        
+
     }
 
     private boolean errorCheck() {
@@ -70,6 +71,21 @@ public class ShiftTableController implements Serializable {
 
         return false;
     }
+    
+    @Inject
+    PhDateController phDateController;
+
+    public void fetchAndSetDayType(StaffShift ss) {
+        ss.setDayType(null);
+
+        DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(dtp);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
+    }
 
     private void saveStaffShift() {
         for (ShiftTable st : shiftTables) {
@@ -78,6 +94,7 @@ public class ShiftTableController implements Serializable {
 //                    continue;
 //                }
 
+                fetchAndSetDayType(ss);
                 ss.calShiftStartEndTime();
                 ss.calLieu();
                 if (ss.getId() == null) {
@@ -97,16 +114,36 @@ public class ShiftTableController implements Serializable {
     private void saveHistory() {
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
-//                if (ss.getShift() == null) {
-//                    continue;
-//                }
 
-                StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
-                staffShiftHistory.setCreatedAt(new Date());
-                staffShiftHistory.setCreater(sessionController.getLoggedUser());
-                staffShiftHistory.setStaff(ss.getStaff());
-                staffShiftHistory.setStaffShift(ss);
-                staffShiftHistoryFacade.create(staffShiftHistory);
+                if (ss.getId() != null) {
+                    boolean flag = false;
+                    StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
+
+                    if (fetchStaffShift.getRoster() != ss.getRoster()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getStaff() != ss.getStaff()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getShift() != ss.getShift()) {
+                        flag = true;
+                    }
+
+                    if (flag) {
+                        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+                        staffShiftHistory.setStaffShift(ss);
+                        staffShiftHistory.setCreatedAt(new Date());
+                        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+                        //CHanges
+                        staffShiftHistory.setStaff(ss.getStaff());
+                        staffShiftHistory.setShift(ss.getShift());
+                        staffShiftHistory.setRoster(ss.getRoster());
+
+                        staffShiftHistoryFacade.create(staffShiftHistory);
+                    }
+                }
 
             }
         }
@@ -117,10 +154,11 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
+        saveHistory();
+
         saveStaffShift();
         saveStaffShift();
 
-        saveHistory();
     }
 
     public void createShiftTable() {
@@ -226,19 +264,34 @@ public class ShiftTableController implements Serializable {
 //            for (StaffShift ss : staffShifts) {
 //                netT.getStaffShift().add(ss);
 //            }
-            List<Staff> staffs = getHumanResourceBean().fetchStaff(roster);
+            List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
 
             for (Staff staff : staffs) {
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
                 if (ss == null) {
-                    StaffShift newStaffShift = new StaffShift();
-                    newStaffShift.setStaff(staff);
-                    newStaffShift.setShiftDate(nowDate);
-                    newStaffShift.setCreatedAt(new Date());
-                    newStaffShift.setCreater(sessionController.getLoggedUser());
-                    netT.getStaffShift().add(newStaffShift);
+                    for (int i = 0; i < roster.getShiftPerDay(); i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
                 } else {
                     netT.getStaffShift().addAll(ss);
+                    int ballance = roster.getShiftPerDay() - ss.size();
+                    if (ballance < 0) {
+                        continue;
+                    }
+                    for (int i = 0; i < ballance; i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
+
                 }
             }
 

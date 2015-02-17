@@ -9,7 +9,10 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.entity.Staff;
+import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftReplace;
 import com.divudi.facade.StaffShiftFacade;
@@ -18,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -48,6 +52,8 @@ public class StaffShiftController implements Serializable {
     @Inject
     StaffController staffController;
     List<StaffShift> staffShifts;
+    Staff staff;
+    StaffShift staffshift;
 
     public void selectRosterListener() {
         shiftController.setCurrentRoster(getReportKeyWord().getRoster());
@@ -95,6 +101,27 @@ public class StaffShiftController implements Serializable {
 
     }
 
+    public void updateStaffShiftStartTimeAndEndTime() {
+        List<StaffShift> lst;
+        HashMap hm = new HashMap();
+        String sql = "select c from StaffShift c "
+                + " where c.retired=false "
+                + " and c.shiftStartTime is not null"
+                + " and c.shiftEndTime is not null ";
+        lst = ejbFacade.findBySQL(sql);
+
+        if (lst == null) {
+            return;
+        }
+
+        for (StaffShift ss : lst) {
+            ss.calShiftStartEndTime();
+            staffShiftFacade.edit(ss);
+        }
+        //   System.out.println("lst = " + lst);
+
+    }
+
     Date date;
 
     public void staffShiftListner(StaffShift staffShift) {
@@ -105,6 +132,17 @@ public class StaffShiftController implements Serializable {
 
         System.err.println("Date " + date);
 
+    }
+    
+    public void viewStaffShift(StaffShift sts) {
+        staffshift = sts;
+    }
+    
+    public void saveStaffShift() {
+        if (staffshift != null) {
+            getEjbFacade().edit(staffshift);
+            UtilityController.addSuccessMessage("Updated");
+        }
     }
 
     public List<StaffShift> completeStaffShiftDateRoster(String qry) {
@@ -147,6 +185,93 @@ public class StaffShiftController implements Serializable {
         shiftReplace.setStaff(getReportKeyWord().getReplacingStaff());
 
         staffShiftFacade.create(shiftReplace);
+    }
+    
+    public void createStaffShiftTablebyCreatedDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ss from StaffShift ss where "
+                + " ss.createdAt between :fd and :td ";
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:st ";
+            m.put("st", getReportKeyWord().getStaff());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+//    public void createStaffShiftTablebyShiftDate() {
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select ss from StaffShift ss where "
+//                + " ss.shiftDate between :fd and :td ";
+//
+//        if (staff != null) {
+//            sql += " and ss.staff=:st ";
+//            m.put("st", staff);
+//        }
+//
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//
+//        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+//    }
+    
+    public void createStaffShiftTablebyShiftDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ss from StaffShift ss where "
+                + " ss.shiftDate between :fd and :td ";
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:st ";
+            m.put("st", getReportKeyWord().getStaff());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getDesignation()!= null) {
+            sql += " and ss.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
     }
 
     public void fetchLeavedStaffShift() {
@@ -192,6 +317,32 @@ public class StaffShiftController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public StaffShift getStaffshift() {
+        return staffshift;
+    }
+
+    public void setStaffshift(StaffShift staffshift) {
+        this.staffshift = staffshift;
+    }
+
+    public StaffShiftFacade getStaffShiftFacade() {
+        return staffShiftFacade;
+    }
+
+    public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
+        this.staffShiftFacade = staffShiftFacade;
+    }
+    
+    
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {

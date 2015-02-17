@@ -19,12 +19,15 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class PaysheetComponent implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -42,6 +45,8 @@ public class PaysheetComponent implements Serializable {
     private boolean includedForPayTax;
     private boolean includedForOt;
     private boolean includedForPh;
+    private boolean includedForNoPay;
+    boolean includeForAllowance;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -58,6 +63,28 @@ public class PaysheetComponent implements Serializable {
     @ManyToOne
     private Institution sendingInstitution;
     int orderNo;
+    @Transient
+    double transValue;
+
+    public double getTransValue() {
+        return transValue;
+    }
+
+    public void setTransValue(double transValue) {
+        this.transValue = transValue;
+    }
+    
+    
+
+    public boolean isIncludeForAllowance() {
+        return includeForAllowance;
+    }
+
+    public void setIncludeForAllowance(boolean includeForAllowance) {
+        this.includeForAllowance = includeForAllowance;
+    }
+    
+    
 
     public int getOrderNo() {
         return orderNo;
@@ -226,5 +253,13 @@ public class PaysheetComponent implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public boolean isIncludedForNoPay() {
+        return includedForNoPay;
+    }
+
+    public void setIncludedForNoPay(boolean includedForNoPay) {
+        this.includedForNoPay = includedForNoPay;
     }
 }

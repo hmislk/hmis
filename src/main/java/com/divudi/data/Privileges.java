@@ -98,6 +98,7 @@ public enum Privileges {
     LabReceive,
     LabEditPatient,
     LabInvestigationFee,
+    LabAddInwardServices,
     
     PaymentBilling,
     PaymentBillSearch,
@@ -248,6 +249,7 @@ public enum Privileges {
     MemberShipOpdMemberShipDisOpdMemberShipReport,
     
     HrAdmin,
+    EmployeeHistoryReport,
     
     
     Developers,

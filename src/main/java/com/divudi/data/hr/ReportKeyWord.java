@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.data.hr;
 
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.Sex;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -14,7 +14,9 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Designation;
+import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
@@ -24,20 +26,90 @@ import com.divudi.entity.hr.StaffShift;
  * @author safrin
  */
 public class ReportKeyWord {
+
     Staff staff;
     Staff replacingStaff;
     Department department;
     StaffCategory staffCategory;
     Designation designation;
     Roster roster;
+    PaysheetComponent paysheetComponent;
+    SalaryCycle salaryCycle;    
     Shift shift;
     Speciality speciality;
     Patient patient;
     Institution institution;
+    Institution bank;
     PaymentMethod paymentMethod;
     Item item;
     StaffShift staffShift;
     LeaveType leaveType;
+    Double from;
+    Double to;
+    Sex sex;
+
+    public PaysheetComponent getPaysheetComponent() {
+        return paysheetComponent;
+    }
+
+    public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
+        this.paysheetComponent = paysheetComponent;
+    }
+    
+    
+
+    public Institution getBank() {
+        return bank;
+    }
+
+    public void setBank(Institution bank) {
+        this.bank = bank;
+    }
+
+    
+    public SalaryCycle getSalaryCycle() {
+        return salaryCycle;
+    }
+
+    public void setSalaryCycle(SalaryCycle salaryCycle) {
+        this.salaryCycle = salaryCycle;
+    }
+    
+    
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
+    }
+    
+    
+    
+
+    public Double getFrom() {
+        if (from == null) {
+            from = 0.0;
+        }
+
+        return from;
+    }
+
+    public void setFrom(Double from) {
+        this.from = from;
+    }
+
+    public Double getTo() {
+        if (to == null) {
+            to = 0.0;
+        }
+        return to;
+    }
+
+    public void setTo(Double to) {
+        this.to = to;
+    }
 
     public LeaveType getLeaveType() {
         return leaveType;
@@ -46,8 +118,6 @@ public class ReportKeyWord {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
-    
-    
 
     public StaffShift getStaffShift() {
         return staffShift;
@@ -56,10 +126,6 @@ public class ReportKeyWord {
     public void setStaffShift(StaffShift staffShift) {
         this.staffShift = staffShift;
     }
-    
-    
-    
-    
 
     public Speciality getSpeciality() {
         return speciality;
@@ -101,10 +167,6 @@ public class ReportKeyWord {
         this.item = item;
     }
 
-    
-    
-    
-
     public Staff getStaff() {
         return staff;
     }
@@ -128,8 +190,6 @@ public class ReportKeyWord {
     public void setStaffCategory(StaffCategory staffCategory) {
         this.staffCategory = staffCategory;
     }
-
-    
 
     public Designation getDesignation() {
         return designation;
@@ -162,7 +222,5 @@ public class ReportKeyWord {
     public void setReplacingStaff(Staff replacingStaff) {
         this.replacingStaff = replacingStaff;
     }
-    
-    
-    
+
 }

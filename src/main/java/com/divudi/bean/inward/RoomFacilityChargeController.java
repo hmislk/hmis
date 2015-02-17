@@ -48,7 +48,16 @@ public class RoomFacilityChargeController implements Serializable {
     List<RoomFacilityCharge> selectedItems;
     private RoomFacilityCharge current;
     private List<RoomFacilityCharge> items = null;
+    List<RoomFacilityCharge> roomFacilityCharges;
     String selectText = "";
+
+    double adminstrationCharge = 0.0;
+    double medicalCareCharge = 0.0;
+    double roomCharge = 0.0;
+    double maintananceCharge = 0.0;
+    double nursingCharge = 0.0;
+    double moCharge = 0.0;
+    double linenCharge = 0.0;
 
     //            sql = "SELECT rm FROM "
 //                    + " RoomFacilityCharge rm "
@@ -67,7 +76,7 @@ public class RoomFacilityChargeController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            
+
             sql = "SELECT rm FROM "
                     + " RoomFacilityCharge rm "
                     + " WHERE rm.retired=false "
@@ -84,7 +93,7 @@ public class RoomFacilityChargeController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<RoomFacilityCharge> completeRoomChargeAll(String query) {
         List<RoomFacilityCharge> suggestions;
         String sql;
@@ -92,7 +101,7 @@ public class RoomFacilityChargeController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            
+
             sql = "SELECT rm FROM "
                     + " RoomFacilityCharge rm "
                     + " WHERE rm.retired=false "
@@ -103,7 +112,7 @@ public class RoomFacilityChargeController implements Serializable {
         }
         return suggestions;
     }
-    
+
     AdmissionType admissionType;
 
     public AdmissionType getAdmissionType() {
@@ -113,8 +122,6 @@ public class RoomFacilityChargeController implements Serializable {
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
     }
-
-    
 
 //    public List<RoomFacilityCharge> completeRoomChange(String query) {
 //        List<RoomFacilityCharge> suggestions;
@@ -191,6 +198,40 @@ public class RoomFacilityChargeController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void fillRoomFacilityCharge() {
+        String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
+        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+    }
+
+    public void updateRoomFacilityCharge(RoomFacilityCharge r) {
+
+        System.out.println("r = " + r);
+        System.out.println("r1 = " + r.getRoomCharge());
+        System.out.println("r1 = " + r.getAdminstrationCharge());
+        System.out.println("r1 = " + r.getMedicalCareCharge());
+        System.out.println("r1 = " + r.getLinenCharge());
+        getTimedItemFeeFacade().edit(r.getTimedItemFee());
+        getFacade().edit(r);
+        UtilityController.addSuccessMessage("Updated");
+//        fillRoomFacilityCharge();
+    }
+
+    public void updateAllCharges() {
+        String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
+        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+        for (RoomFacilityCharge r : roomFacilityCharges) {
+            r.setAdminstrationCharge(adminstrationCharge);
+            r.setMedicalCareCharge(medicalCareCharge);
+            r.setRoomCharge(roomCharge);
+            r.setMaintananceCharge(maintananceCharge);
+            r.setNursingCharge(nursingCharge);
+            r.setMoCharge(moCharge);
+            r.setLinenCharge(linenCharge);
+            getFacade().edit(r);
+        }
+        UtilityController.addSuccessMessage("Sucessfully Uptate All Room Charges");
     }
 
     public void setSelectText(String selectText) {
@@ -272,6 +313,70 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void setTimedItemFeeFacade(TimedItemFeeFacade timedItemFeeFacade) {
         this.timedItemFeeFacade = timedItemFeeFacade;
+    }
+
+    public List<RoomFacilityCharge> getRoomFacilityCharges() {
+        return roomFacilityCharges;
+    }
+
+    public void setRoomFacilityCharges(List<RoomFacilityCharge> roomFacilityCharges) {
+        this.roomFacilityCharges = roomFacilityCharges;
+    }
+
+    public double getAdminstrationCharge() {
+        return adminstrationCharge;
+    }
+
+    public void setAdminstrationCharge(double adminstrationCharge) {
+        this.adminstrationCharge = adminstrationCharge;
+    }
+
+    public double getMedicalCareCharge() {
+        return medicalCareCharge;
+    }
+
+    public void setMedicalCareCharge(double medicalCareCharge) {
+        this.medicalCareCharge = medicalCareCharge;
+    }
+
+    public double getRoomCharge() {
+        return roomCharge;
+    }
+
+    public void setRoomCharge(double roomCharge) {
+        this.roomCharge = roomCharge;
+    }
+
+    public double getMaintananceCharge() {
+        return maintananceCharge;
+    }
+
+    public void setMaintananceCharge(double maintananceCharge) {
+        this.maintananceCharge = maintananceCharge;
+    }
+
+    public double getNursingCharge() {
+        return nursingCharge;
+    }
+
+    public void setNursingCharge(double nursingCharge) {
+        this.nursingCharge = nursingCharge;
+    }
+
+    public double getMoCharge() {
+        return moCharge;
+    }
+
+    public void setMoCharge(double moCharge) {
+        this.moCharge = moCharge;
+    }
+
+    public double getLinenCharge() {
+        return linenCharge;
+    }
+
+    public void setLinenCharge(double linenCharge) {
+        this.linenCharge = linenCharge;
     }
 
     /**
