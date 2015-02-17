@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/arogya?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="dsArogya" object-type="user" pool-name="mysql_arogya_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="arogya" object-type="user" pool-name="mysql_arogya_rootPool"/>
 </resources>
