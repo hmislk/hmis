@@ -68,7 +68,7 @@
                                             <f:convertDateTime pattern="hh mm ss a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
-                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringInstitution' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringInstitution' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredByInstitution.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                         <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and patientReportController.currentPatientReport.approveUser.staff.id ne null }"    value="#{staffImageController.signatureById}" style="width: #{myCli.cssWidth}; max-height: 50px!important;"  >
                                             <f:param name="id" value="#{patientReportController.currentPatientReport.approveUser.staff.id}" />
@@ -160,7 +160,7 @@
                                             <f:convertDateTime pattern="hh mm ss a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
-                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringInstitution' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringInstitution' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredByInstitution.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         
                                         <h:panelGroup rendered="#{patientReportController.currentPatientReport.approveUser.staff.baImage ne null}">
                                             <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false }"    value="#{staffImageController.signatureById}" style="width: #{myCli.cssWidth}; max-height: 50px!important;"  >

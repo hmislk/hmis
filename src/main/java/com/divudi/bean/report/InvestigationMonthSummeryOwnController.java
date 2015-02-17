@@ -460,7 +460,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType1", BillType.OpdBill);
         temMap.put("bType2", BillType.InwardBill);
-        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("ins", institution);
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -823,7 +823,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
     
     public void createLabServiceWithCountByMachine() {
-
+        System.out.println("createLabServiceWithCountByMachine");
         investigationCountWithMachines = new ArrayList<>();
 
         for (Machine w : getInvestigationMachines()) {
@@ -882,7 +882,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("fromDate", getFromDate());
 //        temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.OpdBill);
-        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("ins", institution);
         machines = machineFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("investigations = " + machines);
 

@@ -20,6 +20,14 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                 </p:calendar>
+                                <h:outputLabel value="Department"/>
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                                var="dept" itemLabel="#{dept.name}" 
+                                                itemValue="#{dept}" 
+                                                forceSelection="true" 
+                                                value="#{searchController.department}" 
+                                                converter="dep" ></p:autoComplete>
+                                
                                 <p:commandButton id="btnSearch" ajax="false" 
                                                  value="Search" 
                                                  action="#{searchController.createPharmacyPrescriptionBillTable}"/>
@@ -30,7 +38,7 @@
 
                         </f:facet>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"   >
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.prescreptionBills}" var="bill"   >
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
@@ -94,9 +102,9 @@
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
                             </p:column>
 
-<!--                            <p:column headerText="Paymentmethod"   >
-                                <h:outputLabel value="#{bill.paymentScheme.paymentMethod}" />
-                            </p:column>-->
+                            <!--                            <p:column headerText="Paymentmethod"   >
+                                                            <h:outputLabel value="#{bill.paymentScheme.paymentMethod}" />
+                                                        </p:column>-->
 
                             <p:column headerText="Paymentscheme" >
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
