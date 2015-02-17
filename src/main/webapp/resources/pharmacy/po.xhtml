@@ -83,6 +83,15 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
 
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Free QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
@@ -91,7 +100,7 @@
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>
-
+                    
                 </p:dataTable>
             </div>
 

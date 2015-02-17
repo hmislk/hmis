@@ -1528,13 +1528,16 @@ public class PharmacyItemExcelManager implements Serializable {
 
                 Map m = new HashMap();
 
-                cell = sheet.getCell(ampCol, 0);
+                cell = sheet.getCell(0, i);
                 strAmp = cell.getContents();
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
-                m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ");
+                m.put("n", strAmp);
+                String sql = "SELECT c FROM Amp c Where c.code=:n ";
+                amp = ampFacade.findFirstBySQL(sql, m);
+                System.out.println("sql"+sql);
                 System.out.println("m = " + m);
+                System.out.println("amp = " + amp);
 
                 if (amp == null) {
                     continue;
