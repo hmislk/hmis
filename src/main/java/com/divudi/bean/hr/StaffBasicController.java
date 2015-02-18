@@ -145,8 +145,10 @@ public class StaffBasicController implements Serializable {
     }
 
     private void updateExistingSalary() {
-        String sql = "Select s From StaffPaysheetComponent s where s.retired=false"
-                + " and s.paysheetComponent.componentType=:tp and s.staff=:st "
+        String sql = "Select s From StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent.componentType=:tp "
+                + " and s.staff=:st "
                 + " and s.fromDate<:dt and s.toDate is null";
 
         HashMap hm = new HashMap();
@@ -176,8 +178,8 @@ public class StaffBasicController implements Serializable {
             staffPaysheetComponentFacade.edit(current);
         }
 
-        updateStaffEmployment();
-        updateExistingSalary();
+//        updateStaffEmployment();
+//        updateExistingSalary();
 
         Staff s = getCurrent().getStaff();
         current = null;

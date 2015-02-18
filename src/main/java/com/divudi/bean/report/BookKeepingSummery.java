@@ -119,11 +119,13 @@ public class BookKeepingSummery implements Serializable {
         inwardProfessionalPayments = null;
         //Value
         opdHospitalTotal = 0;
+        opdStaffTotal = 0;
         outSideFeeTotal = 0;
         pharmacyTotal = 0;
         inwardPaymentTotal = 0;
         agentPaymentTotal = 0;
         creditCompanyTotal = 0;
+        creditCompanyTotalInward = 0;
         pettyCashTotal = 0;
         departmentProfessionalPaymentTotal = 0;
         inwardProfessionalPaymentTotal = 0;
