@@ -70,6 +70,10 @@ public class DataAdministrationController {
     }
     
 
+    public void makeRateFromPurchaseRateToSaleInTransferBills(){
+        
+    }
+    
     /**
      * Creates a new instance of DataAdministrationController
      */

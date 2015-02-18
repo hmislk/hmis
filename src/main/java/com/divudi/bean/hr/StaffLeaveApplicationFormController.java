@@ -370,6 +370,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 JsfUtil.addErrorMessage("Please Select Shift That Lie Entitled");
                 return true;
             }
+           
             Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
 //            if (datRang != 1) {

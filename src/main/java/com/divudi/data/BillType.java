@@ -157,6 +157,8 @@ public enum BillType {
                 return "Channel Staff";
            case StoreOrder:
                 return "Store Order Request";
+           case ChannelPaid:
+               return "Channel Settle";
             case StoreOrderApprove:
                 return "Store Order Aproved";
             case StoreGrnBill:
