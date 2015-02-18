@@ -874,7 +874,6 @@ public class BillSearch implements Serializable {
 
         }
         cb.setBalance(0.0);
-
         cb.setPaymentMethod(paymentMethod);
         cb.setBilledBill(getBill());
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
