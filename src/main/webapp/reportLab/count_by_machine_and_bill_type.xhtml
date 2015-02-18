@@ -55,7 +55,7 @@
                                          fontName="Courier New"  />
                         </p:commandButton>      
 
-                        <p:commandButton ajax="false"  value="Refresh"  action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachine()}"
+                        <p:commandButton ajax="false"  value="Refresh"  action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType()}"
                                          styleClass="noPrintButton" style="float: right;" />
 
 
@@ -80,22 +80,32 @@
                             </h:panelGrid>
                         </f:facet>
 
-                        <p:column headerText="Test Name" >
-                            <h:outputLabel value="#{c.investigation.name}"  />
-                        </p:column>
                         <p:column headerText="Machine Name" >
-                            <h:outputLabel value="#{c.investigation.machine.name}"  />
+                            <h:outputLabel value="#{c.machine.name}"  />
                         </p:column>
-                        <p:column headerText="Count" style="text-align:right" >
+                        
+                        <p:column headerText="OPD" style="text-align:right" >
+                            <h:outputLabel value="#{c.opdCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="Iward" style="text-align:right" >
+                            <h:outputLabel value="#{c.inwardCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="Collecting Centre" style="text-align:right" >
+                            <h:outputLabel value="#{c.ccCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="Total" style="text-align:right" >
                             <h:outputLabel value="#{c.count}" />
                         </p:column>
+                        
                         <p:columnGroup type="footer">  
                             <p:row>                              
-                                <p:column footerText="Total" colspan="2"/>
+                                <p:column footerText="Total" colspan="4"/>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.countTotal}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal}">
-
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>                             
