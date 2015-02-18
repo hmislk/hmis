@@ -225,7 +225,12 @@ public class EnumController implements Serializable {
             BillType.CashRecieveBill,
             BillType.AgentPaymentReceiveBill,
             BillType.InwardPaymentBill,
-            BillType.PharmacySale, //            BillType.PharmacyPurchaseBill,
+            BillType.PharmacySale, 
+            BillType.ChannelCash,
+            BillType.ChannelPaid,
+
+
+//            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -333,6 +338,12 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    
+    public PaymentMethod[] getPaymentMethodsForChannelSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
+        return p;
+    }
+    
 //    public boolean checkPaymentScheme(PaymentScheme scheme, String paymentMathod) {
 //        if (scheme != null && scheme.getPaymentMethod() != null) {
 //            //System.err.println("Payment Scheme : " + scheme.getPaymentMethod());

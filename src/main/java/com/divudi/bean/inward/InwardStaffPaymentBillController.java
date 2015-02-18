@@ -524,6 +524,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillFee> createDocDueFeeTableDischarged() {
 
+        
         String sql;
         Map temMap = new HashMap();
         billFeeDueDischarged = new ArrayList<>();
@@ -534,7 +535,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=true "
                 + " and (b.feeValue - b.paidValue) > 0"
-                + " and  b.bill.billDate between :fromDate and :toDate "
+                + " and b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
         temMap.put("toDate", getToDate());
@@ -1455,6 +1456,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayDischarged() {
+        if(docFeePayDischarged == null){
+            docFeePayDischarged = new ArrayList<>();
+        }
         return docFeePayDischarged;
     }
 
@@ -1463,6 +1467,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayNotDischarged() {
+        if(docFeePayNotDischarged == null){
+            docFeePayNotDischarged = new ArrayList<>();
+        }
         return docFeePayNotDischarged;
     }
 
@@ -1471,6 +1478,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueDischarged() {
+         if(docFeeDueDischarged == null){
+             docFeeDueDischarged = new ArrayList<>();
+         }
         return docFeeDueDischarged;
     }
 
@@ -1479,6 +1489,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueNotDischarged() {
+        if(docFeeDueNotDischarged == null){
+            docFeeDueNotDischarged = new ArrayList<>();
+        }
         return docFeeDueNotDischarged;
     }
 

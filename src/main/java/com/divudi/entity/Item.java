@@ -11,7 +11,6 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
@@ -151,6 +150,48 @@ public class Item implements Serializable {
     
     @ManyToOne
     private Machine machine;
+    
+    String creditNumbers;
+    String cashNumbers;
+    String agencyNumbers;
+    String reserveName;
+    String reserveNumbers;
+
+    public String getCreditNumbers() {
+        return creditNumbers;
+    }
+
+    public void setCreditNumbers(String creditNumbers) {
+        this.creditNumbers = creditNumbers;
+    }
+
+    public String getCashNumbers() {
+        return cashNumbers;
+    }
+
+    public void setCashNumbers(String cashNumbers) {
+        this.cashNumbers = cashNumbers;
+    }
+
+    public String getAgencyNumbers() {
+        return agencyNumbers;
+    }
+
+    public void setAgencyNumbers(String agencyNumbers) {
+        this.agencyNumbers = agencyNumbers;
+    }
+
+    public String getReserveName() {
+        return reserveName;
+    }
+
+    public void setReserveName(String reserveName) {
+        this.reserveName = reserveName;
+    }
+    
+    
+    
+    
     
     public Date getEffectiveFrom() {
         return effectiveFrom;
@@ -787,6 +828,14 @@ public class Item implements Serializable {
 
     public void setMachine(Machine machine) {
         this.machine = machine;
+    }
+
+    public String getReserveNumbers() {
+        return reserveNumbers;
+    }
+
+    public void setReserveNumbers(String reserveNumbers) {
+        this.reserveNumbers = reserveNumbers;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

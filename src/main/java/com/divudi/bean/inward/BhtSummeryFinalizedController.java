@@ -11,6 +11,7 @@ import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -25,6 +26,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -33,14 +35,17 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -55,7 +60,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     BillFacade billfacade;
     @EJB
     BillFeeFacade billFeeFacade;
-    
+
     PatientEncounter patientEncounter;
     List<PatientRoom> patientRooms;
     List<PatientItem> patientItems;
@@ -69,7 +74,14 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<Bill> paymentBills;
     List<Bill> paidbyPatientBillList;
     List<BillItem> creditPayment;
+    List<BillItem> billItemsInward;
     
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDate;
+    @EJB
+    private CommonFunctions commonFunctions;
 
     InwardChargeType inwardChargeType;
     Bill bill;
@@ -226,12 +238,6 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void setCreditCompanyPaymentTotal(double creditCompanyPaymentTotal) {
         this.creditCompanyPaymentTotal = creditCompanyPaymentTotal;
     }
-    
-    
-    
-    
-    
-    
 
     @EJB
     PatientRoomFacade patientRoomFacade;
@@ -241,8 +247,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         patientRoomFacade.edit(rm);
 
     }
-
-   
 
     public void updateAllBillItems() {
         if (filterItems == null) {
@@ -310,7 +314,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         }
     }
-    
+
     public void calculateStore() {
         billItemGrossPharmacy = 0;
         billItemMarginPharmacy = 0;
@@ -362,53 +366,96 @@ public class BhtSummeryFinalizedController implements Serializable {
         createPaidByPatient();
         createCreditPayment();
     }
-    
-    public void createCreditPayment(){
+
+    double totalGross;
+    double totalDiscount;
+    double totalNet;
+
+    public void createBhtInwardChargeTypeTable() {
         
+        billItemsInward = new ArrayList<>();
+        for (PatientEncounter pe : patientEncounters()) {
+            bill = pe.getFinalBill();
+            for (BillItem bi : bill.getBillItems()) {
+                if (bi.getInwardChargeType() == inwardChargeType) {
+                    billItemsInward.add(bi);
+                }
+            }
+        }
+        totalGross = 0.0;
+        totalDiscount = 0.0;
+        totalNet = 0.0;
+        for (BillItem bi : billItemsInward) {
+            totalGross+=bi.getGrossValue();
+            totalDiscount+=bi.getDiscount();
+            totalNet+=bi.getNetValue();
+        }
+
+    }
+
+    @EJB
+    PatientEncounterFacade patientEncounterFacade;
+
+    public List<PatientEncounter> patientEncounters() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Admission c where "
+                + " c.retired=false "
+                + " and c.paymentFinalized=true "
+                + " and c.dateOfDischarge between :fd and :td "
+                + " order by c.bhtNo ";
+        
+        m.put("fd",fromDate);
+        m.put("td", toDate);
+
+        return patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createCreditPayment() {
+
         String sql;
         Map m = new HashMap();
         sql = "SELECT bi FROM BillItem bi "
                 + " WHERE bi.retired=false "
                 + " and bi.bill.billType=:bty"
                 + " and bi.patientEncounter=:bhtno";
-        
+
         m.put("bty", BillType.CashRecieveBill);
         m.put("bhtno", patientEncounter);
 
-        billItems=billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        billItemNetValue=0;
-        for(BillItem bi: billItems){
-            if(billItems == null){
-            return;
+        billItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItemNetValue = 0;
+        for (BillItem bi : billItems) {
+            if (billItems == null) {
+                return;
             }
             billItemNetValue += bi.getNetValue();
         }
-        
+
     }
-    
-    
-    
-     public void createPaidByPatient(){
-        
+
+    public void createPaidByPatient() {
+
         String sql;
         Map m = new HashMap();
         sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billType=:bty"
                 + " and b.patientEncounter=:bhtno";
-        
+
         m.put("bty", BillType.InwardPaymentBill);
         m.put("bhtno", patientEncounter);
 
         paidbyPatientBillList = billfacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        paidbyPatientTotalValue=0.0;
-        for(Bill b: paidbyPatientBillList){
-            if(paidbyPatientBillList == null){
-            return;
+        paidbyPatientTotalValue = 0.0;
+        for (Bill b : paidbyPatientBillList) {
+            if (paidbyPatientBillList == null) {
+                return;
             }
             paidbyPatientTotalValue += b.getNetTotal();
         }
-        
+
     }
 
     public List<BillItem> getPharmacyItems() {
@@ -556,13 +603,10 @@ public class BhtSummeryFinalizedController implements Serializable {
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
         paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
-        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.PharmacyBhtPre);
-        storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.StoreBhtPre);
-        creditPayment=getInwardReportControllerBht().createCreditPayment(getPatientEncounter());
-        creditCompanyPaymentTotal=getInwardReportControllerBht().calTotalCreditCompany(creditPayment);
-        
-        
-        
+        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);
+        storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.StoreBhtPre);
+        creditPayment = getInwardReportControllerBht().createCreditPayment(getPatientEncounter());
+        creditCompanyPaymentTotal = getInwardReportControllerBht().calTotalCreditCompany(creditPayment);
 
     }
 
@@ -574,7 +618,6 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     @EJB
     BillItemFacade billItemFacade;
-    
 
     public void errorCheck() {
         String sql = "Select b from BillItem b"
@@ -715,18 +758,17 @@ public class BhtSummeryFinalizedController implements Serializable {
 //        }
     }
 
-   
     @Inject
     BillBeanController billBeanController;
 
-    public void changeDiscountListener(double discount, double total, PatientEncounter patientEncounter,BillType billType) {
+    public void changeDiscountListener(double discount, double total, PatientEncounter patientEncounter, BillType billType) {
         System.err.println("BillItem Total " + total);
         System.err.println("BillItem Discount " + discount);
         double discountPercent = (discount * 100) / total;
         System.err.println("Discount Percent " + discountPercent);
         double disValue = 0;
 
-        disValue = updateIssueBillFees(discountPercent, patientEncounter,billType);
+        disValue = updateIssueBillFees(discountPercent, patientEncounter, billType);
 
         System.err.println("Calculated Discount  " + disValue);
 
@@ -804,8 +846,8 @@ public class BhtSummeryFinalizedController implements Serializable {
 //        }
     }
 
-    private double updateIssueBillFees(double discountPercent, PatientEncounter patientEncounter,BillType billType) {
-        List<BillItem> listBillItems = getInwardBean().getIssueBillItemByInwardChargeType(patientEncounter,billType);
+    private double updateIssueBillFees(double discountPercent, PatientEncounter patientEncounter, BillType billType) {
+        List<BillItem> listBillItems = getInwardBean().getIssueBillItemByInwardChargeType(patientEncounter, billType);
         double disTot = 0;
         if (listBillItems == null || listBillItems.isEmpty()) {
             return disTot;
@@ -850,9 +892,9 @@ public class BhtSummeryFinalizedController implements Serializable {
     SessionController sessionController;
     @EJB
     PatientItemFacade patientItemFacade;
-  
-    public void errorCorrecion(){
-        PatientItem patientItem=new PatientItem();
+
+    public void errorCorrecion() {
+        PatientItem patientItem = new PatientItem();
         patientItem.setCreatedAt(new Date());
         patientItem.setCreater(sessionController.getLoggedUser());
         patientItemFacade.create(patientItem);
@@ -875,7 +917,6 @@ public class BhtSummeryFinalizedController implements Serializable {
 //            }
 //        }
 //    }
-
     public void processBillItems() {
         billItems = new ArrayList<>();
         String sql = "Select b "
@@ -1096,5 +1137,41 @@ public class BhtSummeryFinalizedController implements Serializable {
         this.patientItemFacade = patientItemFacade;
     }
 
+    public List<BillItem> getBillItemsInward() {
+        return billItemsInward;
+    }
+
+    public void setBillItemsInward(List<BillItem> billItemsInward) {
+        this.billItemsInward = billItemsInward;
+    }
     
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
 }
