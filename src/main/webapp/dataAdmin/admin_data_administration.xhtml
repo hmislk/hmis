@@ -22,6 +22,7 @@
                         <p:panelGrid columns="1"                         >
                             <p:commandButton ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="Remove All Bills with Bill Items"  onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="Reset Bill Number"  onclick="onSubmitButton();"/>
+                             <p:commandButton ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="Make Rate From Purchase Rate To Sale In Transfer Bills"  onclick="onSubmitButton();"/>
                         </p:panelGrid>
                         
                         
