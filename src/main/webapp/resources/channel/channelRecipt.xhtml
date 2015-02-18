@@ -38,7 +38,7 @@
                     <p:spacer height="15"/>
                     
                     <div class="headingBill" style="text-align: center; font-weight: bold;">
-                        <h:outputLabel value="Channell Bill"   />    
+                        <h:outputLabel value="Invoice"   />    
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
                     </div>
@@ -93,6 +93,24 @@
 
                                     </tr>
 
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Appoinment Date" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            
+                                                <h:outputLabel value="#{cc.attrs.singleBillSession.sessionDate}" ></h:outputLabel>
+                                            
+
+                                        </td>
+
+                                    </tr>
 
                                     <tr>
                                         <td>
@@ -168,6 +186,43 @@
                                         </td>
 
                                     </tr>
+                                    <tr></tr>
+                                    <tr></tr>    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Doctor No" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="................."></h:outputLabel>
+                                        </td>
+
+                                    </tr>
+                                    <tr> </tr>
+                                    <tr> </tr>
+                                    <tr> </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Issued By" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="........................................................."></h:outputLabel>
+                                        </td>
+
+                                    </tr>
+                                    
+                                    
 
                                 </table>
                             </td>
