@@ -174,7 +174,7 @@
                                         <h:inputText value="#{billSearch.billSearch.netTotal}"/>
 
                                         <h:outputLabel value="PerformInstitutionFee" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.performInstitutionFee}" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.performInstitutionFee}" />
 
                                         <h:outputLabel value="Staff Fee" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.staffFee}" ></h:outputLabel>
@@ -257,7 +257,7 @@
                                                 <p:inputText value="#{bip.feeValue}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}"/>
                                             </f:facet>
                                         </p:cellEditor>
-                                    </p:column>  
+                                    </p:column>                                    
                                     <p:column>
                                         <f:facet name="header">Adjusted Value</f:facet>
                                         <p:cellEditor>
