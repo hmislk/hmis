@@ -10,7 +10,6 @@ package com.divudi.data;
  * @author pasan
  */
 public enum ApplicationInstitution {
-    
     Ruhuna,
     Cooperative,
     Arogya,
@@ -21,5 +20,5 @@ public enum ApplicationInstitution {
     BMS,
     Digasiri,
     Probhodha,
-    
+    Rmh,
 }
