@@ -48,6 +48,7 @@ public class UserPreference implements Serializable {
     boolean grnBillDetailed;
     boolean bhtNumberWithYear;
     boolean depNumGenFromToDepartment;
+    boolean fiveFiveBillWithoutLabels;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
