@@ -221,7 +221,7 @@ public class StaffController implements Serializable {
                 + " and type(p)!=:class"
                 + " and LENGTH(p.code) > 0 "
                 + " and LENGTH(p.person.name) > 0 "
-                + " order by p.person.name ";
+                + " order by p.codeInterger ";
 
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);

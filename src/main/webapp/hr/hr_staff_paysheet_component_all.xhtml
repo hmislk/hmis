@@ -41,7 +41,7 @@
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
-                        <p:commandButton ajax="false" 
+                        <p:commandButton ajax="false" value="Fill"
                                          action="#{staffController.createStaffWithCode()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 

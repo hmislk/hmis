@@ -14,7 +14,8 @@
                         <f:facet name="header" >
 
                             <h:panelGrid columns="5" style="min-width: 100%;" >
-                                <p:commandButton ajax="false" value="Refresh" actionListener="#{searchController.createPreBillsNotPaid()}"/>
+                                <p:commandButton ajax="false" value="Refresh" 
+                                                 actionListener="#{searchController.createPreBillsNotPaid()}"/>
                                 <p:commandButton ajax="false" value="Add To Stock" action="#{searchController.addToStock}" 
                                                  disabled="#{!webUserController.hasPrivilege('PharmacyReAddToStock')}"/>
                             </h:panelGrid>
