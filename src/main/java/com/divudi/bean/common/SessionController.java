@@ -355,6 +355,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public boolean isFirstLogin() {
         if (getFacede().count() <= 1) {
+            System.out.println("first login");
             return true;
         } else {
             return false;
