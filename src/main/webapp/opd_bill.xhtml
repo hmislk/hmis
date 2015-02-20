@@ -15,7 +15,7 @@
 
     <ui:define name="content">
 
- 
+
         <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
             You are NOT authorized
         </h:panelGroup>
@@ -577,6 +577,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">
@@ -624,6 +625,36 @@
                             <div style="page-break-after: always;">
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">
+
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpRmhBill" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <h:panelGroup id="gpRmhBill">
+                            <div style="page-break-after: always;">
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:opdBillPrintRmh bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>
+                            <div></div>
+                            <div style="page-break-after: always;">
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:opdBillPrintRmh bill="#{b}" duplicate="false"/>                        
                                 </ui:repeat>
                             </div>
                         </h:panelGroup>
