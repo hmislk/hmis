@@ -11,8 +11,9 @@
         <h:form>
             <p:commandButton value="Print" ajax="fasle" action="#">
                 <p:printer target="nurseView"/>
-
             </p:commandButton>
+            <p:commandButton ajax="false" action="#{channelReportController.fillNurseView()}" value="Refresh"  ></p:commandButton>
+            <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" ></p:commandButton>
             <p:panel id="nurseView">
                 <f:facet name="header">
                     <h:panelGrid columns="2">
@@ -27,14 +28,17 @@
                     </h:panelGrid>
                 </f:facet>
 
-                <p:dataTable value="#{channelReportController.billSessionsNurse}" var="bs">
+                <p:dataTable value="#{channelReportController.nurseViewSessions}" var="bs">
 
                     <p:column headerText="No">#{bs.serialNo}</p:column>
                     <p:column headerText="Booking Id">#{bs.bill.bookingId}</p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Paid or Not">
-                        <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
-                        <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
+                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                    </p:column>
+                    <p:column headerText="Bill Type">
+                        #{bs.bill.billType}
                     </p:column>
                     <p:column headerText="Remark">
                         <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}" style="color: red;"/>

@@ -125,8 +125,51 @@ public class StaffSalary implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date holdDate;
     private String holdComment;
-    
-    
+    @ManyToOne
+    Institution bankBranch;
+    String accountNo;
+    @ManyToOne
+    Institution epfBankBranch;
+    String epfBankAccount;
+    private double transAdvanceSalary;
+    private boolean holdPaid;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date holdPaidAt;
+    @ManyToOne
+    private WebUser holdPaidBy;
+
+    public Institution getEpfBankBranch() {
+        return epfBankBranch;
+    }
+
+    public void setEpfBankBranch(Institution epfBankBranch) {
+        this.epfBankBranch = epfBankBranch;
+    }
+
+    public String getEpfBankAccount() {
+        return epfBankAccount;
+    }
+
+    public void setEpfBankAccount(String epfBankAccount) {
+        this.epfBankAccount = epfBankAccount;
+    }
+
+    public Institution getBankBranch() {
+        return bankBranch;
+    }
+
+    public void setBankBranch(Institution bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
+    }
+
     public WebUser getBlockedUser() {
         return blockedUser;
     }
@@ -391,8 +434,6 @@ public class StaffSalary implements Serializable {
                 + adjustmentToBasic);
     }
 
-    
-    
     public double getTransEpfEtfDiductableSalary() {
         return roundOff(getTransGrossSalary() + noPayValueBasic);
     }
@@ -509,6 +550,8 @@ public class StaffSalary implements Serializable {
     public double getTransTotalAllowance() {
         return roundOff(componentValueAddition + adjustmentToAllowance + noPayValueAllowance);
     }
+
+    
 
     public double getTransTotalDeduction() {
         return roundOff(componentValueSubstraction + noPayValueBasic + noPayValueAllowance + epfStaffValue);
@@ -835,6 +878,38 @@ public class StaffSalary implements Serializable {
 
     public void setHoldComment(String holdComment) {
         this.holdComment = holdComment;
+    }
+
+    public double getTransAdvanceSalary() {
+        return transAdvanceSalary;
+    }
+
+    public void setTransAdvanceSalary(double transAdvanceSalary) {
+        this.transAdvanceSalary = transAdvanceSalary;
+    }
+
+    public boolean isHoldPaid() {
+        return holdPaid;
+    }
+
+    public void setHoldPaid(boolean holdPaid) {
+        this.holdPaid = holdPaid;
+    }
+
+    public Date getHoldPaidAt() {
+        return holdPaidAt;
+    }
+
+    public void setHoldPaidAt(Date holdPaidAt) {
+        this.holdPaidAt = holdPaidAt;
+    }
+
+    public WebUser getHoldPaidBy() {
+        return holdPaidBy;
+    }
+
+    public void setHoldPaidBy(WebUser holdPaidBy) {
+        this.holdPaidBy = holdPaidBy;
     }
 
 }

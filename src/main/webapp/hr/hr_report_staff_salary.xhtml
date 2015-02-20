@@ -39,12 +39,17 @@
                 <p:printer target="tbl" ></p:printer>
             </p:commandButton>
             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                <pe:exporter type="xlsx" target="tb1" fileName="salary_sheet"  />
+                <pe:exporter type="xlsx" target="tbl" fileName="all_staff_salary_summery"  />
             </p:commandButton>
 
             <p:dataTable id="tbl" value="#{salaryCycleController.staffSalary}" var="scc" >
-
+                <f:facet name="header">
+                    <h:outputLabel value="All Staff Salary Summery"></h:outputLabel>
+                </f:facet>
                 <p:column headerText="Name" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Name"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="Total"></h:outputLabel>
@@ -52,6 +57,9 @@
                 </p:column>
 
                 <p:column headerText="Basic" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Basic"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.basicValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -64,6 +72,9 @@
                 </p:column>
 
                 <p:column headerText="Over Time" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Over Time"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.overTimeValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -76,6 +87,9 @@
                 </p:column>
 
                 <p:column headerText="Extra Duty Value" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Extra Duty Value"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.transExtraDutyValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -88,6 +102,9 @@
                 </p:column>
 
                 <p:column headerText="No Pay" >
+                    <f:facet name="header">
+                        <h:outputLabel value="No Pay"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.noPayValueBasic+scc.noPayValueAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -100,6 +117,9 @@
                 </p:column>
 
                 <p:column headerText="Holiday Allowance" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Holiday Allowance"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.merchantileAllowanceValue+scc.poyaAllowanceValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -112,6 +132,9 @@
                 </p:column>
 
                 <p:column headerText="Day Off Allownace" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Day Off Allownace"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.dayOffAllowance+scc.sleepingDayAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -124,6 +147,9 @@
                 </p:column>
 
                 <p:column headerText="Additional Componnet" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Additional Componnet"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.componentValueAddition}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -136,6 +162,9 @@
                 </p:column>
 
                 <p:column headerText="Deductional Componnet" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Deductional Componnet"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.componentValueSubstraction}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -148,6 +177,9 @@
                 </p:column>
 
                 <p:column headerText="Adjustment To Basic" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Adjustment To Basic"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.adjustmentToBasic}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -160,6 +192,9 @@
                 </p:column>
 
                 <p:column headerText="Adjustment To Allowance" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Adjustment To Allowance"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.adjustmentToAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -171,7 +206,10 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="EPF Staff " >
+                <p:column headerText="EPF Staff" >
+                    <f:facet name="header">
+                        <h:outputLabel value="EPF Staff"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.epfStaffValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -184,6 +222,9 @@
                 </p:column>
 
                 <p:column headerText="EPF Company" >
+                    <f:facet name="header">
+                        <h:outputLabel value="EPF Company"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.epfCompanyValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -196,6 +237,9 @@
                 </p:column>
 
                 <p:column headerText="ETF Satff" >
+                    <f:facet name="header">
+                        <h:outputLabel value="ETF Satff"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.etfSatffValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -208,6 +252,9 @@
                 </p:column>
 
                 <p:column headerText="ETF Company" >
+                    <f:facet name="header">
+                        <h:outputLabel value="ETF Company"></h:outputLabel>
+                    </f:facet>
                     <h:outputLabel value="#{scc.etfCompanyValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
@@ -218,7 +265,7 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
-             
+
             </p:dataTable>
 
 

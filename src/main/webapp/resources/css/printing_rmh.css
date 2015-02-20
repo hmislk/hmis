@@ -1,0 +1,113 @@
+/* 
+    Document   : printing
+    Created on : Oct 6, 2013, 11:53:48 AM
+    Author     : Buddhika
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+
+*{
+    margin:0px;
+    padding: 0px;
+}
+
+root { 
+    display: block;
+}
+
+
+.fiveinchbillRmh{
+    position: relative!important;
+
+    padding: 5px!important;
+    margin: auto!important; 
+    border: 1px solid!important;
+
+    height:13.97cm!important;
+    width:13.97cm!important; 
+
+    overflow:hidden!important; 
+
+    font-size: 12px;
+    font-family: sans-serif!important; 
+    font-size: 11px!important; 
+
+    background-size: 100% auto!important; 
+
+}
+
+.opdBillHeading{
+    position: absolute!Important;
+    left: 5cm;
+    top:3.2cm;
+}
+
+.opdBillDate{
+    position: absolute!Important;
+    left: 1.9cm;
+    top:3.7cm;
+}
+
+.opdRefNo{
+    position: absolute!important;
+    left: 7.7cm;
+    top: 3.7cm;
+}
+
+.opdAppOn{
+    position: absolute!important;
+    left: 3cm;
+    top: 4.5cm;
+}
+
+.opdAppAt{
+    position: absolute!important;
+    left: 5.8cm;
+    top: 4.5cm;
+}
+
+.opdAppNo{
+    position: absolute!important;
+    left: 8.9cm;
+    top: 4.5cm;
+}
+
+
+
+.opdConsultant{
+    position: absolute!important;
+    left: 3.1cm;
+    top: 5.4cm;
+}
+
+
+.opdReferralInstitution{
+    position: absolute!important;
+    left: 7.7cm;
+    top: 4cm;
+}
+
+.opdPaymentMethod{
+    position: absolute!important;
+    left: 3.9cm;
+    top: 11cm;
+}
+
+.opdPatientName{
+    position: absolute!important;
+    left: 2.4cm;
+    top: 6.3cm;
+}
+
+.opdPatientPhone{
+    position: absolute!important;
+    left: 7.4cm;
+    top: 6.3cm;
+}
+
+.opdCashier{
+    position: absolute!important;
+    left: 9.5cm;
+    top: 12cm;
+}

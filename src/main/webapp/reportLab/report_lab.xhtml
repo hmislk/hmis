@@ -35,7 +35,7 @@
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Lab Investigation Counts" />
+                                <p:outputLabel value="Investigation Counts" />
                             </f:facet>              
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Fees for outside institutions" 
@@ -44,6 +44,8 @@
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Investigation Counts by Institution And Collecting Centre" 
                                              action="#{investigationMonthSummeryOwnController.ixCountByInstitutionAndCollectingCentre()}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Count By Machine" action="count_by_machine"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Count By Machine And Bill Type" action="count_by_machine_and_bill_type"/>
 
                         </h:panelGrid>
 

@@ -19,11 +19,13 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.facade.MachineFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     Institution collectingCentre;
     Item item;
     private List<InvestigationSummeryData> items;
+    List<InvestigationSummeryData> investigationSummeryDatas;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
@@ -269,8 +272,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         insInvestigationCountRows.addAll((List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.DATE));
 
-        int c =1;
-        for (ItemInstitutionCollectingCentreCountRow r: insInvestigationCountRows){
+        int c = 1;
+        for (ItemInstitutionCollectingCentreCountRow r : insInvestigationCountRows) {
             r.setId(c);
             c++;
         }
@@ -445,6 +448,36 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
+    private long getCount(Bill bill, Machine m, List<BillType> bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi where bi.bill.billType in :bts and bi.item.machine =:mac"
+                + " and type(bi.bill)=:billClass and (bi.bill.toInstitution=:ins or bi.item.department.institution=:ins ) "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.machine.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("mac", m);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bts", bts);
+        temMap.put("ins", institution);
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private long getCount(Bill bill, Machine m, BillType bt) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return getCount(bill, m, bts);
+    }
+
+    private long getCount(Bill bill, Machine m) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        bts.add(BillType.LabBill);
+        bts.add(BillType.InwardBill);
+        return getCount(bill, m, bts);
+    }
+
     private long getCount2(Bill bill, Item item) {
         String sql;
         Map temMap = new HashMap();
@@ -518,6 +551,21 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("itm", item);
+        temMap.put("bType", BillType.OpdBill);
+        temMap.put("ins", getSessionController().getInstitution());
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private double getTotal(Machine m) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType=:bType and bi.item.machine =:mac"
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.machine.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("mac", m);
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -760,6 +808,226 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
+    List<InvestigationCountWithMachine> investigationCountWithMachines;
+
+    public void createLabServiceWithCount() {
+
+        investigationCountWithMachines = new ArrayList<>();
+
+        for (Item w : getInvestigationItems()) {
+            InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
+            temp.setInvestigation((Investigation) w);
+
+            long billed = getCount(new BilledBill(), w);
+            long cancelled = getCount(new CancelledBill(), w);
+            long refunded = getCount(new RefundBill(), w);
+
+            long net = billed - (cancelled + refunded);
+
+            temp.setCount(net);
+            temp.setTotal(getTotal(w));
+
+            if (temp.getCount() != 0) {
+                System.out.println(investigationCountWithMachines.size() + " " + temp.getInvestigation().getName());
+                investigationCountWithMachines.add(temp);
+            }
+        }
+
+    }
+
+    public void createLabServiceWithCountByMachine() {
+        System.out.println("createLabServiceWithCountByMachine");
+        investigationCountWithMachines = new ArrayList<>();
+        countTotal = 0;
+        for (Machine w : getInvestigationMachines()) {
+            InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
+            temp.setMachine(w);
+
+            long billed = getCount(new BilledBill(), w);
+            long cancelled = getCount(new CancelledBill(), w);
+            long refunded = getCount(new RefundBill(), w);
+
+            long net = billed - (cancelled + refunded);
+
+            temp.setCount(net);
+            temp.setTotal(getTotal(w));
+
+            countTotal += net;
+
+            if (temp.getCount() != 0) {
+                System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
+                investigationCountWithMachines.add(temp);
+            }
+
+        }
+
+    }
+
+    public void createLabServiceWithCountByMachineAndBillType() {
+        System.out.println("createLabServiceWithCountByMachine");
+        investigationCountWithMachines = new ArrayList<>();
+        countTotal = 0;
+        for (Machine w : getInvestigationMachines()) {
+            InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
+            temp.setMachine(w);
+
+            long billed = getCount(new BilledBill(), w);
+            long cancelled = getCount(new CancelledBill(), w);
+            long refunded = getCount(new RefundBill(), w);
+            long net = billed - (cancelled + refunded);
+            temp.setCount(net);
+            temp.setTotal(getTotal(w));
+            countTotal += net;
+
+            billed = getCount(new BilledBill(), w, BillType.OpdBill);
+            cancelled = getCount(new CancelledBill(), w, BillType.OpdBill);
+            refunded = getCount(new RefundBill(), w, BillType.OpdBill);
+            net = billed - (cancelled + refunded);
+            temp.setOpdCount(net);
+
+            billed = getCount(new BilledBill(), w, BillType.LabBill);
+            cancelled = getCount(new CancelledBill(), w, BillType.LabBill);
+            refunded = getCount(new RefundBill(), w, BillType.LabBill);
+            net = billed - (cancelled + refunded);
+            temp.setCcCount(net);
+
+            billed = getCount(new BilledBill(), w, BillType.InwardBill);
+            cancelled = getCount(new CancelledBill(), w, BillType.InwardBill);
+            refunded = getCount(new RefundBill(), w, BillType.InwardBill);
+            net = billed - (cancelled + refunded);
+            temp.setInwardCount(net);
+
+            if (temp.getCount() != 0) {
+                System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
+                investigationCountWithMachines.add(temp);
+            }
+
+        }
+
+    }
+
+    public List<Item> getInvestigationItems() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select DISTINCT(bi.item) from BillItem bi where "
+                + " type(bi.item) =:ixtype  "
+                + " and bi.bill.billType=:bType "
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " order by bi.item.name";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ixtype", Investigation.class);
+        temMap.put("bType", BillType.OpdBill);
+        temMap.put("ins", getSessionController().getInstitution());
+        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("investigations = " + investigations);
+
+        return investigations;
+    }
+
+    public List<Machine> getInvestigationMachines() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select DISTINCT(bi.item.machine) from BillItem bi where "
+                //                + " type(bi.item) =:ixtype  "
+                + " bi.bill.billType=:bType "
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " order by bi.item.name";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+//        temMap.put("ixtype", Investigation.class);
+        temMap.put("bType", BillType.OpdBill);
+        temMap.put("ins", institution);
+        machines = machineFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("investigations = " + machines);
+
+        return machines;
+    }
+
+    List<Machine> machines;
+    @EJB
+    MachineFacade machineFacade;
+
+    public class InvestigationCountWithMachine {
+
+        private Investigation investigation;
+        private Machine machine;
+        private long count;
+        private long opdCount;
+        private long inwardCount;
+        private long ccCount;
+        private double total;
+
+        public long getOpdCount() {
+            return opdCount;
+        }
+
+        public void setOpdCount(long opdCount) {
+            this.opdCount = opdCount;
+        }
+
+        public long getInwardCount() {
+            return inwardCount;
+        }
+
+        public void setInwardCount(long inwardCount) {
+            this.inwardCount = inwardCount;
+        }
+
+        public long getCcCount() {
+            return ccCount;
+        }
+
+        public void setCcCount(long ccCount) {
+            this.ccCount = ccCount;
+        }
+
+        public Investigation getInvestigation() {
+            return investigation;
+        }
+
+        public void setInvestigation(Investigation investigation) {
+            this.investigation = investigation;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public Machine getMachine() {
+            return machine;
+        }
+
+        public void setMachine(Machine machine) {
+            this.machine = machine;
+        }
+
+    }
+
+    public List<InvestigationCountWithMachine> getInvestigationCountWithMachines() {
+        return investigationCountWithMachines;
+    }
+
+    public void setInvestigationCountWithMachines(List<InvestigationCountWithMachine> investigationCountWithMachines) {
+        this.investigationCountWithMachines = investigationCountWithMachines;
+    }
+
     public void setItemDetails(List<InvestigationSummeryData> itemDetails) {
         this.itemDetails = itemDetails;
     }
@@ -831,6 +1099,15 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+
+    }
+
+    public List<InvestigationSummeryData> getInvestigationSummeryDatas() {
+        return investigationSummeryDatas;
+    }
+
+    public void setInvestigationSummeryDatas(List<InvestigationSummeryData> investigationSummeryDatas) {
+        this.investigationSummeryDatas = investigationSummeryDatas;
     }
 
     public class institutionInvestigationCountRow {

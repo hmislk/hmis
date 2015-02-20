@@ -6,6 +6,7 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -53,6 +54,8 @@ public class StaffSalaryComponant implements Serializable {
     @ManyToOne
     StaffSalary staffSalary;
     @ManyToOne
+    Staff staff;
+    @ManyToOne
     SalaryCycle salaryCycle;
     //////////
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -61,7 +64,22 @@ public class StaffSalaryComponant implements Serializable {
     private WebUser lastEditor;
     @Transient
     String transName;
+    private boolean paid;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paidAt;
+    @ManyToOne
+    private WebUser paidBy;
 
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+    
+  
+    
     private double roundOff(double d) {
         DecimalFormat newFormat = new DecimalFormat("#.##");
         try {
@@ -260,6 +278,30 @@ public class StaffSalaryComponant implements Serializable {
 
     public void setEtfCompanyValue(double etfCompanyValue) {
         this.etfCompanyValue = roundOff(etfCompanyValue);
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+
+    public Date getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Date paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public WebUser getPaidBy() {
+        return paidBy;
+    }
+
+    public void setPaidBy(WebUser paidBy) {
+        this.paidBy = paidBy;
     }
 
 }

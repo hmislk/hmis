@@ -17,6 +17,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -141,9 +142,9 @@ public class StaffPaySheetComponentAllController implements Serializable {
             return true;
         }
         
-        if (checkStaff()) {
-            return true;
-        }
+//        if (checkStaff()) {
+//            return true;
+//        }
 
         return false;
     }
@@ -290,9 +291,11 @@ public class StaffPaySheetComponentAllController implements Serializable {
     public List<PaysheetComponent> getCompnent() {
         String sql = "Select pc From PaysheetComponent pc "
                 + " where pc.retired=false"
-                + " and pc.componentType not in :tp1 ";
+                + " and pc.componentType not in :tp1"
+                + " and pc.componentType not in :tp2";
         HashMap hm = new HashMap();
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
+        hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,PaysheetComponentType.LoanNetSalary,PaysheetComponentType.Advance_Payment_Deduction}));
 
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 

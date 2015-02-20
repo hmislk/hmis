@@ -5,6 +5,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaperType;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -48,10 +49,25 @@ public class UserPreference implements Serializable {
     boolean grnBillDetailed;
     boolean bhtNumberWithYear;
     boolean depNumGenFromToDepartment;
-    boolean fiveFiveBillWithoutLabels;
+    boolean tranferNetTotalbyRetailRate;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
+    @Enumerated(EnumType.STRING)
+    ApplicationInstitution applicationInstitution;
+
+    public ApplicationInstitution getApplicationInstitution() {
+        return applicationInstitution;
+    }
+
+    public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
+        this.applicationInstitution = applicationInstitution;
+    }
+    
+
+    
+    
+    
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {
         return paymentMethodAllowedInInwardMatrix;
@@ -242,6 +258,15 @@ public class UserPreference implements Serializable {
     public void setDepNumGenFromToDepartment(boolean depNumGenFromToDepartment) {
         this.depNumGenFromToDepartment = depNumGenFromToDepartment;
     }
+
+    public boolean isTranferNetTotalbyRetailRate() {
+        return tranferNetTotalbyRetailRate;
+    }
+
+    public void setTranferNetTotalbyRetailRate(boolean tranferNetTotalbyRetailRate) {
+        this.tranferNetTotalbyRetailRate = tranferNetTotalbyRetailRate;
+    }
+    
     
     
     
