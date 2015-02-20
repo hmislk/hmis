@@ -36,10 +36,6 @@
                                 <h:outputText value="" />  
                             </f:facet>  
                         </p:ajaxStatus>
-                        
-                        #{sessionController.logged}
-                        
-                        #{sessionController.firstLogin}
 
                         <h:panelGroup rendered="#{sessionController.logged and !sessionController.firstLogin }" style="border: 1px solid;border-radius: 6px;" 
                                       styleClass="nonPrintBlock" >
