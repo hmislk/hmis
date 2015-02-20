@@ -273,7 +273,8 @@ public class ServiceSessionBean {
                 + " bs.serviceSession.sessionNumberGenerator=:ss "
                 + " and bs.bill.billType in :bt "
                 + " and type(bs.bill)=:class"
-                + " and bs.sessionDate= :ssDate";
+                + " and bs.sessionDate= :ssDate"
+                + " and bs.retired=false ";
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("bt", bts);

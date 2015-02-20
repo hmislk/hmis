@@ -335,9 +335,19 @@
 
                                 </f:facet>
 
-                                <p:panelGrid columns="1">
-                                    <p:inputText value="#{pharmacySaleController1.comment}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController1.preBill.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" 
+                                                    var="ix" itemLabel="#{ix.person.name}" 
+                                                    itemValue="#{ix}" size="30"  
+                                                    >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{pharmacySaleController1.comment}" id="comment"/>
+
+
+
                                 </p:panelGrid>
 
 

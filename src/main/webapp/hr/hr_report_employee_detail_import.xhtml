@@ -14,30 +14,29 @@
 
             <ui:define name="content">
 
-                <h:form>
-                    <p:panel header="Employe List" >
+
+                <h:form enctype="multipart/form-data">
+                    <p:panel header="Employe List - Import From Excel" >
+
+
                         <p:panel>
-                            <h:panelGrid columns="2" >  
-                                <h:outputLabel value="Institution"/>
-                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                                <h:outputLabel value="Department : "/>
-                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                                <h:outputLabel value="Staff Category : "/>
-                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                                <h:outputLabel value="Staff Designation : "/>
-                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                                <h:outputLabel value="Staff Roster : "/>
-                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            </h:panelGrid>
-                            <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+
+                            <p:commandButton ajax="false" action="#{hrReportController.createStaffListAll()}" value="Fill" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
-
                             <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
                             </p:commandButton> 
+
                         </p:panel>
+                        <p:panel header="Upload" >
+                            
+                            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcel}"/>
+                            
+                        </p:panel>
+                        
                         <p:panel header="Employee List" id="reportPrint">
 
 

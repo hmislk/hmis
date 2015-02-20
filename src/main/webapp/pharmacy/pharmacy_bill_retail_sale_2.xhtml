@@ -24,7 +24,7 @@
                     <p:defaultCommand  target="btnAdd" />  
 
                     <p:panel rendered="#{!pharmacySaleController2.billPreview}"  >
-                         <h:panelGroup id="panelError" >
+                        <h:panelGroup id="panelError" >
                             <h:panelGroup  
                                 rendered="#{pharmacySaleController2.errorMessage ne null}"
                                 style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
@@ -333,12 +333,20 @@
 
 
                                 </f:facet>
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController2.preBill.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" 
+                                                    var="ix" itemLabel="#{ix.person.name}" 
+                                                    itemValue="#{ix}" size="30"  
+                                                    >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{pharmacySaleController2.comment}" id="comment"/>
 
-                                <p:panelGrid columns="1">
-                                    <p:inputText value="#{pharmacySaleController2.comment}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
+
+
                                 </p:panelGrid>
-
 
 
                                 <p:panel header="Bill Details" id="pBillDetails"  >

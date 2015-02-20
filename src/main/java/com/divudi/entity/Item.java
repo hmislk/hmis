@@ -173,7 +173,7 @@ public class Item implements Serializable {
         this.cashNumbers = cashNumbers;
     }
 
-    public String getAgencyNumbers() {
+        public String getAgencyNumbers() {
         return agencyNumbers;
     }
 

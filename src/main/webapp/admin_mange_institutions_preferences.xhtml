@@ -16,6 +16,11 @@
                         <h:panelGrid columns="2" >
 
                             <h:panelGrid columns="2" headerClass="Printing Preferences" >
+                                <h:outputLabel value="Institution" ></h:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.institutionPreference.applicationInstitution}" >
+                                    <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                
                                 <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
                                 <p:inputTextarea value="#{sessionController.institutionPreference.pharmacyBillFooter}" />
 

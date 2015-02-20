@@ -6,7 +6,10 @@
 
 package com.divudi.bean.common;
 
+import com.divudi.data.BillType;
+import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
@@ -21,8 +24,11 @@ import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -70,6 +76,53 @@ public class DataAdministrationController {
     }
     
 
+    public void makeRateFromPurchaseRateToSaleInTransferBills(){
+        List<Bill> bills;
+        String j;
+        Map m = new HashMap();
+        
+        
+        j="select b from Bill b where b.billType in bts";
+        
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyTransferIssue);
+        bts.add(BillType.PharmacyTransferReceive);
+        bts.add(BillType.PharmacyTransferRequest);
+        m.put("bts", bts);
+        
+        bills=billFacade.findBySQL(j, m,10);
+        
+        for (Bill b:bills){
+            System.out.println("b = " + b);
+            double gt=0;
+            double nt=0;
+            for(BillItem bi:b.getBillItems()){
+                System.out.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+                
+                System.out.println("bi.getRate() = " + bi.getRate());
+                System.out.println("bi.getNetValue() = " + bi.getNetValue());
+                System.out.println("bi.getQty() = " + bi.getQty());
+                System.out.println("bi.getNetValue() = " + bi.getNetValue());
+                
+                bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+                bi.setNetRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+                
+                bi.setNetValue(bi.getNetRate() * bi.getQty());
+                bi.setGrossValue(bi.getNetValue());
+                
+                billItemFacade.edit(bi);
+                
+                gt+=bi.getNetValue();
+                nt+=bi.getGrossValue();
+                
+            }
+            
+           billFacade.edit(b);
+        }
+        
+        
+    }
+    
     /**
      * Creates a new instance of DataAdministrationController
      */
