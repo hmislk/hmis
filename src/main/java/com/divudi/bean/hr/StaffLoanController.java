@@ -36,6 +36,7 @@ public class StaffLoanController implements Serializable {
     ////////////////
     private List<StaffPaysheetComponent> filteredStaff;
     private List<StaffPaysheetComponent> items;
+    List<StaffPaysheetComponent> selectedList;
     /////////////////
     @EJB
     private StaffPaysheetComponentFacade staffPaysheetComponentFacade;
@@ -51,6 +52,7 @@ public class StaffLoanController implements Serializable {
     List<StaffPaysheetComponent> paysheetComponents;
     @EJB
     HumanResourceBean humanResourceBean;
+    boolean chequeDetails = false;
 
     private boolean errorCheck() {
 
@@ -62,8 +64,7 @@ public class StaffLoanController implements Serializable {
 //            UtilityController.addErrorMessage("Check Date");
 //            return true;
 //        }
-        
-        
+
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
             return true;
@@ -74,7 +75,16 @@ public class StaffLoanController implements Serializable {
             return true;
         }
 
-        
+        return false;
+    }
+
+    public boolean errorCheckSelected() {
+        for (StaffPaysheetComponent s : selectedList) {
+            System.out.println("getChequeNumber() = " + s.getChequeNumber());
+            if (s.getChequeNumber()==null || s.getChequeNumber().equals("")) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -99,6 +109,21 @@ public class StaffLoanController implements Serializable {
         }
 
         makeNull();
+    }
+
+    public void saveSelected() {
+        if (errorCheckSelected()) {
+            UtilityController.addErrorMessage("Please Check Cheque Date And Cheque No:");
+            return;
+        }
+        
+        for (StaffPaysheetComponent s : selectedList) {
+            s.setChequePaidBy(getSessionController().getLoggedUser());
+            s.setChequePaidDate(new Date());
+            getStaffPaysheetComponentFacade().edit(s);
+        }
+        UtilityController.addSuccessMessage("Sucessffully Updated Selected");
+
     }
 
     public void makeNull() {
@@ -189,6 +214,8 @@ public class StaffLoanController implements Serializable {
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        
+        chequeDetails = false;
     }
 
     public void createsheduleForPaidLones() {
@@ -246,6 +273,10 @@ public class StaffLoanController implements Serializable {
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (paysheetComponents.size() > 0) {
+            chequeDetails = true;
+        }
     }
 
     public StaffLoanController() {
@@ -327,5 +358,29 @@ public class StaffLoanController implements Serializable {
 
     public void setPaysheetComponents(List<StaffPaysheetComponent> paysheetComponents) {
         this.paysheetComponents = paysheetComponents;
+    }
+
+    public HumanResourceBean getHumanResourceBean() {
+        return humanResourceBean;
+    }
+
+    public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
+        this.humanResourceBean = humanResourceBean;
+    }
+
+    public boolean isChequeDetails() {
+        return chequeDetails;
+    }
+
+    public void setChequeDetails(boolean chequeDetails) {
+        this.chequeDetails = chequeDetails;
+    }
+
+    public List<StaffPaysheetComponent> getSelectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(List<StaffPaysheetComponent> selectedList) {
+        this.selectedList = selectedList;
     }
 }
