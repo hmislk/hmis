@@ -84,6 +84,178 @@ public class HumanResourceBean {
     @EJB
     private FinalVariables finalVariables;
 
+    public boolean checkStaff(StaffPaysheetComponent staffPaysheetComponent,
+            PaysheetComponent paysheetComponent, Staff staff, Date frmDate, Date toDate) {
+
+        System.out.println("staffPaysheetComponent = " + staffPaysheetComponent);
+        System.out.println("paysheetComponent = " + paysheetComponent);
+        System.out.println("staff = " + staff);
+        System.out.println("fromDate = " + frmDate);
+        System.out.println("toDate = " + toDate);
+
+        if (frmDate == null) {
+            return true;
+        }
+        if (toDate == null) {
+            return true;
+        }
+
+        if (frmDate.getTime() > toDate.getTime()) {
+            return true;
+        }
+
+        String sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:frm  "
+                + " and s.toDate>=:frm ";
+
+        if (staffPaysheetComponent.getId() != null) {
+            sql += " and s.id!=" + staffPaysheetComponent.getId();
+        }
+
+        HashMap hm = new HashMap();
+        hm.put("tp", paysheetComponent);
+        hm.put("st", staff);
+        hm.put("frm", frmDate);
+        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("From Date ");
+            return true;
+        }
+
+        sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:to  "
+                + " and s.toDate>=:to ";
+
+        if (staffPaysheetComponent.getId() != null) {
+            sql += " and s.id!=" + staffPaysheetComponent.getId();
+        }
+
+        hm = new HashMap();
+        hm.put("tp", paysheetComponent);
+        hm.put("st", staff);
+        hm.put("to", toDate);
+        tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("To Date ");
+            return true;
+        }
+
+        sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:frm  "
+                + " and s.toDate>=:to ";
+
+        if (staffPaysheetComponent.getId() != null) {
+            sql += " and s.id!=" + staffPaysheetComponent.getId();
+        }
+
+        hm = new HashMap();
+        hm.put("tp", paysheetComponent);
+        hm.put("st", staff);
+        hm.put("frm", frmDate);
+        hm.put("to", toDate);
+        tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("From && To Date ");
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean checkStaff(PaysheetComponent paysheetComponentType, Staff staff, Date frmDate, Date toDate) {
+
+        System.out.println("paysheetComponent = " + paysheetComponentType);
+        System.out.println("staff = " + staff);
+        System.out.println("fromDate = " + frmDate);
+        System.out.println("toDate = " + toDate);
+
+        if (frmDate == null) {
+            return true;
+        }
+        if (toDate == null) {
+            return true;
+        }
+
+        if (frmDate.getTime() > toDate.getTime()) {
+            return true;
+        }
+
+        String sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:frm  "
+                + " and s.toDate>=:frm ";
+
+        HashMap hm = new HashMap();
+        hm.put("tp", paysheetComponentType);
+        hm.put("st", staff);
+        hm.put("frm", frmDate);
+        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("From Date ");
+            return true;
+        }
+
+        sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:to  "
+                + " and s.toDate>=:to ";
+
+        hm = new HashMap();
+        hm.put("tp", paysheetComponentType);
+        hm.put("st", staff);
+        hm.put("to", toDate);
+        tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("To Date ");
+            return true;
+        }
+
+        sql = "Select s From"
+                + " StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:frm  "
+                + " and s.toDate>=:to ";
+
+        hm = new HashMap();
+        hm.put("tp", paysheetComponentType);
+        hm.put("st", staff);
+        hm.put("frm", frmDate);
+        hm.put("to", toDate);
+        tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null && !tmp.isEmpty()) {
+            System.err.println("From && To Date ");
+            return true;
+        }
+
+        return false;
+    }
+
     public double getOverTimeFromRoster(double workingTimeForOverTimePerWeek, double numberOfWeeks, double totalWorkedTime) {
         if (workingTimeForOverTimePerWeek != 0 && numberOfWeeks != 0) {
             double normalWorkTime = numberOfWeeks * workingTimeForOverTimePerWeek * 60 * 60;

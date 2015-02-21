@@ -805,10 +805,10 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
 
-            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
-                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
-                return true;
-            }
+//            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+//                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+//                return true;
+//            }
 
         }
 
