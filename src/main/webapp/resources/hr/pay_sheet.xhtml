@@ -135,7 +135,7 @@
                             <h:outputLabel value="Basic Salary"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.basicValue}"/>
                         </td>
                     </tr>
@@ -145,7 +145,7 @@
                             <h:outputLabel value="B R"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.brValue}"/>
                         </td>
                     </tr>
@@ -155,7 +155,7 @@
                             <h:outputLabel value="Mercantile Day Allowance"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.merchantileAllowanceValue}"/>
                         </td>
                     </tr>
@@ -165,7 +165,7 @@
                             <h:outputLabel value="Poya Day Allowance"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.poyaAllowanceValue}"/>
                         </td>
                     </tr>
@@ -175,7 +175,7 @@
                             <h:outputLabel value="Day Off Allowance"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.dayOffAllowance}"/>
                         </td>
                     </tr>
@@ -185,7 +185,7 @@
                             <h:outputLabel value="Sleeping Day Allowance"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.sleepingDayAllowance}"/>
                         </td>
                     </tr>
@@ -195,7 +195,7 @@
                             <h:outputLabel value="Basic Adjustment"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.adjustmentToBasic}"/>
                         </td>
                     </tr>
@@ -205,7 +205,7 @@
                             <h:outputLabel value="Allowance Adjustment"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.adjustmentToAllowance}"/>
                         </td>
                     </tr>
@@ -215,7 +215,7 @@
                             <h:outputLabel value="Gross Pay"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.transGrossSalary}"/>
                         </td>
                     </tr>
@@ -266,7 +266,7 @@
                             <h:outputLabel value="No Pay Basic"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                            <h:outputLabel value="#{cc.attrs.bill.noPayValueBasic}"/> 
                         </td>
                     </tr>
@@ -276,7 +276,7 @@
                             <h:outputLabel value="No Pay Allowance"/>
                         </td>
                         <td></td>
-                        <td>
+                        <td style="text-align: right;">
                            <h:outputLabel value="#{cc.attrs.bill.noPayValueAllowance}"/> 
                         </td>
                     </tr>
@@ -303,8 +303,8 @@
                             <h:outputLabel value="Net Pay"/>
                         </td>
                         <td></td>
-                        <td>
-                           <h:outputLabel value="#{cc.attrs.bill.noPayValueAllowance}"/> 
+                        <td style="text-align: right;">
+                           <h:outputLabel value="#{cc.attrs.bill.noPayValueAllowance - t.componantValue - cc.attrs.bill.noPayValueBasic}"/> 
                         </td>
                     </tr>
                     
