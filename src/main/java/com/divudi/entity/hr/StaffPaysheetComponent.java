@@ -75,6 +75,11 @@ public class StaffPaysheetComponent implements Serializable {
     private Date chequeDate;
     @ManyToOne
     Institution chequeBank;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequePaidDate;
+    @ManyToOne
+    WebUser chequePaidBy;
+    
     
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateAffectFrom;
@@ -368,5 +373,21 @@ public class StaffPaysheetComponent implements Serializable {
 
     public void setChequeBank(Institution chequeBank) {
         this.chequeBank = chequeBank;
+    }
+
+    public Date getChequePaidDate() {
+        return chequePaidDate;
+    }
+
+    public void setChequePaidDate(Date chequePaidDate) {
+        this.chequePaidDate = chequePaidDate;
+    }
+
+    public WebUser getChequePaidBy() {
+        return chequePaidBy;
+    }
+
+    public void setChequePaidBy(WebUser chequePaidBy) {
+        this.chequePaidBy = chequePaidBy;
     }
 }

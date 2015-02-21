@@ -95,9 +95,13 @@
                     <p:panel id="gpBillPreview" >
                         <f:facet name="header">
                             <h:outputLabel value="Loan And Advances"/>
+                            <p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();"/>
                         </f:facet>
                         <p:dataTable value="#{staffLoanController.paysheetComponents}" 
-                                     var="i" scrollHeight="200"  >
+                                     var="i" scrollHeight="200"
+                                     selection="#{staffLoanController.selectedList}" >
+                            <p:column  selectionMode="multiple" >                            
+                            </p:column>
                             <p:column headerText="From" >
                                 <h:outputLabel value="#{i.fromDate}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
