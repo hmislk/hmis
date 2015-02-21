@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.hr;
 
+import static com.divudi.data.InstitutionType.Bank;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -137,6 +138,37 @@ public class StaffSalary implements Serializable {
     private Date holdPaidAt;
     @ManyToOne
     private WebUser holdPaidBy;
+    @ManyToOne
+    Institution chequeBank;    
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date chequeDate;
+    String chequeNo;
+
+    public String getChequeNo() {
+        return chequeNo;
+    }
+
+    public void setChequeNo(String chequeNo) {
+        this.chequeNo = chequeNo;
+    }
+    
+    
+    public Institution getChequeBank() {
+        return chequeBank;
+    }
+
+    public void setChequeBank(Institution chequeBank) {
+        this.chequeBank = chequeBank;
+    }
+
+    public Date getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(Date chequeDate) {
+        this.chequeDate = chequeDate;
+    }
+    
 
     public Institution getEpfBankBranch() {
         return epfBankBranch;
