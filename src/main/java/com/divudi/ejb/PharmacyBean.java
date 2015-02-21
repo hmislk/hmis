@@ -1119,11 +1119,12 @@ public class PharmacyBean {
     }
 
     public double getOrderingQty(Item item, Department department) {
-        double qty = 10;
-        if (item instanceof Ampp) {
-            qty /= item.getDblValue();
-        }
-        return (double) qty;
+//        double qty = 10;
+//        if (item instanceof Ampp) {
+//            qty /= item.getDblValue();
+//        }
+//        return (double) qty;
+        return 0;
     }
 
     public double getMaximumPurchasePriceChange() {

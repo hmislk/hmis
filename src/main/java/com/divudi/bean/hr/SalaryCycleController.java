@@ -7,8 +7,10 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
@@ -202,8 +204,9 @@ public class SalaryCycleController implements Serializable {
     public void setSalaryCycles(List<SalaryCycle> salaryCycles) {
         this.salaryCycles = salaryCycles;
     }
-    
-    
+
+    @EJB
+    HumanResourceBean humanResourceBean;
 
     private boolean errorCheck() {
         if (current == null) {
@@ -226,78 +229,19 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        //Check Salry Cycle
-        String sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and (s.salaryFromDate=:sfd "
-                + " or s.salaryToDate=:std "
-                + " or s.workedFromDate=:wfd "
-                + " or s.workedToDate=:wtd ) ";
-        HashMap hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryFromDate());
-        hm.put("std", getCurrent().getSalaryToDate());
-        hm.put("wfd", getCurrent().getWorkedFromDate());
-        hm.put("wtd", getCurrent().getWorkedToDate());
-
-        SalaryCycle salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary Cycle Already Exist For This Date");
+        //Check Salry Date        
+        if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
+            UtilityController.addErrorMessage("Salary Date Already Exist");
             return true;
         }
 
-        //Check Salary Form Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.salaryFromDate<=:sfd "
-                + " and s.salaryToDate>=:sfd ";
-        hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryFromDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary From Date Already Exist in Other Cycle");
+        if (humanResourceBean.checkSalaryCycleDate(current, DateType.AdvanceDate, current.getSalaryAdvanceFromDate(), current.getSalaryAdvanceToDate())) {
+            UtilityController.addErrorMessage("Salary Advance Date Already Exist");
             return true;
         }
-
-        //Check Salary To Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.salaryFromDate<=:sfd "
-                + " and s.salaryToDate>=:sfd ";
-        hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryToDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary To Date Already Exist in Other Cycle");
-            return true;
-        }
-
-        //Check Worked Form Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.workedFromDate<=:wfd "
-                + " and s.workedToDate>=:wfd  ";
-        hm = new HashMap();
-        hm.put("wfd", getCurrent().getWorkedFromDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Worked From Date Already Exist in Other Cycle");
-            return true;
-        }
-
-        //Check Worked TO Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.workedFromDate<=:wfd "
-                + " and s.workedToDate>=:wfd  ";
-        hm = new HashMap();
-        hm.put("wfd", getCurrent().getWorkedToDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Worked To Date Already Exist in Other Cycle");
+        
+         if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
+            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
             return true;
         }
 
