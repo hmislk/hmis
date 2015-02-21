@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -45,6 +46,11 @@ public class StaffLoanController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    ReportKeyWord reportKeyWord;
+    Date fromDate;
+    PaysheetComponent paysheetComponent;
+    List<StaffPaysheetComponent> paysheetComponents;
+
     private boolean errorCheck() {
 
         if (getCurrent().getPaysheetComponent() == null) {
@@ -70,14 +76,13 @@ public class StaffLoanController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getStaffPaysheetComponentFacade().edit(getCurrent());
 
-       makeNull();
+        makeNull();
     }
 
     public void save() {
         if (errorCheck()) {
             return;
         }
-
 
         if (getCurrent().getId() == null) {
             getStaffPaysheetComponentFacade().create(getCurrent());
@@ -116,10 +121,125 @@ public class StaffLoanController implements Serializable {
                 + " where pc.retired=false "
                 + " and pc.componentType in :tp";
         HashMap hm = new HashMap();
-        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,PaysheetComponentType.LoanNetSalary,PaysheetComponentType.Advance_Payment_Deduction}));
+        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
 
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
+    }
+
+    public void createLones() {
+        String sql;
+        HashMap hm = new HashMap();
+        
+        sql = "Select ss from StaffPaysheetComponent ss "
+                + " where ss.retired=false "
+                + " and ss.fromDate <=:fd ";
+
+        if (paysheetComponent != null) {
+            sql += " and ss.paysheetComponent=:tp ";
+            hm.put("tp", getPaysheetComponent());
+        }else{
+            sql += " and ss.paysheetComponent.componentType in :tp ";
+            hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.Advance_Payment_Deduction}));
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat ";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des ";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+        
+        hm.put("fd", getFromDate());
+        
+//        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+//            PaysheetComponentType.LoanNetSalary,
+//            PaysheetComponentType.Advance_Payment_Deduction}));
+
+        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void createsheduleForPaidLones() {
+        String sql;
+        HashMap hm = new HashMap();
+        
+        sql = "Select ss from StaffPaysheetComponent ss "
+                + " where ss.retired=false "
+                + " and ss.fromDate <=:fd "
+                + " and ss.sheduleForPaid=true ";
+
+        if (paysheetComponent != null) {
+            sql += " and ss.paysheetComponent=:tp ";
+            hm.put("tp", getPaysheetComponent());
+        }else{
+            sql += " and ss.paysheetComponent.componentType in :tp ";
+            hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.Advance_Payment_Deduction}));
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat ";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des ";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+        
+        hm.put("fd", getFromDate());
+        
+//        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+//            PaysheetComponentType.LoanNetSalary,
+//            PaysheetComponentType.Advance_Payment_Deduction}));
+
+        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public StaffLoanController() {
@@ -166,5 +286,40 @@ public class StaffLoanController implements Serializable {
 
     public void setFilteredStaff(List<StaffPaysheetComponent> filteredStaff) {
         this.filteredStaff = filteredStaff;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord==null) {
+            reportKeyWord=new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public PaysheetComponent getPaysheetComponent() {
+        return paysheetComponent;
+    }
+
+    public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
+        this.paysheetComponent = paysheetComponent;
+    }
+
+    public List<StaffPaysheetComponent> getPaysheetComponents() {
+        return paysheetComponents;
+    }
+
+    public void setPaysheetComponents(List<StaffPaysheetComponent> paysheetComponents) {
+        this.paysheetComponents = paysheetComponents;
     }
 }
