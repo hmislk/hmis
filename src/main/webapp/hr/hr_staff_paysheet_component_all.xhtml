@@ -36,11 +36,25 @@
 
                             <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
-                           
+
                         </h:panelGrid>                      
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{staffPaySheetComponentAllController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{staffPaySheetComponentAllController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Designation : "/>
+                            <hr:completeDesignation value="#{staffPaySheetComponentAllController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Roster : "/>
+                            <hr:completeRoster value="#{staffPaySheetComponentAllController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                          action="#{staffController.createStaffWithCode()}"
