@@ -22,22 +22,22 @@
                                 <f:selectItem itemLabel="Select Paysheet Component"/>
                                 <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
                                                var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
-                                <f:ajax event="change" execute="@this " 
+                                <f:ajax event="change" execute="@this" 
                                         render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>
                             <p:calendar  value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">                            
                             </p:calendar>
-                            <h:outputLabel value="To"/>
+                            <h:outputLabel value="Too"/>
                             <p:calendar   value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy">                            
-                            </p:calendar>                    
+                            </p:calendar>                     
                             <h:outputLabel value="Value"/>
                             <p:inputText autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
 
                             <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
-
-                        </h:panelGrid>
+                           
+                        </h:panelGrid>                      
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
