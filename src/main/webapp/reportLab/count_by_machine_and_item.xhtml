@@ -43,56 +43,97 @@
 
 
                     <p:panelGrid columns="3" >
+                        <p:commandButton ajax="false"  value="Refresh" 
+                                         action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType() }"
+                                         styleClass="noPrintButton" style="float: right;" />
+
+
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
                             <p:printer target="panelPrint" />
                         </p:commandButton>
 
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation Count With Machine(By Item) From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
+                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
                                          facetBackground="#008000" facetFontSize="15" 
                                          facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
                         </p:commandButton>      
 
-                        <p:commandButton ajax="false"  value="Refresh"  action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachine()}"
-                                         styleClass="noPrintButton" style="float: right;" />
-
 
 
                     </p:panelGrid>
 
-                    <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.investigationCountWithMachines}" var="c" >
+                    <p:dataTable id="tbl" 
+                                 value="#{investigationMonthSummeryOwnController.investigationCountWithMachines}" 
+                                 var="c" >
 
                         <f:facet name="header">
-
-                            <h:outputLabel value="Investigation Month End Summery "/>
-                            <br/>
-                            <h:panelGrid columns="4" >
-                                <h:outputLabel value="FROM : "/>
-                                <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
-                                </h:outputLabel>
-                                <h:outputLabel value="TO : "/>
-                                <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
-                                </h:outputLabel>
+                            <h:panelGrid columns="1" >
+                                <h:outputLabel value="Investigation Counts"/>
+                                <h:panelGroup> 
+                                    <h:outputLabel value="From "/>
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="to "/>
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
                             </h:panelGrid>
                         </f:facet>
 
-                        <p:column headerText="Machine Name" >
-                            <h:outputLabel value="#{c.machine.name}"  />
-                        </p:column>
-                        <p:column headerText="Count" style="text-align:right" >
-                            <h:outputLabel value="#{c.count}" />
-                        </p:column>
+
+                        <p:columnGroup type="header">
+                            <p:row>
+                                <p:column rowspan="2" headerText="Investigation" />
+                                <p:column colspan="4" headerText="Counts" />
+                            </p:row>
+                            <p:row>
+                                <p:column headerText="OPD" />
+                                <p:column headerText="Collecting Centre" />
+                                <p:column headerText="Inward" />
+                                <p:column headerText="Total" />
+                            </p:row>
+                        </p:columnGroup>
+
+                        <p:subTable var="stats" value="#{c.listOfInvestigationCounts}">
+                            <f:facet name="header">
+                                <h:outputText value="#{c.machine.name}" />
+                            </f:facet>
+                            <p:column>
+                                <h:outputText value="#{stats.investigation.name}" />
+                            </p:column>
+                            <p:column style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.opdCount}" />
+                            </p:column>
+                            <p:column  style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.ccCount}" />
+                            </p:column>
+                            <p:column  style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.inwardCount}" />
+                            </p:column>
+                            <p:column  style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.count}" />
+                            </p:column>
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="#{c.machine.name} Total" style="text-align:right"/>
+                                    <p:column footerText="#{c.opdCount}"  style="text-align:right"/>
+                                    <p:column footerText="#{c.ccCount}"  style="text-align:right"/>
+                                    <p:column footerText="#{c.inwardCount}"  style="text-align:right"/>
+                                    <p:column footerText="#{c.count}"  style="text-align:right"/>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:subTable>                        
+
                         <p:columnGroup type="footer">  
                             <p:row>                              
-                                <p:column footerText="Total" colspan="1"/>
+                                <p:column footerText="Total" colspan="4"/>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.countTotal}"  style="text-align:right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal}">
-
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalCount}">
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>                             
