@@ -69,6 +69,8 @@ public class StaffPaysheetComponent implements Serializable {
     private double loanFullAmount;
     private String comment;
     boolean completed;
+    private boolean sheduleForPaid;
+    
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateAffectFrom;
     double numberOfInstallment;
@@ -329,5 +331,13 @@ public class StaffPaysheetComponent implements Serializable {
 
     public void setDateAffectFrom(Date dateAffectFrom) {
         this.dateAffectFrom = dateAffectFrom;
+    }
+
+    public boolean isSheduleForPaid() {
+        return sheduleForPaid;
+    }
+
+    public void setSheduleForPaid(boolean sheduleForPaid) {
+        this.sheduleForPaid = sheduleForPaid;
     }
 }
