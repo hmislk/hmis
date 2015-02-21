@@ -5,7 +5,6 @@
  */
 package com.divudi.entity.hr;
 
-import static com.divudi.data.InstitutionType.Bank;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
