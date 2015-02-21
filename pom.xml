@@ -7,7 +7,7 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>arogya</name>
+    <name>ruhunu</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>

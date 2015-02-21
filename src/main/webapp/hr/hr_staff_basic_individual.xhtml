@@ -43,7 +43,7 @@
                              <h:outputLabel value="BR Value"/>
                              <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
 
-                            <p:commandButton id="btnAdd" value="Add"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:commandButton id="btnAdd" value="Save"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:defaultCommand target="btnAdd"/>
 
                             <p:commandButton value="Clear" action="#{staffBasicController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
