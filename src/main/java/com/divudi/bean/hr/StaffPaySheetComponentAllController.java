@@ -254,11 +254,11 @@ public class StaffPaySheetComponentAllController implements Serializable {
             hm.put("dep", getReportKeyWord().getDepartment());
         }
         
-        if (getReportKeyWord().getInstitution() != null) {
-            sql += " and ss.staff.institution=:ins ";
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-
+        
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
@@ -270,7 +270,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

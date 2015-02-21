@@ -28,10 +28,10 @@
                                            var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                         </p:selectOneMenu>
                         <h:outputLabel value="From"/>
-                        <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MMMM yyyy">                            
+                        <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
-                        <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MMMM yyyy">                            
+                        <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
