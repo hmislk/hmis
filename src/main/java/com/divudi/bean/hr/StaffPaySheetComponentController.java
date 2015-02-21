@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -86,31 +87,28 @@ public class StaffPaySheetComponentController implements Serializable {
 
     }
 
-    private boolean checkStaff() {
-
-        String sql = "Select s From StaffPaysheetComponent s "
-                + " where s.retired=false"
-                + " and s.paysheetComponent=:tp "
-                + " and s.staff=:st "
-                + " and s.fromDate<=:cu  "
-                + " and s.toDate>=:cu ";
-        HashMap hm = new HashMap();
-        hm.put("tp", getCurrent().getPaysheetComponent());
-        hm.put("st", getCurrent().getStaff());
-        hm.put("cu", getCurrent().getToDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-        if (!tmp.isEmpty()) {
-            UtilityController.addErrorMessage("There is already Component define for " + getCurrent().getStaff().getPerson().getNameWithTitle() + " for this date range u can edit or remove add new one ");
-            return true;
-        }
-
-        return false;
-    }
-
+//    private boolean checkStaff() {
+//
+//        String sql = "Select s From StaffPaysheetComponent s "
+//                + " where s.retired=false"
+//                + " and s.paysheetComponent=:tp "
+//                + " and s.staff=:st "
+//                + " and s.fromDate<=:cu  "
+//                + " and s.toDate>=:cu ";
+//        HashMap hm = new HashMap();
+//        hm.put("tp", getCurrent().getPaysheetComponent());
+//        hm.put("st", getCurrent().getStaff());
+//        hm.put("cu", getCurrent().getToDate());
+//        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//
+//        if (!tmp.isEmpty()) {
+//            UtilityController.addErrorMessage("There is already Component define for " + getCurrent().getStaff().getPerson().getNameWithTitle() + " for this date range u can edit or remove add new one ");
+//            return true;
+//        }
+//
+//        return false;
+//    }
     private boolean errorCheck() {
-
-     
 
         if (getCurrent().getPaysheetComponent() == null) {
             UtilityController.addErrorMessage("Check Component Name");
@@ -125,14 +123,24 @@ public class StaffPaySheetComponentController implements Serializable {
             UtilityController.addErrorMessage("Check Staff");
             return true;
         }
+
+//        if (checkStaff()) {
+//            return true;
+//        }
         
-           if (checkStaff()) {
+       
+
+        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+            UtilityController.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
         return false;
     }
 
+    @EJB
+    HumanResourceBean humanResourceBean;
+    
     public void remove() {
         getRemovingEntry().setRetired(true);
         getRemovingEntry().setRetiredAt(new Date());
@@ -251,7 +259,7 @@ public class StaffPaySheetComponentController implements Serializable {
                 + " and pc.componentType not in :tp2";
         HashMap hm = new HashMap();
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
-        hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,PaysheetComponentType.LoanNetSalary,PaysheetComponentType.Advance_Payment_Deduction}));
+        hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
     }
