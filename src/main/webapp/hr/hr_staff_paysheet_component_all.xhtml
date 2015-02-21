@@ -113,6 +113,8 @@
                         <hr:completeStaff value="#{staffPaySheetComponentAllController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
                         <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Institution : "/>
+                        <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
                         <h:outputLabel value="Staff Category : "/>
                         <hr:completeStaffCategory value="#{staffPaySheetComponentAllController.reportKeyWord.staffCategory}"/>
                         <h:outputLabel value="Designation : "/>
@@ -169,6 +171,15 @@
                         </p:column>
                         <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
                             <h:outputLabel value="#{i.staff.code}"/>
+                        </p:column>
+                        <p:column headerText="Institution" filterBy="#{i.staff.workingDepartment.institution.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.workingDepartment.institution.name}"/>
+                        </p:column>
+                        <p:column headerText="Department" filterBy="#{i.staff.workingDepartment.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                        </p:column>
+                        <p:column headerText="Roster" filterBy="#{i.staff.roster}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.roster}"/>
                         </p:column>
                         <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
                             <p:cellEditor>  

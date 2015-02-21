@@ -25,6 +25,8 @@
                                 <f:ajax event="itemSelect" execute="@this" render="lst stfCode" listener="#{staffBasicController.makeItemNul}" />
                                 <p:column headerText="Staff Name">
                                     <h:outputLabel value="#{mys.person.name}"/>
+                                </p:column>
+                                <p:column headerText="Code">
                                     <h:outputLabel value="#{mys.code}"/>
                                 </p:column>
 
@@ -39,9 +41,9 @@
                             </p:calendar>                    
                             <h:outputLabel value="Salary"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
-                            
-                             <h:outputLabel value="BR Value"/>
-                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
+
+                            <h:outputLabel value="BR Value"/>
+                            <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
 
                             <p:commandButton id="btnAdd" value="Add"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:defaultCommand target="btnAdd"/>
@@ -60,7 +62,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="Basic List"/>
                         <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
-                        
+
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
@@ -89,9 +91,18 @@
 
                         <p:column  selectionMode="multiple" >                            
                         </p:column>
-                         <p:column headerText="no" >
+                        <p:column headerText="no" >
                             <h:outputLabel value="#{a+1}" >
                             </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Institution" filterBy="#{i.staff.workingDepartment.institution.name}" filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.workingDepartment.institution.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Department" filterBy="#{i.staff.workingDepartment.name}" filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.workingDepartment.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Roster" filterBy="#{i.staff.roster.name}" filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.roster.name}" ></h:outputLabel>
                         </p:column>
                         <p:column headerText="EMP Code" filterBy="#{i.staff.code}" filterMatchMode="contains" >
                             <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
