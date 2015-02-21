@@ -206,11 +206,11 @@
 
                             </p:column>
 
-                            <p:column style="width:6%">  
+                            <p:column style="width:6%" exportable="false">  
                                 <p:rowEditor />  
                             </p:column>  
 
-                            <p:column style="width:6%">  
+                            <p:column style="width:6%" exportable="false">  
                                 <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffPaySheetComponentAllController.current}" value="#{i}" />
                                 </p:commandButton>
