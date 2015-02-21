@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -85,38 +86,37 @@ public class StaffPaySheetComponentAllController implements Serializable {
         makeNull();
     }
 
-    private boolean checkStaff() {
-        repeatedComponent = null;
-        for (Staff s : getStaffController().getSelectedList()) {
-            String sql = "Select s "
-                    + " From StaffPaysheetComponent s "
-                    + " where s.retired=false"
-                    + " and s.paysheetComponent=:tp "
-                    + " and s.staff=:st "
-                    + " and s.fromDate<=:cu  "
-                    + " and s.toDate>=:cu ";
-            HashMap hm = new HashMap();
-            hm.put("tp", getPaysheetComponent());
-            hm.put("st", s);
-            hm.put("cu", getToDate());
-
-            List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-            if (!tmp.isEmpty()) {
-                getRepeatedComponent().addAll(tmp);
-            }
-
-        }
-
-        if (!getRepeatedComponent().isEmpty()) {
-            UtilityController.addErrorMessage("There is already " + getPaysheetComponent().getName() + " defined please finalize his ending date range && add new one or remove");
-            items = null;
-            return true;
-        }
-
-        return false;
-    }
-
+//    private boolean checkStaff() {
+//        repeatedComponent = null;
+//        for (Staff s : getStaffController().getSelectedList()) {
+//            String sql = "Select s "
+//                    + " From StaffPaysheetComponent s "
+//                    + " where s.retired=false"
+//                    + " and s.paysheetComponent=:tp "
+//                    + " and s.staff=:st "
+//                    + " and s.fromDate<=:cu  "
+//                    + " and s.toDate>=:cu ";
+//            HashMap hm = new HashMap();
+//            hm.put("tp", getPaysheetComponent());
+//            hm.put("st", s);
+//            hm.put("cu", getToDate());
+//
+//            List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//
+//            if (!tmp.isEmpty()) {
+//                getRepeatedComponent().addAll(tmp);
+//            }
+//
+//        }
+//
+//        if (!getRepeatedComponent().isEmpty()) {
+//            UtilityController.addErrorMessage("There is already " + getPaysheetComponent().getName() + " defined please finalize his ending date range && add new one or remove");
+//            items = null;
+//            return true;
+//        }
+//
+//        return false;
+//    }
     public void onEdit(RowEditEvent event) {
         StaffPaysheetComponent tmp = (StaffPaysheetComponent) event.getObject();
         tmp.setLastEditedAt(new Date());
@@ -124,6 +124,9 @@ public class StaffPaySheetComponentAllController implements Serializable {
         getStaffPaysheetComponentFacade().edit(tmp);
 
     }
+
+    @EJB
+    HumanResourceBean humanResourceBean;
 
     private boolean errorCheck() {
 
@@ -136,16 +139,22 @@ public class StaffPaySheetComponentAllController implements Serializable {
             UtilityController.addErrorMessage("Please select From Date");
             return true;
         }
-        
-         if (getToDate() == null) {
+
+        if (getToDate() == null) {
             UtilityController.addErrorMessage("Please select To Date");
             return true;
         }
-        
+
+        for (Staff staff : staffController.getSelectedList()) {
+            if (humanResourceBean.checkStaff(getPaysheetComponent(), staff, getFromDate(), getToDate())) {
+                UtilityController.addErrorMessage("There is Some component in Same Date Range");
+                return true;
+            }
+        }
+
 //        if (checkStaff()) {
 //            return true;
 //        }
-
         return false;
     }
 
@@ -197,7 +206,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         }
 
 //        updateExistingComponent();
-
         makeNullWithout();
     }
 
@@ -253,12 +261,12 @@ public class StaffPaySheetComponentAllController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
@@ -300,7 +308,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
                 + " and pc.componentType not in :tp2";
         HashMap hm = new HashMap();
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
-        hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,PaysheetComponentType.LoanNetSalary,PaysheetComponentType.Advance_Payment_Deduction}));
+        hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
 
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
