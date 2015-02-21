@@ -7,17 +7,20 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.ChannelDoctor;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
@@ -35,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -68,6 +72,8 @@ public class ChannelReportController implements Serializable {
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
+    Institution institution;
+    Department department;
     private List<ChannelDoctor> channelDoctors;
     /////
     @EJB
@@ -81,6 +87,183 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    ChannelReportColumnModelBundle rowBundle;
+    List<ChannelReportColumnModel> rows;
+    List<ChannelReportColumnModel> filteredRows;
+
+    public ChannelReportColumnModelBundle getRowBundle() {
+        return rowBundle;
+    }
+
+    public void setRowBundle(ChannelReportColumnModelBundle rowBundle) {
+        this.rowBundle = rowBundle;
+    }
+
+    public List<ChannelReportColumnModel> getFilteredRows() {
+        return filteredRows;
+    }
+
+    public void setFilteredRows(List<ChannelReportColumnModel> filteredRows) {
+        this.filteredRows = filteredRows;
+    }
+
+    
+    
+    public List<ChannelReportColumnModel> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<ChannelReportColumnModel> rows) {
+        this.rows = rows;
+    }
+
+    public void fillIncomeWithAgentBookings() {
+        String j;
+        Map m = new HashMap();
+
+//        Bill b = new Bill();
+//        b.setNetTotal(netTotal);
+//        
+        rows = new ArrayList<>();
+
+        ChannelReportColumnModel br;
+        ChannelReportColumnModel cr;
+        ChannelReportColumnModel rr;
+        ChannelReportColumnModel nr;
+
+        j = "select sum(b.netTotal)"
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billType in :bts "
+                + " and type(b) = :bt "
+                + " and b.paymentMethod =:pm ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and b.institution=:ins ";
+        }
+
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", bts);
+
+        System.out.println("j = " + j);
+        
+        //Bookings
+        br = new ChannelReportColumnModel();
+        m.put("bt", BilledBill.class);
+        br.setName("Bookings");
+
+        m.put("pm", PaymentMethod.Cash);
+        br.setCashTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Card);
+        br.setCardTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Cheque);
+        br.setChequeTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Slip);
+        br.setSlipTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        br.setCollectionTotal(br.cashTotal + br.cardTotal + br.chequeTotal);
+
+        m.put("pm", PaymentMethod.Agent);
+        br.setAgentTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        br.setValue(br.getAgentTotal() + br.getCollectionTotal());
+
+        //Cancellations
+        cr = new ChannelReportColumnModel();
+        m.put("bt", CancelledBill.class);
+        cr.setName("Cancellations");
+
+        m.put("pm", PaymentMethod.Cash);
+        cr.setCashTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Card);
+        cr.setCardTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Cheque);
+        cr.setChequeTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Slip);
+        cr.setSlipTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        cr.setCollectionTotal(cr.cashTotal + cr.cardTotal + cr.chequeTotal);
+
+        m.put("pm", PaymentMethod.Agent);
+        cr.setAgentTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        cr.setValue(cr.getAgentTotal() + cr.getCollectionTotal());
+
+        //Refunds
+        rr = new ChannelReportColumnModel();
+        m.put("bt", RefundBill.class);
+        rr.setName("Refunds");
+
+        m.put("pm", PaymentMethod.Cash);
+        rr.setCashTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Card);
+        rr.setCardTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Cheque);
+        rr.setChequeTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        m.put("pm", PaymentMethod.Slip);
+        rr.setSlipTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        rr.setCollectionTotal(rr.cashTotal + rr.cardTotal + rr.chequeTotal);
+
+        m.put("pm", PaymentMethod.Agent);
+        rr.setAgentTotal(billFacade.findDoubleByJpql(j, m, TemporalType.TIMESTAMP));
+
+        rr.setValue(rr.getAgentTotal() + rr.getCollectionTotal());
+
+        
+        nr = new ChannelReportColumnModel();
+        nr.name = "Total";
+        nr.cashTotal = br.cashTotal + rr.cashTotal + cr.cardTotal;
+        nr.cardTotal = br.cardTotal + rr.cardTotal + cr.cardTotal;
+        nr.chequeTotal = br.chequeTotal + rr.chequeTotal + cr.chequeTotal;
+        nr.slipTotal = br.slipTotal + rr.slipTotal + cr.slipTotal;
+        nr.collectionTotal = br.collectionTotal + rr.collectionTotal + cr.collectionTotal;
+        nr.agentTotal = br.agentTotal + rr.agentTotal + cr.agentTotal;
+        nr.value = br.value + rr.value + cr.value;
+
+        rows.add(br);
+        rows.add(cr);
+        rows.add(rr);
+
+        rowBundle=new ChannelReportColumnModelBundle();
+        rowBundle.setBundle(nr);
+        rowBundle.setRows(rows);
+
+    }
 
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -414,6 +597,9 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -422,6 +608,9 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate=CommonFunctions.getEndOfDay(toDate);
+        }
         return toDate;
     }
 
@@ -465,8 +654,6 @@ public class ChannelReportController implements Serializable {
     public void setDoctorViewSessions(List<BillSession> doctorViewSessions) {
         this.doctorViewSessions = doctorViewSessions;
     }
-    
-    
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
@@ -510,7 +697,6 @@ public class ChannelReportController implements Serializable {
         }
     }
 
-    
     public List<BillSession> getBillSessionsNurse() {
         billSessions = new ArrayList<>();
         if (serviceSession != null) {
@@ -942,6 +1128,232 @@ public class ChannelReportController implements Serializable {
 
     public void setTotalRefund(double totalRefund) {
         this.totalRefund = totalRefund;
+    }
+
+    List<ChannelReportColumnModel> columns;
+
+    public List<ChannelReportColumnModel> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<ChannelReportColumnModel> columns) {
+        this.columns = columns;
+    }
+
+    public class ChannelReportColumnModelBundle implements Serializable {
+        List<ChannelReportColumnModel> rows;
+        ChannelReportColumnModel bundle;
+
+        public ChannelReportColumnModelBundle() {
+        }
+
+        
+        
+        public List<ChannelReportColumnModel> getRows() {
+            return rows;
+        }
+
+        public void setRows(List<ChannelReportColumnModel> rows) {
+            this.rows = rows;
+        }
+
+        public ChannelReportColumnModel getBundle() {
+            return bundle;
+        }
+
+        public void setBundle(ChannelReportColumnModel bundle) {
+            this.bundle = bundle;
+        }
+        
+        
+    }
+
+    public class ChannelReportColumnModel implements Serializable {
+
+        Bill bill;
+        BillItem billItem;
+        PaymentMethod paymentMethod;
+        BillType billType;
+        double value;
+        double doctorFee;
+        double hospitalFee;
+        double scanFee;
+        double tax;
+        double agencyFee;
+        String name;
+        String comments;
+        int intNo;
+        double cashTotal;
+        double agentTotal;
+        double chequeTotal;
+        double slipTotal;
+        double creditTotal;
+        double cardTotal;
+        double collectionTotal;
+
+        public ChannelReportColumnModel() {
+        }
+
+        public double getCollectionTotal() {
+            return collectionTotal;
+        }
+
+        public void setCollectionTotal(double collectionTotal) {
+            this.collectionTotal = collectionTotal;
+        }
+
+        public double getCashTotal() {
+            return cashTotal;
+        }
+
+        public void setCashTotal(double cashTotal) {
+            this.cashTotal = cashTotal;
+        }
+
+        public double getAgentTotal() {
+            return agentTotal;
+        }
+
+        public void setAgentTotal(double agentTotal) {
+            this.agentTotal = agentTotal;
+        }
+
+        public double getChequeTotal() {
+            return chequeTotal;
+        }
+
+        public void setChequeTotal(double chequeTotal) {
+            this.chequeTotal = chequeTotal;
+        }
+
+        public double getSlipTotal() {
+            return slipTotal;
+        }
+
+        public void setSlipTotal(double slipTotal) {
+            this.slipTotal = slipTotal;
+        }
+
+        public double getCreditTotal() {
+            return creditTotal;
+        }
+
+        public void setCreditTotal(double creditTotal) {
+            this.creditTotal = creditTotal;
+        }
+
+        public double getCardTotal() {
+            return cardTotal;
+        }
+
+        public void setCardTotal(double cardTotal) {
+            this.cardTotal = cardTotal;
+        }
+
+        public int getIntNo() {
+            return intNo;
+        }
+
+        public void setIntNo(int intNo) {
+            this.intNo = intNo;
+        }
+
+        public Bill getBill() {
+            return bill;
+        }
+
+        public void setBill(Bill bill) {
+            this.bill = bill;
+        }
+
+        public BillItem getBillItem() {
+            return billItem;
+        }
+
+        public void setBillItem(BillItem billItem) {
+            this.billItem = billItem;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public BillType getBillType() {
+            return billType;
+        }
+
+        public void setBillType(BillType billType) {
+            this.billType = billType;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
+        }
+
+        public double getDoctorFee() {
+            return doctorFee;
+        }
+
+        public void setDoctorFee(double doctorFee) {
+            this.doctorFee = doctorFee;
+        }
+
+        public double getHospitalFee() {
+            return hospitalFee;
+        }
+
+        public void setHospitalFee(double hospitalFee) {
+            this.hospitalFee = hospitalFee;
+        }
+
+        public double getScanFee() {
+            return scanFee;
+        }
+
+        public void setScanFee(double scanFee) {
+            this.scanFee = scanFee;
+        }
+
+        public double getTax() {
+            return tax;
+        }
+
+        public void setTax(double tax) {
+            this.tax = tax;
+        }
+
+        public double getAgencyFee() {
+            return agencyFee;
+        }
+
+        public void setAgencyFee(double agencyFee) {
+            this.agencyFee = agencyFee;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getComments() {
+            return comments;
+        }
+
+        public void setComments(String comments) {
+            this.comments = comments;
+        }
+
     }
 
 }

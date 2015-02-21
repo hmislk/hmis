@@ -22,18 +22,20 @@
                                              value="#{staffBasicController.current.staff}"
                                              completeMethod="#{staffController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                              converter="stfcon"   >   
-                                <f:ajax event="itemSelect" execute="@this" render="lst" />
+                                <f:ajax event="itemSelect" execute="@this" render="lst stfCode" listener="#{staffBasicController.makeItemNul}" />
                                 <p:column headerText="Staff Name">
                                     <h:outputLabel value="#{mys.person.name}"/>
                                     <h:outputLabel value="#{mys.code}"/>
                                 </p:column>
 
                             </p:autoComplete>
+                            <p:outputLabel value="Emp Code"></p:outputLabel>
+                            <p:outputLabel id="stfCode" value="#{staffBasicController.current.staff.code}"></p:outputLabel>
                             <h:outputLabel value="From"/>
-                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="dd MMMM yyyy" >                                
+                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="dd MM yyyy" >                                
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="dd MMMM yyyy">                                      
+                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="dd MM yyyy">                                      
                             </p:calendar>                    
                             <h:outputLabel value="Salary"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
@@ -58,7 +60,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="Basic List"/>
                         <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
-                        <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
+                        
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
@@ -69,22 +71,31 @@
                         <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
                         <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Institution : "/>
+                        <hr:department value="#{staffBasicController.reportKeyWord.institution}"/>
                         <h:outputLabel value="Staff Category : "/>
                         <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
                         <h:outputLabel value="Designation : "/>
                         <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/>                      
+                        <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/> 
+                        <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
                     </h:panelGrid>
                     <p:dataTable id="lst" value="#{staffBasicController.items}" 
                                  filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                                  var="i" scrollHeight="350" 
                                  scrollable="true"  selection="#{staffBasicController.selectedStaffComponent}" 
-                                 rowKey="#{i.id}"  >
+                                 rowKey="#{i.id}" rowIndexVar="a" >
 
                         <p:column  selectionMode="multiple" >                            
                         </p:column>
-
+                         <p:column headerText="no" >
+                            <h:outputLabel value="#{a+1}" >
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="EMP Code" filterBy="#{i.staff.code}" filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
+                        </p:column>
                         <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" >
                             <h:outputLabel value="#{i.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy"/>
@@ -121,6 +132,12 @@
                         </p:column>
                         <p:column headerText="Basic"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
                             <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+
+                        </p:column>
+                        <p:column headerText="BR Value"  filterBy="#{i.dblValue}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.dblValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
 

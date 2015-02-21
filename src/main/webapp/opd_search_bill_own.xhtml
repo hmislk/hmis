@@ -67,6 +67,9 @@
                             <p:column headerText="Billed For"  >                                
                                 <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
                             </p:column>
+                            <p:column headerText="Refering Institution"  >                                
+                                <h:outputLabel value="#{bill.referredByInstitution.name}" />
+                            </p:column>
                             <p:column headerText="Billed At"  >                                
                                 <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                             </p:column>

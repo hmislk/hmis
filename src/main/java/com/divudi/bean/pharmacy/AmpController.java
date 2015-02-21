@@ -478,9 +478,9 @@ public class AmpController implements Serializable {
     private List<Amp> filteredItems;
 
     public List<Amp> getItems() {
-//        if (items == null) {
-//            items = getFacade().findAll("name", true);
-//        }
+        if (items == null) {
+            items = getFacade().findAll("name", true);
+        }
         return items;
     }
 

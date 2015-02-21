@@ -32,10 +32,10 @@
                                        var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                     </p:selectOneMenu>
                     <h:outputLabel value="From"/>
-                    <p:calendar  value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MMMM yyyy">                            
+                    <p:calendar  value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MM yyyy">                            
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar   value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MMMM yyyy">                            
+                    <p:calendar   value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MM yyyy">                            
                     </p:calendar>                    
                     <h:outputLabel value="Value"/>
                     <p:inputText autocomplete="off" value="#{staffPaySheetComponentController.current.staffPaySheetComponentValue}"/>
@@ -52,7 +52,7 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                       
+
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentController.paysheetComponent}">                        
                             <f:selectItems value="#{staffPaySheetComponentController.compnent}"
@@ -71,13 +71,14 @@
                     </h:panelGrid>
                     <p:dataTable id="lst" value="#{staffPaySheetComponentController.items}" 
                                  filteredValue="#{staffPaySheetComponentController.filteredStaff}"
-                                 var="i" scrollHeight="200"  editable="true">
+                                 var="i" scrollHeight="200"  editable="true" >
 
                         <f:facet name="header">
                             <h:outputLabel value="#{staffPaySheetComponentController.current.staff.person.nameWithTitle}"/>
                         </f:facet>
 
                         <p:ajax event="rowEdit" listener="#{staffPaySheetComponentController.onEdit}" />  
+                        
 
                         <p:column headerText="Staff" filterBy="#{i.staff}"  
                                   filterMatchMode="contains" >
@@ -93,15 +94,34 @@
                         </p:column>
 
                         <p:column headerText="From" filterBy="#{i.fromDate}"  filterMatchMode="contains" >
-                            <h:outputLabel value="#{i.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
+
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar autocomplete="off" value="#{i.fromDate}">
+
+                                    </p:calendar>
+                                </f:facet>
+                            </p:cellEditor>
                         </p:column>
 
                         <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{i.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.toDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar autocomplete="off" value="#{i.toDate}">
+
+                                    </p:calendar>
+                                </f:facet>
+                            </p:cellEditor>
                         </p:column>
 
                         <p:column headerText="Component"  filterBy="#{i.paysheetComponent.name}" filterMatchMode="contains">

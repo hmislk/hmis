@@ -448,21 +448,64 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
-    private long getCount(Bill bill, Machine m) {
+    private long getCount(Bill bill, Machine m, List<BillType> bts) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select count(bi) FROM BillItem bi where (bi.bill.billType=:bType1 or bi.bill.billType=:bType2) and bi.item.machine =:mac"
+        sql = "select count(bi) FROM BillItem bi where bi.bill.billType in :bts and bi.item.machine =:mac"
                 + " and type(bi.bill)=:billClass and (bi.bill.toInstitution=:ins or bi.item.department.institution=:ins ) "
                 + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.machine.name";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("mac", m);
         temMap.put("billClass", bill.getClass());
-        temMap.put("bType1", BillType.OpdBill);
-        temMap.put("bType2", BillType.InwardBill);
-        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bts", bts);
+        temMap.put("ins", institution);
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    private long getCount(Bill bill, Machine m, BillType bt) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return getCount(bill, m, bts);
+    }
+
+    private long getCount(Bill bill, Machine m) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        bts.add(BillType.LabBill);
+        bts.add(BillType.InwardBill);
+        return getCount(bill, m, bts);
+    }
+
+    private long getItemCount(Bill bill, Item i, List<BillType> bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi where bi.bill.billType in :bts and bi.item =:item"
+                + " and type(bi.bill)=:billClass and (bi.bill.toInstitution=:ins or bi.item.department.institution=:ins ) "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.machine.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("item", i);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bts", bts);
+        temMap.put("ins", institution);
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private long getItemCount(Bill bill, Item i, BillType bt) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return getItemCount(bill, i, bts);
+    }
+
+    private long getItemCount(Bill bill, Item i) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        bts.add(BillType.LabBill);
+        bts.add(BillType.InwardBill);
+        return getItemCount(bill, i, bts);
     }
 
     private long getCount2(Bill bill, Item item) {
@@ -822,10 +865,20 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
-    public void createLabServiceWithCountByMachine() {
+    double totalCount;
+    
 
+    public double getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(double totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public void createLabServiceWithCountByMachineAndItem() {
         investigationCountWithMachines = new ArrayList<>();
-
+        totalCount = 0;
         for (Machine w : getInvestigationMachines()) {
             InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
             temp.setMachine(w);
@@ -839,10 +892,109 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             temp.setCount(net);
             temp.setTotal(getTotal(w));
 
+            totalCount += net;
+
             if (temp.getCount() != 0) {
                 System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
                 investigationCountWithMachines.add(temp);
             }
+
+        }
+
+    }
+
+    public void createLabServiceWithCountByMachine() {
+        System.out.println("createLabServiceWithCountByMachine");
+        investigationCountWithMachines = new ArrayList<>();
+        totalCount = 0;
+        for (Machine w : getInvestigationMachines()) {
+            InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
+            temp.setMachine(w);
+
+            long billed = getCount(new BilledBill(), w);
+            long cancelled = getCount(new CancelledBill(), w);
+            long refunded = getCount(new RefundBill(), w);
+
+            long net = billed - (cancelled + refunded);
+
+            temp.setCount(net);
+            temp.setTotal(getTotal(w));
+
+            totalCount += net;
+
+            if (temp.getCount() != 0) {
+                System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
+                investigationCountWithMachines.add(temp);
+            }
+
+        }
+
+    }
+
+    public void createLabServiceWithCountByMachineAndBillType() {
+        System.out.println("createLabServiceWithCountByMachine");
+        investigationCountWithMachines = new ArrayList<>();
+        totalCount = 0;
+        for (Machine w : getInvestigationMachines()) {
+            
+            if(w==null) continue;
+            
+            InvestigationCountWithMachine tempMac = new InvestigationCountWithMachine();
+            List<InvestigationCountWithMachine> lst = new ArrayList<>();
+            
+            tempMac.setMachine(w);
+
+            long grandCount = 0;
+            long opdCount=0;
+            long ccCount=0;
+            long inwardCount=0;
+
+            for (Item ix : getBilledMachineItems(w)) {
+                InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
+                temp.setMachine(w);
+                temp.setInvestigation((Investigation) ix);
+                long billed = getItemCount(new BilledBill(), ix);
+                long cancelled = getItemCount(new CancelledBill(), ix);
+                long refunded = getItemCount(new RefundBill(), ix);
+                long net = billed - (cancelled + refunded);
+                temp.setCount(net);
+                temp.setTotal(getTotal(w));
+                totalCount += net;
+                grandCount += net;
+
+                billed = getItemCount(new BilledBill(), ix, BillType.OpdBill);
+                cancelled = getItemCount(new CancelledBill(), ix, BillType.OpdBill);
+                refunded = getItemCount(new RefundBill(), ix, BillType.OpdBill);
+                net = billed - (cancelled + refunded);
+                opdCount+=net;
+                temp.setOpdCount(net);
+
+                billed = getItemCount(new BilledBill(), ix, BillType.LabBill);
+                cancelled = getItemCount(new CancelledBill(), ix, BillType.LabBill);
+                refunded = getItemCount(new RefundBill(), ix, BillType.LabBill);
+                net = billed - (cancelled + refunded);
+                ccCount+=net;
+                temp.setCcCount(net);
+
+                billed = getItemCount(new BilledBill(), ix, BillType.InwardBill);
+                cancelled = getItemCount(new CancelledBill(), ix, BillType.InwardBill);
+                refunded = getItemCount(new RefundBill(), ix, BillType.InwardBill);
+                net = billed - (cancelled + refunded);
+                inwardCount+=net;
+                temp.setInwardCount(net);
+
+                if (temp.getCount() != 0) {
+                    System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
+                    lst.add(temp);
+                }
+
+            }
+            tempMac.setCount(grandCount);
+            tempMac.setOpdCount(opdCount);
+            tempMac.setCcCount(ccCount);
+            tempMac.setInwardCount(inwardCount);
+            tempMac.setListOfInvestigationCounts(lst);
+            investigationCountWithMachines.add(tempMac);
         }
 
     }
@@ -882,11 +1034,30 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("fromDate", getFromDate());
 //        temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.OpdBill);
-        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("ins", institution);
         machines = machineFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("investigations = " + machines);
 
         return machines;
+    }
+
+    public List<Item> getBilledMachineItems(Machine ma) {
+        String sql;
+        List<Item> t;
+        Map temMap = new HashMap();
+        sql = "select DISTINCT(bi.item) from BillItem bi where "
+                + " bi.bill.billType=:bType "
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.item.machine=:ma "
+                + " order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bType", BillType.OpdBill);
+        temMap.put("ins", institution);
+        temMap.put("ma", ma);
+        t = itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return t;
     }
 
     List<Machine> machines;
@@ -898,7 +1069,43 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         private Investigation investigation;
         private Machine machine;
         private long count;
+        private long opdCount;
+        private long inwardCount;
+        private long ccCount;
         private double total;
+        List<InvestigationCountWithMachine> listOfInvestigationCounts;
+
+        public List<InvestigationCountWithMachine> getListOfInvestigationCounts() {
+            return listOfInvestigationCounts;
+        }
+
+        public void setListOfInvestigationCounts(List<InvestigationCountWithMachine> listOfInvestigationCounts) {
+            this.listOfInvestigationCounts = listOfInvestigationCounts;
+        }
+
+        public long getOpdCount() {
+            return opdCount;
+        }
+
+        public void setOpdCount(long opdCount) {
+            this.opdCount = opdCount;
+        }
+
+        public long getInwardCount() {
+            return inwardCount;
+        }
+
+        public void setInwardCount(long inwardCount) {
+            this.inwardCount = inwardCount;
+        }
+
+        public long getCcCount() {
+            return ccCount;
+        }
+
+        public void setCcCount(long ccCount) {
+            this.ccCount = ccCount;
+        }
 
         public Investigation getInvestigation() {
             return investigation;

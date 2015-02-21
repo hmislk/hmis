@@ -163,6 +163,12 @@ public class ChannelBillController implements Serializable {
         getBillSession().getBill().setBalance(0.0);
         getBillSession().getBill().setPaidBill(b);
         getBillFacade().edit(getBillSession().getBill());
+        
+        
+        b.setSingleBillItem(bi);
+        b.setSingleBillSession(bs);
+        getBillFacade().edit(b);
+        
 
 //        editBillSession(b, bi);
         UtilityController.addSuccessMessage("Channel Booking Added");
@@ -186,6 +192,8 @@ public class ChannelBillController implements Serializable {
         temp.setInsId(getBillSession().getBill().getInsId());
         temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
         temp.setBillType(BillType.ChannelPaid);
+        temp.setDepartment(getSessionController().getDepartment());
+        temp.setInstitution(getSessionController().getInstitution());
 
         temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -797,10 +805,10 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
 
-            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
-                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
-                return true;
-            }
+//            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+//                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+//                return true;
+//            }
 
         }
 
@@ -992,6 +1000,7 @@ public class ChannelBillController implements Serializable {
         bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
+        bill.setPaymentMethod(paymentMethod);
 
         if (getPatientTabId().equals("tabNewPt")) {
             bill.setPatient(newPatient);
