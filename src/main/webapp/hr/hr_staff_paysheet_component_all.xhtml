@@ -18,25 +18,42 @@
 
                         <h:panelGrid columns="2"  >
                             <h:outputLabel value="Component"/>
-                            <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
+                            <p:selectOneMenu id="cmbPc" value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                                 <f:selectItem itemLabel="Select Paysheet Component"/>
                                 <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
                                                var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
                                 <f:ajax event="change" execute="@this " 
-                                        render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
+                                        render=":#{p:component('lst')}" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>
-                            <p:calendar  value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy">                            
+                            <p:calendar id="calFrom" value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy">                            
+                                <f:ajax execute="@this" render="lblFromDate" ></f:ajax>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar   value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MMMM yyyy">                            
+                            <p:calendar id="calTo"  value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MMMM yyyy">                            
+                                <f:ajax execute="@this"  render="lblFromDate" ></f:ajax>
                             </p:calendar>                    
                             <h:outputLabel value="Value"/>
-                            <p:inputText autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
+                            <p:inputText autocomplete="off"
+                                         id="txtVal" value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
 
-                            <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:commandButton value="Add" id="btnAdd"
+                                             action="#{staffPaySheetComponentAllController.save}" 
+                                             update="@all"
+                                             process="cmbPc calFrom calTo txtVal tblStaff btnAdd"
+                                             onclick="onSubmitButton();"/>
+
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
-
+                            <h1>
+                                <h:panelGroup id="lblFromDate" rendered="false" >
+                                    <p:outputLabel id="lbl1" value="#{staffPaySheetComponentAllController.toDate}" >
+                                        <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                    <p:outputLabel id="lbl2" value="#{staffPaySheetComponentAllController.toDate}" >
+                                        <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </h:panelGroup>
+                            </h1>
                         </h:panelGrid>
                     </p:panel>
 
@@ -44,13 +61,15 @@
                         <p:commandButton ajax="false" value="Fill"
                                          action="#{staffController.createStaffWithCode()}"
                                          onclick="onSubmitButton();"/>
-                        <p:dataTable  value="#{staffController.staffWithCode}" 
-                                      var="s" scrollable="true"
-                                      filteredValue="#{staffController.filteredStaff}"     
-                                      scrollHeight="300"                                   
-                                      rowKey="#{s.id}" 
-                                      selection="#{staffController.selectedList}"
-                                      rowIndexVar="i">
+                        <p:dataTable 
+                            id="tblStaff"
+                            value="#{staffController.staffWithCode}" 
+                            var="s" scrollable="true"
+                            filteredValue="#{staffController.filteredStaff}"     
+                            scrollHeight="300"                                   
+                            rowKey="#{s.id}" 
+                            selection="#{staffController.selectedList}"
+                            rowIndexVar="i">
 
                             <p:column  selectionMode="multiple" >                            
                             </p:column>
@@ -68,6 +87,10 @@
                     </p:panel>
                 </h:panelGrid>
 
+
+            </h:form>
+
+            <h:form>
 
                 <p:spacer height="30" />
 
