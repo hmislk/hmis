@@ -29,7 +29,7 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
-
+import  com.divudi.ejb.HumanResourceBean;
 /**
  *
  * @author safrin
@@ -45,6 +45,8 @@ public class StaffBasicController implements Serializable {
     private List<StaffPaysheetComponent> repeatedComponent;
     private List<StaffPaysheetComponent> selectedStaffComponent;
     /////////////////
+    @EJB
+    HumanResourceBean humanResourceBean;
     @EJB
     private StaffPaysheetComponentFacade staffPaysheetComponentFacade;
     @EJB
@@ -71,36 +73,7 @@ public class StaffBasicController implements Serializable {
         makeNull();
     }
 
-    private boolean checkStaff() {
-        repeatedComponent = null;
-
-        String sql = "Select s From StaffPaysheetComponent s "
-                + " where s.retired=false"
-                + " and s.paysheetComponent.componentType=:tp "
-                + " and s.staff=:st "
-                + " and s.fromDate<=:cu  "
-                + " and s.toDate>=:cu ";
-
-        HashMap hm = new HashMap();
-        hm.put("tp", PaysheetComponentType.BasicSalary);
-        hm.put("st", getCurrent().getStaff());
-        hm.put("cu", getCurrent().getToDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-        if (!tmp.isEmpty()) {
-            getRepeatedComponent().addAll(tmp);
-        }
-
-        if (!getRepeatedComponent().isEmpty()) {
-            UtilityController.addErrorMessage("There is already Basic salay defined please finalize his ending date range or extend it");
-            UtilityController.addErrorMessage("To Change Basic salary value got Staff Employment change Staff");
-            items = null;
-            return true;
-        }
-
-        return false;
-    }
-
+    
     public void onEdit(RowEditEvent event) {
         StaffPaysheetComponent tmp = (StaffPaysheetComponent) event.getObject();
         tmp.setLastEditedAt(new Date());
@@ -125,7 +98,8 @@ public class StaffBasicController implements Serializable {
             return true;
         }
 
-        if (checkStaff()) {
+        if (humanResourceBean.checkStaff(getCurrent(),getCurrent().getPaysheetComponent(),getCurrent().getStaff(),getCurrent().getFromDate(),getCurrent().getToDate())) {
+           UtilityController.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
@@ -180,7 +154,6 @@ public class StaffBasicController implements Serializable {
 
 //        updateStaffEmployment();
 //        updateExistingSalary();
-
         Staff s = getCurrent().getStaff();
         current = null;
         items = null;

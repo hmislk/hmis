@@ -26,10 +26,10 @@
                                         render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>
-                            <p:calendar  value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy">                            
+                            <p:calendar  value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">                            
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar   value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MMMM yyyy">                            
+                            <p:calendar   value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy">                            
                             </p:calendar>                    
                             <h:outputLabel value="Value"/>
                             <p:inputText autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
@@ -42,6 +42,7 @@
 
                     <p:panel id="staff" header="Staff List">
                         <p:commandButton ajax="false" 
+                                         value="Fill Staff"
                                          action="#{staffController.createStaffWithCode()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 

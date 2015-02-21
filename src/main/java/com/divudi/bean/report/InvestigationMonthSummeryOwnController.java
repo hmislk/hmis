@@ -447,7 +447,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private long getCount(Bill bill, Machine m) {
         String sql;
         Map temMap = new HashMap();
@@ -543,7 +543,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double getTotal(Machine m) {
         String sql;
         Map temMap = new HashMap();
@@ -804,16 +804,16 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         for (Item w : getInvestigationItems()) {
             InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
             temp.setInvestigation((Investigation) w);
-            
+
             long billed = getCount(new BilledBill(), w);
             long cancelled = getCount(new CancelledBill(), w);
             long refunded = getCount(new RefundBill(), w);
 
             long net = billed - (cancelled + refunded);
-            
+
             temp.setCount(net);
             temp.setTotal(getTotal(w));
-            
+
             if (temp.getCount() != 0) {
                 System.out.println(investigationCountWithMachines.size() + " " + temp.getInvestigation().getName());
                 investigationCountWithMachines.add(temp);
@@ -821,7 +821,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
 
     }
-    
+
     public void createLabServiceWithCountByMachine() {
 
         investigationCountWithMachines = new ArrayList<>();
@@ -829,16 +829,16 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         for (Machine w : getInvestigationMachines()) {
             InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
             temp.setMachine(w);
-            
+
             long billed = getCount(new BilledBill(), w);
             long cancelled = getCount(new CancelledBill(), w);
             long refunded = getCount(new RefundBill(), w);
 
             long net = billed - (cancelled + refunded);
-            
+
             temp.setCount(net);
             temp.setTotal(getTotal(w));
-            
+
             if (temp.getCount() != 0) {
                 System.out.println(investigationCountWithMachines.size() + " " + temp.getMachine().getName());
                 investigationCountWithMachines.add(temp);
@@ -867,12 +867,12 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         return investigations;
     }
-    
+
     public List<Machine> getInvestigationMachines() {
         String sql;
         Map temMap = new HashMap();
         sql = "select DISTINCT(bi.item.machine) from BillItem bi where "
-//                + " type(bi.item) =:ixtype  "
+                //                + " type(bi.item) =:ixtype  "
                 + " bi.bill.billType=:bType "
                 + " and bi.bill.toInstitution=:ins "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
@@ -888,7 +888,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         return machines;
     }
-    
+
     List<Machine> machines;
     @EJB
     MachineFacade machineFacade;
