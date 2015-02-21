@@ -93,6 +93,17 @@ public class HumanResourceBean {
         System.out.println("fromDate = " + frmDate);
         System.out.println("toDate = " + toDate);
 
+        if (frmDate == null) {
+            return true;
+        }
+        if (toDate == null) {
+            return true;
+        }
+
+        if (frmDate.getTime() > toDate.getTime()) {
+            return true;
+        }
+
         String sql = "Select s From"
                 + " StaffPaysheetComponent s "
                 + " where s.retired=false"
@@ -173,6 +184,17 @@ public class HumanResourceBean {
         System.out.println("fromDate = " + frmDate);
         System.out.println("toDate = " + toDate);
 
+        if (frmDate == null) {
+            return true;
+        }
+        if (toDate == null) {
+            return true;
+        }
+
+        if (frmDate.getTime() > toDate.getTime()) {
+            return true;
+        }
+
         String sql = "Select s From"
                 + " StaffPaysheetComponent s "
                 + " where s.retired=false"
@@ -210,8 +232,8 @@ public class HumanResourceBean {
             System.err.println("To Date ");
             return true;
         }
-        
-          sql = "Select s From"
+
+        sql = "Select s From"
                 + " StaffPaysheetComponent s "
                 + " where s.retired=false"
                 + " and s.paysheetComponent=:tp "

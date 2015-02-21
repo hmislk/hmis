@@ -18,29 +18,46 @@
 
                         <h:panelGrid columns="2"  >
                             <h:outputLabel value="Component"/>
-                            <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
+                            <p:selectOneMenu id="comp" value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                                 <f:selectItem itemLabel="Select Paysheet Component"/>
                                 <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
                                                var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
-                                <f:ajax event="change" execute="@this " 
+                                <f:ajax event="change" execute="@this" 
                                         render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="From"/>
-                            <p:calendar  value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">                            
+                            <h:outputLabel value="From"/>                            
+                            <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">
+                                <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar   value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy">                            
-                            </p:calendar>                    
+                            <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy"/>
+                                               
                             <h:outputLabel value="Value"/>
-                            <p:inputText autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
+                            <p:inputText id="val" autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
 
-                            <p:commandButton value="Add"  action="#{staffPaySheetComponentAllController.save}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:commandButton  value="Add"  action="#{staffPaySheetComponentAllController.save}" onclick="onSubmitButton();">
+                              
+                            </p:commandButton>
                             <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
 
-                        </h:panelGrid>
+                        </h:panelGrid>                      
                     </p:panel>
 
                     <p:panel id="staff" header="Staff List">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{staffPaySheetComponentAllController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{staffPaySheetComponentAllController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Designation : "/>
+                            <hr:completeDesignation value="#{staffPaySheetComponentAllController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Roster : "/>
+                            <hr:completeRoster value="#{staffPaySheetComponentAllController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                          action="#{staffController.createStaffWithCode()}"
@@ -80,7 +97,8 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                        <p:calendar id="frm" value="#{staffPaySheetComponentAllController.fromDate}"
+                                    pattern="dd MM yyyy hh:mm:ss a" />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>

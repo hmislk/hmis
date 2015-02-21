@@ -8,13 +8,12 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.Staff;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +49,8 @@ public class StaffLoanController implements Serializable {
     Date fromDate;
     PaysheetComponent paysheetComponent;
     List<StaffPaysheetComponent> paysheetComponents;
+    @EJB
+    HumanResourceBean humanResourceBean;
 
     private boolean errorCheck() {
 
@@ -61,12 +62,19 @@ public class StaffLoanController implements Serializable {
 //            UtilityController.addErrorMessage("Check Date");
 //            return true;
 //        }
-
+        
+        
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
             return true;
         }
 
+        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+            return true;
+        }
+
+        
         return false;
     }
 
