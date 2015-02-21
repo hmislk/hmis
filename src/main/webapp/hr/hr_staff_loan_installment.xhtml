@@ -99,6 +99,7 @@
                         </f:facet>
                         <p:dataTable value="#{staffLoanController.paysheetComponents}" 
                                      var="i" scrollHeight="200"
+                                     rowKey="#{i.id}"
                                      selection="#{staffLoanController.selectedList}" >
                             <p:column  selectionMode="multiple" >                            
                             </p:column>
@@ -138,7 +139,13 @@
                             </p:column>    
                             <p:column headerText="Monthly Installment" >
                                 <h:outputLabel value="#{i.staffPaySheetComponentValue}"/>
-                            </p:column> 
+                            </p:column>
+                            <p:column headerText="Cheque Number" rendered="#{staffLoanController.chequeDetails}">
+                                <p:inputText autocomplete="off"  value="#{i.chequeNumber}"/>
+                            </p:column>    
+                            <p:column headerText="Cheque Date" rendered="#{staffLoanController.chequeDetails}">
+                                <p:calendar value="#{i.chequeDate}" pattern="dd MM yyyy" />  
+                            </p:column>
                             <p:column>
                                 <p:commandButton value="Edit" ajax="false" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffLoanController.current}"  value="#{i}" />

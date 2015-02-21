@@ -81,7 +81,7 @@ public class StaffLoanController implements Serializable {
     public boolean errorCheckSelected() {
         for (StaffPaysheetComponent s : selectedList) {
             System.out.println("getChequeNumber() = " + s.getChequeNumber());
-            if (s.getChequeNumber()==null) {
+            if (s.getChequeNumber()==null || s.getChequeNumber().equals("")) {
                 return true;
             }
         }
@@ -122,6 +122,7 @@ public class StaffLoanController implements Serializable {
             s.setChequePaidDate(new Date());
             getStaffPaysheetComponentFacade().edit(s);
         }
+        UtilityController.addSuccessMessage("Sucessffully Updated Selected");
 
     }
 
@@ -213,6 +214,8 @@ public class StaffLoanController implements Serializable {
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        
+        chequeDetails = false;
     }
 
     public void createsheduleForPaidLones() {
