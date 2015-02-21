@@ -8,13 +8,12 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.Staff;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +49,8 @@ public class StaffLoanController implements Serializable {
     Date fromDate;
     PaysheetComponent paysheetComponent;
     List<StaffPaysheetComponent> paysheetComponents;
+    @EJB
+    HumanResourceBean humanResourceBean;
 
     private boolean errorCheck() {
 
@@ -61,12 +62,19 @@ public class StaffLoanController implements Serializable {
 //            UtilityController.addErrorMessage("Check Date");
 //            return true;
 //        }
-
+        
+        
         if (getCurrent().getStaff() == null) {
             UtilityController.addErrorMessage("Check Staff");
             return true;
         }
 
+        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+            return true;
+        }
+
+        
         return false;
     }
 
@@ -130,7 +138,7 @@ public class StaffLoanController implements Serializable {
     public void createLones() {
         String sql;
         HashMap hm = new HashMap();
-        
+
         sql = "Select ss from StaffPaysheetComponent ss "
                 + " where ss.retired=false "
                 + " and ss.fromDate <=:fd ";
@@ -138,7 +146,7 @@ public class StaffLoanController implements Serializable {
         if (paysheetComponent != null) {
             sql += " and ss.paysheetComponent=:tp ";
             hm.put("tp", getPaysheetComponent());
-        }else{
+        } else {
             sql += " and ss.paysheetComponent.componentType in :tp ";
             hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
                 PaysheetComponentType.LoanNetSalary,
@@ -154,7 +162,7 @@ public class StaffLoanController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
@@ -174,20 +182,19 @@ public class StaffLoanController implements Serializable {
             sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         hm.put("fd", getFromDate());
-        
+
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
-
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createsheduleForPaidLones() {
         String sql;
         HashMap hm = new HashMap();
-        
+
         sql = "Select ss from StaffPaysheetComponent ss "
                 + " where ss.retired=false "
                 + " and ss.fromDate <=:fd "
@@ -196,7 +203,7 @@ public class StaffLoanController implements Serializable {
         if (paysheetComponent != null) {
             sql += " and ss.paysheetComponent=:tp ";
             hm.put("tp", getPaysheetComponent());
-        }else{
+        } else {
             sql += " and ss.paysheetComponent.componentType in :tp ";
             hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
                 PaysheetComponentType.LoanNetSalary,
@@ -212,7 +219,7 @@ public class StaffLoanController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
@@ -232,13 +239,12 @@ public class StaffLoanController implements Serializable {
             sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         hm.put("fd", getFromDate());
-        
+
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
-
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -289,8 +295,8 @@ public class StaffLoanController implements Serializable {
     }
 
     public ReportKeyWord getReportKeyWord() {
-        if (reportKeyWord==null) {
-            reportKeyWord=new ReportKeyWord();
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
         }
         return reportKeyWord;
     }
