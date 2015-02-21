@@ -251,15 +251,15 @@ public class StaffBasicController implements Serializable {
                 + " where ss.retired=false "
                 + " and ss.paysheetComponent.componentType=:tp"
                 //                + " and ss.staff=:st"
-                + " and ss.fromDate <=:fd"
-                + " and ss.toDate >=:fd ";
+                + " and ss.fromDate <=:fd";
+//                + " and ss.toDate >=:fd ";
         //and (s.toDate>= :td or s.toDate is null)
         HashMap hm = new HashMap();
 //        hm.put("td", getToDate());
         hm.put("fd", getFromDate());
 //        hm.put("st", getCurrent().getStaff());
         hm.put("tp", PaysheetComponentType.BasicSalary);
-        hm.put("ins", getStaffInstitution());
+//        hm.put("ins", getStaffInstitution());
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
