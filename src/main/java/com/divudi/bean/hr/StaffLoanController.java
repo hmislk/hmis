@@ -79,13 +79,11 @@ public class StaffLoanController implements Serializable {
     }
 
     public boolean errorCheckSelected() {
-        if (getCurrent().getChequeNumber() == null) {
-            UtilityController.addErrorMessage("Please Select Cheque No.");
-            return true;
-        }
-        if (getCurrent().getChequeDate() == null) {
-            UtilityController.addErrorMessage("Please Select Cheque Date.");
-            return true;
+        for (StaffPaysheetComponent s : selectedList) {
+            System.out.println("getChequeNumber() = " + s.getChequeNumber());
+            if (s.getChequeNumber()==null) {
+                return true;
+            }
         }
         return false;
     }
@@ -118,14 +116,11 @@ public class StaffLoanController implements Serializable {
             UtilityController.addErrorMessage("Please Check Cheque Date And Cheque No:");
             return;
         }
-
-        if (getCurrent().getId() == null) {
-            getStaffPaysheetComponentFacade().create(getCurrent());
-        } else {
-
-            getCurrent().setChequePaidBy(getSessionController().getLoggedUser());
-            getCurrent().setChequePaidDate(new Date());
-            getStaffPaysheetComponentFacade().edit(getCurrent());
+        
+        for (StaffPaysheetComponent s : selectedList) {
+            s.setChequePaidBy(getSessionController().getLoggedUser());
+            s.setChequePaidDate(new Date());
+            getStaffPaysheetComponentFacade().edit(s);
         }
 
     }
