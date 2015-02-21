@@ -401,6 +401,12 @@ public class StaffSalaryAdvanceController implements Serializable {
         return (overTimeSec.longValue() / 60L);
     }
 
+    public double getOverTimeValuePerMinute() {
+
+        return roundOff(humanResourceBean.getOverTimeValue(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()) / (200 * 60));
+
+    }
+
     public double getBasicPerMinute() {
 
         for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -425,11 +431,11 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         if (ss.getStaffPaysheetComponent() != null) {
             Long overTimeMinute = calculateOverTimeMinute();
-            double basicPerMinute = getBasicPerMinute();
-            ss.setComponantValue(overTimeMinute * basicPerMinute * finalVariables.getOverTimeMultiply());
+            double otValuePerMinute = getOverTimeValuePerMinute();
+            ss.setComponantValue(overTimeMinute * otValuePerMinute * finalVariables.getOverTimeMultiply());
             getCurrent().setOverTimeMinute(overTimeMinute);
-            getCurrent().setBasicRatePerMinute(basicPerMinute);
-            getCurrent().setOverTimeRatePerMinute(basicPerMinute);
+            getCurrent().setBasicRatePerMinute(otValuePerMinute);
+            getCurrent().setOverTimeRatePerMinute(otValuePerMinute);
         } else {
             return;
         }

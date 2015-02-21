@@ -263,7 +263,7 @@ public class CommonFunctions {
         return dMin;
     }
 
-    public Date getStartOfDay(Date date) {
+    public static Date getStartOfDay(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -274,7 +274,7 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
-    public Date getEndOfDay(Date date) {
+    public static Date getEndOfDay(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);

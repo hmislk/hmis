@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml" >
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Income By Institution with agent bookings" >
+                        <p:panelGrid columns="2" >
+                            <h:outputLabel value="From : " />
+                            <p:calendar value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To : " />
+                            <p:calendar value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel  value="Institution"  ></h:outputLabel>
+                            <p:autoComplete  value="#{channelReportController.institution}" 
+                                             completeMethod="#{institutionController.completeIns}" 
+                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                            </p:autoComplete>
+                        </p:panelGrid>
+                        <p:panelGrid columns="3" >
+                            <p:commandButton value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                        </p:panelGrid>
+
+                        <p:dataTable value="#{channelReportController.rowBundle.rows}" var="r" >
+                            <p:columnGroup type="header" >
+                                <p:row>
+                                    <p:column rowspan="2" headerText="Detail" >
+                                    </p:column>
+                                    <p:column colspan="5" headerText="Collection" >
+                                    </p:column>
+                                    <p:column rowspan="2" headerText="Agency" >
+                                    </p:column>
+                                    <p:column rowspan="5" headerText="Total">
+                                    </p:column>
+                                </p:row>
+                                <p:row >
+                                    <p:column headerText="Cash">
+                                    </p:column>
+                                    <p:column headerText="Credit Card">
+                                    </p:column>
+                                    <p:column headerText="Cheque">
+                                    </p:column>
+                                    <p:column headerText="Slips">
+                                    </p:column>
+                                    <p:column headerText="Total">
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column >
+                                <p:outputLabel value="#{r.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;"  >
+                                <p:outputLabel value="#{r.cashTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.cardTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.chequeTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.slipTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.collectionTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.agentTotal}" ></p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <p:outputLabel value="#{r.value}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:columnGroup type="footer" >
+                                <p:row>
+                                    <p:column  footerText="Total" >
+                                    </p:column>
+                                    <p:column style="text-align: right;"  footerText="#{channelReportController.rowBundle.bundle.cashTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.cardTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.chequeTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.slipTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.collectionTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.agentTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{channelReportController.rowBundle.bundle.value}">
+                                    </p:column>
+
+                                </p:row>
+                            </p:columnGroup>
+                        </p:dataTable>
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
