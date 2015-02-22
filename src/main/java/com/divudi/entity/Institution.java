@@ -21,6 +21,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -82,10 +83,24 @@ public class Institution implements Serializable {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    @Transient
+    String transAddress1;
+    @Transient
+    String transAddress2;
+    @Transient
+    String transAddress3;
+    @Transient
+    String transAddress4;
+    
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
+
+    public Institution() {
+        split();
+    }   
+    
 
     public String getDescreption() {
         return descreption;
@@ -117,6 +132,60 @@ public class Institution implements Serializable {
 
     public void setInwardDiscount(double inwardDiscount) {
         this.inwardDiscount = inwardDiscount;
+    }
+    
+
+    public String getTransAddress1() {
+        return transAddress1;
+    }
+
+    public void setTransAddress1(String transAddress1) {
+        this.transAddress1 = transAddress1;
+    }
+
+    public String getTransAddress2() {
+        return transAddress2;
+    }
+
+    public void setTransAddress2(String transAddress2) {
+        this.transAddress2 = transAddress2;
+    }
+
+    public String getTransAddress3() {
+        return transAddress3;
+    }
+
+    public void setTransAddress3(String transAddress3) {
+        this.transAddress3 = transAddress3;
+    }
+
+    public String getTransAddress4() {
+        return transAddress4;
+    }
+
+    public void setTransAddress4(String transAddress4) {
+        this.transAddress4 = transAddress4;
+    }
+    
+    public void split() {
+        if(address == null){
+            return;
+        }
+        
+        String arr[] = address.split(",");
+        System.out.println(arr);
+        if(arr==null){
+            return;
+        }
+       try{
+            transAddress1=arr[0];
+            transAddress2=arr[1];
+            transAddress3=arr[2];
+            transAddress4=arr[3];
+       }catch(Exception e){
+           System.out.println(e.getMessage());
+       }
+        
     }
 
     public Long getId() {
@@ -348,6 +417,7 @@ public class Institution implements Serializable {
     }
 
     public Institution getInstitution() {
+        
         return institution;
     }
 

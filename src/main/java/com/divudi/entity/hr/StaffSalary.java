@@ -370,6 +370,9 @@ public class StaffSalary implements Serializable {
     }
 
     public Institution getInstitution() {
+        if(institution != null){
+            institution.split();
+        }
         return institution;
     }
 
