@@ -1983,7 +1983,22 @@ public class HumanResourceBean {
         hm.put("bs1", list);
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+     public StaffPaysheetComponent fetchStaffPaysheetComponent(Staff staff, Date date, PaysheetComponentType paysheetComponentType) {
 
+        String sql = " Select s From StaffPaysheetComponent s "
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                + " and s.paysheetComponent.componentType= :bs1 "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("cu", date);
+        hm.put("bs1", paysheetComponentType);
+        return getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+    }
+    
 //    public double calValueForOverTime(Staff staff, Date date) {
 //        double value = 0;
 //        StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
@@ -2077,6 +2092,8 @@ public class HumanResourceBean {
         return tmp;
 
     }
+    
+  
 
     public double getBasicValue(Staff staff, Date date) {
         //System.err.println("Getting Basic " + staff.getStaffEmployment());
@@ -2146,7 +2163,7 @@ public class HumanResourceBean {
             tmp = new StaffPaysheetComponent();
             tmp.setCreatedAt(new Date());
             tmp.setCreater(user);
-            tmp.setPaysheetComponent(getComponentName(user, paysheetComponentType));
+            tmp.setPaysheetComponent(getComponent(user, paysheetComponentType));
             tmp.setStaff(staff);
             getStaffPaysheetComponentFacade().create(tmp);
         }
@@ -2818,7 +2835,7 @@ public class HumanResourceBean {
         return false;
     }
 
-    private PaysheetComponent getComponentName(WebUser user, PaysheetComponentType paysheetComponentType) {
+    public PaysheetComponent getComponent(WebUser user, PaysheetComponentType paysheetComponentType) {
         String sql;
         HashMap hm;
         PaysheetComponent tmp;
