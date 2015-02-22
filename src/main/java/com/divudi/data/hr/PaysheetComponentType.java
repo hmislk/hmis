@@ -15,6 +15,7 @@ import java.util.List;
 public enum PaysheetComponentType {
 
     addition(null),
+    PerformanceAllowancePercentage(null),
     BasicSalary(addition),
     FixedAllowance(addition),
     VariableAllowance(addition),
@@ -27,6 +28,7 @@ public enum PaysheetComponentType {
     ExtraDutyPoya(addition),
     ExtraDutyDayOff(addition),
     ExtraDutySleepingDay(addition),
+    PerformanceAllowance(addition),
     @Deprecated
     HolidayAllowance(addition),
     MerchantileAllowance(addition),
@@ -108,6 +110,7 @@ public enum PaysheetComponentType {
     public List<PaysheetComponentType> getSystemDefinedComponents() {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
+            PaysheetComponentType.PerformanceAllowance,
             PaysheetComponentType.DayOffAllowance,
             PaysheetComponentType.SleepingDayAllowance,
             PaysheetComponentType.ExtraDutyNormal,

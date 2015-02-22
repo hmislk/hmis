@@ -345,6 +345,28 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     }
 
+    private double calValue(double value, double percentage) {
+
+        if (value == 0 || percentage == 0) {
+            return 0;
+        }
+
+        double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
+        System.err.println("Value " + value);
+        System.err.println("Worked Days " + workedDays);
+        if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
+            return value * (percentage / 100);
+        } else {
+            double dbl = (value / finalVariables.getWorkingDaysPerMonth());
+            System.err.println("DBL 1 " + dbl);
+            dbl = dbl * workedDays * (percentage / 100);
+
+            System.err.println("DBL 2 " + dbl);
+            return dbl;
+        }
+
+    }
+
     private void setBasic() {
 //        getHumanResourceBean().calculateBasic(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
 
@@ -366,6 +388,35 @@ public class StaffSalaryAdvanceController implements Serializable {
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
         System.err.println("BASIC " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+
+    private void setPerformaceAllovance() {
+        StaffPaysheetComponent percentageComponent = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowancePercentage);
+        StaffPaysheetComponent component = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowance);
+
+        if (percentageComponent == null || component == null) {
+            return;
+        }
+
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setSalaryCycle(salaryCycle);
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(component);
+        ss.setStaffPaysheetComponentPercentage(percentageComponent);
+        if (ss.getStaffPaysheetComponent() != null) {
+            double value = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue(), percentageComponent.getStaffPaySheetComponentValue());
+            ss.setComponantValue(value);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("Performance " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
@@ -716,6 +767,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         if (getCurrent().getStaff() != null) {
 
             setBasic();
+            setPerformaceAllovance();
 
             List<StaffPaysheetComponent> listAdd = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
 
@@ -1057,6 +1109,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         items = null;
+        boolean flag = false;
 
         for (Staff s : getStaffController().getSelectedList()) {
             setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
@@ -1067,7 +1120,8 @@ public class StaffSalaryAdvanceController implements Serializable {
 //                save();
             } else {
                 // Allready in database
-
+                flag = true;
+                break;
             }
 
             getCurrent().calculateComponentTotal();
@@ -1077,6 +1131,10 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         }
 
+        if (flag) {
+            items = null;
+            UtilityController.addErrorMessage("There is allready salary generated .please delete generated salary");
+        }
         //   createStaffSalaryTable();
     }
 
