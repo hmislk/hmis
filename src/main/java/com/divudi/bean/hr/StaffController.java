@@ -212,6 +212,12 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
+    
+    
+    
+    
+    
+    
 
     public void createStaffWithCode() {
         HashMap hm = new HashMap();

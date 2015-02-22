@@ -79,12 +79,12 @@ public class StaffPaysheetComponent implements Serializable {
     private Date chequePaidDate;
     @ManyToOne
     WebUser chequePaidBy;
-    
-    
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateAffectFrom;
     double numberOfInstallment;
 //    boolean sentNetSalaryToBaBank;
+    
+    
 
     public double getNumberOfInstallment() {
         return numberOfInstallment;
@@ -390,4 +390,6 @@ public class StaffPaysheetComponent implements Serializable {
     public void setChequePaidBy(WebUser chequePaidBy) {
         this.chequePaidBy = chequePaidBy;
     }
+
+   
 }

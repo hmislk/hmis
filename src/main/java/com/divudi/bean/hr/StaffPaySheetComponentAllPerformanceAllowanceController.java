@@ -33,7 +33,7 @@ import org.primefaces.event.RowEditEvent;
  */
 @Named
 @SessionScoped
-public class StaffPaySheetComponentAllController implements Serializable {
+public class StaffPaySheetComponentAllPerformanceAllowanceController implements Serializable {
 
     private StaffPaysheetComponent current;
     private PaysheetComponent paysheetComponent;
@@ -315,7 +315,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
 
     }
 
-    public StaffPaySheetComponentAllController() {
+    public StaffPaySheetComponentAllPerformanceAllowanceController() {
     }
 
     public StaffPaysheetComponent getCurrent() {
@@ -362,6 +362,10 @@ public class StaffPaySheetComponentAllController implements Serializable {
     }
 
     public PaysheetComponent getPaysheetComponent() {
+        if (paysheetComponent == null) {
+            paysheetComponent = humanResourceBean.getComponent(getSessionController().getLoggedUser(), 
+                    PaysheetComponentType.PerformanceAllowance);
+        }
         return paysheetComponent;
     }
 
