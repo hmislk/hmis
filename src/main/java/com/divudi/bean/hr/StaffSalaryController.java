@@ -357,6 +357,34 @@ public class StaffSalaryController implements Serializable {
 
     }
 
+    private double calValue(double value, double percentage) {
+
+        if (value == 0 || percentage == 0) {
+            return 0;
+        }
+
+        //Check Employee Join Date Come within Salary Cycle
+        if (checkDateRange(getCurrent().getStaff().getDateJoined())
+                //Check Employee Date Left within Salary Cycle
+                || checkDateRange(getCurrent().getStaff().getDateLeft())
+                //Check Employee Date Retired within Salary Cycle
+                || checkDateRange(getCurrent().getStaff().getDateRetired())) {
+
+            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
+
+            if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
+                return value * (percentage / 100);
+            } else {
+                return (value / finalVariables.getWorkingDaysPerMonth()) * workedDays * (percentage / 100);
+            }
+
+        } else {
+
+            return value * (percentage / 100);
+        }
+
+    }
+
     private void setBasic() {
 //        getHumanResourceBean().calculateBasic(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
 
@@ -378,6 +406,35 @@ public class StaffSalaryController implements Serializable {
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
         System.err.println("BASIC " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+
+    private void setPerformaceAllovance() {
+        StaffPaysheetComponent percentageComponent = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowancePercentage);
+        StaffPaysheetComponent component = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowance);
+
+        if (percentageComponent == null || component == null) {
+            return;
+        }
+
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setSalaryCycle(salaryCycle);
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(component);
+        ss.setStaffPaysheetComponentPercentage(percentageComponent);
+        if (ss.getStaffPaysheetComponent() != null) {
+            double value = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue(),percentageComponent.getStaffPaySheetComponentValue());
+            ss.setComponantValue(value);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("Performance " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
@@ -431,17 +488,22 @@ public class StaffSalaryController implements Serializable {
 
     }
 
+    public double getOverTimeValuePerMinute() {
+        return roundOff(humanResourceBean.getOverTimeValue(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()) / (200 * 60));
+
+    }
+
     public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
 
         if (ss.getStaffPaysheetComponent() != null) {
             Long overTimeMinute = calculateOverTimeMinute();
-            double basicPerMinute = getBasicPerMinute();
-            ss.setComponantValue(overTimeMinute * basicPerMinute * finalVariables.getOverTimeMultiply());
+            double overTimePerMinute = getOverTimeValuePerMinute();
+            ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
             getCurrent().setOverTimeMinute(overTimeMinute);
-            getCurrent().setBasicRatePerMinute(basicPerMinute);
-            getCurrent().setOverTimeRatePerMinute(basicPerMinute);
+            getCurrent().setBasicRatePerMinute(overTimePerMinute);
+            getCurrent().setOverTimeRatePerMinute(overTimePerMinute);
         } else {
             return;
         }
@@ -719,6 +781,7 @@ public class StaffSalaryController implements Serializable {
         if (getCurrent().getStaff() != null) {
 
             setBasic();
+            setPerformaceAllovance();
 
             List<StaffPaysheetComponent> listAdd = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
 

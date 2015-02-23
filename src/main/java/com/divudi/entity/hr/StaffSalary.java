@@ -141,15 +141,35 @@ public class StaffSalary implements Serializable {
     Institution chequeBank;    
     @Temporal(javax.persistence.TemporalType.DATE)
     Date chequeDate;
-    String chequeNo;
+    String chequeNumberSalary;
+    String chequeNumberOverTime;
+    String chequeNumberSalaryAndOverTime;
 
-    public String getChequeNo() {
-        return chequeNo;
+    public String getChequeNumberSalary() {
+        return chequeNumberSalary;
     }
 
-    public void setChequeNo(String chequeNo) {
-        this.chequeNo = chequeNo;
+    public void setChequeNumberSalary(String chequeNumberSalary) {
+        this.chequeNumberSalary = chequeNumberSalary;
     }
+
+    public String getChequeNumberOverTime() {
+        return chequeNumberOverTime;
+    }
+
+    public void setChequeNumberOverTime(String chequeNumberOverTime) {
+        this.chequeNumberOverTime = chequeNumberOverTime;
+    }
+
+    public String getChequeNumberSalaryAndOverTime() {
+        return chequeNumberSalaryAndOverTime;
+    }
+
+    public void setChequeNumberSalaryAndOverTime(String chequeNumberSalaryAndOverTime) {
+        this.chequeNumberSalaryAndOverTime = chequeNumberSalaryAndOverTime;
+    }
+
+    
     
     
     public Institution getChequeBank() {
@@ -350,6 +370,9 @@ public class StaffSalary implements Serializable {
     }
 
     public Institution getInstitution() {
+        if(institution != null){
+            institution.split();
+        }
         return institution;
     }
 

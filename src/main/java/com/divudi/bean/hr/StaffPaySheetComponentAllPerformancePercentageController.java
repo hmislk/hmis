@@ -33,13 +33,12 @@ import org.primefaces.event.RowEditEvent;
  */
 @Named
 @SessionScoped
-public class StaffPaySheetComponentAllController implements Serializable {
+public class StaffPaySheetComponentAllPerformancePercentageController implements Serializable {
 
     private StaffPaysheetComponent current;
     private PaysheetComponent paysheetComponent;
     private Date fromDate;
-    private Date toDate;
-    private double staffPaySheetComponentValue;
+    private Date toDate;    
     ReportKeyWord reportKeyWord;
     ////////////////
     private List<StaffPaysheetComponent> filteredStaffPaysheet;
@@ -122,7 +121,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         tmp.setLastEditedAt(new Date());
         tmp.setLastEditor(getSessionController().getLoggedUser());
         getStaffPaysheetComponentFacade().edit(tmp);
-
     }
 
     @EJB
@@ -146,6 +144,11 @@ public class StaffPaySheetComponentAllController implements Serializable {
         }
 
         for (Staff staff : staffController.getSelectedList()) {
+            if (staff.getTransDblValue() == 0) {
+                UtilityController.addErrorMessage("Some Staff Has No Percentage Value");
+                return true;
+            }
+
             if (humanResourceBean.checkStaff(getPaysheetComponent(), staff, getFromDate(), getToDate())) {
                 UtilityController.addErrorMessage("There is Some component in Same Date Range");
                 return true;
@@ -168,23 +171,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         items = null;
     }
 
-    private void updateExistingComponent() {
-        String sql = "Select s From StaffPaysheetComponent s "
-                + " where s.retired=false "
-                + " and s.paysheetComponent=:tp and s.staff=:st "
-                + " and s.fromDate<:dt and s.toDate is null";
-
-        HashMap hm = new HashMap();
-        hm.put("tp", getPaysheetComponent());
-        hm.put("st", getCurrent().getStaff());
-        hm.put("dt", getCurrent().getFromDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-        for (StaffPaysheetComponent ss : tmp) {
-            ss.setToDate(getCurrent().getFromDate());
-            getStaffPaysheetComponentFacade().edit(ss);
-        }
-    }
 
     public void save() {
 
@@ -200,8 +186,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
             spc.setToDate(getToDate());
             spc.setPaysheetComponent(getPaysheetComponent());
             spc.setStaff(s);
-            spc.setStaffPaySheetComponentValue(getStaffPaySheetComponentValue());
-
+            spc.setStaffPaySheetComponentValue(s.getTransDblValue());
             getStaffPaysheetComponentFacade().create(spc);
         }
 
@@ -215,7 +200,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         paysheetComponent = null;
         fromDate = null;
         toDate = null;
-        staffPaySheetComponentValue = 0.0;
         filteredStaffPaysheet = null;
         items = null;
         selectedStaffComponent = null;
@@ -225,11 +209,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
     }
 
     public void makeNullWithout() {
-        current = null;
-        //    paysheetComponent = null;
-        //   fromDate = null;
-        //  toDate = null;
-        staffPaySheetComponentValue = 0.0;
+        current = null;        
         filteredStaffPaysheet = null;
         items = null;
         selectedStaffComponent = null;
@@ -304,7 +284,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
 
     public List<PaysheetComponent> getCompnent() {
         String sql = "Select pc From PaysheetComponent pc "
-                + " where pc.retired=false "
+                + " where pc.retired=false"
                 + " and pc.componentType not in :tp1"
                 + " and pc.componentType not in :tp2";
         HashMap hm = new HashMap();
@@ -315,7 +295,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
 
     }
 
-    public StaffPaySheetComponentAllController() {
+    public StaffPaySheetComponentAllPerformancePercentageController() {
     }
 
     public StaffPaysheetComponent getCurrent() {
@@ -362,6 +342,9 @@ public class StaffPaySheetComponentAllController implements Serializable {
     }
 
     public PaysheetComponent getPaysheetComponent() {
+        if (paysheetComponent == null) {
+            paysheetComponent = humanResourceBean.getComponent(getSessionController().getLoggedUser(), PaysheetComponentType.PerformanceAllowancePercentage);
+        }
         return paysheetComponent;
     }
 
@@ -385,13 +368,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         this.toDate = toDate;
     }
 
-    public double getStaffPaySheetComponentValue() {
-        return staffPaySheetComponentValue;
-    }
-
-    public void setStaffPaySheetComponentValue(double staffPaySheetComponentValue) {
-        this.staffPaySheetComponentValue = staffPaySheetComponentValue;
-    }
+  
 
     public List<StaffPaysheetComponent> getRepeatedComponent() {
         if (repeatedComponent == null) {

@@ -1,0 +1,374 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="paySheet.css" ></h:outputStylesheet>
+        <div style="position: relative!important;
+             /*padding-left: 0.5%!important;*/
+             height:100%!important;
+             width:100%!important; 
+             /*             overflow:hidden!important; */
+             font-family: Times New Roman!important; 
+             font-size: 10px!important; 
+             margin:1px!important; 
+             padding: 1px!important;
+             /*             background-size: 100% auto!important;*/
+             letter-spacing: 0px;
+             /*             border: 1px solid!important;*/">
+
+            <div class="institutionName" style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
+
+            </div>
+            <div style="font-size: 10px!important; font-family: Times New Roman!important; letter-spacing: 0px;">
+                <table>
+                    <tr>
+                        <td>                            
+                        </td>
+                        <td>                            
+                        </td>
+                        <td>
+                            <h:outputLabel value="Form No.1011"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Name of Govt./Dep/Corp./Firm.................................."/>
+                        </td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="To/"/>
+                        </td>
+                        <td></td>
+                        <td rowspan="3">
+                            <h:outputLabel value="#{cc.attrs.bill.institution.transAddress1}"/>
+                            <br/>
+                            <h:outputLabel value="#{cc.attrs.bill.institution.transAddress2}"/>
+                            <br/>
+                            <h:outputLabel value="#{cc.attrs.bill.institution.transAddress3}"/>
+                            <br/>
+                            <h:outputLabel value="#{cc.attrs.bill.institution.transAddress4}"/>
+                            <br/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="The Manager,"/>
+                        </td>
+                        <td></td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="SANASA DEVELOPMENT BANK LTD."/>
+                        </td>
+                        <td></td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value=".....................................Branch"/>
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value=".............................................."/>
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="At the request of Mr./Mrs./Miss.................................................................................."/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="(Pivate Address.......................................................................................................)"/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="who is employed by us, we append below the particulars of his/her salary and deductions"/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Basic Salary"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.basicValue}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="B R"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.brValue}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Mercantile Day Allowance"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.merchantileAllowanceValue}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Poya Day Allowance"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.poyaAllowanceValue}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Day Off Allowance"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.dayOffAllowance}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Sleeping Day Allowance"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.sleepingDayAllowance}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Basic Adjustment"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.adjustmentToBasic}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Allowance Adjustment"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.adjustmentToAllowance}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Gross Pay"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.transGrossSalary}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Deductions:"/>
+                        </td>
+                        <td></td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="No Pay Basic"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                           <h:outputLabel value="#{cc.attrs.bill.noPayValueBasic}"/> 
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="No Pay Allowance"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                           <h:outputLabel value="#{cc.attrs.bill.noPayValueAllowance}"/> 
+                        </td>
+                    </tr>
+                    
+                    
+                    <ui:repeat var="t" value="#{cc.attrs.bill.transStaffSalaryComponantsSubtraction}">
+                        <tr>
+                            <td style="text-align: left;">
+                                <h:outputText value="#{t.staffPaysheetComponent.paysheetComponent.name}"/> 
+                            </td>
+                            <td>                                
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputText value="#{t.componantValue}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputText>
+                            </td>
+                            
+                        </tr>                           
+                    </ui:repeat>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Net Pay"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+                           <h:outputLabel value="#{cc.attrs.bill.transGrossSalary + (cc.attrs.bill.noPayValueAllowance + cc.attrs.bill.noPayValueBasic)}"/> 
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="The above named is employed as a.......................................................................................................)"/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="....................................and his/her pay sheet/Service No. is................................................................."/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="and He/She is due to retire on...................................................He/She has been in the permanent"/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="Sevice Since #{cc.attrs.bill.staff.dateJoined} The above information is Certified correct."/>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Signature over Official Rubber Stamp"/>
+                        </td>
+                        <td></td>
+                        <td>
+                            <h:outputLabel value="...................................................."/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Name"/>
+                        </td>
+                        <td></td>
+                        <td>
+                            <h:outputLabel value="...................................................."/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Designation"/>
+                        </td>
+                        <td></td>
+                        <td>
+                            <h:outputLabel value="...................................................."/>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </div>
+        </div>
+    </cc:implementation>
+</html>

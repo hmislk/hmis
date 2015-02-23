@@ -14,7 +14,7 @@
 
                 <h:form>
 
-                    <h:panelGrid columns="3"  >
+                    <h:panelGrid columns="4"  >
                         <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="1) Manage Component" />
@@ -73,7 +73,11 @@
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_paysheet_component_all" 
                                              value=" 3) Staff Paysheet Component All " 
-                                             actionListener="#{staffBasicController.makeNull}" />    
+                                             actionListener="#{staffBasicController.makeNull}" />  
+                             <p:commandButton styleClass="linkButton"  ajax="false" 
+                                             action="/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge" 
+                                             value=" 3.1) Staff Paysheet Perfomance Allovance Percentage " 
+                                             actionListener="#{staffBasicController.makeNull}" />  
                             <p:commandButton styleClass="linkButton"  ajax="false" 
                                              action="/hr/hr_staff_loan_installment" 
                                              value=" 4) Staff Loan and Advance Payment " 
@@ -81,6 +85,20 @@
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value=" 5) Staff Leave Entitle"
                                              action="hr_staff_leave_entitle" /> 
+                        </h:panelGrid>
+                        
+                           <h:panelGrid columns="1">
+                            <f:facet name="header">
+                                <p:outputLabel value=" 4) Perfomance Allowance "/>
+                            </f:facet>                                  
+                                 <p:commandButton styleClass="linkButton"  ajax="false" 
+                                             action="/hr/hr_staff_paysheet_component_all_performance_allovance" 
+                                             value=" 2) Staff Paysheet Perfomance Allowance Value " 
+                                             actionListener="#{staffBasicController.makeNull}" />                              
+                             <p:commandButton styleClass="linkButton"  ajax="false" 
+                                             action="/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge" 
+                                             value=" 2) Staff Paysheet Perfomance Allowance Percentage " 
+                                             actionListener="#{staffBasicController.makeNull}" />                              
                         </h:panelGrid>
 
 
