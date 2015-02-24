@@ -21,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
@@ -48,6 +49,18 @@ public class HrForm extends Form implements Serializable {
     private Date fromTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toTime;
+    @Transient
+    boolean transFlag;
+
+    public boolean isTransFlag() {
+        return transFlag;
+    }
+
+    public void setTransFlag(boolean transFlag) {
+        this.transFlag = transFlag;
+    }
+    
+    
 
     public Date getFromTime() {
         return fromTime;

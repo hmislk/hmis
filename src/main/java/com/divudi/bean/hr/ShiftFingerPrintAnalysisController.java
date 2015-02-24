@@ -1023,15 +1023,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return false;
         }
 
-        if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave()) {
+        if (ss.getLeaveType() != null) {
             return false;
-        } else {
-            if (ss.getShift() != null
-                    && ss.getShift().getLeaveHourHalf() == ss.getShift().getDurationHour()) {
-                return false;
-            }
         }
 
+//        if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave()) {
+//            return false;
+//        } else {
+//            if (ss.getShift() != null
+//                    && ss.getShift().getLeaveHourHalf() == ss.getShift().getDurationHour()) {
+//                return false;
+//            }
+//        }
         if (ss.getPreviousStaffShift() == null) {
             if (ss.getStartRecord() == null) {
                 message = date
@@ -1083,7 +1086,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                    + " Check Start Time and End Time \r ";
 //            return true;
 //        }
-
         return false;
     }
 
