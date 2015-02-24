@@ -139,6 +139,7 @@ public class DataAdministrationController {
                 nt += bi.getGrossValue();
 
             }
+            b.setNetTotal(gt);
 
             billFacade.edit(b);
         }
