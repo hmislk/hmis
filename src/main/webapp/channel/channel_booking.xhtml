@@ -219,9 +219,11 @@
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
-                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-                        
-                        <p:commandButton value="Print" ajax="false" action="#">
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
+                                         ></p:commandButton>
+
+                        <p:commandButton value="Print" ajax="false" action="#"
+                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
@@ -402,11 +404,46 @@
                                 <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
 
-                                <p:commandButton id="setBtn" ajax="false" value="Settle Credit"
+                                <p:commandButton id="setBtn"  value="Settle Credit"
+                                                 process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
+                                                 update="gpSettlePrint"
                                                  action="#{channelBillController.settleCredit}" 
                                                  disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                                              or channelBillController.billSession.bill.cancelled==true
-                                                             or  channelBillController.billSession.bill.paidAmount ne 0}" onclick="onSubmitButton();"/>
+                                                             or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                                 oncomplete="PF('dlgSettle').show();"/>
+
+
+
+                                <h:panelGroup id="gpSettlePrint" >
+
+
+                                    <p:dialog id="test" widgetVar="test" >
+                                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+
+                                    </p:dialog>
+
+                                    <p:dialog id="dialogChannelSettle" header="Booked" widgetVar="dlgSettle" 
+                                              modal="true" height="400" width="600">
+                                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+
+                                        <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                            <p:printer target="panelAddedBillPrintSettle" ></p:printer>
+                                        </p:commandButton>
+                                        <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
+                                            <div >
+                                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                </h:panelGroup>
+                                            </div>
+                                            <div >
+                                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+                                                    <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:dialog>
+                                </h:panelGroup>
 
                             </p:panel>
 
@@ -415,6 +452,10 @@
 
                         <p:tab title="Change" id="change">
                             <h:panelGrid columns="2">
+                                <h:outputLabel value="Title"/>
+                                <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
+                                    <f:selectItems value="#{billController.title}"/>
+                                </p:selectOneMenu>
                                 <p:outputLabel value="Name"/>
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                                 <p:outputLabel value="Patient"/>
@@ -426,6 +467,9 @@
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
+                                <!--    <p:outputLabel value="REMOVE"/>
+                                    <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.retired}" >
+                                    </p:selectBooleanCheckbox>-->
                                 <p:outputLabel/>
                                 <p:commandButton ajax="false" value="Update" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true

@@ -212,6 +212,12 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
+    
+    
+    
+    
+    
+    
 
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
@@ -221,7 +227,7 @@ public class StaffController implements Serializable {
                 + " and type(p)!=:class"
                 + " and LENGTH(p.code) > 0 "
                 + " and LENGTH(p.person.name) > 0 "
-                + " order by p.person.name ";
+                + " order by p.codeInterger ";
 
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
