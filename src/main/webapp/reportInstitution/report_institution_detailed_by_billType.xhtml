@@ -1665,7 +1665,14 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cashier Agent Payment Detail Report"/>
                             </f:facet> 
+                            
+                            <p:column headerText="Cashier Code"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier Code"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.creater.code}"/>
 
+                            </p:column>
 
                             <p:column headerText="Cashier Name"  >
                                 <f:facet name="header">  
@@ -1682,12 +1689,12 @@
                                 <h:outputLabel value="#{b7.insId}"/>
                             </p:column>
 
-                            <p:column headerText="Date And Time" style="width:16%; ">
+                            <p:column headerText="Date And Time" style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Date And Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1697,6 +1704,13 @@
                                     <h:outputLabel value="Agent Name"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.fromInstitution.name}" />
+                            </p:column>
+                            
+                            <p:column headerText="Agent Name"  style="">      
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Agent Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.fromInstitution.institutionCode}" />
                             </p:column>
 
                             <p:column headerText="Cash" style="text-align: right;"   >
@@ -1726,16 +1740,35 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column>  
+                            
+                            <p:column headerText="Slip Date" style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip Date"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.chequeDate}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Slip Bank" style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip Bank"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.bank.name}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Descripion"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.comments}" />
-                            </p:column>                                               
+                            </p:column>
 
                             <p:columnGroup type="footer">  
                                 <p:row>  
-                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column footerText="#{commonReport.billedBills.cash}">                                    
                                         <f:facet name="footer">

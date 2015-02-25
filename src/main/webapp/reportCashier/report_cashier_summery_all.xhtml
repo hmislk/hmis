@@ -17,7 +17,11 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                     <f:facet name="header">
 
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierData()}" />  
+                        <p:commandButton id="btnRefresh" ajax="false" 
+                                         value="Process" 
+                                         styleClass="noPrintButton" 
+                                         style="float: right;" 
+                                         actionListener="#{cashierReportController.calCashierData()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >

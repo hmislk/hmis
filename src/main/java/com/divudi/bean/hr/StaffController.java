@@ -212,6 +212,12 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
+    
+    
+    
+    
+    
+    
 
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
@@ -221,7 +227,7 @@ public class StaffController implements Serializable {
                 + " and type(p)!=:class"
                 + " and LENGTH(p.code) > 0 "
                 + " and LENGTH(p.person.name) > 0 "
-                + " order by p.person.name ";
+                + " order by p.codeInterger ";
 
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
@@ -284,9 +290,9 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and (ss.dateLeft> :to "
-                + " or ss.dateRetired> :to )";
-        
+                + " and (ss.dateLeft is null or ss.dateLeft > :to ) "
+                + " and ss.employeeStatus!=:sts";
+        hm.put("sts", EmployeeStatus.Temporary);
         hm.put("to", toDate);
 
         if (getReportKeyWord().getStaff() != null) {
@@ -367,8 +373,10 @@ public class StaffController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Staff p "
-                    + " where p.retired=false and"
-                    + " (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " where p.retired=false "
+                    + " and LENGTH(p.code) > 0 "
+                    + " and LENGTH(p.person.name) > 0 "
+                    + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
                     + " or upper(p.code) like '%" + query.toUpperCase() + "%' )"
                     + " order by p.person.name";
 
@@ -610,6 +618,18 @@ public class StaffController implements Serializable {
     }
 
     public List<Staff> getSelectedItems() {
+
+        /**
+         *
+         *
+         *
+         *
+         * sql = "select ss from Staff ss " + " where ss.retired=false " + " and
+         * type(ss)!=:class " + " and ss.codeInterger!=0 ";
+         *
+         *
+         *
+         */
         String sql = "";
         HashMap hm = new HashMap();
         if (selectText.trim().equals("")) {
@@ -754,18 +774,26 @@ public class StaffController implements Serializable {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }
-        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
-            getPersonFacade().create(current.getPerson());
-        } else {
-            getPersonFacade().edit(current.getPerson());
-        }
 
+        System.out.println("current.getId() = " + current.getId());
+        System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
+
+//        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
+//            getPersonFacade().create(current.getPerson());
+//        } else {
+//            getPersonFacade().edit(current.getPerson());
+//        }
         getCurrent().chageCodeToInteger();
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
         } else {
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(current.getPerson());
+
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);

@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"                    
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+
+                <h:panelGrid columns="2" >
+                    <p:panel header="Performance Allovance" >
+
+                        <h:panelGrid columns="2"  >
+                            <h:outputLabel value="Component"/>
+                            <h:outputLabel value="#{staffPaySheetComponentAllPerformancePercentageController.paysheetComponent.name}"/>                            
+                            <h:outputLabel value="From"/>                            
+                            <p:calendar value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}" pattern="dd MM yyyy">
+                                <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
+                            </p:calendar>
+                            <h:outputLabel value="To"/>
+                            <p:calendar value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
+
+                            <p:commandButton  value="Save"  action="#{staffPaySheetComponentAllPerformancePercentageController.save}" onclick="onSubmitButton();">
+
+                            </p:commandButton>
+                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllPerformancePercentageController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
+
+                        </h:panelGrid>                      
+                    </p:panel>
+
+                    <p:panel id="staff" header="Staff List">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff  value="#{staffController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department  value="#{staffController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:department value="#{staffController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Designation : "/>
+                            <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Roster : "/>
+                            <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
+                        <p:commandButton ajax="false" 
+                                         value="Fill Staff"
+                                         action="#{staffController.createActiveStaffTable()}"
+                                         onclick="onSubmitButton();"/>
+                        <p:dataTable  value="#{staffController.staffWithCode}" 
+                                      var="s" scrollable="true"
+                                      filteredValue="#{staffController.filteredStaff}"     
+                                      scrollHeight="300"                                   
+                                      rowKey="#{s.id}" 
+                                      selection="#{staffController.selectedList}"
+                                      rowIndexVar="i">
+
+                            <p:column  selectionMode="multiple" >                            
+                            </p:column>
+
+                            <p:column >
+                                #{i+1}
+                            </p:column>
+                            <p:column headerText="Staff Code" >
+                                <h:outputLabel value="#{s.code}"/>
+                            </p:column>
+                            <p:column headerText="Staff" >
+                                <h:outputLabel value="#{s.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Designtion">
+                                <h:outputLabel value="#{s.designation.name}"/>
+                            </p:column>
+                            <p:column headerText="Institution">
+                                <h:outputLabel value="#{s.workingDepartment.institution.name}"/>
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputLabel value="#{s.workingDepartment.name}"/>
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputLabel value="#{s.roster.name}"/>
+                            </p:column>
+                            <p:column headerText="Percentage">
+                                <p:inputText value="#{s.transDblValue}"/>
+                            </p:column>
+
+                        </p:dataTable> 
+                    </p:panel>
+                </h:panelGrid>
+
+
+                <p:spacer height="30" />
+
+                <p:panel id="lst">
+                    <f:facet name="header">      
+                        <h:outputLabel value="#{staffPaySheetComponentAllPerformancePercentageController.paysheetComponent.name}" style="text-transform:uppercase;" />
+                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllPerformancePercentageController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllPerformancePercentageController.createStaffPaysheetComponent}" />
+                    </f:facet>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From : " />
+                        <p:calendar id="frm" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}"
+                                    pattern="dd MM yyyy" />                                              
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.staff}"/>
+                        <h:outputLabel value="Department : "/>
+                        <hr:department value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Institution : "/>
+                        <hr:department value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.institution}"/>
+                        <h:outputLabel value="Staff Category : "/>
+                        <hr:completeStaffCategory value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.staffCategory}"/>
+                        <h:outputLabel value="Designation : "/>
+                        <hr:completeDesignation value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.designation}"/>
+                        <h:outputLabel value="Roster : "/>
+                        <hr:completeRoster value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.roster}"/>                      
+                    </h:panelGrid>
+
+                    <p:dataTable  value="#{staffPaySheetComponentAllPerformancePercentageController.items}" 
+                                  var="i" scrollHeight="350"  editable="true"
+                                  rowStyleClass="#{i.exist eq true ? 'exist':null}"
+                                  scrollable="true"  selection="#{staffPaySheetComponentAllPerformancePercentageController.selectedStaffComponent}" 
+                                  rowKey="#{i.id}"  >
+
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+
+                        <p:column headerText="From" >
+                            <h:outputLabel value="#{i.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="To" >
+                            <h:outputLabel value="#{i.toDate}">
+                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Staff Code" >
+                            <h:outputLabel value="#{i.staff.code}"/>
+                        </p:column>
+
+                        <p:column headerText="Staff" >
+                            <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                        </p:column>
+
+                        <p:column headerText="Grade" >
+                            <h:outputLabel value="#{i.staff.grade.name}"/>                           
+                        </p:column>
+
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Designtion">
+                            <h:outputLabel value="#{i.staff.designation.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Institution">
+                            <h:outputLabel value="#{i.staff.workingDepartment.institution.name}"/>
+                        </p:column>
+                        <p:column headerText="Department">
+                            <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                        </p:column>
+                        <p:column headerText="Roster">
+                            <h:outputLabel value="#{i.staff.roster.name}"/>
+                        </p:column>
+                        <p:column headerText="Value" >
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{i.staffPaySheetComponentValue}"/>
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>
+
+                        <p:column style="width:6%">  
+                            <p:rowEditor />  
+                        </p:column>  
+
+                        <p:column style="width:6%">  
+                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllPerformancePercentageController.remove}" onclick="onSubmitButton();">
+                                <f:setPropertyActionListener target="#{staffPaySheetComponentAllPerformancePercentageController.current}" value="#{i}" />
+                            </p:commandButton>
+                        </p:column>  
+
+
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

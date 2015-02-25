@@ -16,9 +16,13 @@
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
                             <h:outputLabel value="From Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}" >
+                                <f:ajax execute="@this" event="dateSelect" render="frm" />
+                            </p:calendar>
                             <h:outputLabel value="To Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
+                            <p:calendar value="#{staffLeaveEntitleController.toDate}">
+                                <f:ajax execute="@this" event="dateSelect" render="to" />
+                            </p:calendar>
                             <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
@@ -39,9 +43,9 @@
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>   
                             <h:outputLabel value="From Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                            <p:calendar id="frm" value="#{staffLeaveEntitleController.fromDate}"/>
                             <h:outputLabel value="To Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.toDate}"/>
+                            <p:calendar id="to" value="#{staffLeaveEntitleController.toDate}"/>
                             <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>

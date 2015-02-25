@@ -47,6 +47,10 @@ public class SalaryCycle implements Serializable {
     Date workedToDate;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date workedFromDate;
+     @Temporal(javax.persistence.TemporalType.DATE)
+    private Date salaryAdvanceFromDate;
+      @Temporal(javax.persistence.TemporalType.DATE)
+    private Date salaryAdvanceToDate;
     private int salaryYear;
     private int salaryMonth;
     private int salaryDate;
@@ -84,6 +88,8 @@ public class SalaryCycle implements Serializable {
         }
 
     }
+    
+    
 
     public Date getWorkedToDate() {
         return workedToDate;
@@ -261,6 +267,22 @@ public class SalaryCycle implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Date getSalaryAdvanceFromDate() {
+        return salaryAdvanceFromDate;
+    }
+
+    public void setSalaryAdvanceFromDate(Date salaryAdvanceFromDate) {
+        this.salaryAdvanceFromDate = salaryAdvanceFromDate;
+    }
+
+    public Date getSalaryAdvanceToDate() {
+        return salaryAdvanceToDate;
+    }
+
+    public void setSalaryAdvanceToDate(Date salaryAdvanceToDate) {
+        this.salaryAdvanceToDate = salaryAdvanceToDate;
     }
 
 }

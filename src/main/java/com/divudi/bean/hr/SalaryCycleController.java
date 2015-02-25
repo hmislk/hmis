@@ -7,8 +7,10 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
@@ -203,6 +205,9 @@ public class SalaryCycleController implements Serializable {
         this.salaryCycles = salaryCycles;
     }
 
+    @EJB
+    HumanResourceBean humanResourceBean;
+
     private boolean errorCheck() {
         if (current == null) {
             return true;
@@ -224,78 +229,19 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        //Check Salry Cycle
-        String sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and (s.salaryFromDate=:sfd "
-                + " or s.salaryToDate=:std "
-                + " or s.workedFromDate=:wfd "
-                + " or s.workedToDate=:wtd ) ";
-        HashMap hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryFromDate());
-        hm.put("std", getCurrent().getSalaryToDate());
-        hm.put("wfd", getCurrent().getWorkedFromDate());
-        hm.put("wtd", getCurrent().getWorkedToDate());
-
-        SalaryCycle salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary Cycle Already Exist For This Date");
+        //Check Salry Date        
+        if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
+            UtilityController.addErrorMessage("Salary Date Already Exist");
             return true;
         }
 
-        //Check Salary Form Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.salaryFromDate<=:sfd "
-                + " and s.salaryToDate>=:sfd ";
-        hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryFromDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary From Date Already Exist in Other Cycle");
+        if (humanResourceBean.checkSalaryCycleDate(current, DateType.AdvanceDate, current.getSalaryAdvanceFromDate(), current.getSalaryAdvanceToDate())) {
+            UtilityController.addErrorMessage("Salary Advance Date Already Exist");
             return true;
         }
-
-        //Check Salary To Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.salaryFromDate<=:sfd "
-                + " and s.salaryToDate>=:sfd ";
-        hm = new HashMap();
-        hm.put("sfd", getCurrent().getSalaryToDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Salary To Date Already Exist in Other Cycle");
-            return true;
-        }
-
-        //Check Worked Form Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.workedFromDate<=:wfd "
-                + " and s.workedToDate>=:wfd  ";
-        hm = new HashMap();
-        hm.put("wfd", getCurrent().getWorkedFromDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Worked From Date Already Exist in Other Cycle");
-            return true;
-        }
-
-        //Check Worked TO Date
-        sql = "Select s from SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.workedFromDate<=:wfd "
-                + " and s.workedToDate>=:wfd  ";
-        hm = new HashMap();
-        hm.put("wfd", getCurrent().getWorkedToDate());
-
-        salaryCycle = facade.findFirstBySQL(sql, hm);
-        if (salaryCycle != null) {
-            UtilityController.addErrorMessage("Worked To Date Already Exist in Other Cycle");
+        
+         if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
+            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
             return true;
         }
 
@@ -1147,55 +1093,55 @@ public class SalaryCycleController implements Serializable {
             Object[] obj = fillStaffSalaryByDepartment(d);
             staffSalaryByDepartment ssbd = new staffSalaryByDepartment();
             ssbd.setDepartment(d);
-            boolean flag=false;
+            boolean flag = false;
             for (int i = 0; i < 14; i++) {
-                if (obj[i]!=null) {
-                    flag=true;
+                if (obj[i] != null) {
+                    flag = true;
                 }
             }
-            if (obj[0]!=null) {
+            if (obj[0] != null) {
                 ssbd.setBasicValue((double) obj[0]);
             }
-            if (obj[1]!=null) {
+            if (obj[1] != null) {
                 ssbd.setOverTimeValue((double) obj[1]);
             }
-            if (obj[2]!=null) {
+            if (obj[2] != null) {
                 ssbd.setTransExtraDutyValue((double) obj[2]);
             }
-            if (obj[3]!=null) {
+            if (obj[3] != null) {
                 ssbd.setNoPay((double) obj[3]);
             }
-            if (obj[4]!=null) {
+            if (obj[4] != null) {
                 ssbd.setHolidayAllowance((double) obj[4]);
             }
-            if (obj[5]!=null) {
+            if (obj[5] != null) {
                 ssbd.setDayOffAllownace((double) obj[5]);
             }
-            if (obj[6]!=null) {
+            if (obj[6] != null) {
                 ssbd.setComponentValueAddition((double) obj[6]);
             }
-            if (obj[7]!=null) {
+            if (obj[7] != null) {
                 ssbd.setComponentValueSubstraction((double) obj[7]);
             }
-            if (obj[8]!=null) {
+            if (obj[8] != null) {
                 ssbd.setAdjustmentToBasic((double) obj[8]);
             }
-            if (obj[9]!=null) {
+            if (obj[9] != null) {
                 ssbd.setAdjustmentToAllowance((double) obj[9]);
             }
-            if (obj[10]!=null) {
+            if (obj[10] != null) {
                 ssbd.setEpfStaffValue((double) obj[10]);
             }
-            if (obj[11]!=null) {
+            if (obj[11] != null) {
                 ssbd.setEpfCompanyValue((double) obj[11]);
             }
-            if (obj[12]!=null) {
+            if (obj[12] != null) {
                 ssbd.setEtfSatffValue((double) obj[12]);
             }
-            if (obj[13]!=null) {
+            if (obj[13] != null) {
                 ssbd.setEtfCompanyValue((double) obj[13]);
             }
-            
+
             if (flag) {
                 salaryByDepartments.add(ssbd);
             }
@@ -1266,16 +1212,16 @@ public class SalaryCycleController implements Serializable {
 
     public List<Department> departments() {
         String sql;
-        Map m=new HashMap();
-        
-        sql= "Select d From Department d where "
+        Map m = new HashMap();
+
+        sql = "Select d From Department d where "
                 + " d.retired=false "
-//                + " and d.institution=:ins "
+                //                + " and d.institution=:ins "
                 + " order by d.name ";
-        
+
 //        m.put("ins", getSessionController().getLoggedUser().getInstitution());
         return departmentFacade.findBySQL(sql, m);
-        
+
     }
 
     public class staffSalaryByDepartment {
@@ -1653,7 +1599,11 @@ public class SalaryCycleController implements Serializable {
 
         java.lang.Long getKey(String value) {
             java.lang.Long key;
-            key = Long.valueOf(value);
+            try {
+                key = Long.valueOf(value);
+            } catch (NumberFormatException exception) {
+                key = 0l;
+            }
             return key;
         }
 
