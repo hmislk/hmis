@@ -1741,14 +1741,23 @@
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column>  
                             
-                            <p:column headerText="Cheque Date" style="">
+                            <p:column headerText="Slip Date" style="">
                                 <f:facet name="header">  
-                                    <h:outputLabel value="Cheque Date"/>
+                                    <h:outputLabel value="Slip Date"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.chequeDate}" >
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputLabel>
-                            </p:column>  
+                            </p:column>
+                            
+                            <p:column headerText="Slip Bank" style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip Bank"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.bank.name}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
                             
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
