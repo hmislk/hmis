@@ -118,7 +118,7 @@
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column>
+                    <p:column style="text-align: left;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
@@ -132,7 +132,7 @@
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}"/>
                     </p:column>
                     
-                    <p:column>
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="DOE"/>
                         </f:facet>
@@ -150,7 +150,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column>
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -161,12 +161,12 @@
                         <f:facet name="header">
                             <h:outputLabel value="Gross Price"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
 
-<!--                    <p:column style="text-align: right;">
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Price"/>
                         </f:facet>                           
@@ -177,7 +177,7 @@
 
                     
 
-                    <p:column>
+<!--                    <p:column>
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
