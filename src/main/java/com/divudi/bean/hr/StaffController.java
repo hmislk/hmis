@@ -301,17 +301,17 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.workingDepartment=:dep ";
+            sql += " and ss.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
+            sql += " and ss.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
+            sql += " and ss.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
@@ -341,17 +341,17 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.workingDepartment=:dep ";
+            sql += " and ss.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
+            sql += " and ss.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
+            sql += " and ss.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
