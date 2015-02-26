@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <h:outputStylesheet library="css" name="maincss.css" />
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form  >
+                    <p:outputLabel value="Reset Balance" ></p:outputLabel>
+                    <p:inputText id="txtBalance" value="#{staffController.resetStaffBalance}"  >
+                        <f:ajax event="keyup" execute="txtBalance" render="cmbReset" ></f:ajax>
+                    </p:inputText>
+                    <p:commandButton id="cmbReset" value="Reset Selected Staff Balance to #{staffController.resetStaffBalance}" 
+                                     ajax="false"
+                                     action="#{staffController.resetStaffBalance}"></p:commandButton>
+                    <p:panel id="printer1" header="Staff Signature" >
+                        <p:dataTable value="#{staffController.items}" var="s" 
+                                     rowKey="#{s.id}"
+                                     selection="#{staffController.selectedStaffes}"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+                            <p:column selectionMode="multiple" ></p:column>
+                            <p:column headerText="Name" sortBy="#{s.person.nameWithTitle}" filterBy="#{s.person.nameWithTitle}" filterMatchMode="contains" >
+                                <h:outputLabel value="#{s.person.nameWithTitle}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Qualified" sortBy="#{s.annualWelfareQualified}" >
+                                <h:outputLabel  value="#{s.annualWelfareQualified}" >
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Utilizsed" sortBy="#{s.annualWelfareUtilized}" >
+                                <h:outputLabel  value="#{s.annualWelfareUtilized}"  >
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>
