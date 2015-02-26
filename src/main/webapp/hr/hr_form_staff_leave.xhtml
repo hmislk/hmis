@@ -84,7 +84,7 @@
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                            <h:outputLabel/>
+                           
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
@@ -132,6 +132,9 @@
                                          scrollHeight="300" >
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
+                                </p:column>
+                                <p:column headerText="id">
+                                    <p:outputLabel value="#{l.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>

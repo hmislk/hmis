@@ -259,7 +259,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

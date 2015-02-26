@@ -63,6 +63,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
+                        
                         <p:calendar value="#{staffLoanController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
                         <h:outputLabel value="Component "/>
                         <p:selectOneMenu value="#{staffLoanController.paysheetComponent}">
@@ -82,62 +83,99 @@
                         <hr:completeDesignation value="#{staffLoanController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
                         <hr:completeRoster value="#{staffLoanController.reportKeyWord.roster}"/>                
-                        <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
+                  
+                    </h:panelGrid>
+                    
+                    <h:panelGrid columns="4">
+                              <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_all"  />
+                            <pe:exporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                            <p:printer target="loaninstall" ></p:printer>
                         </p:commandButton>
                     </h:panelGrid>
 
-                    <p:panel id="gpBillPreview" >
+                    <p:panel id="loaninstall" >
                         <f:facet name="header">
                             <h:outputLabel value="Loan And Advances"/>
                             <p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();"/>
                         </f:facet>
-                        <p:dataTable value="#{staffLoanController.paysheetComponents}" 
+                        <p:dataTable value="#{staffLoanController.paysheetComponents}" id="tb5"
                                      var="i" scrollHeight="200"
                                      rowKey="#{i.id}"
                                      selection="#{staffLoanController.selectedList}" >
                             <p:column  selectionMode="multiple" >                            
                             </p:column>
                             <p:column headerText="From" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="From"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.fromDate}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="To" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="To"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.toDate}">
                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                 </h:outputLabel>
                             </p:column>                    
                             <p:column headerText="Loan Name" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Loan Name"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.paysheetComponent.name}"/>
                             </p:column>
                             <p:column headerText="Staff" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Staff"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Department" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Department"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
                             </p:column>
                             <p:column headerText="Institution" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Institution"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.staff.workingDepartment.institution.name}"/>
                             </p:column>
                             <p:column headerText="Bank" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Bank"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.bankBranch.institution.name}"/>
                             </p:column>
                             <p:column headerText="Branch" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Branch"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.bankBranch.name}"/>
                             </p:column>
                             <p:column headerText="Loan No" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Loan No"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.loanNo}"/>
                             </p:column>
                             <p:column headerText="Loan Full Amount" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Loan Full Amount"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.loanFullAmount}"/>
                             </p:column>    
                             <p:column headerText="Monthly Installment" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Monthly Installment"  />
+                                </f:facet>
                                 <h:outputLabel value="#{i.staffPaySheetComponentValue}"/>
                             </p:column>
                             <p:column headerText="Cheque Number" rendered="#{staffLoanController.chequeDetails}">
