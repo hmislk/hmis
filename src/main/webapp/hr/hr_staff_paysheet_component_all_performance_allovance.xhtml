@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
+                 xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -109,7 +110,7 @@
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllPerformanceAllowanceController.paysheetComponent.name}" style="text-transform:uppercase;" />
                         <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllPerformanceAllowanceController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
-                        <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllPerformanceAllowanceController.createStaffPaysheetComponent}" />
+                      
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
@@ -126,10 +127,24 @@
                         <h:outputLabel value="Designation : "/>
                         <hr:completeDesignation value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.roster}"/>                      
+                        <hr:completeRoster value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.roster}"/>  
+                        
+                         
                     </h:panelGrid>
-
-                    <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" 
+                    
+                    <h:panelGrid columns="3">
+                        
+                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb3" fileName="hr_staff_paysheet_component_all_performance_allovance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="perallpanel" ></p:printer>
+                        </p:commandButton>
+                          <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllPerformanceAllowanceController.createStaffPaysheetComponent}" />
+                        
+                    </h:panelGrid>
+                    <p:panel id="perallpanel">
+                    <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" id="tb3"
                                   var="i" scrollHeight="350"  editable="true"
                                   rowStyleClass="#{i.exist eq true ? 'exist':null}"
                                   scrollable="true"  selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
@@ -204,6 +219,7 @@
 
 
                     </p:dataTable>
+                </p:panel>
                 </p:panel>
             </h:form>
 
