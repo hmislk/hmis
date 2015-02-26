@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.divudi</groupId>
-    <artifactId>hr</artifactId>
+    <artifactId>hmis</artifactId>
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>hr</name>
+    <name>ruhunu</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -41,6 +41,12 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
+            <version>2.5.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
             <version>2.5.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -202,3 +208,4 @@
         </repository>
     </repositories>
 </project>
+
