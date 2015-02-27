@@ -10,6 +10,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Fee;
@@ -137,12 +138,52 @@ public class BookingController implements Serializable {
         }
     }
 
-    public void updatePatient() {
-        getBillSessionFacade().edit(getSelectedBillSession());
-        System.out.println(getSelectedBillSession().getBill().getPatient());
+    public boolean errorCheckForSerial() {
+        boolean alreadyExists = false;
+        for (BillSession bs : billSessions) {
+            System.out.println("billSessions" + bs.getName());
 
+            if (selectedBillSession.equals(bs)) {               
+
+            } else {
+                if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
+                    alreadyExists = true;
+                }
+            }
+
+        }
+
+        return alreadyExists;
+    }
+
+//    public void errorCheckChannelNumber() {
+//
+//        for (BillSession bs : billSessions) {
+//            System.out.println("billSessions" + bs.getName());
+//            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
+//                System.out.println("billitem" + bi.getId());
+//                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
+//                    UtilityController.addErrorMessage("Number you entered already exist");
+//                    setSelectedBillSession(bs);
+//
+//                }
+//
+//            }
+//        }
+//
+//    }
+    public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
         UtilityController.addSuccessMessage("Patient Updated");
+    }
+
+    public void updateSerial() {
+        if (errorCheckForSerial()) {
+            return;
+        }
+
+        getBillSessionFacade().edit(getSelectedBillSession());
+        System.out.println(getSelectedBillSession().getBill().getPatient());
     }
 
     public void makeNull() {
@@ -263,10 +304,9 @@ public class BookingController implements Serializable {
         m.put("ses", item);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-      
         return obj;
     }
-    
+
     private double fetchForiegnFee(Item item) {
         String jpql;
         Map m = new HashMap();
@@ -507,7 +547,7 @@ public class BookingController implements Serializable {
             return false;
         }
         getChannelReportController().setServiceSession(selectedServiceSession);
-        
+
         return true;
     }
 
