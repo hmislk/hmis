@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/coop?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="neo7" object-type="user" pool-name="mysql_coop_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="neo" object-type="user" pool-name="mysql_coop_rootPool"/>
 </resources>
