@@ -117,14 +117,21 @@
                         <hr:completeDesignation value="#{staffPaySheetComponentAllController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
                         <hr:completeRoster value="#{staffPaySheetComponentAllController.reportKeyWord.roster}"/> 
-                        <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
+                      
+                    </h:panelGrid>
+                    <h:panelGrid columns="3">
+                        
+                          <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_all"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                        
                     </h:panelGrid>
+                  
+
 
                     <p:panel id="gpBillPreview">
                         <f:facet name="header">

@@ -59,6 +59,8 @@ public class StaffLeave implements Serializable {
     Roster roster;
     @ManyToOne
     StaffShift staffShift;
+     
+    
 
     public StaffShift getStaffShift() {
         return staffShift;
