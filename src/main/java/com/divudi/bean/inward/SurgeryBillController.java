@@ -234,6 +234,7 @@ public class SurgeryBillController implements Serializable {
         /////////////
         timedEncounterComponents = null;
         departmentBillItems = null;
+        pharmacyIssues=null;
 
     }
 
