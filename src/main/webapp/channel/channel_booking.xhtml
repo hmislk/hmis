@@ -469,8 +469,10 @@
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
                                
-                                <p:outputLabel/>
-                                <p:commandButton ajax="false" value="Update" action="#{bookingController.updatePatient}"
+                                <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
+                                                 disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
                                                              or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 

@@ -141,9 +141,10 @@ public class BookingController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            System.out.println("billSessions" + bs.getName());
+            System.out.println("billSessions" + bs.getId());
 
-            if (selectedBillSession.equals(bs)) {               
+            if (selectedBillSession.equals(bs)) {
+                              
 
             } else {
                 if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
@@ -184,6 +185,7 @@ public class BookingController implements Serializable {
 
         getBillSessionFacade().edit(getSelectedBillSession());
         System.out.println(getSelectedBillSession().getBill().getPatient());
+        UtilityController.addSuccessMessage("Serial Updated");
     }
 
     public void makeNull() {
