@@ -126,7 +126,7 @@
                             </p:column>
 
                             <p:column headerText="Cancel">
-                                <p:commandButton ajax="false" value="Cancel" action="#{inwardSearch.cancelSurgeryBill()}" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Cancel" action="#{inwardSearch.cancelSurgeryBill()}" disabled="#{bb.cancelled eq true}">
                                     <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
