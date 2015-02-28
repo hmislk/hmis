@@ -763,17 +763,18 @@ public class InwardSearch implements Serializable {
 //            if (check()) {
 //                return;
 //            }
-//            if (checkBathcReferenceBill()) {
-//                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
-//                return;
-//            }
+            if (checkBathcReferenceBill()) {
+                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
+                return;
+            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb);
+//            only cancell the sergery bill
+//            cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
