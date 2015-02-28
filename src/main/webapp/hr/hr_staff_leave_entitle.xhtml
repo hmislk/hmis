@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
+                       xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -83,27 +84,47 @@
                     </p:panel>
                 </h:panelGrid>
                 <p:panel header="Forms">
-                    <h:panelGrid columns="1">                           
-                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" />                            
+                    <h:panelGrid columns="3">                           
+                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" /> 
+                          <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb4" fileName="hr_staff_leave_entitle"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="staffleaveentitie" ></p:printer>
+                        </p:commandButton>
                     </h:panelGrid>
-                    <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add">
+                    <p:panel  id="staffleaveentitie">
+                    <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add" id="tb4">
                         <p:column headerText="Staff">
+                             <f:facet name="header">
+                                    <h:outputLabel value="Staff"  />
+                                </f:facet>
                             <p:outputLabel value="#{add.staff.code}" style="color: red;" rendered="#{add.leaveType eq 'Annual' and add.count ne 14}" ></p:outputLabel>
                             <p:outputLabel value="#{add.staff.code}" style="color: green;" rendered="#{add.leaveType eq 'Casual' and add.count ne 7}" ></p:outputLabel>
                             <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Annual' and add.count eq 14}" ></p:outputLabel>
                             <p:outputLabel value="#{add.staff.code}" rendered="#{add.leaveType eq 'Casual' and add.count eq 7}" ></p:outputLabel>
                         </p:column>
                         <p:column headerText="Leave Type">
+                            <f:facet name="header">
+                                    <h:outputLabel value="Leave Type"  />
+                                </f:facet>
                             <p:outputLabel value="#{add.leaveType}" style="color: red;" rendered="#{add.leaveType eq 'Annual'}" ></p:outputLabel>
                             <p:outputLabel value="#{add.leaveType}" style="color: green;" rendered="#{add.leaveType eq 'Casual'}" ></p:outputLabel>
                         </p:column>                          
                         <p:column headerText="Count">
+                            <f:facet name="header">
+                                    <h:outputLabel value="Count"  />
+                                </f:facet>
                             <p:outputLabel value="#{add.count}"></p:outputLabel>
                         </p:column> 
                         <p:column headerText="Staff">
+                            <f:facet name="header">
+                                    <h:outputLabel value="Staff"  />
+                                </f:facet>
                             <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                         </p:column>
                     </p:dataTable>
+                     </p:panel>   
                 </p:panel>
             </p:panel>
         </h:form>

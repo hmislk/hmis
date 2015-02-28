@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <h:panelGrid columns="4" >
+                        <h:outputLabel value="From Department" />
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                        var="dept" itemLabel="#{dept.name}"
+                                        itemValue="#{dept}" forceSelection="true" 
+                                        value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                        </p:autoComplete>
+
+                        <h:outputLabel value="To Department" />
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                        var="dept" itemLabel="#{dept.name}"
+                                        itemValue="#{dept}" forceSelection="true" 
+                                        value="#{reportsTransfer.toDepartment}" converter="dep" >
+                        </p:autoComplete>
+
+                        <h:outputLabel value="From" ></h:outputLabel>
+                        <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <h:outputLabel value="To" ></h:outputLabel>
+                        <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <h:outputLabel value="Item Category"/>
+                        <p:autoComplete  value="#{reportsTransfer.category}" 
+                                         forceSelection="true"
+                                         completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        </p:autoComplete> 
+                    </h:panelGrid>
+
+
+                    <p:commandButton ajax="false" value="Fill" 
+                                     action="#{reportsTransfer.fillItemCountsWithOutMargin()}" />
+
+
+                    <p:dataTable id="tbl"  value="#{reportsTransfer.itemCountWithOutMargins}"
+                                 stickyHeader="true"
+                                 var="i"  >
+                        <p:column headerText="Item">
+                            #{i.item.name}
+                        </p:column>
+                        <p:column headerText="Count" style="text-align: right;">
+                            #{i.count}
+                        </p:column>
+                        <p:column headerText="Net Value" style="text-align: right;">
+                            <h:outputLabel value="#{i.net}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>   
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{reportsTransfer.netTotalValues}">
+                                    <f:convertNumber  pattern="#0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+    </body>
+</html>
