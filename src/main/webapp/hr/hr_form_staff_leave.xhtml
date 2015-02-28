@@ -160,6 +160,10 @@
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
                                 </p:column>
+                                  <p:column headerText="Created AT">
+                                      <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
+                                    
+                                </p:column>
                             </p:dataTable>
                         </p:panel>
                     </p:panel>

@@ -483,8 +483,12 @@ public class HrReportController implements Serializable {
         sql = createFingerPrintQuary(hm);
         sql += " and ss.fingerPrintRecordType=:ftp  "
                 + " and ss.staffShift is not null "
-                + " and ss.loggedRecord is null ";
+                + " and ss.loggedRecord is null "
+                + " and (ss.comments!=:nx"
+                + " and ss.comments!=:pr)";
         hm.put("ftp", FingerPrintRecordType.Varified);
+        hm.put("nx", "(NEW PREV)");
+        hm.put("pr", "(NEW NEXT)");
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
@@ -909,7 +913,7 @@ public class HrReportController implements Serializable {
             
         }
         
-        sql += " order by ss.staff.codeInterger";
+        sql += " order by ss.form.code,ss.staff.codeInterger ";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
@@ -2128,7 +2132,7 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        sql += " order by ss.staff.codeInterger ";
+        sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
