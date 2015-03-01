@@ -161,6 +161,7 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
 //    int leaveDivident;
+ 
 
     public DayType getDayType() {
         return dayType;
