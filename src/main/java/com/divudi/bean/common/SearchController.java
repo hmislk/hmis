@@ -20,6 +20,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
@@ -3780,6 +3781,28 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.ChannelProPayment);
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void channelAgentPaymentBills() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
+                + " and bi.bill.billType=:bt"
+                + " and bi.createdAt between :fromDate and :toDate ";       
+        
+        
+        if(getSearchKeyword().getIns()!=null){
+           sql += " and bi.bill.toInstitution=:ins";
+           m.put("ins", getSearchKeyword().getIns());
+        }
+                
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.ChannelAgencyPayment);
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
