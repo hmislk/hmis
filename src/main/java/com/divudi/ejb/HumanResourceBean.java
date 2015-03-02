@@ -464,11 +464,11 @@ public class HumanResourceBean {
         Date startTime = additionalForm.getFromTime();
         Calendar min = Calendar.getInstance();
         min.setTime(startTime);
-        min.add(Calendar.HOUR, -2);
+        min.add(Calendar.MINUTE, -30);
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 2);
+        max.add(Calendar.MINUTE, 30);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -535,11 +535,11 @@ public class HumanResourceBean {
         Date endTime = additionalForm.getToTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-        min.add(Calendar.HOUR, -2);
+        min.add(Calendar.MINUTE, -30);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
-        max.add(Calendar.HOUR, 2);
+        max.add(Calendar.MINUTE, 30);
 
         Map m = new HashMap();
         m.put("f", min.getTime());

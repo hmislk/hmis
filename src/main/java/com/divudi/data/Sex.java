@@ -11,6 +11,6 @@ package com.divudi.data;
 public enum Sex {
     Male,
     Female,
-    Unknown,
-    Other,
+//    Unknown, requested By Ruhunu Hospital System Admin Pumini 2015.02.26
+//    Other,
 }

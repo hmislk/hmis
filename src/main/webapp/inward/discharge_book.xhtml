@@ -97,7 +97,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                         value="#{inwardReportController.patientEncounters}" var="i" rowIndexVar="in">
+                                         value="#{inwardReportController.patientEncounters}" var="i" rowIndexVar="in" rowStyleClass="#{(i.finalBill.netTotal-i.transTotal) > 0.5  ? 'redText':''}" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Discharge Details "/>
                                     <h:panelGrid columns="4">

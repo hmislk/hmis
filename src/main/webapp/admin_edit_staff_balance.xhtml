@@ -30,6 +30,9 @@
                                      rowsPerPageTemplate="5,10,15"
                                      >
                             <p:column selectionMode="multiple" ></p:column>
+                            <p:column headerText="Code" sortBy="#{s.codeInterger}" filterBy="#{s.codeInterger}" filterMatchMode="contains" >
+                                <h:outputLabel value="#{s.codeInterger}" ></h:outputLabel>
+                            </p:column>
                             <p:column headerText="Name" sortBy="#{s.person.nameWithTitle}" filterBy="#{s.person.nameWithTitle}" filterMatchMode="contains" >
                                 <h:outputLabel value="#{s.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>

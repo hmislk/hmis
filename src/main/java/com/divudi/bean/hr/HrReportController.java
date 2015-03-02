@@ -370,6 +370,18 @@ public class HrReportController implements Serializable {
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
+     public void createFingerPrintRecordAll() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp ";
+//                + " and ss.verifiedRecord.staffShift is not null ";
+        hm.put("ftp", FingerPrintRecordType.Logged);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
     public StaffFacade getStaffFacade() {
         return staffFacade;
     }
@@ -483,8 +495,12 @@ public class HrReportController implements Serializable {
         sql = createFingerPrintQuary(hm);
         sql += " and ss.fingerPrintRecordType=:ftp  "
                 + " and ss.staffShift is not null "
-                + " and ss.loggedRecord is null ";
+                + " and ss.loggedRecord is null "
+                + " and (ss.comments!=:nx"
+                + " and ss.comments!=:pr)";
         hm.put("ftp", FingerPrintRecordType.Varified);
+        hm.put("nx", "(NEW PREV)");
+        hm.put("pr", "(NEW NEXT)");
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
@@ -507,11 +523,18 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
+      
         
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
+        
+          if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+        
         
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
@@ -548,6 +571,11 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
+         if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+         
         
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
@@ -587,6 +615,11 @@ public class HrReportController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+         if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
         
         if (getReportKeyWord().getStaffCategory() != null) {
@@ -909,7 +942,7 @@ public class HrReportController implements Serializable {
             
         }
         
-        sql += " order by ss.staff.codeInterger";
+        sql += " order by ss.form.code,ss.staff.codeInterger ";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
@@ -2128,7 +2161,7 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        sql += " order by ss.staff.codeInterger ";
+        sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
@@ -2691,7 +2724,7 @@ public class HrReportController implements Serializable {
                     + " or (ss.earlyOutVarified<= :toTime )) ";
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
-        sql += " order by ss.codeInterger";
+        sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
         
     }
