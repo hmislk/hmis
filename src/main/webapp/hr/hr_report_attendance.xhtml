@@ -44,17 +44,17 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss"  rowIndexVar="i">
                                 <f:facet name="header">
                                     <h:outputLabel style="text-align: center" value="  Attendence Report : "  />
                                     <h:outputLabel/>
-                                     <h:outputLabel/>
+                                    <h:outputLabel/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
                                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                                     </h:outputLabel>
-                                     <h:outputLabel/>
-                                      <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
                                     <h:outputLabel value="  To : "/> 
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
@@ -62,6 +62,24 @@
                                     <h:outputLabel value=""><br/>
                                     </h:outputLabel>
                                 </f:facet>
+                                <p:column headerText="No">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="No" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{i+1}" ></p:outputLabel>
+                                </p:column>
+                                  <p:column headerText="ID">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="ID" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.id}" ></p:outputLabel>
+                                </p:column>
+                                  <p:column headerText="Addition">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Addition" ></p:outputLabel>
+                                    </f:facet>
+                                      <p:outputLabel value="#{ss.additionalForm.id}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Emp No" ></p:outputLabel>
@@ -103,6 +121,28 @@
                                         <p:outputLabel value="Staff Shift" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Leave" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Leave" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leaveType}" ></p:outputLabel>
+                                </p:column>
+                                  <p:column headerText="Created Date" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Created Date" ></p:outputLabel>
+                                    </f:facet>
+                                      <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:a"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Shift Date" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Shift Date" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.shiftDate}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="In Checked ">
                                     <f:facet name="header" >

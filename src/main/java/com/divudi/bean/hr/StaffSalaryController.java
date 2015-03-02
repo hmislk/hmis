@@ -827,7 +827,7 @@ public class StaffSalaryController implements Serializable {
                     ss.setSalaryCycle(salaryCycle);
                     ss.setCreater(getSessionController().getLoggedUser());
                     ss.setStaffPaysheetComponent(spc);
-                    ss.setComponantValue(calValue(spc.getStaffPaySheetComponentValue()));
+                    ss.setComponantValue(spc.getStaffPaySheetComponentValue());
                     getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
                     getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
                     getCurrent().getStaffSalaryComponants().add(ss);

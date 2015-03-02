@@ -4,6 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
@@ -20,8 +21,10 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableInward}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />
-                                <h:outputLabel/><h:outputLabel/>
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />                                 
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
+                                </p:commandButton>  
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel value="Bill No"/>
@@ -44,9 +47,13 @@
                         </f:facet>
                         <br/><br/>
 
+
                         <p:defaultCommand target="btnSearch" />
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                            <f:facet name="header">
+                                #{searchController.total}
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>

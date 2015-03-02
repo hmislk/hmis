@@ -89,18 +89,18 @@ public class StaffLeaveEntitleController implements Serializable {
 
     public void saveSelected() {
 
-        if (fromDate == null) {
+        if (getCurrent().getFromDate() == null) {
             UtilityController.addErrorMessage("Please Select From Date");
             return;
         }
 
-        if (toDate == null) {
+        if (getCurrent().getToDate() == null) {
             UtilityController.addErrorMessage("Please Select To Date");
             return;
         }
 
-        current.setFromDate(fromDate);
-        current.setToDate(toDate);
+//        current.setFromDate(fromDate);
+//        current.setToDate(toDate);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
