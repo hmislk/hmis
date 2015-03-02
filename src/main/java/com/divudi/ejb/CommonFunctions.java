@@ -143,7 +143,7 @@ public class CommonFunctions {
 
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
-        System.err.println(frm+" : "+to+" DAY COUNT " + inDays);
+        System.err.println(frm + " : " + to + " DAY COUNT " + inDays);
         return inDays;
 
     }
@@ -264,6 +264,9 @@ public class CommonFunctions {
     }
 
     public static Date getStartOfDay(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -275,6 +278,9 @@ public class CommonFunctions {
     }
 
     public static Date getEndOfDay(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
