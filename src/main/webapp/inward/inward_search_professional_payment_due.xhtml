@@ -4,6 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
@@ -12,49 +13,47 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
-                            <h:outputLabel value="Professional Payment to settle"/>
+                            <h:panelGrid columns="7" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableInward}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />                                 
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
+                                </p:commandButton>  
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel value="Bill No"/>
+                                <h:outputLabel value="BHT No"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <h:outputLabel value="Speciality"/> 
+                                <h:outputLabel value="Doctor Name"/>      
+                                <h:outputLabel value="Service Name"/>  
+                                <h:outputLabel value="Charges"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+
+                            </h:panelGrid>
+
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
-                            </p:calendar>
-                            <h:outputLabel value="To"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
-                            </p:calendar>
-                        </h:panelGrid>
-                        <h:panelGrid columns="2" >
-                            <p:commandButton id="btnSearch" ajax="false" value="1. Search by Added Date" action="#{searchController.createDueFeeTableInward}" onclick="onSubmitButton();" />
-                            <p:commandButton id="btnSearchAll" ajax="false" value="2. Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />
-                            <p:commandButton id="btnSearchDod" ajax="false" value="1. Search by Discharged Date" action="#{searchController.createDueFeeTableInward}" onclick="onSubmitButton();" />
-                            <p:commandButton id="btnSearchAllDod" ajax="false" value="2. Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="7" >
-
-                            <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                            <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/>
-                            <h:outputLabel value="Bill No"/>
-                            <h:outputLabel value="BHT No"/>
-                            <h:outputLabel value="Patient Name"/>
-                            <h:outputLabel value="Speciality"/> 
-                            <h:outputLabel value="Doctor Name"/>      
-                            <h:outputLabel value="Service Name"/>  
-                            <h:outputLabel value="Charges"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                        </h:panelGrid>
-
+                        <br/><br/>
 
 
                         <p:defaultCommand target="btnSearch" />
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                            <f:facet name="header">
+                                #{searchController.total}
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>

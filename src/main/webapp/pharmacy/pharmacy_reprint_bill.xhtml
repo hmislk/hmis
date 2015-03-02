@@ -20,7 +20,8 @@
                             <p:commandButton value="Reprint" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill" disabled="#{pharmacyBillSearch.bill.cancelled}" 
+                                             rendered="#{webUserController.hasPrivilege('PharmacySaleCancel') or true}">                           
                             </p:commandButton>
                           
                         </f:facet>

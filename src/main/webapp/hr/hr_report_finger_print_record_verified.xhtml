@@ -41,11 +41,18 @@
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">                               
+                           
+                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss" rowIndexVar="i">
+                                   <p:column headerText="No">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="No" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{i+1}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
                                 </p:column>
@@ -63,6 +70,11 @@
                                 <p:column headerText="Verified Time">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
+                                    </h:outputLabel>                                    
+                                </p:column>
+                                  <p:column headerText="Comments">
+                                      <h:outputLabel  value="#{ss.comments}">
+                                        
                                     </h:outputLabel>                                    
                                 </p:column>
                                  <p:column headerText="Logged Date">

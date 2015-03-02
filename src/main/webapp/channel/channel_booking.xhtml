@@ -462,16 +462,17 @@
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
                                 <p:outputLabel value="Serial No"/>
                                 <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                    <p:inputText autocomplete="off" value="#{bis.billSession.serialNo}"/>
+                                    <p:inputText autocomplete="off" value="#{bis.billSession.serialNo}">                                        
+                                    </p:inputText>
                                 </ui:repeat>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
-                                <!--    <p:outputLabel value="REMOVE"/>
-                                    <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.retired}" >
-                                    </p:selectBooleanCheckbox>-->
-                                <p:outputLabel/>
-                                <p:commandButton ajax="false" value="Update" action="#{bookingController.updatePatient}"
+                               
+                                <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
+                                                 disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
                                                              or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 

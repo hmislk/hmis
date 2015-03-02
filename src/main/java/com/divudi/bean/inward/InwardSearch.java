@@ -13,6 +13,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -746,15 +747,45 @@ public class InwardSearch implements Serializable {
         String sql = "select b from BilledBill b "
                 + " where b.retired=false "
                 + " and b.cancelled=false "
-                + " and b.forwardReferenceBill=:bil ";
+                + " and b.forwardReferenceBill=:bil "
+                + " and b.surgeryBillType!=:sbt ";
         HashMap hm = new HashMap();
+        hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
-
-        if (getBillFacade().findFirstBySQL(sql, hm) == null) {
+        System.out.println("getBillFacade().findFirstBySQL(sql, hm) = " + getBillFacade().findFirstBySQL(sql, hm));
+        if (getBillFacade().findFirstBySQL(sql, hm) == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {
             return true;
         }
+    }
+
+    public boolean checkBathcReferenceBillTimeService() {
+        String sql = "select b from BilledBill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.forwardReferenceBill=:bil "
+                + " and b.surgeryBillType=:sbt ";
+        HashMap hm = new HashMap();
+        hm.put("sbt", SurgeryBillType.TimedService);
+        hm.put("bil", getBill());
+
+        List<Bill> bs = getBillFacade().findBySQL(sql, hm);
+        System.out.println("bs = " + bs);
+        for (Bill b : bs) {
+            List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+            System.out.println("enc = " + enc);
+            for (EncounterComponent e : enc) {
+                System.out.println("e = " + e);
+                System.out.println("e.getBillFee().getPatientItem().isRetired() = " + e.getBillFee().getPatientItem().isRetired());
+                if (!e.getBillFee().getPatientItem().isRetired()) {
+                    return false;
+                }
+            }
+            
+        }
+
+        return true;
     }
 
     public void cancelSurgeryBill() {
@@ -763,17 +794,18 @@ public class InwardSearch implements Serializable {
 //            if (check()) {
 //                return;
 //            }
-//            if (checkBathcReferenceBill()) {
-//                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
-//                return;
-//            }
+            if (checkBathcReferenceBill()) {
+                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
+                return;
+            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb);
+//            only cancell the sergery bill
+//            cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
@@ -829,8 +861,8 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(),  getBill().getBillType(),BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(),  getBill().getBillType(),BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
+        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
 
         cb.invertValue(getBill());
         return cb;
