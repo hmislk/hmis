@@ -35,6 +35,7 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
+                        <p:commandButton ajax="false" value="Finger Print Logged Record All " action="#{hrReportController.createFingerPrintRecordAll()}"/>
                         <p:commandButton ajax="false" value="Finger Print Logged Record " action="#{hrReportController.createFingerPrintRecordLogged()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
@@ -57,7 +58,7 @@
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
-                                </p:column>
+                                </p:column>                               
                                 <p:column headerText="Logged Time">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="hh:mm:s a"/>

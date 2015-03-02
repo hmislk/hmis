@@ -475,8 +475,6 @@ public class SearchController implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
-    
-    
 
     public List<Bill> getPrescreptionBills() {
         return prescreptionBills;
@@ -2124,7 +2122,7 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        calTotal();
     }
 
     public void createDueFeeTableAll() {
@@ -2176,7 +2174,7 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
+        calTotal();
     }
 
     public void createDueFeeTableAndPaidFeeTable() {
@@ -2410,10 +2408,9 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        calTotal();
     }
 
-    
     public void createDueFeeTableInwardAll() {
 
         String sql;
@@ -2469,9 +2466,30 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
+        calTotal();
     }
-    
+
+    double total;
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    private void calTotal() {
+        total = 0;
+        if (billFees == null) {
+            return;
+        }
+
+        for (BillFee billFee : billFees) {
+            total += billFee.getFeeValue();
+        }
+    }
+
     public void createDueFeeReportInward() {
 
         String sql;
@@ -2665,7 +2683,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createProfessionalPaymentTableInwardAll() {
         billItems = null;
         HashMap temMap = new HashMap();
@@ -2726,6 +2744,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+
     public void createBillItemTableByKeyword() {
 
         String sql;

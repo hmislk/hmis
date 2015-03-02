@@ -229,7 +229,7 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.DATE);
 
     }
 
@@ -298,7 +298,7 @@ public class StaffAdditionalFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
-                + " and c.shift is not null "
+                //                + " and c.shift is not null "
                 + " and c.shiftDate=:dt "
                 + " and c.staff=:stf ";
 
@@ -547,11 +547,12 @@ public class StaffAdditionalFormController implements Serializable {
             currentAdditionalForm.getStaffShift().setRetiredAt(new Date());
             currentAdditionalForm.getStaffShift().setRetirer(sessionController.getLoggedUser());
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
-        } else {
-            staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
-            staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
-            staffShiftExtra.setShift(shift);
         }
+//        } else {
+        staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+        staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
+        staffShiftExtra.setShift(shift);
+//        }
 
         staffShiftExtra.setCreatedAt(new Date());
         staffShiftExtra.setCreater(sessionController.getLoggedUser());
