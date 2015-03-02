@@ -25,6 +25,8 @@
                             <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -39,7 +41,7 @@
                             <p:inputText value="#{hrReportController.reportKeyWord.from}"/>
                             <h:outputLabel value="To Minute : "/>
                             <p:inputText value="#{hrReportController.reportKeyWord.to}"/>
-                            
+
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateInEarlyOut()}"/>

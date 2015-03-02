@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.hr.HrReportController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Category;
 import java.util.TimeZone;
@@ -54,6 +55,9 @@ public class FormFormatController implements Serializable {
     @EJB
     private CommonReportItemFacade criFacade;
     Category formCategory;
+    @Inject
+    HrReportController hrReportController;
+    Staff staff;
     private List<CommonReportItem> formItems = null;
 
     public void fillStaffDetailReport() {
@@ -64,7 +68,20 @@ public class FormFormatController implements Serializable {
         String j;
         Map m = new HashMap();
         
-        j = "select s from Staff s where s.retired=false order by s.person.name";
+        j = "select s from Staff s where s.retired=false ";
+        
+//        if(hrReportController.getReportKeyWord().getDepartment()!=null){
+//            j+= " and s.workingDepartment =:dep ";
+//            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
+//        }
+//        
+//        if(hrReportController.getReportKeyWord().getInstitution()!=null){
+//            j+= " and s.workingDepartment.institution =:ins ";
+//            m.put("ins", hrReportController.getReportKeyWord().getInstitution());
+//        }
+        
+        j+= " order by s.person.name ";
+        
         staffes = staffFacade.findBySQL(j);
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
@@ -72,6 +89,16 @@ public class FormFormatController implements Serializable {
         formItems = criFacade.findBySQL(j, m);
 
     }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+    
+    
 
     public Category getFormCategory() {
         return formCategory;

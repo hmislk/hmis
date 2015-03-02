@@ -46,49 +46,94 @@
 
 
                             <p:column headerText="Form Number">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Form Number"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.code}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Code">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Code"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.staff.code}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Staff">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Roster">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Roster"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Shift Start">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift Start"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.staffShift.shiftStartTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Shift End">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift End"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.staffShift.shiftEndTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Time">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.times}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="From">
+                                <f:facet name="header">
+                                    <h:outputLabel value="From"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.fromTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="To">
+                                <f:facet name="header">
+                                    <h:outputLabel value="To"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.toTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Aproved By">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Aproved By"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Comment">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
+                            
                             <p:column headerText="Creater">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Creater"/>
+                                </f:facet>
                                 <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                 <br></br>
                                 <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
