@@ -50,39 +50,39 @@
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">                               
                                 <p:column headerText="Emp No">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp No"/>
-                                </f:facet>
-                                     <h:outputLabel  value=" #{ss.staff.code}">
-                                   
+                                        <h:outputLabel value="Emp No"/>
+                                    </f:facet>
+                                    <h:outputLabel  value=" #{ss.staff.code}"></h:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Emp Name">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp Name"/>
-                                </f:facet>
-                                     <h:outputLabel  value="#{ss.staff.person.nameWithTitle}">
-                                    
+                                        <h:outputLabel value="Emp Name"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{ss.staff.person.nameWithTitle}"></h:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Time Type">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Time Type"/>
-                                </f:facet>
-                                        <h:outputLabel  value="#{ss.times}">
-                               
+                                        <h:outputLabel value="Time Type"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{ss.times}"></h:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Date">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Date"/>
-                                </f:facet>
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Time">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Time"/>
-                                </f:facet>
+                                        <h:outputLabel value="Time"/>
+                                    </f:facet>
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
-                                        <f:convertDateTime pattern="hh:mm:s a"/>
+                                    <f:convertDateTime pattern="hh:mm:s a"/>
                                     </h:outputLabel>                                    
                                 </p:column>                              
                             </p:dataTable>
