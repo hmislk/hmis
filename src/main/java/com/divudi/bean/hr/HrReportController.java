@@ -370,6 +370,18 @@ public class HrReportController implements Serializable {
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
     
+     public void createFingerPrintRecordAll() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp ";
+//                + " and ss.verifiedRecord.staffShift is not null ";
+        hm.put("ftp", FingerPrintRecordType.Logged);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
     public StaffFacade getStaffFacade() {
         return staffFacade;
     }
@@ -2695,7 +2707,7 @@ public class HrReportController implements Serializable {
                     + " or (ss.earlyOutVarified<= :toTime )) ";
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
-        sql += " order by ss.codeInterger";
+        sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
         
     }

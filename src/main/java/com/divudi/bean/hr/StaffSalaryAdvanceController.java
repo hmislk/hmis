@@ -800,18 +800,18 @@ public class StaffSalaryAdvanceController implements Serializable {
                     getCurrent().calculateComponentTotal();
                     getCurrent().calcualteEpfAndEtf();
 
-                    double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
+//                    double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
 
-                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
-                        continue;
-                    }
+//                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
+//                        continue;
+//                    }
 
                     StaffSalaryComponant ss = new StaffSalaryComponant();
                     ss.setCreatedAt(new Date());
                     ss.setSalaryCycle(salaryCycle);
                     ss.setCreater(getSessionController().getLoggedUser());
                     ss.setStaffPaysheetComponent(spc);
-                    ss.setComponantValue(calValue(spc.getStaffPaySheetComponentValue()));
+                    ss.setComponantValue(spc.getStaffPaySheetComponentValue());
                     getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
                     getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
                     getCurrent().getStaffSalaryComponants().add(ss);

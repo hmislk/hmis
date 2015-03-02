@@ -238,7 +238,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
-    private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut, List<FingerPrintRecord> fingerPrintRecords) {
+    private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut, Set<FingerPrintRecord> fingerPrintRecords) {
 
         System.err.println("Fetch From Additional");
         HrForm additionalForm = ss.getAdditionalForm();
@@ -363,7 +363,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setAllowedExtraDuty(true);
                 }
-                if (fingerPrintRecordOut!=null) {
+                if (fingerPrintRecordOut != null) {
                     fingerPrintRecordOut.setAllowedExtraDuty(true);
                 }
                 break;
@@ -542,7 +542,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         fetchAndSetStaffLeave(ss);
         fetchAndSetDayType(ss);
 
-        List<FingerPrintRecord> list = new ArrayList<>();
+        Set<FingerPrintRecord> list = new HashSet<>();
         FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
         FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
 
@@ -619,7 +619,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         checkLeave(ss);
         System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
         ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
-        Collections.sort(list, new FingerPrintComparator());
+
+        List<FingerPrintRecord> listFpr = new ArrayList<>();
+        for (FingerPrintRecord fp : list) {
+            listFpr.add(fp);
+        }
+
+        Collections.sort(listFpr, new FingerPrintComparator());
         ss.getFingerPrintRecordList().addAll(list);
 
     }

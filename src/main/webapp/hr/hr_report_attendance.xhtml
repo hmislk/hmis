@@ -68,6 +68,18 @@
                                     </f:facet>
                                     <p:outputLabel value="#{i+1}" ></p:outputLabel>
                                 </p:column>
+                                  <p:column headerText="ID">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="ID" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.id}" ></p:outputLabel>
+                                </p:column>
+                                  <p:column headerText="Addition">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Addition" ></p:outputLabel>
+                                    </f:facet>
+                                      <p:outputLabel value="#{ss.additionalForm.id}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Emp No" ></p:outputLabel>
@@ -115,6 +127,14 @@
                                         <p:outputLabel value="Leave" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.leaveType}" ></p:outputLabel>
+                                </p:column>
+                                  <p:column headerText="Created Date" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Created Date" ></p:outputLabel>
+                                    </f:facet>
+                                      <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:a"/>
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Shift Date" >
                                     <f:facet name="header" >
