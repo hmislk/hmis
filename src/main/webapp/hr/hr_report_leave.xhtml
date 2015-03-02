@@ -50,6 +50,10 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                                
+                                <p:column headerText="Form No">
+                                    #{ss.form.code}
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
                                 </p:column>
@@ -71,8 +75,8 @@
                                 <p:column headerText="Leave Type" >
                                     #{ss.leaveType}
                                 </p:column>
-                               
-                                  <p:column headerText="Crated Date" >
+
+                                <p:column headerText="Crated Date" >
                                     #{ss.createdAt}
                                 </p:column>  
                                 <p:column headerText="Leave Date" >

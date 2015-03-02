@@ -27,8 +27,6 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                              <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -37,6 +35,7 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
+                        <p:commandButton ajax="false" value="Finger Print Logged Record All " action="#{hrReportController.createFingerPrintRecordAll()}"/>
                         <p:commandButton ajax="false" value="Finger Print Logged Record " action="#{hrReportController.createFingerPrintRecordLogged()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
@@ -47,54 +46,33 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">                               
                                 <p:column headerText="Emp No">
-                                    <h:outputLabel value="#{ss.staff.code}" ></h:outputLabel>
-                                    <f:facet name="header">
-                                    <h:outputLabel value="Emp No"  />
-                                </f:facet>
+                                    #{ss.staff.code}
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    <h:outputLabel value=" #{ss.staff.person.nameWithTitle}" ></h:outputLabel>
-                                    <f:facet name="header">
-                                    <h:outputLabel value="Emp Name"  />
-                                </f:facet>
+                                    #{ss.staff.person.nameWithTitle}
                                 </p:column>
                                 <p:column headerText="Time Type">
-                                    <h:outputLabel value="#{ss.verifiedRecord.times}" ></h:outputLabel>
-                                  <f:facet name="header">
-                                    <h:outputLabel value="Time Type"  />
-                                </f:facet>
+                                    #{ss.verifiedRecord.times}
                                 </p:column>
                                 <p:column headerText="Logged Date">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Logged Date"  />
-                                </f:facet>
-                                </p:column>
+                                </p:column>                               
                                 <p:column headerText="Logged Time">
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
-                                    </h:outputLabel> 
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Logged Time"  />
-                                </f:facet>
+                                    </h:outputLabel>                                    
                                 </p:column>
                                  <p:column headerText="Verified Date">
                                      <h:outputLabel  value="#{ss.verifiedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Verified Date"  />
-                                </f:facet>
                                 </p:column>
                                 <p:column headerText="Verified Time">
                                     <h:outputLabel  value="#{ss.verifiedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
-                                    </h:outputLabel> 
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Verified Time"  />
-                                </f:facet>
+                                    </h:outputLabel>                                    
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
