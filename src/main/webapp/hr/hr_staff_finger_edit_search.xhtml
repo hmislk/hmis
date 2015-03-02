@@ -27,7 +27,11 @@
                                 <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
 
                                 <h:outputLabel value="Department : "/>
-                                <au:department value="#{fingerPrintRecordController.department}"/>                                
+                                <au:department value="#{fingerPrintRecordController.department}"/>
+                                
+                                <h:outputLabel value="Institution : "/>
+                                <au:department value="#{fingerPrintRecordController.institution}"/> 
+                                
                             </p:panelGrid>
                             <p:commandButton value="Search Created Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableCreatedAt()}" />
                             <p:commandButton value="Search Sift Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableSiftDate()}" />

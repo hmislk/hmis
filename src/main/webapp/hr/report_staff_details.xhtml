@@ -4,8 +4,7 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:f="http://java.sun.com/jsf/core"                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
     <ui:define name="content">
         <h:panelGroup >
@@ -19,8 +18,9 @@
                             <f:selectItem itemLabel="Select Form" ></f:selectItem>
                             <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
                         </p:selectOneMenu>
-                        
-                        <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+
+                        <hr:institution value="#{hrReportController.reportKeyWord.institution}" id="inst"/>
+                        <hr:department value="#{hrReportController.reportKeyWord.department}" id="dept"/>
 
                         <p:commandButton ajax="false" value="Process" action="#{formFormatController.fillStaffDetailReport()}" ></p:commandButton>
 

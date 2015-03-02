@@ -68,19 +68,21 @@ public class FormFormatController implements Serializable {
         String j;
         Map m = new HashMap();
         
-        j = "select s from Staff s where s.retired=false order by s.person.name";
+        j = "select s from Staff s where s.retired=false ";
         
-        if(hrReportController.getReportKeyWord().getDepartment()!=null){
-            j+= " and s.workingDepartment=:dep";
-            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
-        }
+//        if(hrReportController.getReportKeyWord().getDepartment()!=null){
+//            j+= " and s.workingDepartment =:dep ";
+//            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
+//        }
+//        
+//        if(hrReportController.getReportKeyWord().getInstitution()!=null){
+//            j+= " and s.workingDepartment.institution =:ins ";
+//            m.put("ins", hrReportController.getReportKeyWord().getInstitution());
+//        }
         
-        if(staff.getWorkingDepartment()!=null){
-            j+= " and s.workingDepartment.institution=:ins";
-            m.put("dep", staff.getWorkingDepartment().getInstitution());
-        }
+        j+= " order by s.person.name ";
         
-        staffes = staffFacade.findBySQL(j,m);
+        staffes = staffFacade.findBySQL(j);
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
         m.put("cat", formCategory);

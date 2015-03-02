@@ -30,6 +30,9 @@
                                     <f:selectItem itemLabel="Select Day Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu>
+                                
+                                <h:outputLabel value="Institution : "/>
+                                <au:department value="#{staffLeaveApplicationFormController.reportKeyWord.institution}"/>
 
                                 <h:outputLabel value="Department : "/>
                                 <au:department value="#{staffLeaveApplicationFormController.reportKeyWord.department}"/>
