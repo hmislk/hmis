@@ -13,6 +13,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -84,6 +85,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private Date date;
     private Bill current;
     Staff currentStaff;
+    Institution institution;
     double totalDue;
     double totalPaying;
     private Boolean printPreview = false;
@@ -283,6 +285,47 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void calculateDueFeesAgency() {
+
+//        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+//        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and b.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and b.institution=:ins";
+            hm.put("ss", getInstitution());
+        }
+
+        
+        //hm.put("ins", sessionController.getInstitution());
+        //hm.put("bt", bts);
+        hm.put("ftp", FeeType.OtherInstitution);
+        hm.put("class", BilledBill.class);
+        hm.put("class", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -590,6 +633,16 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
