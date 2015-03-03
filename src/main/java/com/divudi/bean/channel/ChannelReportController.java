@@ -73,6 +73,7 @@ public class ChannelReportController implements Serializable {
     Date fromDate;
     Date toDate;
     Institution institution;
+    ChannelBillTotals billTotals;
     Department department;
     private List<ChannelDoctor> channelDoctors;
     /////
@@ -104,6 +105,16 @@ public class ChannelReportController implements Serializable {
         this.department = department;
     }
 
+    public ChannelBillTotals getBillTotals() {
+        return billTotals;
+    }
+
+    public void setBillTotals(ChannelBillTotals billTotals) {
+        this.billTotals = billTotals;
+    }
+    
+    
+
     ChannelReportColumnModelBundle rowBundle;
     List<ChannelReportColumnModel> rows;
     List<ChannelReportColumnModel> filteredRows;
@@ -124,8 +135,6 @@ public class ChannelReportController implements Serializable {
         this.filteredRows = filteredRows;
     }
 
-    
-    
     public List<ChannelReportColumnModel> getRows() {
         return rows;
     }
@@ -171,7 +180,7 @@ public class ChannelReportController implements Serializable {
         m.put("bts", bts);
 
         System.out.println("j = " + j);
-        
+
         //Bookings
         br = new ChannelReportColumnModel();
         m.put("bt", BilledBill.class);
@@ -244,7 +253,6 @@ public class ChannelReportController implements Serializable {
 
         rr.setValue(rr.getAgentTotal() + rr.getCollectionTotal());
 
-        
         nr = new ChannelReportColumnModel();
         nr.name = "Total";
         nr.cashTotal = br.cashTotal + rr.cashTotal + cr.cardTotal;
@@ -259,7 +267,7 @@ public class ChannelReportController implements Serializable {
         rows.add(cr);
         rows.add(rr);
 
-        rowBundle=new ChannelReportColumnModelBundle();
+        rowBundle = new ChannelReportColumnModelBundle();
         rowBundle.setBundle(nr);
         rowBundle.setRows(rows);
 
@@ -597,7 +605,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
@@ -608,8 +616,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
-            toDate=CommonFunctions.getEndOfDay(toDate);
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -1141,14 +1149,13 @@ public class ChannelReportController implements Serializable {
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
+
         List<ChannelReportColumnModel> rows;
         ChannelReportColumnModel bundle;
 
         public ChannelReportColumnModelBundle() {
         }
 
-        
-        
         public List<ChannelReportColumnModel> getRows() {
             return rows;
         }
@@ -1164,8 +1171,7 @@ public class ChannelReportController implements Serializable {
         public void setBundle(ChannelReportColumnModel bundle) {
             this.bundle = bundle;
         }
-        
-        
+
     }
 
     public class ChannelReportColumnModel implements Serializable {
@@ -1352,6 +1358,83 @@ public class ChannelReportController implements Serializable {
 
         public void setComments(String comments) {
             this.comments = comments;
+        }
+
+    }
+
+    public class ChannelBillTotals {
+
+        String name;
+        List<Bill> bills;
+        double cash;
+        double agent;
+        double staff;
+        double onCall;
+        double total;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<Bill> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<Bill> bills) {
+            this.bills = bills;
+        }
+
+        public double getCash() {
+            return cash;
+        }
+
+        public void setCash(double cash) {
+            this.cash = cash;
+        }
+
+        public double getAgent() {
+            return agent;
+        }
+
+        public void setAgent(double agent) {
+            this.agent = agent;
+        }
+
+        public double getStaff() {
+            return staff;
+        }
+
+        public void setStaff(double staff) {
+            this.staff = staff;
+        }
+
+        public double getOnCall() {
+            return onCall;
+        }
+
+        public void setOnCall(double onCall) {
+            this.onCall = onCall;
+        }
+
+        private void calTot() {
+            cash = staff = onCall = agent = 0.0;
+            for (Bill b : bills) {
+                if (b.getPaymentMethod() == PaymentMethod.Cash) {
+                    setCash(getCash() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.OnCall) {
+                    setOnCall(getOnCall() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
+                    setAgent(getAgent() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.Staff) {
+                    setStaff(getStaff() + b.getNetTotal());
+                }
+
+            }
+
         }
 
     }

@@ -77,6 +77,7 @@ public enum BillType {
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
     ChannelProPayment,
+    ChannelAgencyPayment,
     gpBooking,
     gpSettling,
     Appointment,
