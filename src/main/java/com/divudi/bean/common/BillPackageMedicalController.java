@@ -1022,7 +1022,7 @@ public class BillPackageMedicalController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = getCommonFunctions().getStartOfMonth(new Date());
+            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
