@@ -28,6 +28,8 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                              <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -50,45 +52,101 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Report"/>
+                                </f:facet>
+                                
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp No"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    
                                 </p:column>
                                 <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Department Name"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.department.name}" ></p:outputLabel>
+                                    
                                 </p:column>
                                 <p:column headerText="Staff Category">
-                                    #{ss.staff.staffCategory.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Category"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.staffCategory.name}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Designation">
-                                    #{ss.staff.designation.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Designation"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.staff.designation.name}" ></p:outputLabel>
+                                  
                                 </p:column>
                                 <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Roster"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
+                                   
                                 </p:column>  
                                 <p:column headerText="Leave Type" >
-                                    #{ss.leaveType}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Type"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.leaveType}" ></p:outputLabel>
+                                   
                                 </p:column>  
                                   <p:column headerText="Crated Date" >
-                                    #{ss.createdAt}
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Crated Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.createdAt}" ></p:outputLabel>
+                                    
                                 </p:column>  
                                 <p:column headerText="Leave Date" >
-                                    #{ss.leaveDate}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Date"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.leaveDate}" ></p:outputLabel>
+                                   
                                 </p:column>  
                                 <p:column headerText="Leave Qty" >
-                                    #{ss.qty}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Qty"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.qty}" ></p:outputLabel>
+                                    
                                 </p:column> 
                               
                                 <p:column headerText="Comments" >
-                                    #{ss.form.comments}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Comments"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.form.comments}" ></p:outputLabel>
+                                    
                                 </p:column> 
                                   <p:column headerText="Delete Comments" >
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Delete Comments"/>
+                                </f:facet>
+                              
                                       <p:inputText value="#{ss.retireComments}"/>                                    
                                 </p:column> 
-                                <p:column headerText="Delete">                                    
-                                    <p:commandButton disabled="#{ss.retired}" ajax="false" value="Delete" action="#{hrReportController.delete(ss)}"></p:commandButton>                                    
+                                <p:column headerText="Delete" exportable="false">  
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Delete"/>
+                                </f:facet>
+                          
+                                    <p:commandButton  disabled="#{ss.retired}" ajax="false" value="Delete" action="#{hrReportController.delete(ss)}"></p:commandButton>                                    
                                 </p:column>
 
                             </p:dataTable>

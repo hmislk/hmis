@@ -27,6 +27,8 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                             <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -46,63 +48,115 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Emp No"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+                                 
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+                                  
                                 </p:column>
                                 <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Department Name"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.department.name}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Category" rendered="false">
-                                    #{ss.staff.staffCategory.name}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff Category"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.staffCategory.name}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Designation" rendered="false">
-                                    #{ss.staff.designation.name}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff Designation"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.staff.designation.name}" ></p:outputLabel>
+                                  
                                 </p:column>
                                 <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff Roster"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Shift">
-                                    #{ss.shift.name}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff Shift"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.shift.name}" ></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="In Checked ">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="In Checked"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
                                 </p:column>                                
                                 <p:column headerText="Out Checked">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Out Checked"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>  
                                 <p:column headerText="Extra From In Record">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Extra From In Record"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra From Out Record">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Extra From Out Record"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra From Complete Record">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Extra From Complete Record"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Basic per Sec">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Basic per Sec"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Multiplying Factor"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Extra Duty Value"/>
+                                </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>

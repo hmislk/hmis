@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete   forceSelection="true" 
+        <p:autoComplete   forceSelection="true" id="rosterStaff"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{staffController.completeRosterStaff}" 
                           var="mys" 
@@ -25,5 +25,6 @@
                 #{mys.code}
             </p:column>
         </p:autoComplete> 
+        <p:watermark for="rosterStaff" value="Roster Staff"/>
     </cc:implementation>
 </html>
