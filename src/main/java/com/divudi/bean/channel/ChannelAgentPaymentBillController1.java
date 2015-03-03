@@ -48,7 +48,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class ChannelStaffPaymentBillController implements Serializable {
+public class ChannelAgentPaymentBillController1 implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @EJB
@@ -446,32 +446,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
-    
-    private Bill createPaymentBillAgent() {
-        BilledBill tmp = new BilledBill();
-        tmp.setBillDate(Calendar.getInstance().getTime());
-        tmp.setBillTime(Calendar.getInstance().getTime());
-        tmp.setBillType(BillType.ChannelAgencyPayment);
-        tmp.setCreatedAt(Calendar.getInstance().getTime());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        tmp.setDepartment(getSessionController().getDepartment());
-
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelAgencyPayment, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelAgencyPayment, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
-
-        tmp.setDiscount(0.0);
-        tmp.setDiscountPercent(0.0);
-
-        tmp.setInstitution(getSessionController().getInstitution());
-        tmp.setNetTotal(0 - totalPaying);
-        tmp.setPaymentMethod(paymentMethod);
-        tmp.setToInstitution(institution);
-//        tmp.setStaff(currentStaff);
-       //tmp.setToStaff(currentStaff);
-        tmp.setTotal(0 - totalPaying);
-
-        return tmp;
-    }
 
     private boolean checkBillFeeValue() {
         for (BillFee f : payingBillFees) {
@@ -505,30 +479,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return false;
     }
-    
-    private boolean errorCheckForAgency() {
-//        if (currentStaff == null) {
-//            UtilityController.addErrorMessage("Please select a Staff Memeber");
-//            return true;
-//        }
-
-        if (checkBillFeeValue()) {
-            UtilityController.addErrorMessage("There is a Credit Bill");
-            return true;
-        }
-
-        performCalculations();
-        if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
-            return true;
-        }
-        if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
-            return true;
-        }
-
-        return false;
-    }
 
     public void settleBill() {
         if (errorCheck()) {
@@ -536,20 +486,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
         calculateTotalPay();
         Bill b = createPaymentBill();
-        current = b;
-        getBillFacade().create(b);
-        saveBillCompo(b);
-        printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Paid");
-        //System.out.println("Paid");
-    }
-    
-    public void settleBillAgent() {
-        if (errorCheckForAgency()) {
-            return;
-        }
-        calculateTotalPay();
-        Bill b = createPaymentBillAgent();
         current = b;
         getBillFacade().create(b);
         saveBillCompo(b);
@@ -604,7 +540,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public ChannelStaffPaymentBillController() {
+    public ChannelAgentPaymentBillController1() {
     }
 
     public Bill getCurrent() {
@@ -823,7 +759,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ChannelStaffPaymentBillController controller = (ChannelStaffPaymentBillController) facesContext.getApplication().getELResolver().
+            ChannelAgentPaymentBillController1 controller = (ChannelAgentPaymentBillController1) facesContext.getApplication().getELResolver().
                     //getValue(facesContext.getELContext(), null, "billController");
                     getValue(facesContext.getELContext(), null, "staffPaymentBillController");
             return controller.billFacade.find(getKey(value));
@@ -851,7 +787,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ChannelStaffPaymentBillController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ChannelAgentPaymentBillController1.class.getName());
             }
         }
     }

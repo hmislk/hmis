@@ -84,7 +84,7 @@
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                            <h:outputLabel/>
+                           
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
@@ -133,6 +133,9 @@
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
+                                <p:column headerText="id">
+                                    <p:outputLabel value="#{l.id}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
@@ -156,6 +159,10 @@
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
+                                </p:column>
+                                  <p:column headerText="Created AT">
+                                      <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
+                                    
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

@@ -192,7 +192,8 @@
 
                         </p:panel>
 
-                        <p:panel header="(9) History" rendered="#{webUserController.hasPrivilege('EmployeeHistoryReport')}" >
+                        <p:panel header="(9) History" >
+                                 <!--rendered="#{webUserController.hasPrivilege('EmployeeHistoryReport')}" >-->
                             <p:commandButton value="(1) Staff Shift History" 
                                              action="hr_report_staff_shift_history" 
                                              actionListener="#{hrReportController.makeNull()}" 

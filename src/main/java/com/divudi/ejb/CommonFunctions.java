@@ -264,6 +264,9 @@ public class CommonFunctions {
     }
 
     public static Date getStartOfDay(Date date) {
+        if(date==null){
+            date=new Date();
+        }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -275,6 +278,9 @@ public class CommonFunctions {
     }
 
     public static Date getEndOfDay(Date date) {
+        if(date==null){
+            date = new Date();
+        }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
