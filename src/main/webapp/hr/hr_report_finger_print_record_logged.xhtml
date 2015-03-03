@@ -46,31 +46,59 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">                               
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Emp No"  />
+                                </f:facet>
+                                      <p:outputLabel value="  #{ss.staff.code}"></p:outputLabel>
+                                  
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"  />
+                                </f:facet>
+                                      <p:outputLabel value=" #{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Time Type">
-                                    #{ss.verifiedRecord.times}
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Time Type"  />
+                                </f:facet>
+                                      <p:outputLabel value=" #{ss.verifiedRecord.times}"></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Logged Date">
-                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Logged Date"  />
+                                </f:facet>
+                                      <p:outputLabel value="#{ss.recordTimeStamp}"></p:outputLabel>
+                                    <h:outputLabel  value="">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>                               
                                 <p:column headerText="Logged Time">
-                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Logged Time"  />
+                                </f:facet>
+                                      <p:outputLabel value="#{ss.recordTimeStamp}"></p:outputLabel>
+                                    <h:outputLabel  value="">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
                                     </h:outputLabel>                                    
                                 </p:column>
                                  <p:column headerText="Verified Date">
-                                     <h:outputLabel  value="#{ss.verifiedRecord.recordTimeStamp}">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Verified Date"  />
+                                </f:facet>
+                                      <p:outputLabel value="#{ss.verifiedRecord.recordTimeStamp}"></p:outputLabel>
+                                     <h:outputLabel  value="">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Verified Time">
-                                    <h:outputLabel  value="#{ss.verifiedRecord.recordTimeStamp}">
+                                <p:column headerText="Verified Date">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Verified Date"  />
+                                </f:facet>
+                                      <p:outputLabel value="#{ss.verifiedRecord.recordTimeStamp}"></p:outputLabel>
+                                    <h:outputLabel  value="">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
                                     </h:outputLabel>                                    
                                 </p:column>

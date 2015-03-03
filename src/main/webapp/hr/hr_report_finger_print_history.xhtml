@@ -46,29 +46,65 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecordHistorys}" var="ss">
+                                
+                                <f:facet name="header">
+                                    <h:outputLabel value="Finger Print Histoy"  style="text-align: center"/>
+                                </f:facet>
                                 <p:column headerText="Changed At">
-                                    #{ss.createdAt}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Changed At"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.createdAt}" ></p:outputLabel>
+                                    
                                 </p:column>    
                                 <p:column headerText="Changed by">
-                                    #{ss.creater.webUserPerson.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Changed by"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.creater.webUserPerson.name}" ></p:outputLabel>
+                                   
                                 </p:column>    
                                 <p:column headerText="Employee">
-                                    #{ss.staff.person.nameWithTitle}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Employee"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    
                                 </p:column>                                                           
                                 <p:column headerText="Roster">
-                                    #{ss.roster.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Roster"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.roster.name}" ></p:outputLabel>
+                                  
                                 </p:column>   
                                 <p:column headerText="Shift">
-                                    #{ss.shift.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Shift"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.shift.name}" ></p:outputLabel>
+                                  
                                 </p:column> 
                                 <p:column headerText="Record Type">
-                                    #{ss.fingerPrintRecord.times}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Record Type"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.fingerPrintRecord.times}" ></p:outputLabel>
+                                    
                                 </p:column> 
                                 <p:column headerText="Before Change">
-                                    #{ss.beforeChange}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Before Change"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.beforeChange}" ></p:outputLabel>
+                                   
                                 </p:column>                                                           
                                 <p:column headerText="After Change">
-                                    #{ss.afterChange}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="After Change"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.afterChange}" ></p:outputLabel>
+                                    
                                 </p:column>                                 
 
                             </p:dataTable>
