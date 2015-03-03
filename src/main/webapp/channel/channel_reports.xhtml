@@ -11,15 +11,21 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" >  
+                    <p:panelGrid columns="3" styleClass="alignTop">  
                         
                         <p:panel header="Income Reports" >
                             <p:commandButton value="Income with agent bookings" action="/channel/income_with_agent_bookings" ajax="false" ></p:commandButton>
                         </p:panel>
+                        <p:panel header="Bill Reports" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton ajax="false" value=" 1) Bill Session" action="/channel/channel_report_bill_session_1"/>
+                                    <p:commandButton ajax="false" value=" 2) Bill Fees" action="/channel/channel_report_by_fee"/>
+                                </p:panelGrid>
+                        </p:panel>
                         
-                        <p:commandButton ajax="false" value=" 1) Bill Session" action="/channel/channel_report_bill_session_1"/>
-
-                    </h:panelGrid>
+                        
+                        
+                    </p:panelGrid>
                 </h:form>
             </ui:define>
 
