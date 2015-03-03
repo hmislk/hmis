@@ -62,7 +62,7 @@ public class ReportsTransfer implements Serializable {
     Institution institution;
     List<Stock> stocks;
     List<ItemCount> itemCounts;
-    List<ItemCountWithOutMargin>itemCountWithOutMargins;
+    List<ItemCountWithOutMargin> itemCountWithOutMargins;
     double saleValue;
     double purchaseValue;
     double totalsValue;
@@ -84,7 +84,7 @@ public class ReportsTransfer implements Serializable {
     double stockSaleValue;
     double valueOfQOH;
     double qoh;
-   
+
     /**
      * EJBs
      */
@@ -208,13 +208,13 @@ public class ReportsTransfer implements Serializable {
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecords.add(r);
         }
-        
+
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         valueOfQOH = 0.0;
         qoh = 0.0;
-        
-        for (StockReportRecord strr : movementRecords){
+
+        for (StockReportRecord strr : movementRecords) {
             stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
             stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
             valueOfQOH = valueOfQOH + (strr.getStockQty());
@@ -272,13 +272,13 @@ public class ReportsTransfer implements Serializable {
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecordsQty.add(r);
         }
-        
+
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         valueOfQOH = 0.0;
         qoh = 0.0;
-        
-        for (StockReportRecord strr : movementRecords){
+
+        for (StockReportRecord strr : movementRecords) {
             stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
             stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
             valueOfQOH = valueOfQOH + (strr.getStockQty());
@@ -616,7 +616,7 @@ public class ReportsTransfer implements Serializable {
 
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     private List<Object[]> fetchBillItemWithOutMargin(BillType billType) {
         Map m = new HashMap();
         String sql;
@@ -846,26 +846,34 @@ public class ReportsTransfer implements Serializable {
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
 
     }
-    
-    public void fillItemCountsWithOutMargin() {
 
-        List<Object[]> list = fetchBillItemWithOutMargin(BillType.PharmacyIssue);
+    public void fillItemCountsWithOutMarginPharmacy() {
+        fillItemCountsWithOutMargin(BillType.PharmacyIssue);
+    }
 
+    public void fillItemCountsWithOutMarginStore() {
+        fillItemCountsWithOutMargin(BillType.StoreIssue);
+    }
+
+    public void fillItemCountsWithOutMargin(BillType bt) {
+
+        List<Object[]> list = fetchBillItemWithOutMargin(bt);
+        System.out.println("list = " + list);
         if (list == null) {
             return;
         }
 
         itemCountWithOutMargins = new ArrayList<>();
         netTotalValues = 0;
-        
+
         for (Object[] obj : list) {
             ItemCountWithOutMargin row = new ItemCountWithOutMargin();
             row.setItem((Item) obj[0]);
             row.setNet((Double) obj[1]);
 
-            Double pre = calCountItem(row.getItem(), BillType.PharmacyIssue, new PreBill());
-            Double preCancel = calCountCanItem(row.getItem(), BillType.PharmacyIssue, new PreBill());
-            Double returned = calCountReturnItem(row.getItem(), BillType.PharmacyIssue, new RefundBill());
+            Double pre = calCountItem(row.getItem(), bt, new PreBill());
+            Double preCancel = calCountCanItem(row.getItem(), bt, new PreBill());
+            Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
             System.err.println("Return " + returned);
@@ -878,7 +886,7 @@ public class ReportsTransfer implements Serializable {
             itemCountWithOutMargins.add(row);
         }
 
-        billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+        billNetTotal = fetchBillNetTotal(bt);
 
     }
 
@@ -1182,7 +1190,7 @@ public class ReportsTransfer implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private Double calCountItem(Item item, BillType billType, Bill bill) {
 
         Map m = new HashMap();
@@ -1385,8 +1393,6 @@ public class ReportsTransfer implements Serializable {
         this.stockPurchaseValue = stockPurchaseValue;
     }
 
-    
-
     public double getStockSaleValue() {
         return stockSaleValue;
     }
@@ -1395,8 +1401,6 @@ public class ReportsTransfer implements Serializable {
         this.stockSaleValue = stockSaleValue;
     }
 
-    
-    
     public Department getToDepartment() {
         return toDepartment;
     }
@@ -1586,7 +1590,7 @@ public class ReportsTransfer implements Serializable {
         }
 
     }
-    
+
     public class ItemCountWithOutMargin {
 
         Item item;
@@ -1626,7 +1630,7 @@ public class ReportsTransfer implements Serializable {
     public void setItemCountWithOutMargins(List<ItemCountWithOutMargin> itemCountWithOutMargins) {
         this.itemCountWithOutMargins = itemCountWithOutMargins;
     }
-    
+
     public List<ItemCount> getItemCounts() {
         return itemCounts;
     }

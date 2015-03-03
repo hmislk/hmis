@@ -25,7 +25,7 @@
                                         <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
                                         <p:watermark value="Agent" for="ins"/>
 
-                                        <p:commandButton ajax="false" value="Process"  action="#{channelStaffPaymentBillController.calculateDueFees}"/>
+                                        <p:commandButton ajax="false" value="Process"  action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController}"/>
                                     </h:panelGrid>
 
@@ -99,7 +99,7 @@
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBill()}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBillAgent()}" onclick="onSubmitButton();" >
                                         
                                     </p:commandButton>
                                 </h:panelGroup>

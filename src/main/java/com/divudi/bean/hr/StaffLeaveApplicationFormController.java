@@ -585,6 +585,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and l.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -656,6 +661,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and l.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
         }
 
         m.put("fd", fromDate);
