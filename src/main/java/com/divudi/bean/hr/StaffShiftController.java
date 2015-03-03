@@ -204,6 +204,11 @@ public class StaffShiftController implements Serializable {
             m.put("dep", getReportKeyWord().getDepartment());
         }
         
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
+        }
+        
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:ros ";
             m.put("ros", getReportKeyWord().getRoster());
@@ -255,6 +260,11 @@ public class StaffShiftController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
         }
         
         if (getReportKeyWord().getRoster() != null) {
