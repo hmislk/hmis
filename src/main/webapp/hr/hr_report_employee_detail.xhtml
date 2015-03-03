@@ -51,61 +51,103 @@
                                          rowsPerPageTemplate="5,10,15"
                                          rows="10"
                                          >
-                                <p:column headerText="Id" filterBy="#{s.id}" >
+                                <p:column headerText="Id" filterBy="#{s.id}" exportable="false">
                                     #{s.id}
                                 </p:column>
-                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id">
+                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id" exportable="false">>
                                     <p:outputLabel value="#{s.id}" />
                                 </p:column>   
 
-                                <p:column filterBy="#{s.person.id}" headerText="Person Id">
+                                <p:column filterBy="#{s.person.id}" headerText="Person Id" exportable="false">
                                     <p:outputLabel value="#{s.person.id}" />
                                 </p:column>   
 
                                 <p:column filterBy="#{s.person.name}" headerText="Name">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Name" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.name}" />
                                 </p:column>
                                 <p:column headerText="Full Name" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Full Name" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.fullName}" />
                                 </p:column>
                                 <p:column headerText="Name with Initials" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Name with Initials" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.nameWithInitials}" />
                                 </p:column>
                                 <p:column headerText="Code NO" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Code NO" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.codeInterger}" />
                                 </p:column>
                                 <p:column headerText="EPF Code" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="EPF Code" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.epfNo}" />
                                 </p:column>
                                 <p:column headerText="Roster" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Roster" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.roster.name}" />
                                 </p:column>
                                 <p:column headerText="ADDRESS" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="ADDRESS" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.address}" />
                                 </p:column>
                                 <p:column headerText="Sex" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sex" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.sex}" />
                                 </p:column>
                                 <p:column headerText="NIC No" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="NIC No" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.nic}" />
                                 </p:column>
                                 <p:column headerText="DOB" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="DOB" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.person.dob}" >
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DO Join" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="DO Join" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.dateJoined}" >
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DEPARTMENT" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="DEPARTMENT" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.workingDepartment.name}" />
                                 </p:column>
                                 <p:column headerText="Account Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Account Number" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.accountNo}" />
                                 </p:column>
                                 <p:column headerText="Bank" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Bank" />
+                                    </f:facet>
                                     <p:outputLabel value="#{s.bankBranch.institution.name}" />
                                 </p:column>
 

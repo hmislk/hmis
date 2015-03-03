@@ -14,6 +14,7 @@ import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.entity.hr.FingerPrintRecord;
@@ -61,6 +62,7 @@ public class FingerPrintRecordController implements Serializable {
     Date toDate;
     Staff staff;
     Department department;
+    Institution institution; 
     List<FingerPrintRecord> fingerPrintRecords;
     FingerPrintRecord fingerPrintRecord;
 
@@ -80,6 +82,12 @@ public class FingerPrintRecordController implements Serializable {
             sql += " and (f.staff.workingDepartment=:dep or f.roster.department=:dep) ";
             m.put("dep", department);
         }
+        
+        if (institution != null) {
+            sql += " and (f.staff.workingDepartment.institution=:ins or f.roster.department.institution=:ins) ";
+            m.put("ins", institution);
+        }
+        
         if (staff != null) {
             sql += " and f.staff=:staff ";
             m.put("staff", staff);
@@ -114,6 +122,16 @@ public class FingerPrintRecordController implements Serializable {
     public DayType[] getDayTypes() {
         return DayType.values();
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
     
     public void saveStaffFinger(){
         if (fingerPrintRecord!=null) {

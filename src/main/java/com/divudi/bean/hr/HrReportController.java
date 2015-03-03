@@ -1281,6 +1281,11 @@ public class HrReportController implements Serializable {
             hm.put("dep", getReportKeyWord().getDepartment());
         }
         
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+        
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
@@ -1392,6 +1397,11 @@ public class HrReportController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
         
         if (getReportKeyWord().getStaffCategory() != null) {
@@ -1544,6 +1554,11 @@ public class HrReportController implements Serializable {
             hm.put("dep", getReportKeyWord().getDepartment());
         }
         
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+        
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
@@ -1588,6 +1603,11 @@ public class HrReportController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
         
         if (getReportKeyWord().getStaffCategory() != null) {
@@ -1682,6 +1702,11 @@ public class HrReportController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
         
         if (getReportKeyWord().getStaffCategory() != null) {
