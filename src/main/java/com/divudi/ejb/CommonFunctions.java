@@ -351,48 +351,5 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-    public Boolean checkAgeSex(Date dob, Sex sex, Title title) {
-        Boolean result = true;
-        Date toDate = Calendar.getInstance().getTime();
-
-        long age;
-
-        if ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24) == 0) {
-            return false;
-        }
-
-        age = ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24)) / 365;
-
-        if (title == Title.Baby || title == Title.Baby_Of) {
-            if (age > 6) {
-                result = false;
-            }
-        } else if ((title == Title.Master)) {
-            if (age > 13) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mrs
-                || title == Title.Mrs
-                || title == Title.Ms
-                || title == Title.Miss
-                || title == Title.DrMrs
-                || title == Title.DrMiss) {
-
-            if (sex == Sex.Male) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mr
-                || title == Title.Master
-                || title == Title.Dr) {
-            if (sex == Sex.Female) {
-                result = false;
-            }
-        }
-
-        return result;
-    }
+  
 }
