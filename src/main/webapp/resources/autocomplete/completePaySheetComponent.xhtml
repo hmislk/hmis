@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete   forceSelection="true" 
+        <p:autoComplete   forceSelection="true" id="paysheetComponent"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{paysheetComponentController.completePaysheetComponent}" 
                           var="mys" 
@@ -19,5 +19,6 @@
                           itemValue="#{mys}"
                           converter="paysheetComponentCon"   >               
         </p:autoComplete> 
+        <p:watermark for="paysheetComponent" value="Paysheet Component"/>
     </cc:implementation>
 </html>
