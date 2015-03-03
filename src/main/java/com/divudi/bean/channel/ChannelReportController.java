@@ -73,6 +73,7 @@ public class ChannelReportController implements Serializable {
     Date fromDate;
     Date toDate;
     Institution institution;
+    ChannelBillTotals billTotals;
     Department department;
     private List<ChannelDoctor> channelDoctors;
     /////
@@ -103,6 +104,16 @@ public class ChannelReportController implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
+
+    public ChannelBillTotals getBillTotals() {
+        return billTotals;
+    }
+
+    public void setBillTotals(ChannelBillTotals billTotals) {
+        this.billTotals = billTotals;
+    }
+    
+    
 
     ChannelReportColumnModelBundle rowBundle;
     List<ChannelReportColumnModel> rows;
