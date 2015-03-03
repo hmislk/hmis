@@ -57,6 +57,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalary()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                         
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -65,24 +66,39 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <p:column headerText="Employee No">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Employee No"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.code}" >
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Employee Name">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Employee Name"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="EPF Staff" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="EPF Staff"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.epfStaffValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="EPF Company" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="EPF Company"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.epfCompanyValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>                                  
                                 </p:column>
                                 <p:column headerText="ETF Company" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="ETF Company"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.etfCompanyValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>                                  
