@@ -28,8 +28,25 @@ public class CommonFunctions {
     }
     
     
+    public Date getBeginningOfMonth(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        calendar.set(year, month, 1, 0, 0, 0);
+        calendar.add(Calendar.MONTH, 1);
+        calendar.add(Calendar.MINUTE, -1);
+        return calendar.getTime();
+    }
+
     
     public static Date getStartOfMonth(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("IST"));
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);

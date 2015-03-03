@@ -295,20 +295,6 @@ public class CommonFunctions {
 
     
 
-    public Date getBeginningOfMonth(Date date) {
-        if (date == null) {
-            date = new Date();
-        }
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        calendar.set(year, month, 1, 0, 0, 0);
-        calendar.add(Calendar.MONTH, 1);
-        calendar.add(Calendar.MINUTE, -1);
-        return calendar.getTime();
-    }
-
     public Date getFirstDayOfWeek(Date date) {
         // get today and clear time of day
         Calendar cal = Calendar.getInstance();
