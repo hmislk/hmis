@@ -26,6 +26,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
@@ -80,6 +81,7 @@ public class ChannelReportController implements Serializable {
     Date fromDate;
     Date toDate;
     Institution institution;
+    WebUser webUser;
     ChannelBillTotals billTotals;
     Department department;
     private List<ChannelDoctor> channelDoctors;
@@ -159,8 +161,14 @@ public class ChannelReportController implements Serializable {
     public void setDoctorFeeTotal(double doctorFeeTotal) {
         this.doctorFeeTotal = doctorFeeTotal;
     }
-    
-    
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
 
     ChannelReportColumnModelBundle rowBundle;
     List<ChannelReportColumnModel> rows;
@@ -469,17 +477,19 @@ public class ChannelReportController implements Serializable {
 
     public void createChannelCashierSummeryTable() {
         channelReportColumnModels = new ArrayList<>();
-        
-        FeeType ft[]={FeeType.OtherInstitution,FeeType.OwnInstitution,FeeType.Staff};
-        List<FeeType> fts=Arrays.asList(ft);
-        BillType bty[]={BillType.ChannelCash,BillType.ChannelStaff};
-        List<BillType> btys=Arrays.asList(bty);
+
+        FeeType ft[] = {FeeType.OtherInstitution, FeeType.OwnInstitution, FeeType.Staff};
+        List<FeeType> fts = Arrays.asList(ft);
+        BillType bty[] = {BillType.ChannelCash, BillType.ChannelStaff};
+        List<BillType> btys = Arrays.asList(bty);
         PaymentMethod pm[] = {PaymentMethod.Cash, PaymentMethod.Staff};
-        List<PaymentMethod> pms=Arrays.asList(pm);
-        
-        doctorFeeTotal=calDoctorFeeNetTotal(pms, btys,FeeType.Staff);
-        
-        
+        List<PaymentMethod> pms = Arrays.asList(pm);
+
+        if(webUser!=null){
+            doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff,webUser);
+        }
+        doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff);
+
         for (PaymentMethod p : pm) {
             ChannelReportColumnModel cm = new ChannelReportColumnModel();
             switch (p) {
@@ -496,7 +506,7 @@ public class ChannelReportController implements Serializable {
         grantTotalCancel = 0;
         grantTotalRefund = 0;
         grantNetTotal = 0;
-        
+
         for (ChannelReportColumnModel chm : channelReportColumnModels) {
             grantTotalBilled += chm.getBilledTotal();
             grantTotalCancel += chm.getCancellTotal();
@@ -507,9 +517,16 @@ public class ChannelReportController implements Serializable {
     }
 
     public void getChannelCashierSumTotals(PaymentMethod pay, BillType bty, ChannelReportColumnModel chm, List<ChannelReportColumnModel> chmlst) {
+        if (webUser != null) {
+            totalBilled = calCashierNetTotal(new BilledBill(), pay, bty, webUser);
+            totalCancel = calCashierNetTotal(new CancelledBill(), pay, bty, webUser);
+            totalRefund = calCashierNetTotal(new RefundBill(), pay, bty, webUser);
+        }
+
         totalBilled = calCashierNetTotal(new BilledBill(), pay, bty);
         totalCancel = calCashierNetTotal(new CancelledBill(), pay, bty);
         totalRefund = calCashierNetTotal(new RefundBill(), pay, bty);
+
         System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
         if (pay == PaymentMethod.Cash) {
             System.out.println("payment method=" + pay);
@@ -552,8 +569,30 @@ public class ChannelReportController implements Serializable {
         return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod,List<BillType> billType,FeeType ftp) {
+
+    public double calCashierNetTotal(Bill bill, PaymentMethod paymentMethod, BillType billType, WebUser webUser) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.netTotal) from Bill b "
+                + " where type(b)=:class "
+                + " and b.retired=false "
+                + " and b.billType =:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.creater=:wu "
+                + " and b.createdAt between :frm and :to ";
+
+        hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("wu", webUser);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp) {
         HashMap hm = new HashMap();
 
         String sql = " SELECT sum(b.feeValue) from BillFee b "
@@ -568,6 +607,30 @@ public class ChannelReportController implements Serializable {
         hm.put("bt", billType);
         hm.put("pm", paymentMethod);
         hm.put("ft", ftp);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp, WebUser webUser) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.feeValue) from BillFee b "
+                //+ " where type(b)=:class "
+                + " where b.bill.retired=false "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.paymentMethod in :pm "
+                + " and b.fee.feeType=:ft "
+                + " and b.bill.creater=:wu "
+                + " and b.bill.createdAt between :frm and :to ";
+
+        //hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("ft", ftp);
+        hm.put("wu", webUser);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
