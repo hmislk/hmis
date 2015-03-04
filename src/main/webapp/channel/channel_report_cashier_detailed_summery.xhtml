@@ -23,8 +23,8 @@
 
                             <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
 
-                            
-                            
+
+
 
                         </f:facet>
 
@@ -33,59 +33,115 @@
                             <h:outputLabel  value="From Date"/>
                             <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-                            
+
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-                           
+
                             <p:commandButton id="btnProcess" ajax="false" value="Process" styleClass="noPrintButton" 
-                                             style="float: right;" actionListener="#{channelReportController.createCashierSummeryTable()}" />
+                                             style="float: right;" actionListener="#{channelReportController.createChannelCashierSummeryTable()}" />
                             <p:defaultCommand target="btnProcess"/>
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+                        <!--                        <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+                        
+                                                    <h:panelGroup >
+                        
+                                                        <h:outputLabel value="Fromtyuii" />
+                                                        <h:outputLabel  value="#{commonReport.fromDate}" >
+                                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                                        </h:outputLabel>
+                                                        <h:outputLabel value="To" />
+                                                        <h:outputLabel  value="#{commonReport.toDate}" >
+                                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                                        </h:outputLabel>
+                                                    </h:panelGroup >
+                        
+                                                </h:panelGrid>
+                                                <p:panelGrid columns="2" styleClass="alignTop" style="width: 60%">
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Amount" />
+                                                    <h:outputLabel value="Cash" />
+                                                    <h:outputLabel value="#{channelReportController.total}" />
+                                                    <h:outputLabel value="Cheque" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Credit" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Slip" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Total" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Doctor Fees" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="" />
+                                                    <h:outputLabel value="Net Total" />
+                                                    <h:outputLabel value="" />
+                                                    
+                                                </p:panelGrid>-->
 
-                            <h:panelGroup >
-
-                                <h:outputLabel value="Fromtyuii" />
-                                <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="To" />
-                                <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-                            </h:panelGroup >
-
-                        </h:panelGrid>
-                        <p:panelGrid columns="2" styleClass="alignTop" style="width: 60%">
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Amount" />
-                            <h:outputLabel value="Cash" />
-                            <h:outputLabel value="#{channelReportController.total}" />
-                            <h:outputLabel value="Cheque" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Credit" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Slip" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Total" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Doctor Fees" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="" />
-                            <h:outputLabel value="Net Total" />
-                            <h:outputLabel value="" />
+                        <p:dataTable value="#{channelReportController.channelReportColumnModels}" id="datatbl" var="chm">
                             
+                            <p:column headerText="PaymentMethod">
+                                <f:facet name="header">
+                                    <h:outputLabel value="PaymentMethod"></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{chm.paymentMethod}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Bill Amount">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill Amount"></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{chm.billedTotal}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{channelReportController.grantTotalBilled}"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Cancell Amount">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cancell Amount"></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{chm.cancellTotal}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{channelReportController.grantTotalCancel}"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Refund Amount">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Refund Amount"></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{chm.refundTotal}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{channelReportController.grantTotalRefund}"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Total">
+                                <h:outputLabel value="#{chm.total}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{channelReportController.grantNetTotal}"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                        </p:dataTable>
+                        
+                        <p:panelGrid columns="2">
+                            <h:outputLabel value="Doctor Fees"></h:outputLabel>
+                            <h:outputLabel value="#{channelReportController.doctorFeeTotal}"></h:outputLabel>
                         </p:panelGrid>
-                       
-                       
+
+
                         <p:spacer height="30"/>
 
                         <h:panelGrid columns="1">
