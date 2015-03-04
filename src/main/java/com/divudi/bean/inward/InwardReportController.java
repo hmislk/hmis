@@ -777,7 +777,7 @@ public class InwardReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }

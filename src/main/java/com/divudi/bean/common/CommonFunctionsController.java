@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.divudi.bean.common;
 
 import com.divudi.data.Sex;
@@ -18,13 +12,13 @@ import javax.enterprise.context.ApplicationScoped;
 
 /**
  *
- * @author pdhs
+ * @author Dr. M H B Ariyaratne
  */
 @Named(value = "commonFunctionsController")
 @ApplicationScoped
 public class CommonFunctionsController {
 
-     public DateRange getDateRangeForOT(Date date) {
+    public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
         Date startOfThisMonth = getStartOfMonth(date);
         Calendar cal = Calendar.getInstance();
@@ -54,38 +48,26 @@ public class CommonFunctionsController {
         cal.setTime(from);
         cal.add(Calendar.DATE, range);
         Date to = cal.getTime();
-
         dateRange.setFromDate(from);
         dateRange.setToDate(to);
-
-        //System.err.println("From " + dateRange.getFromDate());
-        //System.err.println("To " + dateRange.getToDate());
         return dateRange;
     }
 
     public boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
-
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
-
-        System.err.println("Start " + startOfDay);
-        System.err.println("End " + endOfDay);
         if (startOfDay.before(secondDate) && endOfDay.after(secondDate)) {
-            System.err.println("True");
             return true;
         } else {
-            System.err.println("False");
             return false;
         }
     }
 
     public Date getAddedDate(Date date, int range) {
-
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, range);
         Date returnDate = cal.getTime();
-
         return returnDate;
     }
 
@@ -93,64 +75,42 @@ public class CommonFunctionsController {
         if (date == null) {
             return 0l;
         }
-
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         cal2.setTime(date);
-
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
-        //System.err.println("INDAYS "+inDays);
         return inDays;
-
     }
 
     public Long getDayCount(Date frm, Date to) {
         if (frm == null) {
             return 0l;
         }
-
         if (to == null) {
             to = new Date();
         }
-
         to = getEndOfDay(to);
         frm = getStartOfDay(frm);
-
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         cal1.setTime(to);
         cal2.setTime(frm);
-
-//        System.err.println("cal 1 " + cal1.getTimeInMillis());
-//        System.err.println("cal 2 " + cal2.getTimeInMillis());
-//        System.err.println("Frm " + frm);
-//        System.err.println("TO " + to);
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
-//        System.err.println("INDAYS " + inDays);
         return inDays;
-
     }
 
     public Date guessDob(String docStr) {
-        //System.out.println("year string is " + docStr);
         try {
             int years = Integer.valueOf(docStr);
-            //System.out.println("int year is " + years);
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));
-            //System.out.println("now before is " + now);
             now.add(Calendar.YEAR, -years);
-            //System.out.println("now after is " + now);
-            //System.out.println("now time is " + now.getTime());
             return now.getTime();
         } catch (Exception e) {
-            //System.out.println("Error is " + e.getMessage());
             return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
-
         }
     }
 
     public Date guessDob(YearMonthDay yearMonthDay) {
-        // //System.out.println("year string is " + docStr);
         int years = 0;
         int month = 0;
         int day = 0;
@@ -173,27 +133,18 @@ public class CommonFunctionsController {
 
             return now.getTime();
         } catch (Exception e) {
-            //System.out.println("Error is " + e.getMessage());
             return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
-
         }
     }
 
     public Date guessDobFromMonth(String docStr) {
-        //System.out.println("year string is " + docStr);
         try {
             int month = Integer.valueOf(docStr);
-            //System.out.println("int month is " + month);
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));
-            //System.out.println("now before is " + now);
             now.add(Calendar.MONTH, -month);
-            //System.out.println("now after is " + now);
-            //System.out.println("now time is " + now.getTime());
             return now.getTime();
         } catch (Exception e) {
-            //System.out.println("Error is " + e.getMessage());
             return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
-
         }
     }
 
@@ -206,7 +157,6 @@ public class CommonFunctionsController {
         if (ageInDays < 0) {
             return "";
         }
-        //System.out.println("Age in days " + ageInDays);
         if (ageInDays < 60) {
             return ageInDays + " days";
         } else if (ageInDays < 366) {
@@ -317,7 +267,7 @@ public class CommonFunctionsController {
     }
 
     public Date getBeginningOfMonth(Date date) {
-        if(date==null){
+        if (date == null) {
             date = new Date();
         }
         Calendar calendar = Calendar.getInstance();
@@ -430,10 +380,11 @@ public class CommonFunctionsController {
 
         return result;
     }
+
     /**
      * Creates a new instance of CommonFunctionsController
      */
     public CommonFunctionsController() {
     }
-    
+
 }

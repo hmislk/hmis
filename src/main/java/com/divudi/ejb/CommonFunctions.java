@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.divudi.ejb;
 
 import com.divudi.data.Sex;
@@ -20,32 +16,17 @@ import java.util.TimeZone;
 @Singleton
 public class CommonFunctions {
 
-    public long calTimePeriod(Date frDate, Date tDate) {
-
-        if (frDate == null || tDate == null) {
-            return 0;
-        }
-
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setTime(tDate);
-        cal2.setTime(frDate);
-
-        Long minCount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60);
-
-//        System.out.println("daycount = " + daycount);
-        return minCount;
-    }
+    
 
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
-        Date startOfThisMonth = getStartOfMonth(date);
+        Date startOfThisMonth = com.divudi.java.CommonFunctions.getStartOfMonth(date);
         Calendar cal = Calendar.getInstance();
         cal.setTime(startOfThisMonth);
         cal.add(Calendar.DAY_OF_WEEK, -1);
-        Date startOfPrevMonth = getStartOfMonth(cal.getTime());
+        Date startOfPrevMonth = com.divudi.java.CommonFunctions.getStartOfMonth(cal.getTime());
         Date from = getFirstDayOfWeek(startOfPrevMonth);
-        Date endOfPrevMonth = getEndOfMonth(cal.getTime());
+        Date endOfPrevMonth = com.divudi.java.CommonFunctions.getEndOfMonth(cal.getTime());
         Date to = getFirstDayOfWeek(endOfPrevMonth);
         cal.setTime(endOfPrevMonth);
         if (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
@@ -143,7 +124,7 @@ public class CommonFunctions {
 
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
-        System.err.println(frm+" : "+to+" DAY COUNT " + inDays);
+        System.err.println(frm + " : " + to + " DAY COUNT " + inDays);
         return inDays;
 
     }
@@ -264,8 +245,8 @@ public class CommonFunctions {
     }
 
     public static Date getStartOfDay(Date date) {
-        if(date==null){
-            date=new Date();
+        if (date == null) {
+            date = new Date();
         }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -278,7 +259,7 @@ public class CommonFunctions {
     }
 
     public static Date getEndOfDay(Date date) {
-        if(date==null){
+        if (date == null) {
             date = new Date();
         }
         Calendar calendar = Calendar.getInstance();
@@ -292,15 +273,7 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
-    public Date getStartOfMonth(Date date) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("IST"));
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, 1, 0, 0, 0);
-        return calendar.getTime();
-    }
+    
 
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
@@ -320,38 +293,7 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-    public Date getEndOfMonth(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        //      int day = calendar.get(Calendar.DATE);
-//        if (month == Calendar.DECEMBER) {
-//            calendar.set(year + 1, 1, 1, 0, 0, 0);
-//        } else {
-//            calendar.set(year, month + 1, 1, 0, 0, 0);
-//        }
-        calendar.set(year, month, 1, 0, 0, 0);
-        //System.err.println("DDDD " + calendar.getTime());
-        calendar.add(Calendar.MONTH, 1);
-        calendar.add(Calendar.SECOND, -1);
-        //System.err.println("FFFF " + calendar.getTime());
-        return calendar.getTime();
-    }
-
-    public Date getBeginningOfMonth(Date date) {
-        if (date == null) {
-            date = new Date();
-        }
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        calendar.set(year, month, 1, 0, 0, 0);
-        calendar.add(Calendar.MONTH, 1);
-        calendar.add(Calendar.MINUTE, -1);
-        return calendar.getTime();
-    }
+    
 
     public Date getFirstDayOfWeek(Date date) {
         // get today and clear time of day
@@ -409,48 +351,5 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-    public Boolean checkAgeSex(Date dob, Sex sex, Title title) {
-        Boolean result = true;
-        Date toDate = Calendar.getInstance().getTime();
-
-        long age;
-
-        if ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24) == 0) {
-            return false;
-        }
-
-        age = ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24)) / 365;
-
-        if (title == Title.Baby || title == Title.Baby_Of) {
-            if (age > 6) {
-                result = false;
-            }
-        } else if ((title == Title.Master)) {
-            if (age > 13) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mrs
-                || title == Title.Mrs
-                || title == Title.Ms
-                || title == Title.Miss
-                || title == Title.DrMrs
-                || title == Title.DrMiss) {
-
-            if (sex == Sex.Male) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mr
-                || title == Title.Master
-                || title == Title.Dr) {
-            if (sex == Sex.Female) {
-                result = false;
-            }
-        }
-
-        return result;
-    }
+  
 }

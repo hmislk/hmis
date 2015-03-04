@@ -194,7 +194,7 @@ public class PhDateController implements Serializable {
 
     public Date getFrDate() {
         if (frDate == null) {
-            frDate = commonFunctions.getStartOfMonth(new Date());
+            frDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return frDate;
     }
@@ -205,7 +205,7 @@ public class PhDateController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

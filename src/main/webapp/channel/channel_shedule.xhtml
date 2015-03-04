@@ -66,11 +66,21 @@
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
                         <h:outputText value="Institution" ></h:outputText>
-                        <h:selectOneListbox id="cmbIns"   size="1" value="#{sheduleController.current.institution}" >
+                                         
+                        <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" >
                             <f:selectItem itemLabel="Please select a Institution"/>
                             <f:selectItems value="#{institutionController.company}" 
-                                           var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />                                                                   
-                        </h:selectOneListbox>
+                                           var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
+                           <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
+                        </p:selectOneMenu>
+                                            
+                        <h:outputText value="Department"></h:outputText>        
+                        <p:selectOneMenu id="cmbDep" value="#{serviceController.current.department}">
+                            <f:selectItem itemLabel="Please select a Department" />
+                            <f:selectItems value="#{serviceController.institutionDepatrments}"
+                                          var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </p:selectOneMenu>
+                        
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
