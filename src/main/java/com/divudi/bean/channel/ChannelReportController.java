@@ -419,6 +419,29 @@ public class ChannelReportController implements Serializable {
 
         return billSessionFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
     }
+    
+    public void createCashierSummeryTable(){
+        BilledBill billedBill=new BilledBill();
+        total=calCashierNetTotal(billedBill, PaymentMethod.Cash, BillType.ChannelCash);
+    }
+    
+    public double calCashierNetTotal(Bill bill, PaymentMethod paymentMethod, BillType billType){
+        HashMap hm = new HashMap();
+        
+        String sql = " SELECT sum(b.netTotal) from Bill b "
+                + " where type(b.bill)=:class "
+                + " and b.retired=false "
+                + " and b.billType =:bt "
+                + " and b.createdAt between :frm and :to ";
+                
+        hm.put("class", bill.getClass());
+        hm.put("bt", bill.getBillType());
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+        
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        
+    }
 
     public double createBillSessionQueryTotal(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -1177,6 +1200,7 @@ public class ChannelReportController implements Serializable {
     public class ChannelReportColumnModel implements Serializable {
 
         Bill bill;
+        List<Bill> bills;
         BillItem billItem;
         PaymentMethod paymentMethod;
         BillType billType;
@@ -1195,9 +1219,19 @@ public class ChannelReportController implements Serializable {
         double slipTotal;
         double creditTotal;
         double cardTotal;
+        double staffTotal;
+        double onCallTotal;
         double collectionTotal;
 
         public ChannelReportColumnModel() {
+        }
+
+        public List<Bill> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<Bill> bills) {
+            this.bills = bills;
         }
 
         public double getCollectionTotal() {
@@ -1254,6 +1288,22 @@ public class ChannelReportController implements Serializable {
 
         public void setCardTotal(double cardTotal) {
             this.cardTotal = cardTotal;
+        }
+
+        public double getStaffTotal() {
+            return staffTotal;
+        }
+
+        public void setStaffTotal(double staffTotal) {
+            this.staffTotal = staffTotal;
+        }
+
+        public double getOnCallTotal() {
+            return onCallTotal;
+        }
+
+        public void setOnCallTotal(double onCallTotal) {
+            this.onCallTotal = onCallTotal;
         }
 
         public int getIntNo() {
@@ -1359,6 +1409,22 @@ public class ChannelReportController implements Serializable {
         public void setComments(String comments) {
             this.comments = comments;
         }
+        private void calTot() {
+            cashTotal = staffTotal = onCallTotal = agentTotal = 0.0;
+            for (Bill b : bills) {
+                if (b.getPaymentMethod() == PaymentMethod.Cash) {
+                    setCashTotal(getCashTotal() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.OnCall) {
+                    setOnCallTotal(getOnCallTotal() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
+                    setAgentTotal(getAgentTotal() + b.getNetTotal());
+                } else if (b.getPaymentMethod() == PaymentMethod.Staff) {
+                    setStaffTotal(getStaffTotal() + b.getNetTotal());
+                }
+
+            }
+
+        }
 
     }
 
@@ -1420,22 +1486,7 @@ public class ChannelReportController implements Serializable {
             this.onCall = onCall;
         }
 
-        private void calTot() {
-            cash = staff = onCall = agent = 0.0;
-            for (Bill b : bills) {
-                if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                    setCash(getCash() + b.getNetTotal());
-                } else if (b.getPaymentMethod() == PaymentMethod.OnCall) {
-                    setOnCall(getOnCall() + b.getNetTotal());
-                } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
-                    setAgent(getAgent() + b.getNetTotal());
-                } else if (b.getPaymentMethod() == PaymentMethod.Staff) {
-                    setStaff(getStaff() + b.getNetTotal());
-                }
-
-            }
-
-        }
+        
 
     }
 
