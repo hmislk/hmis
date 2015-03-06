@@ -16,6 +16,7 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -25,6 +26,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
@@ -62,17 +64,25 @@ public class ChannelReportController implements Serializable {
     private List<BillSession> billSessionsBilled;
     private List<BillSession> billSessionsReturn;
     private List<BillSession> billSessionsCancelled;
+    List<ChannelReportColumnModel> channelReportColumnModels;
     double netTotal;
     double cancelTotal;
     double refundTotal;
     double totalBilled;
     double totalCancel;
     double totalRefund;
+    double grantTotalBilled;
+    double grantTotalCancel;
+    double grantTotalRefund;
+    double grantNetTotal;
+    double doctorFeeTotal;
     List<String1Value3> valueList;
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
     Institution institution;
+    WebUser webUser;
+    ChannelBillTotals billTotals;
     Department department;
     private List<ChannelDoctor> channelDoctors;
     /////
@@ -104,6 +114,62 @@ public class ChannelReportController implements Serializable {
         this.department = department;
     }
 
+    public ChannelBillTotals getBillTotals() {
+        return billTotals;
+    }
+
+    public void setBillTotals(ChannelBillTotals billTotals) {
+        this.billTotals = billTotals;
+    }
+
+    public double getGrantTotalBilled() {
+        return grantTotalBilled;
+    }
+
+    public void setGrantTotalBilled(double grantTotalBilled) {
+        this.grantTotalBilled = grantTotalBilled;
+    }
+
+    public double getGrantTotalCancel() {
+        return grantTotalCancel;
+    }
+
+    public void setGrantTotalCancel(double grantTotalCancel) {
+        this.grantTotalCancel = grantTotalCancel;
+    }
+
+    public double getGrantTotalRefund() {
+        return grantTotalRefund;
+    }
+
+    public void setGrantTotalRefund(double grantTotalRefund) {
+        this.grantTotalRefund = grantTotalRefund;
+    }
+
+    public double getGrantNetTotal() {
+        return grantNetTotal;
+    }
+
+    public void setGrantNetTotal(double grantNetTotal) {
+        this.grantNetTotal = grantNetTotal;
+    }
+
+    public double getDoctorFeeTotal() {
+        return doctorFeeTotal;
+    }
+
+    public void setDoctorFeeTotal(double doctorFeeTotal) {
+        this.doctorFeeTotal = doctorFeeTotal;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
     ChannelReportColumnModelBundle rowBundle;
     List<ChannelReportColumnModel> rows;
     List<ChannelReportColumnModel> filteredRows;
@@ -124,8 +190,6 @@ public class ChannelReportController implements Serializable {
         this.filteredRows = filteredRows;
     }
 
-    
-    
     public List<ChannelReportColumnModel> getRows() {
         return rows;
     }
@@ -171,7 +235,7 @@ public class ChannelReportController implements Serializable {
         m.put("bts", bts);
 
         System.out.println("j = " + j);
-        
+
         //Bookings
         br = new ChannelReportColumnModel();
         m.put("bt", BilledBill.class);
@@ -244,7 +308,6 @@ public class ChannelReportController implements Serializable {
 
         rr.setValue(rr.getAgentTotal() + rr.getCollectionTotal());
 
-        
         nr = new ChannelReportColumnModel();
         nr.name = "Total";
         nr.cashTotal = br.cashTotal + rr.cashTotal + cr.cardTotal;
@@ -259,7 +322,7 @@ public class ChannelReportController implements Serializable {
         rows.add(cr);
         rows.add(rr);
 
-        rowBundle=new ChannelReportColumnModelBundle();
+        rowBundle = new ChannelReportColumnModelBundle();
         rowBundle.setBundle(nr);
         rowBundle.setRows(rows);
 
@@ -410,6 +473,169 @@ public class ChannelReportController implements Serializable {
         hm.put("class", bill.getClass());
 
         return billSessionFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public void createChannelCashierSummeryTable() {
+        channelReportColumnModels = new ArrayList<>();
+
+        FeeType ft[] = {FeeType.OtherInstitution, FeeType.OwnInstitution, FeeType.Staff};
+        List<FeeType> fts = Arrays.asList(ft);
+        BillType bty[] = {BillType.ChannelCash, BillType.ChannelStaff};
+        List<BillType> btys = Arrays.asList(bty);
+        PaymentMethod pm[] = {PaymentMethod.Cash, PaymentMethod.Staff};
+        List<PaymentMethod> pms = Arrays.asList(pm);
+
+        if(webUser!=null){
+            doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff,webUser);
+        }
+        doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff);
+
+        for (PaymentMethod p : pm) {
+            ChannelReportColumnModel cm = new ChannelReportColumnModel();
+            switch (p) {
+                case Cash:
+                    getChannelCashierSumTotals(PaymentMethod.Cash, BillType.ChannelCash, cm, channelReportColumnModels);
+                    break;
+                case Staff:
+                    getChannelCashierSumTotals(PaymentMethod.Staff, BillType.ChannelStaff, cm, channelReportColumnModels);
+                    break;
+            }
+        }
+
+        grantTotalBilled = 0;
+        grantTotalCancel = 0;
+        grantTotalRefund = 0;
+        grantNetTotal = 0;
+
+        for (ChannelReportColumnModel chm : channelReportColumnModels) {
+            grantTotalBilled += chm.getBilledTotal();
+            grantTotalCancel += chm.getCancellTotal();
+            grantTotalRefund += chm.getRefundTotal();
+            grantNetTotal += chm.getTotal();
+        }
+
+    }
+
+    public void getChannelCashierSumTotals(PaymentMethod pay, BillType bty, ChannelReportColumnModel chm, List<ChannelReportColumnModel> chmlst) {
+        if (webUser != null) {
+            totalBilled = calCashierNetTotal(new BilledBill(), pay, bty, webUser);
+            totalCancel = calCashierNetTotal(new CancelledBill(), pay, bty, webUser);
+            totalRefund = calCashierNetTotal(new RefundBill(), pay, bty, webUser);
+        }
+
+        totalBilled = calCashierNetTotal(new BilledBill(), pay, bty);
+        totalCancel = calCashierNetTotal(new CancelledBill(), pay, bty);
+        totalRefund = calCashierNetTotal(new RefundBill(), pay, bty);
+
+        System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
+        if (pay == PaymentMethod.Cash) {
+            System.out.println("payment method=" + pay);
+            System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
+            totalBilled += calCashierNetTotal(new BilledBill(), pay, BillType.ChannelPaid);
+            totalCancel += calCashierNetTotal(new CancelledBill(), pay, BillType.ChannelPaid);
+            totalRefund += calCashierNetTotal(new RefundBill(), pay, BillType.ChannelPaid);
+            System.out.println("netTotal" + netTotal);
+        }
+        netTotal = totalBilled - (totalCancel + totalRefund);
+        System.out.println("netTotal = " + netTotal);
+
+        chm.setPaymentMethod(pay);
+        chm.setBilledTotal(totalBilled);
+        chm.setCancellTotal(totalCancel);
+        chm.setRefundTotal(totalRefund);
+
+        chm.setTotal(netTotal);
+
+        System.out.println("chmlst = " + chmlst);
+        chmlst.add(chm);
+    }
+
+    public double calCashierNetTotal(Bill bill, PaymentMethod paymentMethod, BillType billType) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.netTotal) from Bill b "
+                + " where type(b)=:class "
+                + " and b.retired=false "
+                + " and b.billType =:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.createdAt between :frm and :to ";
+
+        hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calCashierNetTotal(Bill bill, PaymentMethod paymentMethod, BillType billType, WebUser webUser) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.netTotal) from Bill b "
+                + " where type(b)=:class "
+                + " and b.retired=false "
+                + " and b.billType =:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.creater=:wu "
+                + " and b.createdAt between :frm and :to ";
+
+        hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("wu", webUser);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.feeValue) from BillFee b "
+                //+ " where type(b)=:class "
+                + " where b.bill.retired=false "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.paymentMethod in :pm "
+                + " and b.fee.feeType=:ft"
+                + " and b.bill.createdAt between :frm and :to ";
+
+        //hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("ft", ftp);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp, WebUser webUser) {
+        HashMap hm = new HashMap();
+
+        String sql = " SELECT sum(b.feeValue) from BillFee b "
+                //+ " where type(b)=:class "
+                + " where b.bill.retired=false "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.paymentMethod in :pm "
+                + " and b.fee.feeType=:ft "
+                + " and b.bill.creater=:wu "
+                + " and b.bill.createdAt between :frm and :to ";
+
+        //hm.put("class", bill.getClass());
+        hm.put("bt", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("ft", ftp);
+        hm.put("wu", webUser);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
     }
 
     public double createBillSessionQueryTotal(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
@@ -596,8 +822,16 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public List<ChannelReportColumnModel> getChannelReportColumnModels() {
+        return channelReportColumnModels;
+    }
+
+    public void setChannelReportColumnModels(List<ChannelReportColumnModel> channelReportColumnModels) {
+        this.channelReportColumnModels = channelReportColumnModels;
+    }
+
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
@@ -608,8 +842,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
-            toDate=CommonFunctions.getEndOfDay(toDate);
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -1141,14 +1375,13 @@ public class ChannelReportController implements Serializable {
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
+
         List<ChannelReportColumnModel> rows;
         ChannelReportColumnModel bundle;
 
         public ChannelReportColumnModelBundle() {
         }
 
-        
-        
         public List<ChannelReportColumnModel> getRows() {
             return rows;
         }
@@ -1164,13 +1397,13 @@ public class ChannelReportController implements Serializable {
         public void setBundle(ChannelReportColumnModel bundle) {
             this.bundle = bundle;
         }
-        
-        
+
     }
 
     public class ChannelReportColumnModel implements Serializable {
 
         Bill bill;
+        List<Bill> bills;
         BillItem billItem;
         PaymentMethod paymentMethod;
         BillType billType;
@@ -1189,9 +1422,24 @@ public class ChannelReportController implements Serializable {
         double slipTotal;
         double creditTotal;
         double cardTotal;
+        double staffTotal;
+        double onCallTotal;
         double collectionTotal;
+        //for channell cashier report
+        double billedTotal;
+        double refundTotal;
+        double cancellTotal;
+        double total;
 
         public ChannelReportColumnModel() {
+        }
+
+        public List<Bill> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<Bill> bills) {
+            this.bills = bills;
         }
 
         public double getCollectionTotal() {
@@ -1248,6 +1496,54 @@ public class ChannelReportController implements Serializable {
 
         public void setCardTotal(double cardTotal) {
             this.cardTotal = cardTotal;
+        }
+
+        public double getStaffTotal() {
+            return staffTotal;
+        }
+
+        public void setStaffTotal(double staffTotal) {
+            this.staffTotal = staffTotal;
+        }
+
+        public double getOnCallTotal() {
+            return onCallTotal;
+        }
+
+        public void setOnCallTotal(double onCallTotal) {
+            this.onCallTotal = onCallTotal;
+        }
+
+        public double getBilledTotal() {
+            return billedTotal;
+        }
+
+        public void setBilledTotal(double billedTotal) {
+            this.billedTotal = billedTotal;
+        }
+
+        public double getRefundTotal() {
+            return refundTotal;
+        }
+
+        public void setRefundTotal(double refundTotal) {
+            this.refundTotal = refundTotal;
+        }
+
+        public double getCancellTotal() {
+            return cancellTotal;
+        }
+
+        public void setCancellTotal(double cancellTotal) {
+            this.cancellTotal = cancellTotal;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
         }
 
         public int getIntNo() {
@@ -1352,6 +1648,82 @@ public class ChannelReportController implements Serializable {
 
         public void setComments(String comments) {
             this.comments = comments;
+        }
+
+//        private void calTot() {
+//            cashTotal = staffTotal = onCallTotal = agentTotal = 0.0;
+//            for (Bill b : bills) {
+//                if (b.getPaymentMethod() == PaymentMethod.Cash) {
+//                    setCashTotal(getCashTotal() + b.getNetTotal());
+//                } else if (b.getPaymentMethod() == PaymentMethod.OnCall) {
+//                    setOnCallTotal(getOnCallTotal() + b.getNetTotal());
+//                } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
+//                    setAgentTotal(getAgentTotal() + b.getNetTotal());
+//                } else if (b.getPaymentMethod() == PaymentMethod.Staff) {
+//                    setStaffTotal(getStaffTotal() + b.getNetTotal());
+//                }
+//
+//            }
+//
+//        }
+    }
+
+    public class ChannelBillTotals {
+
+        String name;
+        List<Bill> bills;
+        double cash;
+        double agent;
+        double staff;
+        double onCall;
+        double total;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<Bill> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<Bill> bills) {
+            this.bills = bills;
+        }
+
+        public double getCash() {
+            return cash;
+        }
+
+        public void setCash(double cash) {
+            this.cash = cash;
+        }
+
+        public double getAgent() {
+            return agent;
+        }
+
+        public void setAgent(double agent) {
+            this.agent = agent;
+        }
+
+        public double getStaff() {
+            return staff;
+        }
+
+        public void setStaff(double staff) {
+            this.staff = staff;
+        }
+
+        public double getOnCall() {
+            return onCall;
+        }
+
+        public void setOnCall(double onCall) {
+            this.onCall = onCall;
         }
 
     }

@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Bills" >
+                        <h:panelGroup>
+                            <h:panelGrid columns="4" style="min-width: 100%;">                                                       
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                   
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                   
+                                </p:calendar>
+                                <p:commandButton value="Search" ajax="false" action="#{searchController.createChannelDueBillFeeByAgent()}" onclick="onSubmitButton();"/>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <br/><br/>
+                        <p:dataTable   id="tblFee" value="#{searchController.billFees}" var="bf" sortBy="#{bf.bill.billClass}">
+                            <p:column>
+                                <p:commandButton ajax="false" value="Pay" 
+                                                 action="channel_payment_staff_bill" 
+                                                 actionListener="#{channelStaffPaymentBillController.calculateDueFees}">
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{channelStaffPaymentBillController.currentStaff}"/>
+                                </p:commandButton>
+                            </p:column>
+                            <p:column headerText="Consutant" filterBy="#{bf.staff.person.nameWithTitle}" filterMatchMode="contains">
+
+                                <h:outputLabel value="#{bf.staff.person.nameWithTitle}">
+                                </h:outputLabel>                                   
+
+                            </p:column>
+
+                            <p:column headerText="Patient" filterBy="#{bf.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                               
+                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                    
+                                    
+                            </p:column>
+
+                            <p:column headerText="BilledAt">
+                                
+                                    <h:outputLabel value="#{bf.bill.createdAt}">
+                                    </h:outputLabel>
+                                    
+                            </p:column>
+
+                            <p:column headerText="Charge" >                                
+                                <h:outputLabel value="#{bf.billItem.staffFee}" ></h:outputLabel>                                    
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

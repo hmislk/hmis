@@ -690,7 +690,7 @@ public class StorePurchaseController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = commonFunctions.getStartOfMonth(new Date());
+            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }

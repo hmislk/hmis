@@ -237,7 +237,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = getCommonFunctions().getStartOfMonth(new Date());
+            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
@@ -248,7 +248,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfMonth(new Date());
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

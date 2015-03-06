@@ -9,7 +9,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.Times;
-import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AdditionalForm;
@@ -21,11 +20,10 @@ import com.divudi.facade.AdditionalFormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,8 +50,7 @@ public class StaffAdditionalFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
 
-    @EJB
-    CommonFunctions commonFunctions;
+    
     List<AdditionalForm> additionalForms;
     Department department;
     Staff staff;
@@ -396,7 +393,7 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        Long timePeriod = commonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        Long timePeriod = CommonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
         if (timePeriod < 0 || (timePeriod / 24) > 1) {
             JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
@@ -458,7 +455,7 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        Long timePeriod = commonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
+        Long timePeriod = CommonFunctions.calTimePeriod(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime());
         if (timePeriod <= 0 || (timePeriod / 24) > 1) {
             JsfUtil.addErrorMessage("Please Check  From Time and To Time Range");
             return true;
@@ -754,14 +751,6 @@ public class StaffAdditionalFormController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public List<AdditionalForm> getAdditionalForms() {
         return additionalForms;
     }
@@ -796,7 +785,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -807,7 +796,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

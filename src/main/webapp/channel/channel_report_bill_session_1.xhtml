@@ -18,7 +18,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Bill Session Report" />
                         </f:facet>
-                        <h:panelGrid columns="2" >
+                        <p:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
                             <p:calendar value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="To : " />
@@ -29,7 +29,7 @@
                             <hr:completeStaff value="#{channelReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Agency : "/>
                             <hr:completeAgency value="#{channelReportController.reportKeyWord.institution}"/>                            
-                        </h:panelGrid>
+                        </p:panelGrid>
                         <p:commandButton ajax="false" value="Process Paid" action="#{channelReportController.createBillSession_report_1()}"/>
                         <p:commandButton ajax="false" value="Clear" action="#{channelReportController.makeNull()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >

@@ -82,6 +82,7 @@ public class InwardReportController implements Serializable {
     boolean paymentMethord=true;
     boolean creditCompany=true;
     boolean person=true;
+    boolean guardian=true;
     boolean room=true;
     boolean refDoctor=true;
     boolean AddmitDetails=true;
@@ -777,7 +778,7 @@ public class InwardReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1204,6 +1205,14 @@ public class InwardReportController implements Serializable {
 
     public void setDifferentAmount(boolean differentAmount) {
         this.differentAmount = differentAmount;
+    }
+
+    public boolean isGuardian() {
+        return guardian;
+    }
+
+    public void setGuardian(boolean guardian) {
+        this.guardian = guardian;
     }
 
 }

@@ -38,5 +38,6 @@
             </p:column>
             <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
         </p:autoComplete>
+        <p:watermark for="acItem" value="Store Item"/>
     </cc:implementation>
 </html>
