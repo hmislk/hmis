@@ -17,7 +17,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Worked Time and Over Time Report" />
+                            <h:outputLabel value="Month End Employee Working Time + Over Time Report-By Minute" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -26,6 +26,8 @@
                             <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -38,75 +40,117 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Month End Employee Working Time + Over Time Report-By Minute" />
+                                </f:facet>
                                 <p:column headerText="Staff">
-                                    #{ss.staff.person.name}
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.staff.person.name}" />
                                 </p:column>
                                 <p:column headerText="Sun">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Sun" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.sunDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>                                    
                                 </p:column>
                                 <p:column headerText="Mon">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Mon" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.monDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Tue">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Tue" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.tuesDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Wed">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Wed" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.wednesDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Thur">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Thur" />
+                                    </f:facet>
                                     <h:outputLabel  value="#{ss.thursDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Fri">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Fri" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.friDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Sat">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Sat" />
+                                    </f:facet>
                                     <h:outputLabel  value="#{ss.saturDay}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Total">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Total" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.total}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Over Time Hour">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Over Time Hour" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.overTime}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>                                                            
                                 <p:column headerText="Over Time Value">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Over Time Value" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
-                                          <f:convertNumber pattern="0.00" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Time">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Extra Duty Time" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.extraDuty}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Extra Duty Value">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Extra Duty Value" />
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.extraDutyValue}">
-                                          <f:convertNumber pattern="0.00" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
 

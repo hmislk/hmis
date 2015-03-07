@@ -211,10 +211,12 @@ public class AppointmentController implements Serializable {
                 return true;
             }
 
-            if (!getCommonFunctions().checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
                 UtilityController.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
+            
+            
 
             if (getNewPatient().getPerson().getPhone().length() < 1) {
                 UtilityController.addErrorMessage("Phone Number is Required it should be fill");

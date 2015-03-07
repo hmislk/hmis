@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete   forceSelection="true" 
+        <p:autoComplete   forceSelection="true" id="shift"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{shiftController.completeShift}" 
                           var="mys" 
@@ -19,5 +19,6 @@
                           itemValue="#{mys}"
                           converter="rosterCon"   >               
         </p:autoComplete> 
+        <p:watermark for="shift" value="Shift"/>
     </cc:implementation>
 </html>

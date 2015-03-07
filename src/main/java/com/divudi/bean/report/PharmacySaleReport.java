@@ -4109,7 +4109,7 @@ public class PharmacySaleReport implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 
-            fromDate = getCommonFunctions().getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -4120,7 +4120,7 @@ public class PharmacySaleReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfMonth(new Date());
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

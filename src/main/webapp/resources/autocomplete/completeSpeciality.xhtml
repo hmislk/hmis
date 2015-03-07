@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete   forceSelection="true" 
+        <p:autoComplete   forceSelection="true" id="speciality"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{specialityController.completeSpeciality}" 
                           var="mys" 
@@ -19,5 +19,6 @@
                           itemValue="#{mys}"
                           converter="specilityCon"   >              
         </p:autoComplete> 
+        <p:watermark for="speciality" value="Speciality"/>
     </cc:implementation>
 </html>
