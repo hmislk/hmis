@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <p:panel >
+
+
+                    <p:panel  id="panelQueue" header="Queue" >
+
+                        <h:form>
+
+                            <h:panelGrid columns="3" >
+                                <h:outputLabel value="Date" id="calSessionDate" ></h:outputLabel>
+                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="dd MMMM yyyy" >
+                                    <f:ajax event="dateSelect"
+                                            listener="#{practiceBookingController.listCompleteAndToCompleteBillSessions}"
+                                            execute="calSessionDate" render=":#{p:component('bSession')}" ></f:ajax>
+                                </p:calendar>
+                                <h:outputLabel value="" ></h:outputLabel>
+                                <h:outputLabel value="Speciality" ></h:outputLabel>
+                                <p:autoComplete value="#{practiceBookingController.speciality}"
+                                                id="acSpeciality" 
+                                                completeMethod="#{specialityController.completeSpeciality}"
+                                                var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
+                                                >
+                                    <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel value="" ></h:outputLabel>
+
+                                <h:outputLabel value="Doctor" ></h:outputLabel>
+                                <p:autoComplete value="#{practiceBookingController.doctor}"
+                                                id="acStaff" converter="conDoc"
+                                                completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
+                                                var="doc"
+                                                itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
+                                                >
+                                    <f:ajax  event="itemSelect" execute="@this" render=":#{p:component('bSession')}"  
+                                             listener="#{practiceBookingController.listCompleteAndToCompleteBillSessions}" />                                                
+                                </p:autoComplete>
+                                <h:outputLabel value="" ></h:outputLabel>
+
+                                <p:commandButton   value="Refresh" ajax="false" style="float: right;" action="#{practiceBookingController.listCompleteAndToCompleteBillSessions}" onclick="onSubmitButton();" >                        
+                                </p:commandButton>
+
+                            </h:panelGrid>
+                        </h:form>
+
+                        <h:form>
+
+                            <p:tabView >
+                                <p:tab id="bSession" title="To Complete" >
+
+                                    <p:dataTable id="bSessionToComplete" 
+                                                 value="#{practiceBookingController.toCompleteSessions}" 
+                                                 var='bs'
+                                                 selectionMode="single" rowKey="#{bs.id}"
+                                                 selection="#{practiceBookingController.selectedBillSession}">
+                                        <p:column headerText="No">#{bs.serialNo}</p:column>
+                                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                        <p:column headerText="Visit">
+                                            <p:commandButton disabled="#{bs.absent}" value="Visit" 
+                                                             action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs}" 
+                                                                             target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                        
+                                        
+                                        <p:column headerText="Absent">
+                                            <p:outputLabel value="Patient is Absent."  rendered="#{bs.absent}" ></p:outputLabel>
+                                            <p:commandButton rendered="#{bs.absent}" value="Mark As Present" action="#{practiceBookingController.markAsPresent()}" ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                            <p:commandButton rendered="#{!bs.absent}" value="Mark As Absent" action="#{practiceBookingController.markAsAbent()}" ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>  
+
+                                </p:tab>
+                                <p:tab title="Completed" >
+
+                                    <p:dataTable id="bSessionCompleted" 
+                                                 value="#{practiceBookingController.completedSessions}" var='bsc'
+                                                 selectionMode="single" rowKey="#{bsc.id}"
+                                                 selection="#{practiceBookingController.selectedBillSession}">
+                                        <p:column headerText="No">#{bsc.serialNo}</p:column>
+                                        <p:column headerText="Patient Name">#{bsc.bill.patient.person.nameWithTitle}</p:column>
+                                        <p:column headerText="View/Edit">
+                                            <p:commandButton disabled="#{bsc.absent}" value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bsc}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                        <p:column headerText="Details">
+                                            <h:outputText value="#{bsc.patientEncounter.comments}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Billing" >
+                                            <p:commandButton ajax="false" value="OPD Bill" action="#{practiceBookingController.issueServices()}" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bsc}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                            <p:commandButton ajax="false" value="Pharmacy Bill" action="#{practiceBookingController.issuePharmacyBill()}" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bsc}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        
+                                        </p:column>
+                                        
+                                    </p:dataTable>  
+
+                                </p:tab>
+
+                            </p:tabView>
+
+                        </h:form>
+                    </p:panel>
+
+
+
+
+                </p:panel>
+
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>
