@@ -20,6 +20,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
@@ -475,8 +476,6 @@ public class SearchController implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
-    
-    
 
     public List<Bill> getPrescreptionBills() {
         return prescreptionBills;
@@ -2124,7 +2123,7 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        calTotal();
     }
 
     public void createDueFeeTableAll() {
@@ -2176,7 +2175,7 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
+        calTotal();
     }
 
     public void createDueFeeTableAndPaidFeeTable() {
@@ -2410,10 +2409,9 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        calTotal();
     }
 
-    
     public void createDueFeeTableInwardAll() {
 
         String sql;
@@ -2469,9 +2467,30 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
+        calTotal();
     }
-    
+
+    double total;
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    private void calTotal() {
+        total = 0;
+        if (billFees == null) {
+            return;
+        }
+
+        for (BillFee billFee : billFees) {
+            total += billFee.getFeeValue();
+        }
+    }
+
     public void createDueFeeReportInward() {
 
         String sql;
@@ -2665,7 +2684,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createProfessionalPaymentTableInwardAll() {
         billItems = null;
         HashMap temMap = new HashMap();
@@ -2726,6 +2745,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+
     public void createBillItemTableByKeyword() {
 
         String sql;
@@ -3783,6 +3803,28 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public void channelAgentPaymentBills() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
+                + " and bi.bill.billType=:bt"
+                + " and bi.createdAt between :fromDate and :toDate ";       
+        
+        
+        if(getSearchKeyword().getIns()!=null){
+           sql += " and bi.bill.toInstitution=:ins";
+           m.put("ins", getSearchKeyword().getIns());
+        }
+                
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.ChannelAgencyPayment);
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public void createChannelDueBillFeeOld() {
 
@@ -3842,7 +3884,47 @@ public class SearchController implements Serializable {
         billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createChannelDueBillFeeByAgent() {
+        selectedServiceSession = null;
 
+        //BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+       // List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.bill.refunded=false "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and bs.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+//        if (getCurrentStaff() != null) {
+//            sql += " and b.staff=:stf ";
+//            hm.put("stf", getCurrentStaff());
+//        }
+
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", BillType.ChannelAgent);
+        hm.put("ftp", FeeType.OtherInstitution);
+        hm.put("class", BilledBill.class);
+        billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
     public void createAgentPaymentTable() {
         bills = null;
         String sql;

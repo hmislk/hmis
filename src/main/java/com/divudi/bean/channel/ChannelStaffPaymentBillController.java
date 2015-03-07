@@ -13,6 +13,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -84,6 +85,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private Date date;
     private Bill current;
     Staff currentStaff;
+    Institution institution;
     double totalDue;
     double totalPaying;
     private Boolean printPreview = false;
@@ -286,6 +288,45 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public void calculateDueFeesAgency() {
+
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType=:bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and b.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and b.institution=:ins";
+            hm.put("ins", getInstitution());
+        }
+
+        
+        //hm.put("ins", sessionController.getInstitution());
+        //hm.put("bt", bts);
+        hm.put("ftp", FeeType.OtherInstitution);
+        hm.put("class", BilledBill.class);
+        hm.put("bt", BillType.ChannelAgent);
+        dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
 
     public void calculateTotalDue() {
         if (dueBillFees != null) {
@@ -405,6 +446,32 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
+    
+    private Bill createPaymentBillAgent() {
+        BilledBill tmp = new BilledBill();
+        tmp.setBillDate(Calendar.getInstance().getTime());
+        tmp.setBillTime(Calendar.getInstance().getTime());
+        tmp.setBillType(BillType.ChannelAgencyPayment);
+        tmp.setCreatedAt(Calendar.getInstance().getTime());
+        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setDepartment(getSessionController().getDepartment());
+
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelAgencyPayment, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelAgencyPayment, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
+
+        tmp.setDiscount(0.0);
+        tmp.setDiscountPercent(0.0);
+
+        tmp.setInstitution(getSessionController().getInstitution());
+        tmp.setNetTotal(0 - totalPaying);
+        tmp.setPaymentMethod(paymentMethod);
+        tmp.setToInstitution(institution);
+//        tmp.setStaff(currentStaff);
+       //tmp.setToStaff(currentStaff);
+        tmp.setTotal(0 - totalPaying);
+
+        return tmp;
+    }
 
     private boolean checkBillFeeValue() {
         for (BillFee f : payingBillFees) {
@@ -438,6 +505,30 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return false;
     }
+    
+    private boolean errorCheckForAgency() {
+//        if (currentStaff == null) {
+//            UtilityController.addErrorMessage("Please select a Staff Memeber");
+//            return true;
+//        }
+
+        if (checkBillFeeValue()) {
+            UtilityController.addErrorMessage("There is a Credit Bill");
+            return true;
+        }
+
+        performCalculations();
+        if (totalPaying == 0) {
+            UtilityController.addErrorMessage("Please select payments to update");
+            return true;
+        }
+        if (paymentMethod == null) {
+            UtilityController.addErrorMessage("Please select a payment method");
+            return true;
+        }
+
+        return false;
+    }
 
     public void settleBill() {
         if (errorCheck()) {
@@ -445,6 +536,20 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
         calculateTotalPay();
         Bill b = createPaymentBill();
+        current = b;
+        getBillFacade().create(b);
+        saveBillCompo(b);
+        printPreview = true;
+        UtilityController.addSuccessMessage("Successfully Paid");
+        //System.out.println("Paid");
+    }
+    
+    public void settleBillAgent() {
+        if (errorCheckForAgency()) {
+            return;
+        }
+        calculateTotalPay();
+        Bill b = createPaymentBillAgent();
         current = b;
         getBillFacade().create(b);
         saveBillCompo(b);
@@ -590,6 +695,16 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;

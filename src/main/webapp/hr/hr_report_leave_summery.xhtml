@@ -49,29 +49,66 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeaveBallances}" var="ss">
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Leave Report "/>
+                                </f:facet>
+                                
+                                
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp No"/>
+                                </f:facet>
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                    
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"/>
+                                </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Department Name"/>
+                                </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.department.name}"></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Category">
-                                    #{ss.staff.staffCategory.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Category"/>
+                                </f:facet>
+                                    <p:outputLabel value="#{ss.staff.staffCategory.name}"></p:outputLabel>
+                                    
                                 </p:column>
                                 <p:column headerText="Staff Designation">
-                                    #{ss.staff.designation.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Designation"/>
+                                </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.designation.name}"></p:outputLabel>
+                                   
                                 </p:column>
                                 <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Roster"/>
+                                </f:facet>
+                                    <p:outputLabel value="#{ss.staff.roster.name}"></p:outputLabel>
+                                    
                                 </p:column>  
                                 <p:column headerText="Leave Type" >
-                                    #{ss.leaveType}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Type"/>
+                                </f:facet>
+                                    <p:outputLabel value="  #{ss.leaveType}"></p:outputLabel>
+                                  
                                 </p:column>   
                                 <p:column headerText="Leave Qty" >
-                                    #{ss.count}
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Qty"/>
+                                </f:facet>
+                                    <p:outputLabel value="  #{ss.count}"></p:outputLabel>
+                                  
                                 </p:column> 
 
                             </p:dataTable>

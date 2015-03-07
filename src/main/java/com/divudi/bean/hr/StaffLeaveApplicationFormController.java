@@ -230,7 +230,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 + " where ss.retired=false "
                 + " and ss.staff=:stf "
                 + " and ss.fromDate=:frm "
-                + " and ss.toDate=:td "
+                + " and ss.toDate<=:td "
                 + " and ss.leaveType in :ltp ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
@@ -256,6 +256,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
         StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType(),
                 commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()),
                 commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
+        System.out.println("getCurrentLeaveForm().getStaff() = " + getCurrentLeaveForm().getStaff());
+        System.out.println("getCurrentLeaveForm().getLeaveType() = " + getCurrentLeaveForm().getLeaveType());
+        System.out.println("commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
+        System.out.println("commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()));
+        System.out.println("staffLeaveEntitle = " + staffLeaveEntitle);
+        System.out.println("leaveTypeLocal.isExceptionalLeave() = " + leaveTypeLocal.isExceptionalLeave());
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
             UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
@@ -579,6 +585,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and l.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -650,6 +661,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and l.roster.department.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
         }
 
         m.put("fd", fromDate);
@@ -844,7 +860,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -855,7 +871,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

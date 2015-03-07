@@ -49,7 +49,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1, tb2, tb3, tb4, tb5, tb6, tb7, tb8" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -66,10 +66,16 @@
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Day Type">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Day Type" ></p:outputLabel>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.dayType}"/>
                                 </p:column>
 
                                 <p:column headerText="Shift Date">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Shift Date" ></p:outputLabel>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.shiftDate}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>

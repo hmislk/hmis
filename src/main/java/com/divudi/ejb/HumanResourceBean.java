@@ -464,11 +464,11 @@ public class HumanResourceBean {
         Date startTime = additionalForm.getFromTime();
         Calendar min = Calendar.getInstance();
         min.setTime(startTime);
-        min.add(Calendar.HOUR, -2);
+        min.add(Calendar.MINUTE, -30);
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 2);
+        max.add(Calendar.MINUTE, 30);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -535,11 +535,11 @@ public class HumanResourceBean {
         Date endTime = additionalForm.getToTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-        min.add(Calendar.HOUR, -2);
+        min.add(Calendar.MINUTE, -30);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
-        max.add(Calendar.HOUR, 2);
+        max.add(Calendar.MINUTE, 30);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -2718,8 +2718,8 @@ public class HumanResourceBean {
     public List<ExtraDutyCount> calExtraDuty(Date date, Staff staff) {
 
         DateRange dateRange = new DateRange();
-        dateRange.setFromDate(getCommonFunctions().getStartOfMonth(date));
-        dateRange.setToDate(getCommonFunctions().getEndOfMonth(date));
+        dateRange.setFromDate(com.divudi.java.CommonFunctions.getStartOfMonth(date));
+        dateRange.setToDate(com.divudi.java.CommonFunctions.getEndOfMonth(date));
 
         //System.err.println("From : " + dateRange.getFromDate());
         //System.err.println("To : " + dateRange.getToDate());

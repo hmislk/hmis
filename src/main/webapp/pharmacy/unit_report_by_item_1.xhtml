@@ -4,6 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
@@ -39,35 +40,51 @@
                         </p:autoComplete> 
                     </h:panelGrid>
 
-
                     <p:commandButton ajax="false" value="Fill" 
-                                     action="#{reportsTransfer.fillItemCountsWithOutMargin()}" />
+                                     action="#{reportsTransfer.fillItemCountsWithOutMarginPharmacy()}" />
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="unit_report_by_item"  />
+                    </p:commandButton>
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
 
-
-                    <p:dataTable id="tbl"  value="#{reportsTransfer.itemCountWithOutMargins}"
-                                 stickyHeader="true"
-                                 var="i"  >
-                        <p:column headerText="Item">
-                            #{i.item.name}
-                        </p:column>
-                        <p:column headerText="Count" style="text-align: right;">
-                            #{i.count}
-                        </p:column>
-                        <p:column headerText="Net Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.net}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>   
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.netTotalValues}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>
+                    <p:panel id="gpBillPreview">
+                        <p:dataTable id="tbl"  value="#{reportsTransfer.itemCountWithOutMargins}"
+                                     stickyHeader="true"
+                                     var="i"  >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Pharmacy Unit Issue Item Count With Net Total" />
                             </f:facet>
-                        </p:column>
-                    </p:dataTable>
+                            <p:column headerText="Item">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.item.name}" />
+                            </p:column>
+                            <p:column headerText="Count" style="text-align: right;">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Count" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.count}" />
+                            </p:column>
+                            <p:column headerText="Net Value" style="text-align: right;">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Net Value" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.net}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputLabel>   
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsTransfer.netTotalValues}">
+                                        <f:convertNumber  pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
     </body>
 </html>
