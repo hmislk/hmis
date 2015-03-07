@@ -2718,8 +2718,8 @@ public class HumanResourceBean {
     public List<ExtraDutyCount> calExtraDuty(Date date, Staff staff) {
 
         DateRange dateRange = new DateRange();
-        dateRange.setFromDate(getCommonFunctions().getStartOfMonth(date));
-        dateRange.setToDate(getCommonFunctions().getEndOfMonth(date));
+        dateRange.setFromDate(com.divudi.java.CommonFunctions.getStartOfMonth(date));
+        dateRange.setToDate(com.divudi.java.CommonFunctions.getEndOfMonth(date));
 
         //System.err.println("From : " + dateRange.getFromDate());
         //System.err.println("To : " + dateRange.getToDate());

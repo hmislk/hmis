@@ -99,6 +99,11 @@ public enum Privileges {
     LabEditPatient,
     LabInvestigationFee,
     LabAddInwardServices,
+    IncomeReport,
+    LabReport,
+    DuesAndAccess,
+    CheckEnteredData,
+    LabAdiministrator,
     
     PaymentBilling,
     PaymentBillSearch,
@@ -254,4 +259,22 @@ public enum Privileges {
     
     Developers,
 
+    //Cashier
+    AllCashierSummery,
+    
+    
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

@@ -3884,7 +3884,47 @@ public class SearchController implements Serializable {
         billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createChannelDueBillFeeByAgent() {
+        selectedServiceSession = null;
 
+        //BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+       // List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.bill.refunded=false "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and bs.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+//        if (getCurrentStaff() != null) {
+//            sql += " and b.staff=:stf ";
+//            hm.put("stf", getCurrentStaff());
+//        }
+
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", BillType.ChannelAgent);
+        hm.put("ftp", FeeType.OtherInstitution);
+        hm.put("class", BilledBill.class);
+        billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
     public void createAgentPaymentTable() {
         bills = null;
         String sql;
