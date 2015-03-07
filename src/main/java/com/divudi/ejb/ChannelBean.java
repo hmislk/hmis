@@ -112,6 +112,94 @@ public class ChannelBean {
         return lg.intValue();
     }
 
+    
+    public List<ServiceSession> setSessionAt(List<ServiceSession> sessions) {
+        int sessionDayCount = 0;
+        List<ServiceSession> serviceSessions = new ArrayList<>();
+        Date nowDate = Calendar.getInstance().getTime();
+
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        Date toDate = c.getTime();
+        Integer tmp = 0;
+        int rowIndex = 0;
+
+        while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounter()) {
+            boolean hasSpecificDateSession = false;
+
+            if (checkLeaveDate(nowDate, sessions.get(0).getStaff())) {
+                continue;
+            }
+
+            for (ServiceSession ss : sessions) {
+                if (ss.getSessionDate() != null) {
+                    Calendar sessionDate = Calendar.getInstance();
+                    sessionDate.setTime(ss.getSessionDate());
+                    Calendar nDate = Calendar.getInstance();
+                    nDate.setTime(nowDate);
+
+                    if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        hasSpecificDateSession = true;
+                        ServiceSession newSs = new ServiceSession();
+                        newSs.setName(ss.getName());
+                        newSs.setMaxNo(ss.getMaxNo());
+                        newSs.setStartingTime(ss.getStartingTime());
+                        newSs.setSessionWeekday(ss.getSessionWeekday());
+                        newSs.setHospitalFee(ss.getHospitalFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
+                        newSs.setId(ss.getId());
+                        newSs.setSessionAt(nowDate);
+                        newSs.setStaff(ss.getStaff());
+                        //Temprory
+                        newSs.setRoomNo(rowIndex++);
+                        ////System.out.println("Specific Count : " + sessionDayCount);
+                        serviceSessions.add(newSs);
+
+                        if (tmp != ss.getSessionWeekday()) {
+                            sessionDayCount++;
+                        }
+                    }
+                }
+            }
+
+            if (hasSpecificDateSession == false) {
+                for (ServiceSession ss : sessions) {
+                    Calendar wdc = Calendar.getInstance();
+                    wdc.setTime(nowDate);
+                    if (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK)) {
+                        ServiceSession newSs = new ServiceSession();
+                        newSs.setName(ss.getName());
+                        newSs.setMaxNo(ss.getMaxNo());
+                        newSs.setStartingTime(ss.getStartingTime());
+                        newSs.setSessionWeekday(ss.getSessionWeekday());
+                        newSs.setHospitalFee(ss.getHospitalFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
+                        newSs.setId(ss.getId());
+                        newSs.setSessionAt(nowDate);
+                        newSs.setStaff(ss.getStaff());
+                        //Temprory
+                        newSs.setRoomNo(rowIndex++);
+                        // //System.out.println("Count : " + sessionDayCount);
+
+                        serviceSessions.add(newSs);
+
+                        if (tmp != ss.getSessionWeekday()) {
+                            sessionDayCount++;
+                        }
+                    }
+
+                }
+            }
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+        return serviceSessions;
+    }
+    
     private boolean checkLeaveDate(Date date, Staff staff) {
         System.err.println("Leave Staff " + staff);
         System.err.println("Date " + date);
