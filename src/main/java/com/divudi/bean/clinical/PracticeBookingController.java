@@ -26,6 +26,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -36,6 +37,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
@@ -584,6 +586,23 @@ public class PracticeBookingController implements Serializable {
         this.billSessions = billSessions;
     }
 
+    @EJB
+    SessionNumberGeneratorFacade sngFacade;
+    
+    public SessionNumberGenerator getSessionNumberGenerator(Staff staff){
+        String j;
+        Map m = new HashMap();
+        m.put("staff", staff);
+        j="Select s from SessionNumberGenerator s where s.staff=:staff";
+        SessionNumberGenerator s = sngFacade.findFirstBySQL(j, m);
+        if(s==null){
+            s= new SessionNumberGenerator();
+            s.setStaff(staff);
+            sngFacade.create(s);
+        }
+        return s;
+    }
+    
     public ServiceSession getSelectedServiceSession() {
             String sql;
             Map m = new HashMap();
@@ -591,12 +610,15 @@ public class PracticeBookingController implements Serializable {
             m.put("d", sessionDate);
             sql = "select ss from ServiceSession ss where ss.staff=:s and ss.sessionDate=:d";
             selectedServiceSession = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.DATE);
+            System.out.println("selectedServiceSession = " + selectedServiceSession);
             if (selectedServiceSession == null) {
                 selectedServiceSession = new ServiceSession();
+                selectedServiceSession.setSessionNumberGenerator(getSessionNumberGenerator(doctor));
                 selectedServiceSession.setSessionDate(sessionDate);
                 selectedServiceSession.setStaff(doctor);
                 selectedServiceSession.setSessionTime(Calendar.getInstance().getTime());
                 getServiceSessionFacade().create(selectedServiceSession);
+                System.out.println("new selectedServiceSession = " + selectedServiceSession);
             }
         return selectedServiceSession;
     }
