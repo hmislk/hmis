@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>        
+        <cc:attribute name="systemTimeStamp" type="com.divudi.data.SystemTimeStamp" />
+        <cc:attribute name="date" type="java.util.Date" />        
+        <cc:attribute name="timeEnterListener" method-signature="void action()"/>
+        <cc:attribute name="timeSelectListener" method-signature="void action2()"/>  
+        <cc:attribute name="idValue" />  
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div id="#{cc.clientId}">
+            <h:panelGroup>
+                <h:panelGrid columns="6" >
+                    <p:inputText id="year#{cc.attrs.idValue}" style="width: 40px;"  value="#{cc.attrs.systemTimeStamp.year}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue}
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>
+                    <p:inputText id="month#{cc.attrs.idValue}" style="width: 25px;" value="#{cc.attrs.systemTimeStamp.month}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue} 
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>
+                    <p:inputText id="day#{cc.attrs.idValue}" style="width: 25px;" value="#{cc.attrs.systemTimeStamp.day}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue} 
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>
+                    <p:inputText id="hour#{cc.attrs.idValue}" style="width: 25px;" value="#{cc.attrs.systemTimeStamp.hour}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue} 
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>
+                    <p:inputText id="minute#{cc.attrs.idValue}" style="width: 25px;" value="#{cc.attrs.systemTimeStamp.minute}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue}
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>
+                    <p:inputText id="second#{cc.attrs.idValue}" style="width: 25px;" value="#{cc.attrs.systemTimeStamp.second}">
+                        <p:ajax process="year#{cc.attrs.idValue} month#{cc.attrs.idValue} day#{cc.attrs.idValue} 
+                                hour#{cc.attrs.idValue} minute#{cc.attrs.idValue} second#{cc.attrs.idValue}" event="keyup" update="calendar#{cc.attrs.idValue}"  listener="#{cc.attrs.timeEnterListener}"/>
+                    </p:inputText>     
+                    <h:outputLabel value="YYYY"/>
+                    <h:outputLabel value="MM"/>
+                    <h:outputLabel value="DD"/>
+                    <h:outputLabel value="H"/>
+                    <h:outputLabel value="M"/>
+                    <h:outputLabel value="S"/>
+                </h:panelGrid>
+                <p:calendar id="calendar#{cc.attrs.idValue}" 
+                            navigator="true"
+                            value="#{cc.attrs.date}"
+                            pattern="yyyy MM dd HH:mm:ss">    
+                    <f:ajax event="dateSelect" execute="@this" render="year#{cc.attrs.idValue} 
+                            month#{cc.attrs.idValue} day#{cc.attrs.idValue} 
+                            hour#{cc.attrs.idValue} minute#{cc.attrs.idValue}
+                            second#{cc.attrs.idValue}" 
+                            listener="#{cc.attrs.timeSelectListener}"/>
+                </p:calendar> 
+            </h:panelGroup>
+        </div>
+    </cc:implementation>
+</html>
