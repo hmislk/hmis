@@ -6,6 +6,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
@@ -68,38 +69,38 @@ public class CommonReport implements Serializable {
     List<BillFee> billFees;
     List<Bill> referralBills;
     List<BillItem> referralBillItems;
-    
+
     List<Bill> pharmacyCashBilledBills;
     List<Bill> pharmacyCashCancelBills;
     List<Bill> pharmacyCashReturnbill;
-    
+
     List<Bill> pharmacyCreditBilledBills;
     List<Bill> pharmacyCreditCancelBills;
     List<Bill> pharmacyCreditReturnbill;
-    
+
     List<Bill> pharmacyBhtIssueBilledBills;
     List<Bill> pharmacyBhtIssueCancelBills;
     List<Bill> pharmacyBhtIssueReturnbill;
-    
+
     List<Bill> pharmacyUnitIssueBilledBills;
     List<Bill> pharmacyUnitIssueCancelBills;
     List<Bill> pharmacyUnitIssueReturnbill;
-    
+
     double pharmacyCashBilledBillTotals;
     double pharmacyCashCancelBillTotals;
     double pharmacyCashReturnbillTotals;
-    
+
     double pharmacyCreditBilledBillTotals;
     double pharmacyCreditCancelBillTotals;
     double pharmacyCreditReturnbillTotals;
-    
+
     double pharmacyBhtIssueBilledBillTotals;
     double pharmacyBhtIssueCancelBillTotals;
     double pharmacyBhtIssueReturnbillTotals;
-    
+
     double pharmacyUnitIssueBilledBillTotals;
     double pharmacyUnitIssueCancelBillTotals;
-    double pharmacyUnitIssueReturnbillTotals; 
+    double pharmacyUnitIssueReturnbillTotals;
 
     ////////////////
     private Institution collectingIns;
@@ -167,8 +168,6 @@ public class CommonReport implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
 
     public double displayOutsideCalBillFees() {
         String jpql;
@@ -588,10 +587,6 @@ public class CommonReport implements Serializable {
     public void setIns(Institution ins) {
         this.ins = ins;
     }
-    
-    
-    
-    
 
     public List<Bill> getBillsByReferingDoc() {
 
@@ -1022,6 +1017,40 @@ public class CommonReport implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+    
+    List<BillItem>billItems;
+
+    public void createGRNBillItemForAsset() {
+        String sql;
+        Map m = new HashMap();
+        billItems=new ArrayList<>();
+
+        sql = " SELECT bi FROM BillItem bi WHERE "
+                + " type(bi.bill)=:bill "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billType = :btp "
+                + " and bi.item.departmentType=:dt "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " order by bi.bill.createdAt  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", BilledBill.class);
+        m.put("btp", BillType.StoreGrnBill);
+        m.put("dt", DepartmentType.Inventry);
+
+        billItems=getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("billItems = " + billItems);
+        System.out.println("billItems Size = " + billItems.size());
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
     }
 
     public BillsTotals getUserBillsOwn() {
@@ -1653,7 +1682,7 @@ public class CommonReport implements Serializable {
         return billedBillsPh;
     }
 
-      public double getFinalCreditTotal(List<BillsTotals> list) {
+    public double getFinalCreditTotal(List<BillsTotals> list) {
 
         double tmp = 0.0;
         for (BillsTotals bt : list) {
@@ -1735,42 +1764,41 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip, webUser, department));
 
     }
-    
+
     public void fetchPharmacySummeryAll() {
-       pharmacyCashBilledBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new BilledBill());
-       pharmacyCashCancelBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new CancelledBill());
-       pharmacyCashReturnbill = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new RefundBill());
-       
-       pharmacyCreditBilledBills = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new BilledBill());
-       pharmacyCreditCancelBills = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new CancelledBill());
-       pharmacyCreditReturnbill = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new RefundBill());
-       
-       pharmacyBhtIssueBilledBills = getPharmacyBills(BillType.PharmacyBhtPre, new PreBill());
+        pharmacyCashBilledBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new BilledBill());
+        pharmacyCashCancelBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new CancelledBill());
+        pharmacyCashReturnbill = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new RefundBill());
+
+        pharmacyCreditBilledBills = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new BilledBill());
+        pharmacyCreditCancelBills = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new CancelledBill());
+        pharmacyCreditReturnbill = getPharmacyBills(PaymentMethod.Credit, BillType.PharmacySale, new RefundBill());
+
+        pharmacyBhtIssueBilledBills = getPharmacyBills(BillType.PharmacyBhtPre, new PreBill());
        //pharmacyBhtIssueCancelBills = getPharmacyBills(BillType.PharmacyBhtPre, new CancelledBill());
-       //pharmacyBhtIssueReturnbill = getPharmacyBills(BillType.PharmacyBhtPre, new RefundBill());
-       
-       pharmacyUnitIssueBilledBills = getPharmacyBills(BillType.PharmacyIssue, new PreBill());
+        //pharmacyBhtIssueReturnbill = getPharmacyBills(BillType.PharmacyBhtPre, new RefundBill());
+
+        pharmacyUnitIssueBilledBills = getPharmacyBills(BillType.PharmacyIssue, new PreBill());
        //pharmacyUnitIssueCancelBills = getPharmacyBills(BillType.PharmacyIssue, new CancelledBill());
-       //pharmacyUnitIssueReturnbill = getPharmacyBills(BillType.PharmacyIssue, new RefundBill());
-       
-       //totals
-       pharmacyCashBilledBillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new BilledBill());
-       pharmacyCashCancelBillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new CancelledBill());
-       pharmacyCashReturnbillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new RefundBill());
-       
-       pharmacyCreditBilledBillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new BilledBill());
-       pharmacyCreditCancelBillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new CancelledBill());
-       pharmacyCreditReturnbillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new RefundBill());
-       
-       pharmacyBhtIssueBilledBillTotals = getPharmacyBillTotal(BillType.PharmacyBhtPre, new PreBill());
+        //pharmacyUnitIssueReturnbill = getPharmacyBills(BillType.PharmacyIssue, new RefundBill());
+
+        //totals
+        pharmacyCashBilledBillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new BilledBill());
+        pharmacyCashCancelBillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new CancelledBill());
+        pharmacyCashReturnbillTotals = getPharmacyBillTotal(PaymentMethod.Cash, BillType.PharmacySale, new RefundBill());
+
+        pharmacyCreditBilledBillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new BilledBill());
+        pharmacyCreditCancelBillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new CancelledBill());
+        pharmacyCreditReturnbillTotals = getPharmacyBillTotal(PaymentMethod.Credit, BillType.PharmacySale, new RefundBill());
+
+        pharmacyBhtIssueBilledBillTotals = getPharmacyBillTotal(BillType.PharmacyBhtPre, new PreBill());
        //pharmacyBhtIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyBhtPre, new CancelledBill());
-       //pharmacyBhtIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyBhtPre, new RefundBill());
-       
-       pharmacyUnitIssueBilledBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new PreBill());
+        //pharmacyBhtIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyBhtPre, new RefundBill());
+
+        pharmacyUnitIssueBilledBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new PreBill());
        //pharmacyUnitIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new CancelledBill());
-       //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
-       
-       
+        //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
+
     }
 
     List<Bill> getPharmacyBills(PaymentMethod paymentMethod, BillType billType, Bill bill) {
@@ -1785,20 +1813,19 @@ public class CommonReport implements Serializable {
                 + " and b.paymentMethod=:pm "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
+
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
         hm.put("pm", paymentMethod);
         hm.put("fromDate", getFromDate());
-        hm.put("toDate", getToDate());        
+        hm.put("toDate", getToDate());
         hm.put("ins", getIns());
         hm.put("dep", getDepartment());
-        
-        
+
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-                
+
     }
-    
+
     List<Bill> getPharmacyBills(BillType billType, Bill bill) {
         Map hm = new HashMap();
         String sql;
@@ -1810,19 +1837,18 @@ public class CommonReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
+
         hm.put("btp", billType);
-        hm.put("bill", bill.getClass());        
+        hm.put("bill", bill.getClass());
         hm.put("fromDate", getFromDate());
-        hm.put("toDate", getToDate());        
+        hm.put("toDate", getToDate());
         hm.put("ins", getIns());
         hm.put("dep", getDepartment());
-        
-        
+
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-                
+
     }
-    
+
     public double getPharmacyBillTotal(PaymentMethod paymentMethod, BillType billType, Bill bill) {
         Map hm = new HashMap();
         String sql;
@@ -1835,20 +1861,19 @@ public class CommonReport implements Serializable {
                 + " and b.paymentMethod=:pm "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
+
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
         hm.put("pm", paymentMethod);
         hm.put("fromDate", getFromDate());
-        hm.put("toDate", getToDate());        
+        hm.put("toDate", getToDate());
         hm.put("ins", getIns());
         hm.put("dep", getDepartment());
-        
-        
+
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-                
+
     }
-    
+
     public double getPharmacyBillTotal(BillType billType, Bill bill) {
         Map hm = new HashMap();
         String sql;
@@ -1860,17 +1885,16 @@ public class CommonReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
+
         hm.put("btp", billType);
-        hm.put("bill", bill.getClass());        
+        hm.put("bill", bill.getClass());
         hm.put("fromDate", getFromDate());
         hm.put("toDate", getToDate());
         hm.put("ins", getIns());
         hm.put("dep", getDepartment());
-        
-        
+
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-                
+
     }
 
     public boolean checkLabCashier() {

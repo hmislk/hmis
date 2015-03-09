@@ -224,7 +224,7 @@ public class PharmacyPurchaseController implements Serializable {
         getPharmacyBillBean().calSaleFreeValue(getBill());
 
         for (BillItem i : getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
+            if (i.getPharmaceuticalBillItem().getQty()+i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
 
@@ -298,7 +298,7 @@ public class PharmacyPurchaseController implements Serializable {
             return;
         }
 
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
             UtilityController.addErrorMessage("Please enter Purchase QTY");
             return;
         }
