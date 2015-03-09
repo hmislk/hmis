@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Total By Fee Type">
+                    <h:panelGrid columns="7" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createChannelFees()}">
+
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{channelReportController.createChannelFees()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint">
+                        <p:dataTable value="#{channelReportController.valueList}" var="s" id="tbl2" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="aaa" />
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{s.string}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Billd Total" />
+                                </f:facet>
+                                <p:outputLabel value="#{s.value1}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Canceled Total" />
+                                </f:facet>
+                                <p:outputLabel value="#{s.value2}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Refund Total" />
+                                </f:facet>
+                                <p:outputLabel value="#{s.value3}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Net Total" />
+                                </f:facet>
+                                <p:outputLabel value="#{s.value1-(s.value2+s.value3)}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

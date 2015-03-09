@@ -485,8 +485,8 @@ public class ChannelReportController implements Serializable {
         PaymentMethod pm[] = {PaymentMethod.Cash, PaymentMethod.Staff};
         List<PaymentMethod> pms = Arrays.asList(pm);
 
-        if(webUser!=null){
-            doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff,webUser);
+        if (webUser != null) {
+            doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff, webUser);
         }
         doctorFeeTotal = calDoctorFeeNetTotal(pms, btys, FeeType.Staff);
 
@@ -820,6 +820,76 @@ public class ChannelReportController implements Serializable {
             totalRefund += ls.getValue3();
         }
 
+    }
+
+    public void createChannelFees() {
+        valueList = new ArrayList<>();
+        FeeType[] fts = {FeeType.Staff, FeeType.OwnInstitution, FeeType.OtherInstitution, FeeType.Service};
+
+        for (FeeType ft : fts) {
+            setFeeTotals(valueList, ft);
+        }
+        System.out.println("***Done***");
+    }
+
+    public void setFeeTotals(List<String1Value3> s1v3s, FeeType feeType) {
+        double totBill = 0.0;
+        double totCan = 0.0;
+        double totRef = 0.0;
+        String1Value3 s1v3 = new String1Value3();
+        totBill = getFeeTotal(new BilledBill(), feeType);
+        totCan = getFeeTotal(new CancelledBill(), feeType);
+        totRef = getFeeTotal(new RefundBill(), feeType);
+
+        switch (feeType) {
+            case Staff:
+                s1v3.setString("Staff Fee");
+                break;
+            case OwnInstitution:
+                s1v3.setString("Hospital Fee ");
+                break;
+
+            case OtherInstitution:
+                s1v3.setString("Agency Fee");
+                break;
+
+            case Service:
+                s1v3.setString("Scan Fee ");
+                break;
+
+        }
+        s1v3.setValue1(totBill);
+        s1v3.setValue2(totCan);
+        s1v3.setValue3(totRef);
+
+        System.out.println("*************");
+        System.out.println("Fee - " + s1v3.getString());
+        System.out.println("Bill - " + s1v3.getValue1());
+        System.out.println("Can - " + s1v3.getValue2());
+        System.out.println("Ref - " + s1v3.getValue3());
+
+        s1v3s.add(s1v3);
+        System.out.println("Add");
+        System.out.println("*************");
+    }
+
+    public double getFeeTotal(Bill bill, FeeType feeType) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select sum(bf.feeValue) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and ((bf.bill.singleBillSession.sessionDate between :fd and :td)or(bf.bill.billedBill.singleBillSession.sessionDate between :fd and :td)) "
+                + " and type(bf.bill)=:bt "
+                + " and bf.fee.feeType=:ft ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", bill.getClass());
+        m.put("ft", feeType);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<ChannelReportColumnModel> getChannelReportColumnModels() {
