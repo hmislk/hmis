@@ -832,6 +832,35 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void updateChannel() {
+        updateChannelCancelBillFee(new CancelledBill());
+        updateChannelCancelBillFee(new RefundBill());
+    }
+
+    public void updateChannelCancelBillFee(Bill b) {
+        String sql;
+        Map m = new HashMap();
+        BillType[] bts = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff,};
+        List<BillType> bt = Arrays.asList(bts);
+        sql = " select bs from BillSession bs where "
+                + " bs.bill.billType in :bt "
+                + " and type(bs.bill)=:cla "
+                + " and bs.bill.singleBillSession is null ";
+
+        m.put("cla", b.getClass());
+        m.put("bt", bt);
+        System.out.println("getBillSessionFacade().findBySQL(sql, m) = " + getBillSessionFacade().findBySQL(sql, m));
+        List<BillSession> billSessions = getBillSessionFacade().findBySQL(sql, m);
+        System.out.println("billSessions = " + billSessions.size());
+        for (BillSession bs : billSessions) {
+            System.out.println("In");
+            bs.getBill().setSingleBillSession(bs);
+            System.out.println("bs.getSingleBillSession() = " + bs.getBill().getSingleBillSession());
+            getBillFacade().edit(bs.getBill());
+            System.out.println("Out");
+        }
+    }
+
     public void createChannelFees() {
         valueList = new ArrayList<>();
         FeeType[] fts = {FeeType.Staff, FeeType.OwnInstitution, FeeType.OtherInstitution, FeeType.Service};
@@ -839,6 +868,8 @@ public class ChannelReportController implements Serializable {
         for (FeeType ft : fts) {
             setFeeTotals(valueList, ft);
         }
+        calTotals(valueList);
+
         System.out.println("***Done***");
     }
 
@@ -887,19 +918,34 @@ public class ChannelReportController implements Serializable {
 
         String sql;
         Map m = new HashMap();
-
+        BillType[] bts = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff,};
+        List<BillType> bt = Arrays.asList(bts);
         sql = " select sum(bf.feeValue) from BillFee  bf where "
                 + " bf.bill.retired=false "
                 + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
-                + " and type(bf.bill)=:bt "
+                + " and bf.bill.billType in :bt "
+                + " and type(bf.bill)=:class "
                 + " and bf.fee.feeType=:ft ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", bill.getClass());
+        m.put("class", bill.getClass());
         m.put("ft", feeType);
+        m.put("bt", bt);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void calTotals(List<String1Value3> string1Value3s) {
+        totalBilled = 0.0;
+        totalCancel = 0.0;
+        totalRefund = 0.0;
+        for (String1Value3 s1v3 : string1Value3s) {
+            totalBilled += s1v3.getValue1();
+            totalCancel += s1v3.getValue2();
+            totalRefund += s1v3.getValue3();
+        }
+
     }
 
     public List<ChannelReportColumnModel> getChannelReportColumnModels() {
