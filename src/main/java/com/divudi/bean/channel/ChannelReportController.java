@@ -824,7 +824,7 @@ public class ChannelReportController implements Serializable {
 
     public void createChannelFees() {
         valueList = new ArrayList<>();
-        FeeType[] fts = {FeeType.Staff, FeeType.OwnInstitution,FeeType.OtherInstitution,FeeType.Service};
+        FeeType[] fts = {FeeType.Staff, FeeType.OwnInstitution, FeeType.OtherInstitution, FeeType.Service};
 
         for (FeeType ft : fts) {
             setFeeTotals(valueList, ft);
@@ -880,7 +880,7 @@ public class ChannelReportController implements Serializable {
 
         sql = " select sum(bf.feeValue) from BillFee  bf where "
                 + " bf.bill.retired=false "
-                + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
+                + " and ((bf.bill.singleBillSession.sessionDate between :fd and :td)or(bf.bill.billedBill.singleBillSession.sessionDate between :fd and :td)) "
                 + " and type(bf.bill)=:bt "
                 + " and bf.fee.feeType=:ft ";
 
@@ -891,7 +891,7 @@ public class ChannelReportController implements Serializable {
 
         return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     public List<ChannelReportColumnModel> getChannelReportColumnModels() {
         return channelReportColumnModels;
     }

@@ -16,7 +16,7 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill Fees">
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Total By Fee Type">
                     <h:panelGrid columns="7" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
@@ -69,7 +69,7 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Net Total" />
                                 </f:facet>
-                                <p:outputLabel value="" />
+                                <p:outputLabel value="#{s.value1-(s.value2+s.value3)}" />
                             </p:column>
                         </p:dataTable>
                     </p:panel>
