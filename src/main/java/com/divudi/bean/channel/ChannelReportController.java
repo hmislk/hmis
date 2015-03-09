@@ -602,6 +602,8 @@ public class ChannelReportController implements Serializable {
         String sql = " SELECT sum(b.feeValue) from BillFee b "
                 //+ " where type(b)=:class "
                 + " where b.bill.retired=false "
+                + " and b.bill.cancelled=false "
+                + " and b.bill.refunded=false "
                 + " and b.bill.billType in :bt "
                 + " and b.bill.paymentMethod in :pm "
                 + " and b.fee.feeType=:ft"
