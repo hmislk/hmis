@@ -880,7 +880,7 @@ public class ChannelReportController implements Serializable {
 
         sql = " select sum(bf.feeValue) from BillFee  bf where "
                 + " bf.bill.retired=false "
-                + " and ((bf.bill.singleBillSession.sessionDate between :fd and :td)or(bf.bill.billedBill.singleBillSession.sessionDate between :fd and :td)) "
+                + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
                 + " and type(bf.bill)=:bt "
                 + " and bf.fee.feeType=:ft ";
 

@@ -50,6 +50,7 @@ public class UserPreference implements Serializable {
     boolean bhtNumberWithYear;
     boolean depNumGenFromToDepartment;
     boolean tranferNetTotalbyRetailRate;
+    boolean allowtoChangePaymentMethodDuringPayment;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -129,6 +130,15 @@ public class UserPreference implements Serializable {
     public void setBhtNumberWithYear(boolean bhtNumberWithYear) {
         this.bhtNumberWithYear = bhtNumberWithYear;
     }
+
+    public boolean isAllowtoChangePaymentMethodDuringPayment() {
+        return allowtoChangePaymentMethodDuringPayment;
+    }
+
+    public void setAllowtoChangePaymentMethodDuringPayment(boolean allowtoChangePaymentMethodDuringPayment) {
+        this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
+    }
+    
     
     
     
