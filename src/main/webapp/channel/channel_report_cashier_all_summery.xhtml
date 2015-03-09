@@ -87,10 +87,11 @@
 
                         <p:dataTable value="#{channelReportController.channelReportColumnModels}" id="datatbl" var="chm">
                             
-                            <p:column headerText="PaymentMethod">
+                            <p:column headerText="PaymentMethod" style="text-align: center;">
                                 <f:facet name="header">
                                     <h:outputLabel value="PaymentMethod"></h:outputLabel>
                                 </f:facet>
+                                <h:outputLabel value="\        " />
                                 <h:outputLabel value="#{chm.paymentMethod}"/>
                                 <f:facet name="footer">
                                     <h:outputLabel value="Total"></h:outputLabel>
@@ -140,8 +141,13 @@
                             <h:outputLabel value="Doctor Fees"></h:outputLabel>
                             <h:outputLabel value="#{channelReportController.doctorFeeTotal}"></h:outputLabel>
                         </p:panelGrid>
-
-
+                        
+                        <p:spacer height="30"/>
+                         <p:panelGrid columns="2">
+                            <h:outputLabel value="Net Total"></h:outputLabel>
+                            <h:outputLabel value="#{channelReportController.doctorFeeTotal}"></h:outputLabel>
+                        </p:panelGrid>
+                        
                         <p:spacer height="30"/>
 
                         <h:panelGrid columns="1">
