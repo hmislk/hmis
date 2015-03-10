@@ -110,7 +110,7 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiary">
+                                                <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
@@ -123,7 +123,7 @@
 
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
-                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;"   >
                                                 <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
@@ -149,7 +149,7 @@
                                                         <p:column headerText="Item">
                                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Quentity">
+                                                        <p:column headerText="Quantity">
                                                             <p:cellEditor>  
                                                                 <f:facet name="output">  
                                                                     <h:outputText value="#{bi.qty}" >
@@ -168,7 +168,7 @@
 
 
 
-                                                        <p:column headerText="Expiary">
+                                                        <p:column headerText="Expiry">
                                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                                 <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                             </h:outputLabel>
