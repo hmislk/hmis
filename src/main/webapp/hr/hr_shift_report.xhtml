@@ -27,10 +27,16 @@
 
                         <p:column headerText="Roster Name">
                             <h:outputLabel value="#{p.roster.name}"></h:outputLabel>
+                               <f:facet name="header">
+                                    <h:outputLabel value="Roster Name"  />
+                                </f:facet>
                         </p:column>
 
                         <p:column headerText="Shift Name">
                             <h:outputLabel value="#{p.name}"></h:outputLabel>
+                               <f:facet name="header">
+                                    <h:outputLabel value="Shift Name"  />
+                                </f:facet>
                         </p:column>
 
 <!--                        <p:column headerText="Created Date">

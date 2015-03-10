@@ -62,6 +62,7 @@ public class ReportsTransfer implements Serializable {
     Institution institution;
     List<Stock> stocks;
     List<ItemCount> itemCounts;
+    List<ItemCountWithOutMargin> itemCountWithOutMargins;
     double saleValue;
     double purchaseValue;
     double totalsValue;
@@ -83,7 +84,7 @@ public class ReportsTransfer implements Serializable {
     double stockSaleValue;
     double valueOfQOH;
     double qoh;
-   
+
     /**
      * EJBs
      */
@@ -207,13 +208,13 @@ public class ReportsTransfer implements Serializable {
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecords.add(r);
         }
-        
+
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         valueOfQOH = 0.0;
         qoh = 0.0;
-        
-        for (StockReportRecord strr : movementRecords){
+
+        for (StockReportRecord strr : movementRecords) {
             stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
             stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
             valueOfQOH = valueOfQOH + (strr.getStockQty());
@@ -271,13 +272,13 @@ public class ReportsTransfer implements Serializable {
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecordsQty.add(r);
         }
-        
+
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         valueOfQOH = 0.0;
         qoh = 0.0;
-        
-        for (StockReportRecord strr : movementRecords){
+
+        for (StockReportRecord strr : movementRecords) {
             stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
             stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
             valueOfQOH = valueOfQOH + (strr.getStockQty());
@@ -616,6 +617,38 @@ public class ReportsTransfer implements Serializable {
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
+    private List<Object[]> fetchBillItemWithOutMargin(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select DISTINCT(b.pharmaceuticalBillItem.itemBatch.item),"
+                + " sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt"
+                + " group by b.pharmaceuticalBillItem.itemBatch.item "
+                + " order by b.item.name";
+
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
     private List<Object[]> fetchBillItem(BillType billType, SurgeryBillType surgeryBillType) {
         Map m = new HashMap();
         String sql;
@@ -811,6 +844,49 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyIssue);
         billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+
+    }
+
+    public void fillItemCountsWithOutMarginPharmacy() {
+        fillItemCountsWithOutMargin(BillType.PharmacyIssue);
+    }
+
+    public void fillItemCountsWithOutMarginStore() {
+        fillItemCountsWithOutMargin(BillType.StoreIssue);
+    }
+
+    public void fillItemCountsWithOutMargin(BillType bt) {
+
+        List<Object[]> list = fetchBillItemWithOutMargin(bt);
+        System.out.println("list = " + list);
+        if (list == null) {
+            return;
+        }
+
+        itemCountWithOutMargins = new ArrayList<>();
+        netTotalValues = 0;
+
+        for (Object[] obj : list) {
+            ItemCountWithOutMargin row = new ItemCountWithOutMargin();
+            row.setItem((Item) obj[0]);
+            row.setNet((Double) obj[1]);
+
+            Double pre = calCountItem(row.getItem(), bt, new PreBill());
+            Double preCancel = calCountCanItem(row.getItem(), bt, new PreBill());
+            Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            netTotalValues += row.getNet();
+
+            itemCountWithOutMargins.add(row);
+        }
+
+        billNetTotal = fetchBillNetTotal(bt);
 
     }
 
@@ -1115,6 +1191,114 @@ public class ReportsTransfer implements Serializable {
 
     }
 
+    private Double calCountItem(Item item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch.item=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private Double calCountReturnItem(Item item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is not null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch.item=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private Double calCountCanItem(Item item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is not null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch.item=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public void fillDepartmentTransfersRecieveByBill() {
         Map m = new HashMap();
         String sql;
@@ -1209,8 +1393,6 @@ public class ReportsTransfer implements Serializable {
         this.stockPurchaseValue = stockPurchaseValue;
     }
 
-    
-
     public double getStockSaleValue() {
         return stockSaleValue;
     }
@@ -1219,8 +1401,6 @@ public class ReportsTransfer implements Serializable {
         this.stockSaleValue = stockSaleValue;
     }
 
-    
-    
     public Department getToDepartment() {
         return toDepartment;
     }
@@ -1409,6 +1589,46 @@ public class ReportsTransfer implements Serializable {
             this.net = net;
         }
 
+    }
+
+    public class ItemCountWithOutMargin {
+
+        Item item;
+        double count;
+        double net;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getCount() {
+            return count;
+        }
+
+        public void setCount(double count) {
+            this.count = count;
+        }
+
+        public double getNet() {
+            return net;
+        }
+
+        public void setNet(double net) {
+            this.net = net;
+        }
+
+    }
+
+    public List<ItemCountWithOutMargin> getItemCountWithOutMargins() {
+        return itemCountWithOutMargins;
+    }
+
+    public void setItemCountWithOutMargins(List<ItemCountWithOutMargin> itemCountWithOutMargins) {
+        this.itemCountWithOutMargins = itemCountWithOutMargins;
     }
 
     public List<ItemCount> getItemCounts() {

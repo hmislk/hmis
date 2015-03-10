@@ -11,11 +11,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  
+        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="agency"
                          completeMethod="#{agencyController.completeAgency}" var="ix"
                          itemLabel="#{ix.name}" itemValue="#{ix}" >            
             <p:column>#{ix.institutionCode}</p:column>
             <p:column>#{ix.name}</p:column>                                
         </p:autoComplete> 
+        <p:watermark for="agency" value="Agency"/>
     </cc:implementation>
 </html>

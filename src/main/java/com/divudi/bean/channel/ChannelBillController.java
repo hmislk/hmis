@@ -489,8 +489,11 @@ public class ChannelBillController implements Serializable {
         bs.setBillItem(canBillItem);
         bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bs.setCreater(getSessionController().getLoggedUser());
-
         getBillSessionFacade().create(bs);
+        
+        can.setSingleBillSession(bs);
+        getBillFacade().edit(can);
+        
         return bs;
     }
 
@@ -501,8 +504,11 @@ public class ChannelBillController implements Serializable {
         bs.setBillItem(billItem);
         bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bs.setCreater(getSessionController().getLoggedUser());
-
         getBillSessionFacade().create(bs);
+        
+        bill.setSingleBillSession(bs);
+        getBillFacade().edit(bill);
+        
         return bs;
     }
 
