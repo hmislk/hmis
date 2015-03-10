@@ -87,19 +87,19 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
-                <p:panel   id="gpBillPreview"   >
+                <h:panelGroup   id="gpBillPreview">
 
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
                     
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" class="noBorder">
                         <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
                     
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" class="noBorder">
                         <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
 
-                </p:panel>
+                </h:panelGroup>
 
             </p:panel>
 
