@@ -45,7 +45,7 @@
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText value="Name" ></h:outputText>
+                                    <h:outputText value="Name#{paysheetComponentSystemController.current.id}" ></h:outputText>
                                     <p:inputText autocomplete="off" value="#{paysheetComponentSystemController.current.name}"  />                              
                                     <h:outputText value="Order No" ></h:outputText>
                                     <p:inputText autocomplete="off" value="#{paysheetComponentSystemController.current.orderNo}"  />                              

@@ -679,6 +679,11 @@ public class HrReportController implements Serializable {
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
         
+        if (getReportKeyWord().getSpeciality() != null) {
+            sql += " and ss.speciality=:spc ";
+            hm.put("spc", getReportKeyWord().getSpeciality());
+        }
+        
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.designation=:des ";
             hm.put("des", getReportKeyWord().getDesignation());
