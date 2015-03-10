@@ -143,14 +143,14 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="PayScheme" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.name ne null}"></h:outputLabel>
+                            <h:outputLabel value="PayScheme" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.name ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.paymentScheme.name}" rendered="#{cc.attrs.bill.paymentScheme.name ne null}"></h:outputLabel>
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.paymentScheme.printingName}" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
                         </td>
 
                     </tr>
@@ -451,8 +451,7 @@
 
             <div class="footer" style="text-align: center;">
                 <br/>
-                THANK YOU. PLEASE COME AGAIN<br/>
-                Software by www.lakmedi.com - 0715812399<br/>
+                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
 

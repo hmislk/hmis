@@ -31,6 +31,7 @@ public class PaymentScheme implements Serializable {
     //Main Properties
     Long id;
     String name;
+    String printingName;
   //  @Enumerated(EnumType.STRING)
     //PaymentMethod paymentMethod;
     @Enumerated(EnumType.STRING)
@@ -221,6 +222,16 @@ public class PaymentScheme implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
+
+    public String getPrintingName() {
+        return printingName;
+    }
+
+    public void setPrintingName(String printingName) {
+        this.printingName = printingName;
+    }
+    
+    
 
 //    public double getDiscountPercent() {
 //        return discountPercent;
