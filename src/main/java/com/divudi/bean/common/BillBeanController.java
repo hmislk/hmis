@@ -372,7 +372,7 @@ public class BillBeanController implements Serializable {
     }
     
     public double calFeeValueInward(Date fromDate, Date toDate, FeeType feetype,Institution institution, Department de) {
-        String sql = "SELECT sum(bf.feeValue)"
+        String sql = "SELECT sum(bf.feeGrossValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
                 + " and bf.fee.feeType=:ftp1 "
