@@ -263,7 +263,7 @@
                                             </p:column>
                                             <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                         </p:autoComplete>
-                                        <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}">
+                                        <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
                                             <f:ajax execute="acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                         </h:commandButton>
                                         <p:defaultCommand target="btnAddIx" />
@@ -280,11 +280,7 @@
                                                         <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
 
-                                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                                                        <p:printer target="tblSs" >
-
-                                                        </p:printer>
-                                                    </p:commandButton>
+                                                   
 
                                                 </f:facet>
                                                 <p:column headerText="No.">
@@ -345,16 +341,22 @@
 
                                         </p:tab>
                                         <p:tab title="Credit" >
+                                            <p:panelGrid columns="2">
+                                                 <p:outputLabel value="Credit Company"></p:outputLabel>
                                             <p:autoComplete id="creditCompany" 
-                                                            forceSelection="true" 
+                                                            forceSelection="true"
                                                             value="#{billController.creditCompany}"  
                                                             completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
+                                           
                                                 <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
                                                          execute="@this" 
                                                          render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
-                                            </p:autoComplete>   
-                                            <p:autoComplete  style="width: 400px;" 
+                                            </p:autoComplete> 
+                                        
+                                            
+                                             <p:outputLabel value="Staff Mamber"></p:outputLabel>
+                                            <p:autoComplete  style="width: 300px;" 
                                                              forceSelection="true" 
                                                              value="#{billController.toStaff}" 
                                                              id="creditStaff"
@@ -382,10 +384,15 @@
                                                         event="itemSelect"  listener="#{billController.calTotals()}" />
 
                                             </p:autoComplete>
+                                            
                                             <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
-                                        </p:tab>                                       
+                                         </p:panelGrid>
+                                        </p:tab>  
+                                        
+                                        
+                                        
                                         <p:tab title="Staff">
-                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 300px;">
                                             </p:autoComplete>
                                         </p:tab>
                                         <p:tab title="Referrals">

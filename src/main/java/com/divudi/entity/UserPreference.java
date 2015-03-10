@@ -63,11 +63,7 @@ public class UserPreference implements Serializable {
 
     public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
         this.applicationInstitution = applicationInstitution;
-    }
-    
-
-    
-    
+    }   
     
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {

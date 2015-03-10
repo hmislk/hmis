@@ -49,7 +49,9 @@
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}"  ></h:inputText>                                    
+                                    <h:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}"  ></h:inputText>
+                                    <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}"  ></h:inputText>
                                     <h:outputText id="lblOrder" value="Order No" />
                                     <h:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}"  />
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Payments" />
