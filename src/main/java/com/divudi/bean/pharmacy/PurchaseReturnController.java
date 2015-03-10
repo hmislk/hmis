@@ -218,7 +218,7 @@ public class PurchaseReturnController implements Serializable {
 
     public void settle() {
         if (checkGrnItems()) {
-            UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+            UtilityController.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
             return;
 
         }

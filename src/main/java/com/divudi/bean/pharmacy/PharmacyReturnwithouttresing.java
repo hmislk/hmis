@@ -64,14 +64,14 @@ import org.primefaces.event.SelectEvent;
  */
 @Named
 @SessionScoped
-public class PharmacyIssueController implements Serializable {
+public class PharmacyReturnwithouttresing implements Serializable {
 
     String errorMessage = null;
 
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacyIssueController() {
+    public PharmacyReturnwithouttresing() {
     }
 
     @Inject
@@ -111,7 +111,7 @@ public class PharmacyIssueController implements Serializable {
     private Patient searchedPatient;
     private YearMonthDay yearMonthDay;
     boolean billPreview = false;
-  
+
     Department toDepartment;
 
     /////////////////
@@ -315,7 +315,7 @@ public class PharmacyIssueController implements Serializable {
         clearBill();
         clearBillItem();
         billPreview = false;
-        return "/pharmacy/pharmacy_issue";
+        return "/pharmacy/pharmacy_return_withouttresing";
     }
 
     public void resetAll() {

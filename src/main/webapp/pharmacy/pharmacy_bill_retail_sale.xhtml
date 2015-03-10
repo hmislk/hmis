@@ -94,7 +94,7 @@
                                         </h:panelGrid>
 
                                         <h:panelGrid columns="1" >
-                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleController.intQty}" style="width: 50px!important;"   >
                                                 <p:ajax event="keyup"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
@@ -135,7 +135,7 @@
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Quentity">
+                                            <p:column headerText="Quantity">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
                                                         <h:outputText value="#{bi.qty}" >

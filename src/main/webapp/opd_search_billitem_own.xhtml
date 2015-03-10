@@ -104,13 +104,13 @@
                                 </h:panelGroup>
                                 <br/>
                             </p:column>
-                            <p:column headerText="Paymentmethod"   >
+                            <p:column headerText="Payment Method"   >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Paymentscheme" >
+                            <p:column headerText="Payment Scheme" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentScheme.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
