@@ -16,7 +16,7 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill Fees">
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Total By Fee Type">
                     <h:panelGrid columns="7" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
@@ -39,42 +39,73 @@
                     <p:panel id="reportPrint">
                         <p:dataTable value="#{channelReportController.valueList}" var="s" id="tbl2" >
                             <f:facet name="header" >
-                                <p:outputLabel value="aaa" />
+                                <p:outputLabel value="Channel Total By Fee Type" />
                             </f:facet>
                             <p:column>
                                 <f:facet name="header" >
                                     <p:outputLabel value="Fee Type" />
                                 </f:facet>
                                 <p:outputLabel value="#{s.string}" />
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
                             </p:column>
-                            <p:column>
+                            <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Billd Total" />
                                 </f:facet>
-                                <p:outputLabel value="#{s.value1}" />
+                                <p:outputLabel value="#{s.value1}" >
+                                    <f:convertNumber parent="#,##,###.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilled}" >
+                                        <f:convertNumber parent="#,##,###.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
-                            <p:column>
+                            <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Canceled Total" />
                                 </f:facet>
-                                <p:outputLabel value="#{s.value2}" />
+                                <p:outputLabel value="#{s.value2}" >
+                                    <f:convertNumber parent="#,##,###.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalCancel}" >
+                                        <f:convertNumber parent="#,##,###.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
-                            <p:column>
+                            <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Refund Total" />
                                 </f:facet>
-                                <p:outputLabel value="#{s.value3}" />
+                                <p:outputLabel value="#{s.value3}" >
+                                    <f:convertNumber parent="#,##,###.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalRefund}" >
+                                        <f:convertNumber parent="#,##,###.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
-                            <p:column>
+                            <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Net Total" />
                                 </f:facet>
-                                <p:outputLabel value="" />
+                                <p:outputLabel value="#{s.value1+(s.value2+s.value3)}" >
+                                    <f:convertNumber parent="#,##,###.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilled+channelReportController.totalCancel+channelReportController.totalRefund}" >
+                                        <f:convertNumber parent="#,##,###.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
                 </p:panel>
-
+                <p:commandButton ajax="false" value="Check" action="#{channelReportController.updateChannel()}"  rendered="false"/>
 
             </h:form>
         </h:panelGroup>
