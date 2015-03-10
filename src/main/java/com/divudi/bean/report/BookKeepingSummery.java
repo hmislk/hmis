@@ -1573,9 +1573,9 @@ public class BookKeepingSummery implements Serializable {
 //            opdHospitalTotal += bksr.getTotal();
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
-        opdHospitalTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.OwnInstitution, sessionController.getInstitution(), Arrays.asList(paymentMethods),getSessionController().getDepartment());
-        opdStaffTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods),getSessionController().getDepartment());
-        opdRegentTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.Chemical, sessionController.getInstitution(),Arrays.asList(paymentMethods),getSessionController().getDepartment());
+        opdHospitalTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.OwnInstitution, sessionController.getInstitution(),getSessionController().getDepartment());
+        opdStaffTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.Staff, sessionController.getInstitution(),getSessionController().getDepartment());
+        opdRegentTotal = getBillBean().calFeeValueInward(getFromDate(), getToDate(),FeeType.Chemical, sessionController.getInstitution(),getSessionController().getDepartment());
         //opdRegentTotalByPayMethod = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.Chemical, sessionController.getInstitution(),paymentMethod);
 
     }
