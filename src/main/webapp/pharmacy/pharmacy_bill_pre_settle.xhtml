@@ -23,7 +23,7 @@
                         <h:panelGrid columns="20"  >
                             <h:outputLabel value="Pharmacy Retail Bill" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}"  disabled="true" >                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}"  disabled="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
                             </p:selectOneMenu>

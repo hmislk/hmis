@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.SystemTimeStamp;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Department;
@@ -49,14 +50,44 @@ public class StaffAdditionalFormController implements Serializable {
     List<StaffShift> staffShifts;
     @EJB
     StaffShiftFacade staffShiftFacade;
+    SystemTimeStamp fromSystemTimeStamp;
+    SystemTimeStamp toSystemTimeStamp;
 
-    
     List<AdditionalForm> additionalForms;
     Department department;
     Staff staff;
     Staff approvedStaff;
     Date fromDate;
     Date toDate;
+
+       
+    public void timeEnterListenerFrom() {
+//        System.err.println("Starting From ");        
+        getCurrentAdditionalForm().setFromTime(getFromSystemTimeStamp().getTime());       
+//        System.err.println("Ending From ");
+    }
+     
+     
+    public void timeEnterListenerTo() {
+        System.err.println("Starting To ");             
+        
+        getCurrentAdditionalForm().setToTime(getToSystemTimeStamp().getTime());
+        System.err.println("Ending To ");
+    }
+    
+      public void timeSelectListenerFrom() {
+//        System.err.println("Starting Select From ");                
+        getFromSystemTimeStamp().processTime(getCurrentAdditionalForm().getFromTime());
+//        System.err.println("Ending Select From ");
+    }
+     
+     
+    public void timeSelectListenerTo() {
+//        System.err.println("Starting Select To ");                
+        getToSystemTimeStamp().processTime(getCurrentAdditionalForm().getToTime());
+//        System.err.println("Ending Select To ");
+    }
+    
 
     public boolean errorCheckAdditionalForm() {
         if (getCurrentAdditionalForm() == null) {
@@ -80,6 +111,10 @@ public class StaffAdditionalFormController implements Serializable {
     public void onDateSelect() {
         getCurrentAdditionalForm().setFromTime(date);
         getCurrentAdditionalForm().setToTime(date);
+
+        getFromSystemTimeStamp().processTime(date);
+        getToSystemTimeStamp().processTime(date);
+
     }
 
     public void deleteAdditionalForm() {
@@ -803,6 +838,29 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public SystemTimeStamp getFromSystemTimeStamp() {
+        if (fromSystemTimeStamp == null) {
+            fromSystemTimeStamp = new SystemTimeStamp();
+        }
+        return fromSystemTimeStamp;
+    }
+
+    public void setFromSystemTimeStamp(SystemTimeStamp fromSystemTimeStamp) {
+        this.fromSystemTimeStamp = fromSystemTimeStamp;
+    }
+
+    public SystemTimeStamp getToSystemTimeStamp() {
+        if (toSystemTimeStamp == null) {
+            toSystemTimeStamp = new SystemTimeStamp();
+        }
+
+        return toSystemTimeStamp;
+    }
+
+    public void setToSystemTimeStamp(SystemTimeStamp toSystemTimeStamp) {
+        this.toSystemTimeStamp = toSystemTimeStamp;
     }
 
 }
