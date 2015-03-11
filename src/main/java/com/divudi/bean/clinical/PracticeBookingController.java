@@ -394,6 +394,7 @@ public class PracticeBookingController implements Serializable {
     }
 
     private void addToSession(BillItem bi) {
+        System.out.println("adding to session");
         Bill b = bi.getBill();
         BillSession bs = new BillSession();
 
@@ -402,7 +403,9 @@ public class PracticeBookingController implements Serializable {
         bs.setCreatedAt(Calendar.getInstance().getTime());
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setServiceSession(getSelectedServiceSession());
+        System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
         bs.setSessionDate(getSelectedServiceSession().getSessionDate());
+        System.out.println("getSelectedServiceSession().getSessionDate() = " + getSelectedServiceSession().getSessionDate());
         int count = getServiceSessionBean().getSessionNumber(getSelectedServiceSession(), Calendar.getInstance().getTime());
         bs.setSerialNo(count);
         bs.setStaff(getSelectedServiceSession().getStaff());
@@ -412,7 +415,7 @@ public class PracticeBookingController implements Serializable {
     }
 
     private Bill addToBill() {
-        Bill bi = new Bill();
+        Bill bi = new BilledBill();
         bi.setBookingId(getBillNumberBean().gpBookingIdGenerator());
         bi.setStaff(getDoctor());
         bi.setBillType(BillType.ClinicalOpdBooking);
