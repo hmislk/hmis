@@ -230,12 +230,13 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
-        //System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
 
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
             BillType.ChannelOnCall,
-            BillType.ChannelStaff};
+            BillType.ChannelStaff,
+            BillType.ClinicalOpdBooking};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs where "
@@ -252,7 +253,7 @@ public class ServiceSessionBean {
         //System.out.println("sql = " + sql);
         //System.out.println("hh = " + hh);
         //System.out.println("lgValue= " + lgValue);
-
+        System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;
         }

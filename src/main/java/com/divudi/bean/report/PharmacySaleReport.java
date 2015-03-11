@@ -663,7 +663,7 @@ public class PharmacySaleReport implements Serializable {
 
         String sql;
 
-        sql = "select sum(f.feeValue) "
+        sql = "select sum(f.feeGrossValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
                 + " and f.bill.billType = :billType "

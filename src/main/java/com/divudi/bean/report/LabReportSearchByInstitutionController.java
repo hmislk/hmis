@@ -14,6 +14,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -27,10 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -50,13 +51,13 @@ public class LabReportSearchByInstitutionController implements Serializable {
     CommonFunctions commonFunctions;
     List<Bill> labBills;
     List<Bill> billedBills;
-    List<Bill>billBills;
-    List<Bill>canBills;
-    List<Bill>refBills;
+    List<Bill> billBills;
+    List<Bill> canBills;
+    List<Bill> refBills;
     double totalBill;
     double totalCan;
     double totalRef;
-    //   Department department;
+    Department department;
     private Institution institution;
     PaymentMethod paymentMethod;
     @EJB
@@ -252,7 +253,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 + " or f.paymentMethod = :pm4)"
                 + " and f.institution=:billedIns "
                 + " and f.createdAt between :fromDate and :toDate "
-                + " and f.toInstitution=:ins "; 
+                + " and f.toInstitution=:ins ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
@@ -557,23 +558,23 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBillsR;
     }
-    
+
     public void createTableCashCreditBills() {
-        if (paymentMethod==null) {
+        if (paymentMethod == null) {
             UtilityController.addErrorMessage("Payment Methord...!");
             return;
         }
-        if (institution==null) {
+        if (institution == null) {
             UtilityController.addErrorMessage("Institution...!");
             return;
         }
-        
-        billBills=fetchOPDBills(new BilledBill());
-        canBills=fetchOPDBills(new CancelledBill());
-        refBills=fetchOPDBills(new RefundBill());
-        totalBill=fetchOPDBillTotal(new BilledBill());
-        totalCan=fetchOPDBillTotal(new CancelledBill());
-        totalRef=fetchOPDBillTotal(new RefundBill());
+
+        billBills = fetchOPDBills(new BilledBill());
+        canBills = fetchOPDBills(new CancelledBill());
+        refBills = fetchOPDBills(new RefundBill());
+        totalBill = fetchOPDBillTotal(new BilledBill());
+        totalCan = fetchOPDBillTotal(new CancelledBill());
+        totalRef = fetchOPDBillTotal(new RefundBill());
         System.out.println("billBills = " + billBills);
         System.out.println("canBills = " + canBills);
         System.out.println("refBills = " + refBills);
@@ -581,14 +582,14 @@ public class LabReportSearchByInstitutionController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethord() {
-        PaymentMethod[] tmp= {PaymentMethod.Cash,PaymentMethod.Credit,};
+        PaymentMethod[] tmp = {PaymentMethod.Cash, PaymentMethod.Credit,};
         return tmp;
     }
-    
-    public List<Bill> fetchOPDBills(Bill bill){
+
+    public List<Bill> fetchOPDBills(Bill bill) {
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select b from Bill b where"
                 + " b.billType=:billType "
                 + " and b.toInstitution=:ins "
@@ -610,11 +611,11 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
-    
-    public double fetchOPDBillTotal(Bill bill){
+
+    public double fetchOPDBillTotal(Bill bill) {
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType=:billType "
                 + " and b.toInstitution=:ins "
@@ -787,16 +788,17 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBills;
     }
+
     public List<Bill> getBills() {
         return bills;
     }
-    
+
     public List<Bill> getLabBilledBillsOwns() {
         if (billedBills == null) {
             if (institution == null) {
                 return new ArrayList<>();
             }
-            
+
             String sql = "select f from BilledBill f "
                     + " where f.retired=false "
                     + " and f.cancelled=false "
@@ -816,7 +818,53 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return billedBills;
     }
-    
+
+    List<Bill> labBilleds;
+    double netTotal;
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public void createLabBills() {
+
+        if (institution == null) {
+            UtilityController.addErrorMessage("Select Institution");
+        }
+        String sql;
+        Map tm = new HashMap();
+        sql = "select f from BilledBill f "
+                + " where f.retired=false "
+                + " and f.cancelled=false "
+                + " and f.billType = :billType "
+                + " and f.createdAt between :fromDate and :toDate "
+                + " and f.toInstitution=:toIns ";
+        if (getDepartment() != null) {
+            sql += " and f.toDepartment=:toDep ";
+            tm.put("toDep", getDepartment());
+        }
+
+        if (getNetTotal() != 0.0) {
+            sql += " and f.netTotal=:net ";
+            tm.put("net", getNetTotal());
+        }
+
+        sql += " order by f.insId";
+
+        tm.put("fromDate", fromDate);
+        tm.put("toDate", toDate);
+        tm.put("billType", BillType.OpdBill);
+        //tm.put("billedBillCalss", BilledBill.class);
+        //  tm.put("ins", getSessionController().getInstitution());
+        tm.put("toIns", getInstitution());
+
+        labBilleds = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+    }
+
 //    public double calPaidTotal(List<Bill> bills) {
 //        double bhtTotal = 0.0;
 //        System.out.println("Items = " + bills);
@@ -825,9 +873,13 @@ public class LabReportSearchByInstitutionController implements Serializable {
 //        }
 //        return bhtTotal;
 //    } 
+    public List<Bill> getLabBilleds() {
+        return labBilleds;
+    }
 
-    
-
+    public void setLabBilleds(List<Bill> labBilleds) {
+        this.labBilleds = labBilleds;
+    }
 
     public List<Bill> getLabBills() {
         if (labBills == null) {
@@ -885,7 +937,6 @@ public class LabReportSearchByInstitutionController implements Serializable {
         String sql;
         Map tm;
 
-     
         sql = "select f from Bill f where "
                 + " f.retired=false "
                 + " and f.billType = :billType"
@@ -1270,6 +1321,14 @@ public class LabReportSearchByInstitutionController implements Serializable {
      * Creates a new instance of LabReportSearchController
      */
     public LabReportSearchByInstitutionController() {
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public Institution getInstitution() {

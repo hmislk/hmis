@@ -618,7 +618,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         checkLeave(ss);
         System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-        ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
+        List<FingerPrintRecord> missedRecords = getHumanResourceBean().fetchMissedFingerFrintRecord(ss);
+
+        if (missedRecords != null) {
+            for (FingerPrintRecord fp : missedRecords) {
+                list.add(fp);
+            }
+
+        }
 
         List<FingerPrintRecord> listFpr = new ArrayList<>();
         for (FingerPrintRecord fp : list) {
@@ -626,7 +633,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         Collections.sort(listFpr, new FingerPrintComparator());
-        ss.getFingerPrintRecordList().addAll(list);
+        ss.getFingerPrintRecordList().addAll(listFpr);
 
     }
 
@@ -1276,6 +1283,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Fetch Value for Oer Time per Month
                 double valueForOverTime = humanResourceBean.getOverTimeValue(ss.getStaff(), ss.getShiftDate());
 
+                System.err.println("#################### OverTimeValue " + valueForOverTime);
                 //Chang to Second
                 ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
 
