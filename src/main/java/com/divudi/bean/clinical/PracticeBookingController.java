@@ -415,7 +415,7 @@ public class PracticeBookingController implements Serializable {
         Bill bi = new Bill();
         bi.setBookingId(getBillNumberBean().gpBookingIdGenerator());
         bi.setStaff(getDoctor());
-        bi.setBillType(BillType.gpBooking);
+        bi.setBillType(BillType.ClinicalOpdBooking);
         if (foreigner) {
             bi.setTotal(getSelectedServiceSession().getTotalFfee());
         } else {
@@ -556,6 +556,17 @@ public class PracticeBookingController implements Serializable {
     public void listCompleteAndToCompleteBillSessions() {
         listCompletedBillSessions();
         listToCompleteBillSessions();
+    }
+    
+    public void opdVisitFromServiceSessionOld() {
+        //   System.out.println("opd visit from service session ");
+        
+        Map m = new HashMap();
+        m.put("bs", getBillSession());
+        String sql;
+        sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
+        opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        
     }
 
     public void listCompletedBillSessions() {
