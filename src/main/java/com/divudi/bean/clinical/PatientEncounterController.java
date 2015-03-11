@@ -358,6 +358,20 @@ public class PatientEncounterController implements Serializable {
         System.out.println("m = " + m);
         currentBills = getBillFacade().findBySQL(sql, m);
     }
+    
+    public void fillPatientBills(Patient patient,Date fromDate, Date todate) {
+        Map m = new HashMap();
+        m.put("p", patient);
+        m.put("bt1", BillType.OpdBill);
+        m.put("bt2", BillType.PharmacySale);
+        String sql;
+        Bill b = new Bill();
+        b.getBillType();
+        sql = "Select e from Bill e where e.patient=:p and (e.billType=:bt1 or e.billType=:bt2 ) and e.createdAt between :fd and td order by e.id desc";
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        currentBills = getBillFacade().findBySQL(sql, m);
+    }
 
     public void fillPatientInvestigations(Patient patient) {
         Map m = new HashMap();
