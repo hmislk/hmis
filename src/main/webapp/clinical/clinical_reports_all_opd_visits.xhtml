@@ -13,11 +13,11 @@
                 <h:form >
                     <p:panelGrid columns="3" >
                         <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                        <p:calendar value="#{patientEncounterController.fromDate}" pattern="dd MMMM yyyy hh:mm" ></p:calendar>
                         <h:outputLabel value="" ></h:outputLabel>
 
                         <h:outputLabel value="To" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.toDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                        <p:calendar value="#{patientEncounterController.toDate}" pattern="dd MMMM yyyy hh:mm" ></p:calendar>
                         <h:outputLabel value="" ></h:outputLabel>
 
 
@@ -53,7 +53,7 @@
                                      emptyMessage="No Patient Encounters during the selected period">
                             <p:column headerText="Visit Date/Time" >
                                 <h:outputLabel value="#{pe.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Patient" >

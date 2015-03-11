@@ -22,11 +22,13 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableInward}" onclick="onSubmitButton();" />
                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createDueFeeTableInwardAll}" onclick="onSubmitButton();" />                                 
+                                <p:commandButton id="btnSearchAllCancelled" ajax="false" value="Search All with cancelled bills" action="#{searchController.createDueFeeTableInwardAllWithCancelled()}" onclick="onSubmitButton();" />                                 
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
                                     <pe:exporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>  
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/>
+                                <p:spacer height="30"/>
+                                <h:outputLabel/><h:outputLabel/> 
+                                <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="BHT No"/>
                                 <h:outputLabel value="Patient Name"/>
@@ -77,7 +79,11 @@
                             </p:column>
 
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{bf.bill.insId}">
+                                <h:outputLabel value="#{bf.bill.insId}" 
+                                               rendered="#{bf.bill.cancelled}" style="color: red;">
+                                </h:outputLabel>
+                                  <h:outputLabel value="#{bf.bill.insId}" 
+                                               rendered="#{!bf.bill.cancelled}" >
                                 </h:outputLabel>
                             </p:column>
 
