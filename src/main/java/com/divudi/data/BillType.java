@@ -79,7 +79,8 @@ public enum BillType {
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
-    gpBooking,
+//    @Deprecated
+//    gpBooking,
     gpSettling,
     Appointment,
     @Deprecated
