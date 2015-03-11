@@ -570,6 +570,7 @@ public class PracticeBookingController implements Serializable {
                 + " and pe.billSession.sessionDate=:ssDate "
                 + " order by pe.id";
         HashMap hh = new HashMap();
+        BillType billType;
         hh.put("t", PatientEncounterType.OpdVisit);
         hh.put("ssDate", sessionDate);
         PatientEncounter pe = new PatientEncounter();
