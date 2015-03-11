@@ -412,7 +412,7 @@ public class PracticeBookingController implements Serializable {
     }
 
     private Bill addToBill() {
-        Bill bi = new Bill();
+        Bill bi = new BilledBill();
         bi.setBookingId(getBillNumberBean().gpBookingIdGenerator());
         bi.setStaff(getDoctor());
         bi.setBillType(BillType.ClinicalOpdBooking);
