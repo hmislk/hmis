@@ -250,9 +250,11 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
-        //System.out.println("sql = " + sql);
-        //System.out.println("hh = " + hh);
-        //System.out.println("lgValue= " + lgValue);
+        System.out.println("serviceSession = " + serviceSession);
+        System.out.println("serviceSession.getSessionNumberGenerator() = " + serviceSession.getSessionNumberGenerator());
+        System.out.println("sql = " + sql);
+        System.out.println("hh = " + hh);
+        System.out.println("lgValue= " + lgValue);
         System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;

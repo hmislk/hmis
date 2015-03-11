@@ -343,7 +343,7 @@ public class PracticeBookingController implements Serializable {
         opdVisit.setCreatedAt(Calendar.getInstance().getTime());
         opdVisit.setCreater(getSessionController().getLoggedUser());
         opdVisit.setPatient(billSession.getBill().getPatient());
-     //   System.out.println("billSession = " + billSession);
+        //   System.out.println("billSession = " + billSession);
         //   System.out.println("billSession.getBill() = " + billSession.getBill());
         //   System.out.println("billSession.getBill().getPatient() = " + billSession.getBill().getPatient());
         //   System.out.println("getBillSession().getBill().getPatient().getPerson().getName() = " + getBillSession().getBill().getPatient().getPerson().getName());
@@ -394,6 +394,7 @@ public class PracticeBookingController implements Serializable {
     }
 
     private void addToSession(BillItem bi) {
+        System.out.println("adding to session");
         Bill b = bi.getBill();
         BillSession bs = new BillSession();
 
@@ -402,7 +403,9 @@ public class PracticeBookingController implements Serializable {
         bs.setCreatedAt(Calendar.getInstance().getTime());
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setServiceSession(getSelectedServiceSession());
+        System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
         bs.setSessionDate(getSelectedServiceSession().getSessionDate());
+        System.out.println("getSelectedServiceSession().getSessionDate() = " + getSelectedServiceSession().getSessionDate());
         int count = getServiceSessionBean().getSessionNumber(getSelectedServiceSession(), Calendar.getInstance().getTime());
         bs.setSerialNo(count);
         bs.setStaff(getSelectedServiceSession().getStaff());
@@ -557,16 +560,40 @@ public class PracticeBookingController implements Serializable {
         listCompletedBillSessions();
         listToCompleteBillSessions();
     }
-    
+
+    List<PatientEncounter> encounters;
+
+    public void listPatientEncounters() {
+        String sql = "Select pe From PatientEncounter pe "
+                + " where pe.retired=false "
+                + " and pe.patientEncounterType=:t "
+                + " and pe.billSession.sessionDate=:ssDate "
+                + " order by pe.id";
+        HashMap hh = new HashMap();
+        hh.put("t", PatientEncounterType.OpdVisit);
+        hh.put("ssDate", sessionDate);
+        PatientEncounter pe = new PatientEncounter();
+        pe.getBillSession().getSessionDate();
+        encounters = patientEncounterFacade.findBySQL(sql, hh, TemporalType.DATE);
+    }
+
+    public List<PatientEncounter> getEncounters() {
+        return encounters;
+    }
+
+    public void setEncounters(List<PatientEncounter> encounters) {
+        this.encounters = encounters;
+    }
+
     public void opdVisitFromServiceSessionOld() {
         //   System.out.println("opd visit from service session ");
-        
+
         Map m = new HashMap();
         m.put("bs", getBillSession());
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
         opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
-        
+
     }
 
     public void listCompletedBillSessions() {
@@ -599,38 +626,38 @@ public class PracticeBookingController implements Serializable {
 
     @EJB
     SessionNumberGeneratorFacade sngFacade;
-    
-    public SessionNumberGenerator getSessionNumberGenerator(Staff staff){
+
+    public SessionNumberGenerator getSessionNumberGenerator(Staff staff) {
         String j;
         Map m = new HashMap();
         m.put("staff", staff);
-        j="Select s from SessionNumberGenerator s where s.staff=:staff";
+        j = "Select s from SessionNumberGenerator s where s.staff=:staff";
         SessionNumberGenerator s = sngFacade.findFirstBySQL(j, m);
-        if(s==null){
-            s= new SessionNumberGenerator();
+        if (s == null) {
+            s = new SessionNumberGenerator();
             s.setStaff(staff);
             sngFacade.create(s);
         }
         return s;
     }
-    
+
     public ServiceSession getSelectedServiceSession() {
-            String sql;
-            Map m = new HashMap();
-            m.put("s", doctor);
-            m.put("d", sessionDate);
-            sql = "select ss from ServiceSession ss where ss.staff=:s and ss.sessionDate=:d";
-            selectedServiceSession = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.DATE);
-            System.out.println("selectedServiceSession = " + selectedServiceSession);
-            if (selectedServiceSession == null) {
-                selectedServiceSession = new ServiceSession();
-                selectedServiceSession.setSessionNumberGenerator(getSessionNumberGenerator(doctor));
-                selectedServiceSession.setSessionDate(sessionDate);
-                selectedServiceSession.setStaff(doctor);
-                selectedServiceSession.setSessionTime(Calendar.getInstance().getTime());
-                getServiceSessionFacade().create(selectedServiceSession);
-                System.out.println("new selectedServiceSession = " + selectedServiceSession);
-            }
+        String sql;
+        Map m = new HashMap();
+        m.put("s", doctor);
+        m.put("d", sessionDate);
+        sql = "select ss from ServiceSession ss where ss.staff=:s and ss.sessionDate=:d";
+        selectedServiceSession = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.DATE);
+        System.out.println("selectedServiceSession = " + selectedServiceSession);
+        if (selectedServiceSession == null) {
+            selectedServiceSession = new ServiceSession();
+            selectedServiceSession.setSessionNumberGenerator(getSessionNumberGenerator(doctor));
+            selectedServiceSession.setSessionDate(sessionDate);
+            selectedServiceSession.setStaff(doctor);
+            selectedServiceSession.setSessionTime(Calendar.getInstance().getTime());
+            getServiceSessionFacade().create(selectedServiceSession);
+            System.out.println("new selectedServiceSession = " + selectedServiceSession);
+        }
         return selectedServiceSession;
     }
 
