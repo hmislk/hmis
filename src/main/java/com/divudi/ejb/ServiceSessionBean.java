@@ -236,7 +236,7 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ClinicalOpdBooking,};
+            BillType.ClinicalOpdBooking};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs where "
@@ -250,11 +250,10 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
-        System.out.println("sql = " + sql);
-        System.out.println("hh = " + hh);
-        System.out.println("lgValue= " + lgValue);
-        System.out.println("sql = " + sql);
-        System.out.println("hh = " + hh);
+        //System.out.println("sql = " + sql);
+        //System.out.println("hh = " + hh);
+        //System.out.println("lgValue= " + lgValue);
+        System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;
         }
