@@ -573,7 +573,7 @@ public class PracticeBookingController implements Serializable {
         hh.put("t", PatientEncounterType.OpdVisit);
         hh.put("ssDate", sessionDate);
         PatientEncounter pe = new PatientEncounter();
-        pe.getBillSession().getSessionDate();
+//        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findBySQL(sql, hh, TemporalType.DATE);
     }
 
