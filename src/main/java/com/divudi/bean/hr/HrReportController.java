@@ -76,7 +76,7 @@ import org.primefaces.model.UploadedFile;
 @Named
 @SessionScoped
 public class HrReportController implements Serializable {
-    
+
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
@@ -105,19 +105,19 @@ public class HrReportController implements Serializable {
     @EJB
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
-    
+
     private UploadedFile file;
-    
+
     public UploadedFile getFile() {
         return file;
     }
-    
+
     public void setFile(UploadedFile file) {
         this.file = file;
     }
-    
+
     public String importToExcel() throws IOException {
-        
+
         String zoneCode;
         String employerNumber;
         String epfNumber;
@@ -134,7 +134,7 @@ public class HrReportController implements Serializable {
         String department;
         String designation;
         String acNo;
-        
+
         int zoneCodeCol = 0;
         int employerNumberCol = 1;
         int epfNumberCol;
@@ -151,9 +151,9 @@ public class HrReportController implements Serializable {
         int departmentCol;
         int designationCol;
         int acNoCol;
-        
+
         int startRow = 2;
-        
+
         File inputWorkbook;
         Workbook w;
         Cell cell;
@@ -173,24 +173,24 @@ public class HrReportController implements Serializable {
             in.close();
             out.flush();
             out.close();
-            
+
             inputWorkbook = new File(f.getAbsolutePath());
-            
+
             UtilityController.addSuccessMessage("Excel File Opened");
-            
+
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
-            
+
             for (int i = startRow; i < sheet.getRows(); i++) {
-                
+
                 Map m = new HashMap();
 
                 //Category
                 cell = sheet.getCell(employerNumberCol, i);
                 acNo = cell.getContents();
-                
+
             }
-            
+
             UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException | BiffException ex) {
@@ -198,36 +198,36 @@ public class HrReportController implements Serializable {
             return "";
         }
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public List<FingerPrintRecord> getSelectedFingerPrintRecords() {
         return selectedFingerPrintRecords;
     }
-    
+
     public void setSelectedFingerPrintRecords(List<FingerPrintRecord> selectedFingerPrintRecords) {
         this.selectedFingerPrintRecords = selectedFingerPrintRecords;
     }
-    
+
     public StaffSalaryFacade getStaffSalaryFacade() {
         return staffSalaryFacade;
     }
-    
+
     public void setStaffSalaryFacade(StaffSalaryFacade staffSalaryFacade) {
         this.staffSalaryFacade = staffSalaryFacade;
     }
-    
+
     public void delete(StaffLeave ss) {
         if (ss == null) {
             return;
         }
-        
+
         Form form = ss.getForm();
         if (form != null) {
             form.setRetired(true);
@@ -236,14 +236,14 @@ public class HrReportController implements Serializable {
             form.setRetirer(sessionController.getLoggedUser());
             formFacade.edit(form);
         }
-        
+
         ss.setRetired(true);
         ss.setRetiredAt(new Date());
         ss.setRetirer(sessionController.getLoggedUser());
         staffLeaveFacade.edit(ss);
-        
+
         StaffShift staffShift = ss.getStaffShift();
-        
+
         if (staffShift != null) {
             staffShift.setAutoLeave(false);
             staffShift.setConsiderForEarlyOut(false);
@@ -251,7 +251,7 @@ public class HrReportController implements Serializable {
             staffShift.resetLeaveData(ss.getLeaveType());
             staffShift.calLeaveTime();
             staffShiftFacade.edit(staffShift);
-            
+
             String sql = "Select s from StaffShift s "
                     + " where s.retired=false "
                     + " and s.referenceStaffShiftLateIn=:ref "
@@ -265,7 +265,7 @@ public class HrReportController implements Serializable {
                     staffShiftFacade.edit(s);
                 }
             }
-            
+
             sql = "Select s from StaffShift s "
                     + " where s.retired=false "
                     + " and s.referenceStaffShiftEarlyOut=:ref "
@@ -279,51 +279,51 @@ public class HrReportController implements Serializable {
                     staffShiftFacade.edit(s);
                 }
             }
-            
+
         }
-        
+
     }
-    
+
     public List<StaffShift> getStaffShiftsHoliday() {
         return staffShiftsHoliday;
     }
-    
+
     public void setStaffShiftsHoliday(List<StaffShift> staffShiftsHoliday) {
         this.staffShiftsHoliday = staffShiftsHoliday;
     }
-    
+
     public StaffPaysheetComponentFacade getStaffPaysheetComponentFacade() {
         return staffPaysheetComponentFacade;
     }
-    
+
     public void setStaffPaysheetComponentFacade(StaffPaysheetComponentFacade staffPaysheetComponentFacade) {
         this.staffPaysheetComponentFacade = staffPaysheetComponentFacade;
     }
-    
+
     public FormFacade getFormFacade() {
         return formFacade;
     }
-    
+
     public void setFormFacade(FormFacade formFacade) {
         this.formFacade = formFacade;
     }
-    
+
     public Institution getInstitution() {
         return institution;
     }
-    
+
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
+
     public List<Department> getSelectDepartments() {
         return selectDepartments;
     }
-    
+
     public void setSelectDepartments(List<Department> selectDepartments) {
         this.selectDepartments = selectDepartments;
     }
-    
+
     public void crateDepartmentList() {
         String sql = " select i from Department i "
                 + " where i.retired=false "
@@ -333,31 +333,31 @@ public class HrReportController implements Serializable {
         hm.put("ins", institution);
         selectDepartments = departmentFacade.findBySQL(sql, hm);
     }
-    
+
     public List<WeekDayWork> getWeekDayWorks() {
         return weekDayWorks;
     }
-    
+
     public void setWeekDayWorks(List<WeekDayWork> weekDayWorks) {
         this.weekDayWorks = weekDayWorks;
     }
-    
+
     public HumanResourceBean getHumanResourceBean() {
         return humanResourceBean;
     }
-    
+
     public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
         this.humanResourceBean = humanResourceBean;
     }
-    
+
     public ShiftFacade getShiftFacade() {
         return shiftFacade;
     }
-    
+
     public void setShiftFacade(ShiftFacade shiftFacade) {
         this.shiftFacade = shiftFacade;
     }
-    
+
     public void createFingerPrintRecordLogged() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -369,8 +369,8 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-     public void createFingerPrintRecordAll() {
+
+    public void createFingerPrintRecordAll() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createFingerPrintQuary(hm);
@@ -381,23 +381,23 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public StaffFacade getStaffFacade() {
         return staffFacade;
     }
-    
+
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
     }
-    
+
     public List<Staff> getStaffs() {
         return staffs;
     }
-    
+
     public void setStaffs(List<Staff> staffs) {
         this.staffs = staffs;
     }
-    
+
     public void createFingerPrintRecordVarifiedAll() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -409,13 +409,13 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void approve() {
         if (selectedFingerPrintRecords == null) {
             UtilityController.addErrorMessage("Select Fingerprint");
             return;
         }
-        
+
         for (FingerPrintRecord fpr : selectedFingerPrintRecords) {
             fpr.setApproved(true);
             fpr.setApprovedAt(new Date());
@@ -423,7 +423,7 @@ public class HrReportController implements Serializable {
             fingerPrintRecordFacade.edit(fpr);
         }
     }
-    
+
     public void createFingerPrintNotApproved() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -449,7 +449,7 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
 //        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createFingerPrintApproved() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -475,7 +475,7 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
 //        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createFingerPrintRecordVarifiedWithLogged() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -488,7 +488,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createFingerPrintRecordVarifiedWithOutLogged() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -505,7 +505,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createFingerPrintRecordNoShiftSetted() {
         HashMap hm = new HashMap();
         String sql = "";
@@ -514,91 +514,88 @@ public class HrReportController implements Serializable {
                 + " and ss.verifiedRecord.staffShift is null "
                 + " and ss.recordTimeStamp between :frm  and :to "
                 + " and ss.fingerPrintRecordType=:ftp";
-        
+
         hm.put("ftp", FingerPrintRecordType.Logged);
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-      
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-          if (getReportKeyWord().getInstitution() != null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     public void createFingerPrintQuary(String sql, HashMap hm) {
         sql = "select ss from FingerPrintRecord ss"
                 + " where ss.retired=false"
                 + " and ss.recordTimeStamp between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-         if (getReportKeyWord().getInstitution() != null) {
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-         
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.staffShift.shift=:sh";
             hm.put("sh", getReportKeyWord().getShift());
         }
-        
+
     }
-    
+
     public String createFingerPrintQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from FingerPrintRecord ss"
@@ -606,46 +603,46 @@ public class HrReportController implements Serializable {
                 + " and ss.recordTimeStamp between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-         if (getReportKeyWord().getInstitution() != null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.staffShift.shift=:sh";
             hm.put("sh", getReportKeyWord().getShift());
         }
-        
+
         return sql;
-        
+
     }
-    
+
     public void createStaffListAll() {
         String sql;
         HashMap hm = new HashMap();
@@ -655,49 +652,49 @@ public class HrReportController implements Serializable {
                 + " order by ss.codeInterger ";
         staffs = getStaffFacade().findBySQL(sql);
     }
-    
+
     public void createStaffList() {
         String sql;
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from Staff ss "
                 + " where ss.retired=false "
                 + " and ss.codeInterger!=0 ";
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staffCategory=:stfCat ";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getSpeciality() != null) {
             sql += " and ss.speciality=:spc ";
             hm.put("spc", getReportKeyWord().getSpeciality());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.designation=:des ";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " order by ss.codeInterger ";
         staffs = getStaffFacade().findBySQL(sql, hm);
     }
-    
+
     public String createStaffShiftQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffShift ss "
@@ -705,40 +702,40 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.shift=:sh ";
             hm.put("sh", getReportKeyWord().getShift());
         }
-        
+
         return sql;
     }
-    
+
     public String createStaffSalaryQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffSalary ss "
@@ -746,45 +743,45 @@ public class HrReportController implements Serializable {
                 + " and ss.salaryCycle=:scl "
                 + " and ss.blocked=false ";
         hm.put("scl", getReportKeyWord().getSalaryCycle());
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getBank() != null) {
             sql += " and ss.bankBranch=:bk ";
             hm.put("bk", getReportKeyWord().getBank());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         return sql;
     }
-    
+
     public String createStaffSalaryComponentQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffSalaryComponant ss "
@@ -792,50 +789,50 @@ public class HrReportController implements Serializable {
                 + " and ss.salaryCycle=:scl "
                 + " and ss.staffSalary.blocked=false ";
         hm.put("scl", getReportKeyWord().getSalaryCycle());
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staffSalary.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getPaysheetComponent() != null) {
             sql += " and ss.staffPaysheetComponent.paysheetComponent=:pt ";
             hm.put("pt", getReportKeyWord().getPaysheetComponent());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staffSalary.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getBank() != null) {
             sql += " and ss.staffSalary.staff.bankBranch=:bk ";
             hm.put("bk", getReportKeyWord().getBank());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staffSalary.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staffSalary.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staffSalary.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.staffSalary.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         return sql;
     }
-    
+
     public String createStaffShiftExtraQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffShiftExtra ss "
@@ -843,68 +840,68 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.shift=:sh ";
             hm.put("sh", getReportKeyWord().getShift());
         }
-        
+
         return sql;
     }
-    
+
     List<StaffLeave> staffLeaves;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
-    
+
     public FingerPrintRecordFacade getFingerPrintRecordFacade() {
         return fingerPrintRecordFacade;
     }
-    
+
     public void setFingerPrintRecordFacade(FingerPrintRecordFacade fingerPrintRecordFacade) {
         this.fingerPrintRecordFacade = fingerPrintRecordFacade;
     }
-    
+
     public List<StaffLeave> getStaffLeaves() {
         return staffLeaves;
     }
-    
+
     public void setStaffLeaves(List<StaffLeave> staffLeaves) {
         this.staffLeaves = staffLeaves;
     }
-    
+
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
     }
-    
+
     public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
         this.staffLeaveFacade = staffLeaveFacade;
     }
-    
+
     public void createStaffLeave() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -913,44 +910,44 @@ public class HrReportController implements Serializable {
                 + " and ss.leaveDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getLeaveType() != null) {
             List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
-            
+
             sql += " and ss.leaveType in :ltp ";
             hm.put("ltp", list);
-            
+
         }
-        
+
         sql += " order by ss.form.code,ss.staff.codeInterger ";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffLeaveSystem() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -959,44 +956,44 @@ public class HrReportController implements Serializable {
                 + " and ss.leaveDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getLeaveType() != null) {
             List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
-            
+
             sql += " and ss.leaveType in :ltp ";
             hm.put("ltp", list);
-            
+
         }
-        
+
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     private List<StaffLeave> staffLeavesAnnual;
     private List<StaffLeave> staffLeavesCashual;
     private List<StaffLeave> staffLeavesNoPay;
@@ -1005,7 +1002,7 @@ public class HrReportController implements Serializable {
     private List<StaffLeave> staffLeavesMaternity1st;
     private List<StaffLeave> staffLeavesMaternity2nd;
     private List<StaffLeave> staffLeavesLieu;
-    
+
     double annualEntitle;
     double annualUtilized;
     double casualEntitle;
@@ -1022,72 +1019,72 @@ public class HrReportController implements Serializable {
     private double maternity2Utilized;
     private double lieuEntitle;
     private double lieuUtilized;
-    
+
     public double getAnnualEntitle() {
         return annualEntitle;
     }
-    
+
     public void setAnnualEntitle(double annualEntitle) {
         this.annualEntitle = annualEntitle;
     }
-    
+
     public double getAnnualUtilized() {
         return annualUtilized;
     }
-    
+
     public void setAnnualUtilized(double annualUtilized) {
         this.annualUtilized = annualUtilized;
     }
-    
+
     public List<Shift> getShiftLists() {
         return shiftLists;
     }
-    
+
     public void setShiftLists(List<Shift> shiftLists) {
         this.shiftLists = shiftLists;
     }
-    
+
     List<StaffShift> staffShiftExtraDuties;
-    
+
     public List<StaffShift> getStaffShiftExtraDuties() {
         return staffShiftExtraDuties;
     }
-    
+
     public void setStaffShiftExtraDuties(List<StaffShift> staffShiftExtraDuties) {
         this.staffShiftExtraDuties = staffShiftExtraDuties;
     }
-    
+
     private List<StaffShift> staffShiftsNoPay;
     SalaryCycle salaryCycle;
-    
+
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;
     }
-    
+
     public void setSalaryCycle(SalaryCycle salaryCycle) {
         this.salaryCycle = salaryCycle;
     }
-    
+
     List<StaffShift> staffShiftsNormal;
-    
+
     public List<StaffShift> getStaffShiftsNormal() {
         return staffShiftsNormal;
     }
-    
+
     public void setStaffShiftsNormal(List<StaffShift> staffShiftsNormal) {
         this.staffShiftsNormal = staffShiftsNormal;
     }
-    
+
     List<StaffShift> staffShiftsDayOff;
-    
+
     public List<StaffShift> getStaffShiftsDayOff() {
         return staffShiftsDayOff;
     }
-    
+
     public void setStaffShiftsDayOff(List<StaffShift> staffShiftsDayOff) {
         this.staffShiftsDayOff = staffShiftsDayOff;
     }
-    
+
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select  Staff");
@@ -1112,60 +1109,60 @@ public class HrReportController implements Serializable {
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("System Leave " + staffLeaveSystem);
     }
-    
+
     List<StaffLeave> staffLeaveSystem;
-    
+
     public List<StaffLeave> getStaffLeaveSystem() {
         return staffLeaveSystem;
     }
-    
+
     public void setStaffLeaveSystem(List<StaffLeave> staffLeaveSystem) {
         this.staffLeaveSystem = staffLeaveSystem;
     }
-    
+
     public void createStaffLeaveDetail() {
         if (getReportKeyWord().getStaff() == null) {
             return;
         }
-        
+
         annualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
         annualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
         staffLeavesAnnual = createStaffLeave(LeaveType.Annual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         casualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
         casualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
         staffLeavesCashual = createStaffLeave(LeaveType.Casual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         nopayEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
         nopayUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
         staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         dutyLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
         dutyLeaveUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
         staffLeavesDutyLeave = createStaffLeave(LeaveType.DutyLeave, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         medicalEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
         medicalUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
         staffLeavesMedical = createStaffLeave(LeaveType.Medical, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         maternity1Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
         maternity1Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
         staffLeavesMaternity1st = createStaffLeave(LeaveType.Maternity1st, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         maternity2Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
         maternity2Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
         staffLeavesMaternity2nd = createStaffLeave(LeaveType.Maternity2nd, getReportKeyWord().getStaff(), getFromDate(), getToDate());
-        
+
         lieuEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
         lieuUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
         staffLeavesLieu = createStaffLeave(LeaveType.Lieu, getReportKeyWord().getStaff(), getFromDate(), getToDate());
     }
-    
+
     public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
         if (leaveType == null || staff == null) {
             return null;
         }
-        
+
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeave ss "
@@ -1177,7 +1174,7 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("ltp", leaveType.getLeaveTypes());
-        
+
         return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -1201,15 +1198,15 @@ public class HrReportController implements Serializable {
 //        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
 //    }
     List<StaffLeaveBallance> staffLeaveBallances;
-    
+
     public List<StaffLeaveBallance> getStaffLeaveBallances() {
         return staffLeaveBallances;
     }
-    
+
     public void setStaffLeaveBallances(List<StaffLeaveBallance> staffLeaveBallances) {
         this.staffLeaveBallances = staffLeaveBallances;
     }
-    
+
     public void createStaffLeaveAggregate() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1219,47 +1216,47 @@ public class HrReportController implements Serializable {
                 + " and ss.leaveDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getLeaveType() != null) {
             List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
             sql += " and ss.leaveType in :ltp ";
             hm.put("ltp", list);
         }
-        
+
         sql += " group by ss.staff,ss.leaveType"
                 + " order by ss.staff.codeInterger,ss.leaveType ";
-        
+
         staffLeaveBallances = (List<StaffLeaveBallance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffAttendanceAggregate() {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.workingDepartment,"
                 + "FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
@@ -1270,74 +1267,74 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getSex() != null) {
             sql += " and ss.staff.person.sex=:sx ";
             hm.put("sx", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " group by FUNC('Date',ss.shiftDate),ss.staff.workingDepartment"
                 + " order by ss.shiftDate,ss.staff.workingDepartment.name";
-        
+
         departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
         calTotal();
     }
-    
+
     double totalAttendance;
-    
+
     public double getTotalAttendance() {
         return totalAttendance;
     }
-    
+
     public void setTotalAttendance(double totalAttendance) {
         this.totalAttendance = totalAttendance;
     }
-    
+
     private void calTotal() {
         totalAttendance = 0;
-        
+
         if (departmentAttendances == null) {
             return;
         }
         for (DepartmentAttendance d : departmentAttendances) {
             totalAttendance += d.getPresent();
         }
-        
+
     }
-    
+
     private List<Staff> fetchStaff() {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select distinct(ss.staff)"
                 + " from StaffShift ss "
@@ -1348,45 +1345,45 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " order by ss.staff.codeInterger";
-        
+
         return staffFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     private long fetchWorkedDays(Staff staff) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
                 + " from StaffShift ss "
@@ -1408,22 +1405,22 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
@@ -1432,10 +1429,10 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     private List<Object[]> fetchWorkedTime(Staff staff) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
                 + " sum(ss.workedWithinTimeFrameVarified),"
@@ -1454,45 +1451,45 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " group by ss.dayOfWeek"
                 + " order by ss.dayOfWeek ";
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
+
     private List<Object[]> fetchStaffShiftData() {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select ss.staff,"
                 + " sum(ss.earlyInVarified),"
@@ -1516,40 +1513,40 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " group by ss.staff "
                 + " order by ss.staff.codeInterger";
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
+
     private long fetchExtraDutyDays(Staff staff) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
                 + " from StaffShift ss "
@@ -1563,32 +1560,32 @@ public class HrReportController implements Serializable {
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
@@ -1597,10 +1594,10 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     private long fetchLateDays(Staff staff) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
                 + " from StaffShift ss "
@@ -1614,32 +1611,32 @@ public class HrReportController implements Serializable {
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
@@ -1648,10 +1645,10 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     private long fetchDayOff(Staff staff) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
                 + " from StaffShift ss "
@@ -1666,27 +1663,27 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("dtp", DayType.DayOff);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
@@ -1695,10 +1692,10 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     private long fetchWorkedDays(Staff staff, DayType dayType) {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
                 + " from StaffShift ss "
@@ -1713,32 +1710,32 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("dtp", dayType);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
@@ -1747,20 +1744,20 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
+
     private List<MonthEndRecord> monthEndRecords;
-    
+
     public FinalVariables getFinalVariables() {
         return finalVariables;
     }
-    
+
     public void setFinalVariables(FinalVariables finalVariables) {
         this.finalVariables = finalVariables;
     }
-    
+
     @EJB
     HumanResourceBean humanResourceBean;
-    
+
     public void createMonthEndReport() {
         List<Staff> staffList = fetchStaff();
         monthEndRecords = new ArrayList<>();
@@ -1783,7 +1780,7 @@ public class HrReportController implements Serializable {
             monthEndRecords.add(monthEnd);
         }
     }
-    
+
     public void createMonthEndWorkTimeReport() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         System.err.println(dateCount);
@@ -1794,13 +1791,13 @@ public class HrReportController implements Serializable {
             WeekDayWork weekDayWork = new WeekDayWork();
             weekDayWork.setStaff(stf);
             List<Object[]> list = fetchWorkedTime(stf);
-            
+
             for (Object[] obj : list) {
                 Integer dayOfWeek = (Integer) obj[0] != null ? (Integer) obj[0] : -1;
                 Double value = (Double) obj[1] != null ? (Double) obj[1] : 0;
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
-                
+
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
                         weekDayWork.setSunDay(value);
@@ -1831,11 +1828,11 @@ public class HrReportController implements Serializable {
                         weekDayWork.setSaturDayExtra(valueExtra);
                         break;
                 }
-                
+
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
                 weekDayWork.setExtraDutyValue(weekDayWork.getExtraDutyValue() + totalExtraDuty);
                 weekDayWork.setExtraDuty(weekDayWork.getExtraDuty() + valueExtra);
-                
+
             }
 
 //            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
@@ -1849,15 +1846,15 @@ public class HrReportController implements Serializable {
 
             //Fetch Basic
             double value = humanResourceBean.getOverTimeValue(stf, getToDate());
-            
+
             if (value != 0) {
                 weekDayWork.setBasicPerSecond(value / (200 * 60 * 60));
             }
-            
+
             weekDayWorks.add(weekDayWork);
         }
     }
-    
+
     public void createMonthEndStaffShiftReport() {
         List<Object[]> list = fetchStaffShiftData();
         staffShifts = new ArrayList<>();
@@ -1877,7 +1874,7 @@ public class HrReportController implements Serializable {
             Double leavedTime = (Double) obj[11];
             Double leavedTimeNoPay = (Double) obj[12];
             Double leavedTimeOther = (Double) obj[13];
-            
+
             s.setStaff(staff);
             s.setEarlyInVarified(earlyInVarified == null ? 0 : earlyInVarified);
             s.setEarlyOutVarified(earlyOutVarified == null ? 0 : earlyOutVarified);
@@ -1892,11 +1889,11 @@ public class HrReportController implements Serializable {
             s.setLeavedTime(leavedTime == null ? 0 : leavedTime);
             s.setLeavedTimeNoPay(leavedTimeNoPay == null ? 0 : leavedTimeNoPay);
             s.setLeavedTimeOther(leavedTimeOther == null ? 0 : leavedTimeOther);
-            
+
             staffShifts.add(s);
         }
     }
-    
+
     public void createMonthEndWorkTimeReportNoPay() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         Long numOfWeeks = dateCount / 7;
@@ -1906,15 +1903,15 @@ public class HrReportController implements Serializable {
             WeekDayWork weekDayWork = new WeekDayWork();
             weekDayWork.setStaff(stf);
             List<Object[]> list = fetchWorkedTime(stf);
-            
+
             for (Object[] obj : list) {
                 Integer dayOfWeek = (Integer) obj[0];
                 Double value = (Double) obj[1];
-                
+
                 if (value == null) {
                     value = 0.0;
                 }
-                
+
                 if (dayOfWeek == null) {
                     dayOfWeek = -1;
                 }
@@ -1941,37 +1938,37 @@ public class HrReportController implements Serializable {
                         weekDayWork.setSaturDay(value);
                         break;
                 }
-                
+
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
             }
-            
+
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
             double noPays = weekDayWork.getTotal() - normalWorkTime;
-            
+
             if (noPays < 0) {
                 weekDayWork.setNoPay(noPays);
                 weekDayWorks.add(weekDayWork);
             }
-            
+
         }
     }
-    
+
     List<StaffShiftAggrgation> staffShiftAggrgations;
-    
+
     public List<StaffShiftAggrgation> getStaffShiftAggrgations() {
         return staffShiftAggrgations;
     }
-    
+
     public void setStaffShiftAggrgations(List<StaffShiftAggrgation> staffShiftAggrgations) {
         this.staffShiftAggrgations = staffShiftAggrgations;
     }
-    
+
     @EJB
     FinalVariables finalVariables;
-    
+
     public void createStaffWorkingTime() {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
         sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
                 + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime+ss.leavedTimeOther)) "
@@ -1983,89 +1980,89 @@ public class HrReportController implements Serializable {
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " group by ss.staff "
                 //                + "  having (sum(ss.workedWithinTimeFrameVarified)+sum(ss.leavedTime))> 0 "
                 + " order by ss.staff.codeInterger";
-        
+
         staffShiftAggrgations = (List<StaffShiftAggrgation>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffWorkingTimeBelow28() {
         createStaffWorkingTime();
         if (staffShiftAggrgations == null) {
             return;
         }
-        
+
         Long datRange = commonFunctions.getDayCount(getFromDate(), getToDate());
         Long mul = datRange / 7;
         double maxLimitInSec = mul * finalVariables.getMinimumWorkingHourPerWeek() * 60 * 60;
         System.err.println("Max Limit " + maxLimitInSec);
         List<StaffShiftAggrgation> list = new ArrayList<>();
-        
+
         for (StaffShiftAggrgation ssa : staffShiftAggrgations) {
             double sum = 0;
-            
+
             if (ssa.getWorkingTime() != null) {
                 sum += ssa.getWorkingTime();
             }
-            
+
             if (ssa.getLeavedTime() != null) {
                 sum += ssa.getLeavedTime();
             }
-            
+
             if (sum < maxLimitInSec) {
                 list.add(ssa);
             }
         }
-        
+
         staffShiftAggrgations = list;
     }
-    
+
     List<DepartmentAttendance> departmentAttendances;
-    
+
     public List<DepartmentAttendance> getDepartmentAttendances() {
         return departmentAttendances;
     }
-    
+
     public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
         this.departmentAttendances = departmentAttendances;
     }
     @EJB
     StaffPaysheetComponentFacade staffPaysheetComponentFacade;
-    
+
     public void updateStaffPaySheetComponent() {
         String sql = " Select s"
                 + "  From StaffPaysheetComponent s"
                 + " where s.staffPaySheetComponentValue=0 ";
-        
+
         List<StaffPaysheetComponent> list = staffPaysheetComponentFacade.findBySQL(sql);
-        
+
         if (list == null) {
             return;
         }
@@ -2074,7 +2071,7 @@ public class HrReportController implements Serializable {
             staffPaysheetComponentFacade.edit(spc);
         }
     }
-    
+
     public void updateOverTimeValuePerSecond() {
         String sql = "select s from StaffShift s "
                 + " where s.overTimeValuePerSecond=0"
@@ -2083,48 +2080,76 @@ public class HrReportController implements Serializable {
         if (list == null) {
             return;
         }
-        
+
         for (StaffShift ss : list) {
             System.err.println(ss.getId());
             double valueForOverTime = humanResourceBean.getOverTimeValue(ss.getStaff(), ss.getShiftDate());
             ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
             staffShiftFacade.edit(ss);
         }
-        
+
     }
     
+    @Inject
+    PhDateController phDateController;
+
+    public void updateHoliday() {
+        String sql = "select s from StaffShift s"
+                + " where s.startRecord.recordTimeStamp is not null "
+                + " and s.endRecord.recordTimeStamp is not null";
+        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        int i=0;
+        for (StaffShift ss : list) {
+            DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+            ss.setDayType(dtp);
+            if (dtp == null) {
+                if (ss.getShift() != null) {
+                    ss.setDayType(ss.getShift().getDayType());
+                }
+            }else{
+                System.err.println("$$$$ "+dtp + "  "+ ++i);
+            }
+            staffShiftFacade.edit(ss);
+        }
+
+    }
+
     public void updateAutomaticData() {
         String sql = "select s from StaffLeaveSystem s ";
-        
+
         List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
         if (list == null) {
             return;
         }
-        
+
         for (StaffLeave ss : list) {
             ss.setRetired(true);
             ss.setRetireComments("Deleted By System");
             staffLeaveFacade.edit(ss);
-            
+
             if (ss.getForm() != null) {
                 ss.getForm().setRetired(true);
                 ss.getForm().setRetireComments("Deleted By System");
                 formFacade.edit(ss.getForm());
             }
         }
-        
+
         sql = "select s from StaffShift s"
                 + " where  (s.considerForEarlyOut=true "
                 + " or s.considerForLateIn=true "
                 + " or s.referenceStaffShiftLateIn is not null "
                 + " or s.referenceStaffShiftEarlyOut is not null "
                 + " or s.referenceStaffShift is not null )";
-        
+
         List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
         if (list2 == null) {
             return;
         }
-        
+
         for (StaffShift s : list2) {
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
@@ -2132,49 +2157,49 @@ public class HrReportController implements Serializable {
             s.setLeaveType(null);
             staffShiftFacade.edit(s);
         }
-        
+
     }
-    
+
     @Inject
     StaffSalaryController staffSalaryController;
-    
+
     public void updateStaffPaysheetComponent() {
         String sql = "select s from StaffPaysheetComponent s "
                 + " where s.retired=false ";
-        
+
         List<StaffPaysheetComponent> staffPaysheetComponents = staffPaysheetComponentFacade.findBySQL(sql);
-        
+
         if (staffPaysheetComponents == null) {
             return;
         }
-        
+
         for (StaffPaysheetComponent spc : staffPaysheetComponents) {
             if (spc.getStaffPaySheetComponentValue() != 0) {
                 continue;
             }
-            
+
             if (spc.getModifiedValue() != 0) {
                 spc.setStaffPaySheetComponentValue(spc.getModifiedValue());
             } else {
                 spc.setStaffPaySheetComponentValue(spc.getCreatedValue());
             }
-            
+
             staffPaysheetComponentFacade.edit(spc);
         }
-        
+
     }
-    
+
     public void updateLateLeaveData() {
         String sql = "select s from StaffSalary s "
                 + " where s.retired=false"
                 + " and s.salaryCycle.retired=false "
                 + " and s.blocked=false";
-        
+
         List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
         if (list == null) {
             return;
         }
-        
+
         for (StaffSalary ss : list) {
 //            double noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
 //            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
@@ -2195,13 +2220,13 @@ public class HrReportController implements Serializable {
             staffSalaryController.setOT();
             ss.calculateComponentTotal();
             ss.calcualteEpfAndEtf();
-            
+
             staffSalaryFacade.edit(ss);
-            
+
         }
-        
+
     }
-    
+
     public void createStaffShift() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2209,7 +2234,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftWorked() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2219,7 +2244,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftLieAllowed() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2228,7 +2253,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftLieAllowedWorked() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2239,40 +2264,40 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     List<StaffSalary> staffSalarys;
-    
+
     public List<StaffSalary> getStaffSalarys() {
         return staffSalarys;
     }
-    
+
     public void setStaffSalarys(List<StaffSalary> staffSalarys) {
         this.staffSalarys = staffSalarys;
     }
-    
+
     @EJB
     StaffSalaryFacade staffSalaryFacade;
     private boolean netSalary;
     private boolean otPayment;
-    
+
     public void createStaffSalaryNetSalary() {
         netSalary = true;
         otPayment = false;
         createStaffSalary();
     }
-    
+
     public void createStaffSalaryOtPayment() {
         netSalary = false;
         otPayment = true;
         createStaffSalary();
     }
-    
+
     public void createStaffSalaryNetAndOtPayment() {
         netSalary = true;
         otPayment = true;
         createStaffSalary();
     }
-    
+
     public void createStaffSalary() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2281,23 +2306,23 @@ public class HrReportController implements Serializable {
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);
-        
+
     }
     String chequeNo;
-    
+
     public String getChequeNo() {
         return chequeNo;
     }
-    
+
     public void setChequeNo(String chequeNo) {
         this.chequeNo = chequeNo;
     }
-    
+
     public void update() {
         if (staffSalarys == null) {
             return;
         }
-        
+
         for (StaffSalary staffSalary : staffSalarys) {
             if (netSalary && otPayment) {
                 staffSalary.setChequeNumberSalaryAndOverTime(chequeNo);
@@ -2306,36 +2331,36 @@ public class HrReportController implements Serializable {
             } else if (!netSalary && otPayment) {
                 staffSalary.setChequeNumberOverTime(chequeNo);
             }
-            
+
             staffSalaryFacade.edit(staffSalary);
         }
     }
-    
+
     List<StaffSalaryComponant> staffSalaryComponants;
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
-    
+
     public void createStaffSalaryComponent() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffSalaryComponentQuary(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
-    
+
     public List<StaffSalaryComponant> getStaffSalaryComponants() {
         return staffSalaryComponants;
     }
-    
+
     public void setStaffSalaryComponants(List<StaffSalaryComponant> staffSalaryComponants) {
         this.staffSalaryComponants = staffSalaryComponants;
     }
-    
+
     public StaffSalaryComponantFacade getStaffSalaryComponantFacade() {
         return staffSalaryComponantFacade;
     }
-    
+
     public void setStaffSalaryComponantFacade(StaffSalaryComponantFacade staffSalaryComponantFacade) {
         this.staffSalaryComponantFacade = staffSalaryComponantFacade;
     }
@@ -2366,9 +2391,9 @@ public class HrReportController implements Serializable {
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
     double totaldayOffAllowance = 0.0;
     double totaldayOffCount = 0.0;
-    
+
     public void calTableTotal(List<StaffSalary> stfSal) {
-        
+
         totalOvertimeMinit = 0.0; //overTimeMinute
         totalExtraDutyNormalMinute = 0.0; //extraDutyNormalMinute
         totalRatePerMinut = 0.0;  //overTimeRatePerMinute*1.5
@@ -2385,7 +2410,7 @@ public class HrReportController implements Serializable {
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
         totaldayOffAllowance = 0.0;
         totaldayOffCount = 0.0;
-        
+
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
             totalExtraDutyNormalMinute += totStaffSalary.getExtraDutyNormalMinute();
@@ -2403,11 +2428,11 @@ public class HrReportController implements Serializable {
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
             totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
             totaldayOffCount += totStaffSalary.getDayOffCount();
-            
+
         }
-        
+
     }
-    
+
     double merchantileAllowanceValueTotal = 0;
     double merchantileCountTotal = 0;
     double poyaAllowanceValueTotal = 0;
@@ -2418,12 +2443,12 @@ public class HrReportController implements Serializable {
     double noPayValueBasicTotal = 0;
     double lateNoPayCountTotal = 0;
     double noPayCountTotal = 0;
-    
+
     private void calTotalNoPay() {
         if (staffSalarys == null) {
             return;
         }
-        
+
         merchantileAllowanceValueTotal = 0;
         merchantileCountTotal = 0;
         poyaAllowanceValueTotal = 0;
@@ -2434,7 +2459,7 @@ public class HrReportController implements Serializable {
         noPayValueBasicTotal = 0;
         lateNoPayCountTotal = 0;
         noPayCountTotal = 0;
-        
+
         for (StaffSalary s : staffSalarys) {
             merchantileAllowanceValueTotal += s.getMerchantileAllowanceValue();
             merchantileCountTotal += s.getMerchantileCount();
@@ -2446,116 +2471,116 @@ public class HrReportController implements Serializable {
             noPayValueBasicTotal += s.getNoPayValueBasic();
             lateNoPayCountTotal += s.getLateNoPayCount();
             noPayCountTotal += s.getNoPayCount();
-            
+
         }
-        
+
     }
-    
+
     public StaffSalaryController getStaffSalaryController() {
         return staffSalaryController;
     }
-    
+
     public void setStaffSalaryController(StaffSalaryController staffSalaryController) {
         this.staffSalaryController = staffSalaryController;
     }
-    
+
     public double getMerchantileAllowanceValueTotal() {
         return merchantileAllowanceValueTotal;
     }
-    
+
     public void setMerchantileAllowanceValueTotal(double merchantileAllowanceValueTotal) {
         this.merchantileAllowanceValueTotal = merchantileAllowanceValueTotal;
     }
-    
+
     public double getMerchantileCountTotal() {
         return merchantileCountTotal;
     }
-    
+
     public void setMerchantileCountTotal(double merchantileCountTotal) {
         this.merchantileCountTotal = merchantileCountTotal;
     }
-    
+
     public double getPoyaAllowanceValueTotal() {
         return poyaAllowanceValueTotal;
     }
-    
+
     public void setPoyaAllowanceValueTotal(double poyaAllowanceValueTotal) {
         this.poyaAllowanceValueTotal = poyaAllowanceValueTotal;
     }
-    
+
     public double getPoyaCountTotal() {
         return poyaCountTotal;
     }
-    
+
     public void setPoyaCountTotal(double poyaCountTotal) {
         this.poyaCountTotal = poyaCountTotal;
     }
-    
+
     public double getLateNoPayAllovanceValueTotal() {
         return lateNoPayAllovanceValueTotal;
     }
-    
+
     public void setLateNoPayAllovanceValueTotal(double lateNoPayAllovanceValueTotal) {
         this.lateNoPayAllovanceValueTotal = lateNoPayAllovanceValueTotal;
     }
-    
+
     public double getLateNoPayBasicValueTotal() {
         return lateNoPayBasicValueTotal;
     }
-    
+
     public void setLateNoPayBasicValueTotal(double lateNoPayBasicValueTotal) {
         this.lateNoPayBasicValueTotal = lateNoPayBasicValueTotal;
     }
-    
+
     public double getNoPayValueAllowanceTotal() {
         return noPayValueAllowanceTotal;
     }
-    
+
     public void setNoPayValueAllowanceTotal(double noPayValueAllowanceTotal) {
         this.noPayValueAllowanceTotal = noPayValueAllowanceTotal;
     }
-    
+
     public double getNoPayValueBasicTotal() {
         return noPayValueBasicTotal;
     }
-    
+
     public void setNoPayValueBasicTotal(double noPayValueBasicTotal) {
         this.noPayValueBasicTotal = noPayValueBasicTotal;
     }
-    
+
     public double getLateNoPayCountTotal() {
         return lateNoPayCountTotal;
     }
-    
+
     public void setLateNoPayCountTotal(double lateNoPayCountTotal) {
         this.lateNoPayCountTotal = lateNoPayCountTotal;
     }
-    
+
     public double getNoPayCountTotal() {
         return noPayCountTotal;
     }
-    
+
     public void setNoPayCountTotal(double noPayCountTotal) {
         this.noPayCountTotal = noPayCountTotal;
     }
-    
+
     public void createShiftTable() {
         String sql = "Select s From Shift s "
                 + " where s.retired=false ";
         //   + " order by s.shiftOrder ";
         System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and s.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         sql += " order by s.roster.id";
-        
+
         shiftLists = getShiftFacade().findBySQL(sql, hm);
     }
-    
+
     public void createStaffShiftExtra() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2563,7 +2588,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftLateIn() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2572,7 +2597,7 @@ public class HrReportController implements Serializable {
                 + " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftOnlyOt() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2583,9 +2608,9 @@ public class HrReportController implements Serializable {
                 + " and ss.endRecord.recordTimeStamp is not null ";
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
-    
+
     public void createStaffShiftEarlyIn() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2594,7 +2619,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
 
 //    public void createStaffShiftLateIn() {
@@ -2608,61 +2633,61 @@ public class HrReportController implements Serializable {
 //
 //    }
     List<StaffShiftHistory> staffShiftHistorys;
-    
+
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
     }
-    
+
     public void setDepartmentFacade(DepartmentFacade departmentFacade) {
         this.departmentFacade = departmentFacade;
     }
-    
+
     public List<StaffShiftHistory> getStaffShiftHistorys() {
         return staffShiftHistorys;
     }
-    
+
     public void setStaffShiftHistorys(List<StaffShiftHistory> staffShiftHistorys) {
         this.staffShiftHistorys = staffShiftHistorys;
     }
-    
+
     @EJB
     StaffShiftHistoryFacade staffShiftHistoryFacade;
-    
+
     public void createStaffShiftHistory() {
         String sql = "";
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from StaffShiftHistory ss "
                 + " where ss.retired=false "
                 + " and ss.staffShift.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.shift=:sh ";
             hm.put("sh", getReportKeyWord().getShift());
@@ -2670,72 +2695,72 @@ public class HrReportController implements Serializable {
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.staffShift.id,ss.staffShift.shiftDate";
         staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        
+
     }
-    
+
     List<FingerPrintRecordHistory> fingerPrintRecordHistorys;
     @EJB
     FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade;
-    
+
     public StaffShiftHistoryFacade getStaffShiftHistoryFacade() {
         return staffShiftHistoryFacade;
     }
-    
+
     public void setStaffShiftHistoryFacade(StaffShiftHistoryFacade staffShiftHistoryFacade) {
         this.staffShiftHistoryFacade = staffShiftHistoryFacade;
     }
-    
+
     public List<FingerPrintRecordHistory> getFingerPrintRecordHistorys() {
         return fingerPrintRecordHistorys;
     }
-    
+
     public void setFingerPrintRecordHistorys(List<FingerPrintRecordHistory> fingerPrintRecordHistorys) {
         this.fingerPrintRecordHistorys = fingerPrintRecordHistorys;
     }
-    
+
     public FingerPrintRecordHistoryFacade getFingerPrintRecordHistoryFacade() {
         return fingerPrintRecordHistoryFacade;
     }
-    
+
     public void setFingerPrintRecordHistoryFacade(FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade) {
         this.fingerPrintRecordHistoryFacade = fingerPrintRecordHistoryFacade;
     }
-    
+
     public void createFingerPrintHistory() {
         String sql = "";
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from FingerPrintRecordHistory ss "
                 + " where ss.retired=false "
                 + " and ss.beforeChange between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
-        
+
         if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getShift() != null) {
             sql += " and ss.shift=:sh ";
             hm.put("sh", getReportKeyWord().getShift());
@@ -2744,17 +2769,17 @@ public class HrReportController implements Serializable {
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.fingerPrintRecord.id,ss.id";
         fingerPrintRecordHistorys = fingerPrintRecordHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        
+
     }
-    
+
     public void createStaffShiftLateInEarlyOut() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        
+
         sql += " and (ss.lateInVarified!=0"
                 + " or ss.earlyOutVarified!=0)";
-        
+
         if (getReportKeyWord().getFrom() != 0 && getReportKeyWord().getTo() != 0) {
             sql += " and ((ss.lateInVarified>= :frmTime  and ss.lateInVarified<= :toTime) "
                     + " or (ss.earlyOutVarified>= :frmTime and ss.earlyOutVarified<= :toTime )) ";
@@ -2771,9 +2796,9 @@ public class HrReportController implements Serializable {
         }
         sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
-    
+
     public void createStaffShiftEarlyOut() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2781,9 +2806,9 @@ public class HrReportController implements Serializable {
         sql += " and ss.earlyOutLogged>0 ";
         sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
-    
+
     public void createStaffShiftLateOut() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -2791,7 +2816,7 @@ public class HrReportController implements Serializable {
         sql += " and ss.shiftEndTime < ss.endRecord.recordTimeStamp";
         sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        
+
     }
 
     /**
@@ -2799,413 +2824,413 @@ public class HrReportController implements Serializable {
      */
     public HrReportController() {
     }
-    
+
     public void makeNull() {
         reportKeyWord = null;
         staffShifts = null;
         fingerPrintRecords = null;
     }
-    
+
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
             reportKeyWord = new ReportKeyWord();
         }
-        
+
         return reportKeyWord;
     }
-    
+
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
     }
-    
+
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
-    
+
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
-    
+
     public Date getToDate() {
         if (toDate == null) {
             toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
-    
+
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
+
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;
     }
-    
+
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
     }
-    
+
     public List<StaffShift> getStaffShifts() {
         return staffShifts;
     }
-    
+
     public void setStaffShifts(List<StaffShift> staffShifts) {
         this.staffShifts = staffShifts;
     }
-    
+
     public List<FingerPrintRecord> getFingerPrintRecords() {
         return fingerPrintRecords;
     }
-    
+
     public void setFingerPrintRecords(List<FingerPrintRecord> fingerPrintRecords) {
         this.fingerPrintRecords = fingerPrintRecords;
     }
-    
+
     public StaffShiftFacade getStaffShiftFacade() {
         return staffShiftFacade;
     }
-    
+
     public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
         this.staffShiftFacade = staffShiftFacade;
     }
-    
+
     public List<MonthEndRecord> getMonthEndRecords() {
         return monthEndRecords;
     }
-    
+
     public void setMonthEndRecords(List<MonthEndRecord> monthEndRecords) {
         this.monthEndRecords = monthEndRecords;
     }
-    
+
     public List<StaffLeave> getStaffLeavesAnnual() {
         return staffLeavesAnnual;
     }
-    
+
     public void setStaffLeavesAnnual(List<StaffLeave> staffLeavesAnnual) {
         this.staffLeavesAnnual = staffLeavesAnnual;
     }
-    
+
     public List<StaffLeave> getStaffLeavesCashual() {
         return staffLeavesCashual;
     }
-    
+
     public void setStaffLeavesCashual(List<StaffLeave> staffLeavesCashual) {
         this.staffLeavesCashual = staffLeavesCashual;
     }
-    
+
     public List<StaffLeave> getStaffLeavesNoPay() {
         return staffLeavesNoPay;
     }
-    
+
     public void setStaffLeavesNoPay(List<StaffLeave> staffLeavesNoPay) {
         this.staffLeavesNoPay = staffLeavesNoPay;
     }
-    
+
     public List<StaffLeave> getStaffLeavesDutyLeave() {
         return staffLeavesDutyLeave;
     }
-    
+
     public void setStaffLeavesDutyLeave(List<StaffLeave> staffLeavesDutyLeave) {
         this.staffLeavesDutyLeave = staffLeavesDutyLeave;
     }
-    
+
     public double getCasualEntitle() {
         return casualEntitle;
     }
-    
+
     public void setCasualEntitle(double casualEntitle) {
         this.casualEntitle = casualEntitle;
     }
-    
+
     public double getCasualUtilized() {
         return casualUtilized;
     }
-    
+
     public void setCasualUtilized(double casualUtilized) {
         this.casualUtilized = casualUtilized;
     }
-    
+
     public double getNopayEntitle() {
         return nopayEntitle;
     }
-    
+
     public void setNopayEntitle(double nopayEntitle) {
         this.nopayEntitle = nopayEntitle;
     }
-    
+
     public double getNopayUtilized() {
         return nopayUtilized;
     }
-    
+
     public void setNopayUtilized(double nopayUtilized) {
         this.nopayUtilized = nopayUtilized;
     }
-    
+
     public double getDutyLeaveEntitle() {
         return dutyLeaveEntitle;
     }
-    
+
     public void setDutyLeaveEntitle(double dutyLeaveEntitle) {
         this.dutyLeaveEntitle = dutyLeaveEntitle;
     }
-    
+
     public double getDutyLeaveUtilized() {
         return dutyLeaveUtilized;
     }
-    
+
     public void setDutyLeaveUtilized(double dutyLeaveUtilized) {
         this.dutyLeaveUtilized = dutyLeaveUtilized;
     }
-    
+
     public List<StaffLeave> getStaffLeavesMedical() {
         return staffLeavesMedical;
     }
-    
+
     public void setStaffLeavesMedical(List<StaffLeave> staffLeavesMedical) {
         this.staffLeavesMedical = staffLeavesMedical;
     }
-    
+
     public List<StaffLeave> getStaffLeavesMaternity1st() {
         return staffLeavesMaternity1st;
     }
-    
+
     public void setStaffLeavesMaternity1st(List<StaffLeave> staffLeavesMaternity1st) {
         this.staffLeavesMaternity1st = staffLeavesMaternity1st;
     }
-    
+
     public List<StaffLeave> getStaffLeavesMaternity2nd() {
         return staffLeavesMaternity2nd;
     }
-    
+
     public void setStaffLeavesMaternity2nd(List<StaffLeave> staffLeavesMaternity2nd) {
         this.staffLeavesMaternity2nd = staffLeavesMaternity2nd;
     }
-    
+
     public List<StaffLeave> getStaffLeavesLieu() {
         return staffLeavesLieu;
     }
-    
+
     public void setStaffLeavesLieu(List<StaffLeave> staffLeavesLieu) {
         this.staffLeavesLieu = staffLeavesLieu;
     }
-    
+
     public double getMedicalEntitle() {
         return medicalEntitle;
     }
-    
+
     public void setMedicalEntitle(double medicalEntitle) {
         this.medicalEntitle = medicalEntitle;
     }
-    
+
     public double getMedicalUtilized() {
         return medicalUtilized;
     }
-    
+
     public void setMedicalUtilized(double medicalUtilized) {
         this.medicalUtilized = medicalUtilized;
     }
-    
+
     public double getMaternity1Entitle() {
         return maternity1Entitle;
     }
-    
+
     public void setMaternity1Entitle(double maternity1Entitle) {
         this.maternity1Entitle = maternity1Entitle;
     }
-    
+
     public double getMaternity1Utilized() {
         return maternity1Utilized;
     }
-    
+
     public void setMaternity1Utilized(double maternity1Utilized) {
         this.maternity1Utilized = maternity1Utilized;
     }
-    
+
     public double getMaternity2Entitle() {
         return maternity2Entitle;
     }
-    
+
     public void setMaternity2Entitle(double maternity2Entitle) {
         this.maternity2Entitle = maternity2Entitle;
     }
-    
+
     public double getMaternity2Utilized() {
         return maternity2Utilized;
     }
-    
+
     public void setMaternity2Utilized(double maternity2Utilized) {
         this.maternity2Utilized = maternity2Utilized;
     }
-    
+
     public double getLieuEntitle() {
         return lieuEntitle;
     }
-    
+
     public void setLieuEntitle(double lieuEntitle) {
         this.lieuEntitle = lieuEntitle;
     }
-    
+
     public double getLieuUtilized() {
         return lieuUtilized;
     }
-    
+
     public void setLieuUtilized(double lieuUtilized) {
         this.lieuUtilized = lieuUtilized;
     }
-    
+
     public List<StaffShift> getStaffShiftsNoPay() {
         return staffShiftsNoPay;
     }
-    
+
     public void setStaffShiftsNoPay(List<StaffShift> staffShiftsNoPay) {
         this.staffShiftsNoPay = staffShiftsNoPay;
     }
-    
+
     public double getTotalOvertimeMinit() {
         return totalOvertimeMinit;
     }
-    
+
     public void setTotalOvertimeMinit(double totalOvertimeMinit) {
         this.totalOvertimeMinit = totalOvertimeMinit;
     }
-    
+
     public double getTotalExtraDutyNormalMinute() {
         return totalExtraDutyNormalMinute;
     }
-    
+
     public void setTotalExtraDutyNormalMinute(double totalExtraDutyNormalMinute) {
         this.totalExtraDutyNormalMinute = totalExtraDutyNormalMinute;
     }
-    
+
     public double getTotalRatePerMinut() {
         return totalRatePerMinut;
     }
-    
+
     public void setTotalRatePerMinut(double totalRatePerMinut) {
         this.totalRatePerMinut = totalRatePerMinut;
     }
-    
+
     public double getTotalOtValue() {
         return totalOtValue;
     }
-    
+
     public void setTotalOtValue(double totalOtValue) {
         this.totalOtValue = totalOtValue;
     }
-    
+
     public double getTotalPhOtMin() {
         return totalPhOtMin;
     }
-    
+
     public void setTotalPhOtMin(double totalPhOtMin) {
         this.totalPhOtMin = totalPhOtMin;
     }
-    
+
     public double getTotalRatePerMinutPhOt() {
         return totalRatePerMinutPhOt;
     }
-    
+
     public void setTotalRatePerMinutPhOt(double totalRatePerMinutPhOt) {
         this.totalRatePerMinutPhOt = totalRatePerMinutPhOt;
     }
-    
+
     public double getTotalPhOtValue() {
         return totalPhOtValue;
     }
-    
+
     public void setTotalPhOtValue(double totalPhOtValue) {
         this.totalPhOtValue = totalPhOtValue;
     }
-    
+
     public double getTotalOffDayOtMin() {
         return totalOffDayOtMin;
     }
-    
+
     public void setTotalOffDayOtMin(double totalOffDayOtMin) {
         this.totalOffDayOtMin = totalOffDayOtMin;
     }
-    
+
     public double getTotalRatePerMinuts() {
         return totalRatePerMinuts;
     }
-    
+
     public void setTotalRatePerMinuts(double totalRatePerMinuts) {
         this.totalRatePerMinuts = totalRatePerMinuts;
     }
-    
+
     public double getTotalOffdyOtValue() {
         return totalOffdyOtValue;
     }
-    
+
     public void setTotalOffdyOtValue(double totalOffdyOtValue) {
         this.totalOffdyOtValue = totalOffdyOtValue;
     }
-    
+
     public double getTotalValue() {
         return totalValue;
     }
-    
+
     public void setTotalValue(double totalValue) {
         this.totalValue = totalValue;
     }
-    
+
     public boolean isNetSalary() {
         return netSalary;
     }
-    
+
     public void setNetSalary(boolean netSalary) {
         this.netSalary = netSalary;
     }
-    
+
     public boolean isOtPayment() {
         return otPayment;
     }
-    
+
     public void setOtPayment(boolean otPayment) {
         this.otPayment = otPayment;
     }
-    
+
     public double getTotalTransNetSalary() {
         return totalTransNetSalary;
     }
-    
+
     public void setTotalTransNetSalary(double totalTransNetSalary) {
         this.totalTransNetSalary = totalTransNetSalary;
     }
-    
+
     public double getTotalOverTime() {
         return totalOverTime;
     }
-    
+
     public void setTotalOverTime(double totalOverTime) {
         this.totalOverTime = totalOverTime;
     }
-    
+
     public double getTotalofTotals() {
         return totalofTotals;
     }
-    
+
     public void setTotalofTotals(double totalofTotals) {
         this.totalofTotals = totalofTotals;
     }
-    
+
     public double getTotaldayOffAllowance() {
         return totaldayOffAllowance;
     }
-    
+
     public void setTotaldayOffAllowance(double totaldayOffAllowance) {
         this.totaldayOffAllowance = totaldayOffAllowance;
     }
-    
+
     public double getTotaldayOffCount() {
         return totaldayOffCount;
     }
-    
+
     public void setTotaldayOffCount(double totaldayOffCount) {
         this.totaldayOffCount = totaldayOffCount;
     }
-    
+
 }
