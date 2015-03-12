@@ -59,6 +59,7 @@ public enum BillType {
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
     PharmacyGrnReturn,
+    PharmacyReturnWithoutTraising,
     GrnPayment,
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out

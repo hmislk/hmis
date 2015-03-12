@@ -35,13 +35,13 @@
 
                             <p:panel >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Department Return" />
+                                    <h:outputLabel value="Return without Traising" />
                                    
-                                    <p:autoComplete completeMethod="#{departmentController.completeDept(qry)}" 
+                                    <p:autoComplete completeMethod="#{institutionController.completeSupplier(qry)}" 
                                                     styleClass="noPrintButton"
                                                     forceSelection="true"
                                                     var="w" itemLabel="#{w.name}" itemValue="#{w}"
-                                                    value="#{pharmacyReturnwithouttresing.toDepartment}" 
+                                                    value="#{pharmacyReturnwithouttresing.toInstitution}" 
                                                     id="acDept">
                                         <p:column headerText="Department Name">
                                              <h:outputLabel value=" #{w.name}" />
@@ -58,7 +58,7 @@
                                     <p:inputText value="#{pharmacyReturnwithouttresing.preBill.invoiceNumber}" id="req"/>
 
                                     <p:watermark value="Request Number" for="req"/>
-                                    <p:watermark value="Return  Department" for="acDept"/>
+                                    <p:watermark value="Return  Dealer/Supplier" for="acDept"/>
 
                                 </f:facet>
                                 <h:panelGrid columns="1" >

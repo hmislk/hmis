@@ -384,7 +384,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
         ss.setDayType(dtp);
-        if (ss.getDayType() == null) {
+        if (dtp == null) {
             if (ss.getShift() != null) {
                 ss.setDayType(ss.getShift().getDayType());
             }
