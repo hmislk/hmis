@@ -42,6 +42,7 @@
 
                                 <p:defaultCommand target="btnAdd"/>
                             </p:panelGrid>
+                            <p:panelGrid columns="3" >   
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
@@ -50,7 +51,7 @@
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
-
+  </p:panelGrid>
                         </p:panel>
 
                         <p:panel header="Price Matrix" >
@@ -61,6 +62,9 @@
                               
                                 <p:column headerText="Department Name" 
                                           filterBy="#{a.department.name}" filterMatchMode="contains">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Department Name"  />
+                                </f:facet>
                                     <p:autoComplete forceSelection="true" value="#{a.department}" 
                                                     completeMethod="#{departmentController.completeDept}" 
                                                     var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
@@ -75,21 +79,28 @@
                                 </p:column>
 
                                 <p:column headerText="Payment Method">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Payment Method"  />
+                                </f:facet>
+                                    <h:inputHidden value="#{a.paymentMethod}"   >   </h:inputHidden>
                                     <p:selectOneMenu  value="#{a.paymentMethod}"  >
                                         <f:selectItem itemLabel="Select" />                           
                                         <f:selectItems value="#{enumController.paymentMethods}" />                                    
                                     </p:selectOneMenu>
                                 </p:column>
                                 <p:column  headerText="Discount Percent">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Discount Percent"  />
+                                </f:facet>
                                     <h:inputText autocomplete="off" value="#{a.discountPercent}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
                                 </p:column>
-                                <p:column>
+                                <p:column exportable="false">
                                     <p:commandButton ajax="false" value="Update" 
                                                      action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
                                 </p:column>
-                                <p:column>
+                                <p:column exportable="false">
                                     <p:commandButton ajax="false" value="Delete" action="#{opdMemberShipDiscountController.deleteDepartmentPaymentScheme()}">
                                         <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                     </p:commandButton>
