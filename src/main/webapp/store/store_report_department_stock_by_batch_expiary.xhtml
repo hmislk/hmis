@@ -49,10 +49,12 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
+                        <h:panelGroup id="gpBillPreview" >
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
+                                
+                                
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{storeReportsStock.department.name} Stock"/>                                     
+                                    <h:outputLabel value="#{storeReportsStock.department.name} Stock" />                                     
                                 </f:facet>
 
                                 <p:column headerText="Item">
