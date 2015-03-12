@@ -399,9 +399,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     private boolean errorCheckForSaleBill() {
-        if (toDepartment == null) {
+        if (toInstitution == null) {
             errorMessage = "Please select a department to issue items. Bill can NOT be settled until you select the department";
-            JsfUtil.addErrorMessage("Department");
+            JsfUtil.addErrorMessage("Intitution");
             return true;
         }
         return false;
@@ -728,7 +728,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         //Values
         billItem.setGrossValue(billItem.getRate() * qty);
         billItem.setDiscount(0);
-        billItem.setMarginValue(billItem.getMarginRate() * qty);
+        //billItem.setMarginValue(billItem.getMarginRate() * qty);
         billItem.setNetValue(billItem.getNetRate() * qty);
 
     }
