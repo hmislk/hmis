@@ -1204,7 +1204,7 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.id";
+                + " order by st.shiftStartTime";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
