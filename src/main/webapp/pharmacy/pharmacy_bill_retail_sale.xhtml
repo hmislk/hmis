@@ -60,6 +60,10 @@
                                                             completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
+                                                <p:column headerText="Id">
+                                                    <h:outputLabel value="#{i.itemBatch.item.id}"  style="width: 50px!important;"></h:outputLabel>
+                                                </p:column>
+                                                
                                                 <p:column headerText="Item">
                                                     <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
                                                 </p:column>

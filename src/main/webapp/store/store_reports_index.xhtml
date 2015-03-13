@@ -9,7 +9,7 @@
 
         <ui:composition template="/resources/template/template.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="content" >
                 <h:form >
                     <p:panel header="Store Reports" >
                         <p:panelGrid columns="4" styleClass="alignTop">
@@ -25,7 +25,16 @@
                                 </p:panelGrid>
                             </p:panel>
 
-
+                            <p:panel header="Transfer Reports" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton value="Transfer Issue By Bill Item" action="store_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Receive By Bill Item" action="store_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Issue by Bill" action="store_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Receive by Bill" action="store_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Asset Transfer List" action="store_report_asset_transfer_list" ajax="false" ></p:commandButton>
+                                    <p:commandButton value="Transfer Issue Not Recieved" action="store_transfer_issued_list_report" ajax="false" ></p:commandButton> 
+                                </p:panelGrid>
+                            </p:panel>
                             <p:panel header="Inventory Report" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton value="Department Assets" action="inventory_report_department_assets" ajax="false" ></p:commandButton>
@@ -49,16 +58,7 @@
                                     <p:commandButton value="Non Moving" action="store_report_department_non_moving" ajax="false" ></p:commandButton>                            
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Transfer Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Transfer Issue By Bill Item" action="store_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive By Bill Item" action="store_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Issue by Bill" action="store_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive by Bill" action="store_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Asset Transfer List" action="store_report_asset_transfer_list" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Transfer Issue Not Recieved" action="store_transfer_issued_list_report" ajax="false" ></p:commandButton> 
-                                </p:panelGrid>
-                            </p:panel>
+
                             <p:panel header="Item Reports" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            

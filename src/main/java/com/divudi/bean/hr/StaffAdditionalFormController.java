@@ -60,34 +60,30 @@ public class StaffAdditionalFormController implements Serializable {
     Date fromDate;
     Date toDate;
 
-       
     public void timeEnterListenerFrom() {
 //        System.err.println("Starting From ");        
-        getCurrentAdditionalForm().setFromTime(getFromSystemTimeStamp().getTime());       
+        getCurrentAdditionalForm().setFromTime(getFromSystemTimeStamp().getTime());
 //        System.err.println("Ending From ");
     }
-     
-     
+
     public void timeEnterListenerTo() {
-        System.err.println("Starting To ");             
-        
+        System.err.println("Starting To ");
+
         getCurrentAdditionalForm().setToTime(getToSystemTimeStamp().getTime());
         System.err.println("Ending To ");
     }
-    
-      public void timeSelectListenerFrom() {
+
+    public void timeSelectListenerFrom() {
 //        System.err.println("Starting Select From ");                
         getFromSystemTimeStamp().processTime(getCurrentAdditionalForm().getFromTime());
 //        System.err.println("Ending Select From ");
     }
-     
-     
+
     public void timeSelectListenerTo() {
 //        System.err.println("Starting Select To ");                
         getToSystemTimeStamp().processTime(getCurrentAdditionalForm().getToTime());
 //        System.err.println("Ending Select To ");
     }
-    
 
     public boolean errorCheckAdditionalForm() {
         if (getCurrentAdditionalForm() == null) {
@@ -200,7 +196,7 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createAmmendmentTableShiftDate() {
         String sql;
         Map m = new HashMap();
@@ -229,7 +225,7 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createAmmendmentTableShiftDateExtraShift() {
         String sql;
         Map m = new HashMap();
@@ -601,18 +597,30 @@ public class StaffAdditionalFormController implements Serializable {
         }
 
         StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
+        staffShiftFacade.create(staffShiftExtra);
 
         if (currentAdditionalForm.getStaffShift() != null) {
             staffShiftExtra.copy(currentAdditionalForm.getStaffShift());
+
+            if (staffShiftExtra.getPreviousStaffShift() != null) {
+                staffShiftExtra.getPreviousStaffShift().setNextStaffShift(staffShiftExtra);
+
+                staffShiftFacade.edit(staffShiftExtra.getPreviousStaffShift());
+            }
+
             currentAdditionalForm.getStaffShift().setRetired(true);
             currentAdditionalForm.getStaffShift().setRetiredAt(new Date());
             currentAdditionalForm.getStaffShift().setRetirer(sessionController.getLoggedUser());
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
         }
 //        } else {
+
         staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
         staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
-        staffShiftExtra.setShift(shift);
+
+        if (staffShiftExtra.getShift() == null) {
+            staffShiftExtra.setShift(shift);
+        }
 //        }
 
         staffShiftExtra.setCreatedAt(new Date());
@@ -621,7 +629,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setShiftDate(date);
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
-        staffShiftFacade.create(staffShiftExtra);
+        staffShiftFacade.edit(staffShiftExtra);
 
         currentAdditionalForm.setStaffShift(staffShiftExtra);
         additionalFormFacade.edit(currentAdditionalForm);
