@@ -133,7 +133,7 @@
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt " event="change" />
+                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip" event="change" />
                             </p:selectOneMenu>
 
                             <h:outputLabel/>
@@ -156,16 +156,16 @@
                             <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             
-                            <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                            <h:panelGroup id="creditCard" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <pa:creditCard paymentMethodData="#{channelBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                            <h:panelGroup id="cheque" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                <pa:cheque paymentMethodData="#{channelBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                            <h:panelGroup id="slip" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                <pa:slip paymentMethodData="#{channelBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
                         </h:panelGrid>                        
