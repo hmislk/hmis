@@ -10,12 +10,15 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.ItemBatch;
@@ -26,6 +29,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -35,7 +39,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import static org.apache.xmlbeans.impl.values.NamespaceContext.getCurrent;
@@ -75,6 +81,96 @@ public class PharmacyPurchaseController implements Serializable {
     double saleRate;
     AmpController ampController;
 
+    
+    
+    Institution institution;
+    Department department;
+    Date fromDate;
+    Date toDate;
+    
+    public void fillItemVicePurchaseAndGoodReceive(){
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        BillType[] bts = {BillType.PharmacyGrnBill , BillType.PharmacyGrnReturn , BillType.PharmacyPurchaseBill};
+        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
+                + " (bi.item.name, "
+                + " sum(bi.qty), "
+                + " sum(bi.freeQty)) "
+                + " from BillItem bi "
+                + " where bi.bill.billType in :bts ";
+        
+        if(department!=null){
+            sql=sql + " and bi.bill.department=:dept ";
+        }
+        
+        if(institution!=null){
+            sql=sql + " and bi.bill.institution=:ins ";
+        }
+
+        
+        sql=sql + "group by bi.item "
+                + "order by bi.item.name";
+        m.put("bts", department);
+        m.put("z", 0.0);
+        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue += 0.0;
+        for (PharmacyStockRow r : lsts) {
+            stockPurchaseValue += r.getPurchaseValue();
+            stockSaleValue += r.getSaleValue();
+            
+        }
+        pharmacyStockRows = lsts;
+    }
+
+    public Institution getInstitution() {
+        if(institution==null){
+            institution = getSessionController().getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Date getFromDate() {
+        if(fromDate==null){
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if(toDate == null ){
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+    
+    
+    
+    
     public void makeNull() {
         //  currentPharmacyItemData = null;
         printPreview = false;
