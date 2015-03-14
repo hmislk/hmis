@@ -50,7 +50,7 @@
                             <h:panelGroup>
                                 <p:inputTextarea id="txtComments" 
                                                  queryDelay="0"
-                                                 style="width: 300px;height: 260px;" 
+                                                 style="width: 420px;height: 300px;" 
                                                  value="#{patientEncounterController.current.comments}" 
                                                  completeMethod="#{patientEncounterController.completeClinicalComments}" minQueryLength="1"
                                                  >
@@ -59,9 +59,9 @@
                                 <p:watermark forElement="txtComments" value="Write comments here." ></p:watermark>
 
                                 <p:panel header="Diagnosis" styleClass="alignTop" >
-                                    <p:panelGrid columns="1" styleClass="alignTop" >
+                                    <h:panelGrid columns="1" styleClass="alignTop" >
 
-                                        <p:panelGrid columns="2" styleClass="alignTop" >
+                                        <h:panelGrid columns="1" styleClass="alignTop" >
                                             <p:autoComplete id="acDx" value="#{patientEncounterController.diagnosis}"
                                                             completeMethod="#{diagnosisController.completeDiagnosis}"
                                                             var="dx" forceSelection="true"
@@ -84,7 +84,7 @@
                                             <p:watermark value="Select Diagnosis." for="acDx" ></p:watermark>
                                             <p:watermark value="Write Details about the Diagnosis here." for="txtDx" ></p:watermark>
 
-                                        </p:panelGrid>
+                                        </h:panelGrid>
 
                                         <p:dataTable id="tblDx" value="#{patientEncounterController.current.diagnosis}" var="edx" >
                                             <p:column >
@@ -105,7 +105,7 @@
 
 
 
-                                    </p:panelGrid>
+                                    </h:panelGrid>
 
                                 </p:panel>
 

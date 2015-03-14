@@ -42,15 +42,17 @@
 
                                 <p:defaultCommand target="btnAdd"/>
                             </p:panelGrid>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
-                            </p:commandButton>
+                           <p:panelGrid columns="3" >  
                             <p:commandButton ajax="false" value="Fill"
                                              action="#{opdMemberShipDiscountController.createItemsCategoryPharmacyPaymentMethod()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
-
+                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
+                            </p:commandButton>
+                             </p:panelGrid>
+                       
                         </p:panel>
 
                         <p:panel header="Price Matrix" >
@@ -61,6 +63,9 @@
 
                                 <p:column headerText="Category Name"
                                           filterBy="#{a.category.name}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Category Name"  />
+                                </f:facet>
                                     <p:autoComplete forceSelection="true" value="#{a.category}"
                                                     completeMethod="#{categoryController.completeCategoryPharmacy}" 
                                                     converter="categoryConverter"
@@ -72,21 +77,28 @@
                                 </p:column>
 
                                 <p:column headerText="Payment Method">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Payment Method"  />
+                                </f:facet>
                                     <p:selectOneMenu  value="#{a.paymentMethod}"  >
                                         <f:selectItem itemLabel="Select" />                           
                                         <f:selectItems value="#{enumController.paymentMethods}" />                                    
                                     </p:selectOneMenu>
+                                     <h:inputHidden value="#{a.paymentMethod}"   >   </h:inputHidden>
                                 </p:column>
 
                                 <p:column  headerText="Discount">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Discount"  />
+                                </f:facet>
                                     <h:inputText autocomplete="off" value="#{a.discountPercent}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
                                 </p:column>
-                                <p:column>
+                                <p:column exportable="false">
                                     <p:commandButton ajax="false" value="Update" action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
                                 </p:column>
-                                <p:column>
+                                <p:column exportable="false">
                                     <p:commandButton value="Delete" action="#{opdMemberShipDiscountController.deleteCategoryPharmacyPaymentMethod}">
                                         <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                     </p:commandButton>

@@ -111,7 +111,7 @@ public class PharmacyIssueController implements Serializable {
     private Patient searchedPatient;
     private YearMonthDay yearMonthDay;
     boolean billPreview = false;
-
+  
     Department toDepartment;
 
     /////////////////

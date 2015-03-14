@@ -1204,7 +1204,7 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.id";
+                + " order by st.shiftStartTime";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
@@ -1983,8 +1983,8 @@ public class HumanResourceBean {
         hm.put("bs1", list);
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-     public StaffPaysheetComponent fetchStaffPaysheetComponent(Staff staff, Date date, PaysheetComponentType paysheetComponentType) {
+
+    public StaffPaysheetComponent fetchStaffPaysheetComponent(Staff staff, Date date, PaysheetComponentType paysheetComponentType) {
 
         String sql = " Select s From StaffPaysheetComponent s "
                 + " where s.retired=false "
@@ -1998,7 +1998,7 @@ public class HumanResourceBean {
         hm.put("bs1", paysheetComponentType);
         return getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
 //    public double calValueForOverTime(Staff staff, Date date) {
 //        double value = 0;
 //        StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
@@ -2092,8 +2092,6 @@ public class HumanResourceBean {
         return tmp;
 
     }
-    
-  
 
     public double getBasicValue(Staff staff, Date date) {
         //System.err.println("Getting Basic " + staff.getStaffEmployment());
@@ -2124,23 +2122,36 @@ public class HumanResourceBean {
 
     public double getOverTimeValue(Staff staff, Date date) {
         //System.err.println("Getting Basic " + staff.getStaffEmployment());
+        if (staff == null || date == null) {
+            return 0;
+        }
 
         String sql;
         HashMap hm;
-     
-        sql = "Select sum(s.staffPaySheetComponentValue)"
+
+        sql = "Select s "
                 + " from StaffPaysheetComponent s"
                 + " where s.retired=false "
                 + " and  s.staff=:stf "
-                + " and s.paysheetComponent.includedForOt=:true"
+                + " and s.paysheetComponent.includedForOt=true"
                 + " and s.fromDate<=:cu  "
                 + " and s.toDate>=:cu ";
 
         hm = new HashMap();
         hm.put("stf", staff);
         hm.put("cu", date);
-        return getStaffPaysheetComponentFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+        List<StaffPaysheetComponent> list = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
+        System.err.println("LIST " + list);
+
+        if (list == null) {
+            return 0;
+        }
+        double dbl = 0;
+        for (StaffPaysheetComponent s : list) {
+            dbl += s.getStaffPaySheetComponentValue();
+        }
+        return dbl;
     }
 
     public StaffPaysheetComponent getComponent(Staff staff, WebUser user, PaysheetComponentType paysheetComponentType) {
