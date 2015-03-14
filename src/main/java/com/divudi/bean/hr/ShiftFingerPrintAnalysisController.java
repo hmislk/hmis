@@ -546,7 +546,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
         FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
 
-        HrForm additionalForm = ss.getAdditionalForm();
+        HrForm additionalForm = null;
+
+        if (ss.getAdditionalForm() != null && !ss.getAdditionalForm().isRetired()) {
+            additionalForm = ss.getAdditionalForm();
+        }
 
         if (additionalForm == null) {
             if (fingerPrintRecordIn == null) {
