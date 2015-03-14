@@ -371,6 +371,9 @@ public class InwardReportController1 implements Serializable {
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
 
+        System.err.println("sql = " + sql);
+        System.err.println("hm = " + hm);
+        
         return billFeeFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
