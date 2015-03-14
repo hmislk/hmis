@@ -28,6 +28,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -87,6 +88,8 @@ public class PharmacyPurchaseController implements Serializable {
     Department department;
     Date fromDate;
     Date toDate;
+    @EJB
+    StockFacade stockFacade;
     
     public void fillItemVicePurchaseAndGoodReceive(){
         if (department == null) {
@@ -116,15 +119,15 @@ public class PharmacyPurchaseController implements Serializable {
                 + "order by bi.item.name";
         m.put("bts", department);
         m.put("z", 0.0);
-        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
-        stockPurchaseValue = 0.0;
-        stockSaleValue += 0.0;
+        List<PharmacyStockRow> lsts = (List) stockFacade.findObjects(sql, m);
+       double stockPurchaseValue = 0.0;       
+       double stockSaleValue = 0.0;
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
             
         }
-        pharmacyStockRows = lsts;
+//        pharmacyStockRows = lsts;
     }
 
     public Institution getInstitution() {
