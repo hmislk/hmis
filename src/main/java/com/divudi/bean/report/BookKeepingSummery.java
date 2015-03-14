@@ -2622,6 +2622,52 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    
+      public void createDoctorPaymentInwardTemporaryTesting() {
+        System.err.println("Doctor Payment Inward");
+        inwardProfessionalPayments = new ArrayList<>();
+        List<Object[]> list = getBillBean().fetchDoctorPaymentInwardTemporaryTesting(fromDate, toDate);
+
+        for (Object[] obj : list) {
+            AdmissionType admissionType = (AdmissionType) obj[0];
+            double dbl = (Double) obj[1];
+
+            String1Value2 header = new String1Value2();
+            header.setSummery(true);
+            header.setString(admissionType.getName());
+
+            if (dbl != 0) {
+                inwardProfessionalPayments.add(header);
+            }
+
+            List<Object[]> listInner = getBillBean().fetchDoctorPaymentInward(admissionType, fromDate, toDate);
+
+            for (Object[] objIn : listInner) {
+                Speciality speciality = (Speciality) objIn[0];
+                dbl = (Double) objIn[1];
+
+                if (dbl != 0) {
+                    String1Value2 data = new String1Value2();
+                    data.setString(speciality.getName());
+                    data.setValue1(dbl);
+                    inwardProfessionalPayments.add(data);
+                }
+            }
+
+            String1Value2 footer = new String1Value2();
+            footer.setSummery(true);
+            footer.setString(admissionType.getName() + " Total : ");
+            footer.setValue2(dbl);
+
+            if (dbl != 0) {
+                inwardProfessionalPayments.add(footer);
+            }
+
+        }
+
+    }
+
+    
     public void createDoctorPaymentInward() {
         System.err.println("Doctor Payment Inward");
         inwardProfessionalPayments = new ArrayList<>();
