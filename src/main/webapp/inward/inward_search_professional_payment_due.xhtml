@@ -60,6 +60,10 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
+                             <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{bf.id}"/>
+                            </p:column>
+                            
                             <p:column>
                                 <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>

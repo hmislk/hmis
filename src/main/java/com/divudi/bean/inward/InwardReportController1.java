@@ -391,11 +391,19 @@ public class InwardReportController1 implements Serializable {
 
         String sql;
         Map m = new HashMap();
+        m.put("bclass", BilledBill.class);
+        m.put("fd", frmDate);
+        m.put("td", tDate);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
 
         sql = "select bf.paidForBillFee.staff.speciality,"
                 + " sum(bf.paidForBillFee.feeValue) "
                 + " from BillItem bf"
                 + " where bf.retired=false "
+                + " and bf.bill.cancelled=false "
+                + " and type(bf.bill)=:bclass"
                 + " and bf.bill.billType=:btp"
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
@@ -427,17 +435,11 @@ public class InwardReportController1 implements Serializable {
         sql += " group by bf.paidForBillFee.staff.speciality "
                 + " order by bf.paidForBillFee.staff.speciality.name ";
 
-        m.put("fd", frmDate);
-        m.put("td", tDate);
-        m.put("btp", BillType.PaymentBill);
-        m.put("refBtp1", BillType.InwardBill);
-        m.put("refBtp2", BillType.InwardProfessional);
-
         return getBillFeeFacade().findAggregates(sql, m);
 
     }
 
-    public void createDoctorPaymentInward(Date frmDate, Date tDate,boolean byDischargedDate) {
+    public void createDoctorPaymentInward(Date frmDate, Date tDate, boolean byDischargedDate) {
         professionals = new ArrayList<>();
         professionalGross = 0;
         List<Object[]> list = fetchDoctorPaymentInwardModified(frmDate, tDate, byDischargedDate);
@@ -459,7 +461,7 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    public void createDoctorPaymentInwardPaid(Date frmDate,Date tDate,boolean byDischargedDate) {
+    public void createDoctorPaymentInwardPaid(Date frmDate, Date tDate, boolean byDischargedDate) {
         professionalsPaid = new ArrayList<>();
         professionalGrossPaid = 0;
         List<Object[]> list = fetchDoctorPaymentInwardPaid(frmDate, tDate, byDischargedDate);
@@ -1478,7 +1480,7 @@ public class InwardReportController1 implements Serializable {
 
         createOpdServiceWithoutPro();
         createRoomTable();
-        createDoctorPaymentInward(getFromDate(),getToDate(),true);
+        createDoctorPaymentInward(getFromDate(), getToDate(), true);
         createTimedService();
         createInwardService();
         createFinalSummeryMonth();
@@ -1490,8 +1492,8 @@ public class InwardReportController1 implements Serializable {
     public void processProfessionalPayment() {
         makeNull();
 
-        createDoctorPaymentInward(getFromDate(),getToDate(),false);
-        createDoctorPaymentInwardPaid(getFromDatePaid(),getToDatePaid(),false);
+        createDoctorPaymentInward(getFromDate(), getToDate(), false);
+        createDoctorPaymentInwardPaid(getFromDatePaid(), getToDatePaid(), false);
 
         for (String1Value2 added : professionals) {
 
@@ -1504,12 +1506,12 @@ public class InwardReportController1 implements Serializable {
         }
 
     }
-    
-     public void processProfessionalPaymentByDischargedDate() {
+
+    public void processProfessionalPaymentByDischargedDate() {
         makeNull();
 
-        createDoctorPaymentInward(getFromDate(),getToDate(),true);
-        createDoctorPaymentInwardPaid(getFromDatePaid(),getToDatePaid(),true);
+        createDoctorPaymentInward(getFromDate(), getToDate(), true);
+        createDoctorPaymentInwardPaid(getFromDatePaid(), getToDatePaid(), true);
 
         for (String1Value2 added : professionals) {
 

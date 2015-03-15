@@ -53,7 +53,7 @@
 
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1,tb2" fileName="bht_income_by_categories"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -65,13 +65,13 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Professional Fee"/>
                                 </f:facet>
+                                
                                 <p:column headerText="Speciality">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Speciality" />
-                                    </f:facet>                                
-                                    <h:commandLink value="#{pro.speciality.name}"
-                                                   action="#{inwardReportController1.processProfessionalFees}" >                                      
-                                    </h:commandLink>
+                                    </f:facet>           
+                                     <p:outputLabel value="#{pro.speciality.name}" />
+                                  
                                 </p:column>
                                 <p:column headerText="Gross" style="text-align: right; padding: 5px;">
                                     <f:facet name="header" >
@@ -115,35 +115,7 @@
                             </p:dataTable>
 
 
-                            <p:dataTable id="tb2" value="#{inwardReportController1.professionalsPaid}" var="pro" >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Professional Fee"/>
-                                </f:facet>
-                                <p:column headerText="Speciality">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Speciality" />
-                                    </f:facet>                                
-                                    <h:commandLink value="#{pro.speciality.name}"
-                                                   action="#{inwardReportController1.processProfessionalFees}" >
-                                        <f:setPropertyActionListener value="#{pro.speciality}" 
-                                                                     target="#{inwardReportController1.speciality}" />
-                                    </h:commandLink>
-                                </p:column>
-                                <p:column headerText="Gross" style="text-align: right; padding: 5px;">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Gross" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{pro.value1}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController1.professionalGross}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                
-                            </p:dataTable>
+                         
 
                         </p:panel>
 
