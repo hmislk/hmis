@@ -57,27 +57,26 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                          stickyHeader="true"
-                                         value="#{pharmacyPurchaseController.rows}" var="i"  >
+                                         value="#{pharmacyPurchaseController.rows}" 
+                                         var="i"  
+                                         rowKey="#{i.name}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         >
 
-                                <p:column headerText="Item">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Item"/>
-                                    </f:facet>
+                                <p:column headerText="Item" sortBy="#{i.name}" filterBy="#{i.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{i.name}" ></h:outputLabel>                                    
                                 </p:column>
 
-                                <p:column headerText="Quentity" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Net Total"/>
-                                    </f:facet>
+                                <p:column headerText="Quentity" style="text-align: right;"
+                                          sortBy="#{i.qty}" filterBy="#{i.qty}" >
                                     <h:outputLabel value="#{i.qty}" >
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Free" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Free"/>
-                                    </f:facet>
+                                <p:column headerText="Free" sortBy="#{i.freeQty}" filterBy="#{i.freeQty}" style="text-align: right;">
                                     <h:outputLabel value="#{i.freeQty}" >
                                     </h:outputLabel>
                                 </p:column>
