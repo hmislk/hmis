@@ -28,12 +28,10 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import static org.apache.xmlbeans.impl.values.NamespaceContext.getCurrent;
 
 /**
  *
@@ -77,58 +74,65 @@ public class PharmacyPurchaseController implements Serializable {
     private boolean printPreview;
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
-    
+
     double saleRate;
     AmpController ampController;
 
-    
-    
     Institution institution;
     Department department;
     Date fromDate;
     Date toDate;
-    
-    public void fillItemVicePurchaseAndGoodReceive(){
-        if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
-            return;
-        }
+    List<PharmacyStockRow> rows;
+
+    public void fillItemVicePurchaseAndGoodReceive() {
         Map m = new HashMap();
         String sql;
-        BillType[] bts = {BillType.PharmacyGrnBill , BillType.PharmacyGrnReturn , BillType.PharmacyPurchaseBill};
+        BillItem bi = new BillItem();
+        List<BillType> bts = new ArrayList<>();
+        
+        bts.add(BillType.PharmacyGrnBill);
+        bts.add(BillType.PharmacyGrnReturn);
+        bts.add(BillType.PharmacyPurchaseBill);
+        
         sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
                 + " (bi.item.name, "
                 + " sum(bi.qty), "
-                + " sum(bi.freeQty)) "
+                + " sum(bi.pharmaceuticalBillItem.freeQty)) "
                 + " from BillItem bi "
                 + " where bi.bill.billType in :bts ";
         
-        if(department!=null){
-            sql=sql + " and bi.bill.department=:dept ";
-        }
+        m.put("bts", bts);
         
-        if(institution!=null){
-            sql=sql + " and bi.bill.institution=:ins ";
+        if (department != null) {
+            sql = sql + " and bi.bill.department=:dept ";
+            m.put("dept", department);
         }
 
-        
-        sql=sql + "group by bi.item "
-                + "order by bi.item.name";
-        m.put("bts", department);
-        m.put("z", 0.0);
-        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
-        stockPurchaseValue = 0.0;
-        stockSaleValue += 0.0;
-        for (PharmacyStockRow r : lsts) {
-            stockPurchaseValue += r.getPurchaseValue();
-            stockSaleValue += r.getSaleValue();
-            
+        if (institution != null) {
+            sql = sql + " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
         }
-        pharmacyStockRows = lsts;
+
+        sql = sql + "group by bi.item "
+                + "order by bi.item.name";
+        
+        List<PharmacyStockRow> lsts =(List) billFacade.findObjects(sql, m);
+
+        rows = lsts;
     }
 
+    public List<PharmacyStockRow> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<PharmacyStockRow> rows) {
+        this.rows = rows;
+    }
+
+    
+    
     public Institution getInstitution() {
-        if(institution==null){
+        if (institution == null) {
             institution = getSessionController().getInstitution();
         }
         return institution;
@@ -147,7 +151,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
@@ -158,7 +162,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate == null ){
+        if (toDate == null) {
             toDate = new Date();
         }
         return toDate;
@@ -167,10 +171,7 @@ public class PharmacyPurchaseController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
-    
-    
-    
+
     public void makeNull() {
         //  currentPharmacyItemData = null;
         printPreview = false;
@@ -284,14 +285,14 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calSaleRte() {
         saleRate = 0.0;
-        if(getCurrentBillItem().getItem() == null){
+        if (getCurrentBillItem().getItem() == null) {
             UtilityController.addErrorMessage("Bill Item is Null");
         }
         double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
         saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
-        
+
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
-        
+
     }
 
     public void settle() {
@@ -320,7 +321,7 @@ public class PharmacyPurchaseController implements Serializable {
         getPharmacyBillBean().calSaleFreeValue(getBill());
 
         for (BillItem i : getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty()+i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
+            if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
 
