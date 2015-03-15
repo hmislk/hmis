@@ -2421,6 +2421,7 @@ public class SearchController implements Serializable {
                 + " b.retired=false "
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:billClass "
                 + " and (b.feeValue - b.paidValue) > 0"
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
@@ -2463,6 +2464,7 @@ public class SearchController implements Serializable {
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
+        temMap.put("billClass", BilledBill.class);
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
         System.out.println("temMap = " + temMap);
