@@ -46,9 +46,7 @@
                         <p:dataTable id="tblBills" 
                                      value="#{searchController.bills}" 
                                      var="bill"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
+                                    
                                      >    
                             <p:column>
                                 <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_service" onclick="onSubmitButton();" >

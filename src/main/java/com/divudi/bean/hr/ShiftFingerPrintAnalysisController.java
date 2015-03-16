@@ -384,7 +384,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
         ss.setDayType(dtp);
-        if (ss.getDayType() == null) {
+        if (dtp == null) {
             if (ss.getShift() != null) {
                 ss.setDayType(ss.getShift().getDayType());
             }
@@ -546,7 +546,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
         FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
 
-        HrForm additionalForm = ss.getAdditionalForm();
+        HrForm additionalForm = null;
+
+        if (ss.getAdditionalForm() != null && !ss.getAdditionalForm().isRetired()) {
+            additionalForm = ss.getAdditionalForm();
+        }
 
         if (additionalForm == null) {
             if (fingerPrintRecordIn == null) {
@@ -618,7 +622,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         checkLeave(ss);
         System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-        ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
+        List<FingerPrintRecord> missedRecords = getHumanResourceBean().fetchMissedFingerFrintRecord(ss);
+
+        if (missedRecords != null) {
+            for (FingerPrintRecord fp : missedRecords) {
+                list.add(fp);
+            }
+
+        }
 
         List<FingerPrintRecord> listFpr = new ArrayList<>();
         for (FingerPrintRecord fp : list) {
@@ -626,7 +637,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         Collections.sort(listFpr, new FingerPrintComparator());
-        ss.getFingerPrintRecordList().addAll(list);
+        ss.getFingerPrintRecordList().addAll(listFpr);
 
     }
 
@@ -1276,6 +1287,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Fetch Value for Oer Time per Month
                 double valueForOverTime = humanResourceBean.getOverTimeValue(ss.getStaff(), ss.getShiftDate());
 
+                System.err.println("#################### OverTimeValue " + valueForOverTime);
                 //Chang to Second
                 ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
 

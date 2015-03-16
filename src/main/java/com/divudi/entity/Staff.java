@@ -126,6 +126,7 @@ public class Staff implements Serializable {
     private String epfAccountNo;
     private String accountNo;
     String epfNo;
+  
 
     String acNo;
 
@@ -669,5 +670,8 @@ public class Staff implements Serializable {
     public void setEpfAccountNo(String epfAccountNo) {
         this.epfAccountNo = epfAccountNo;
     }
+
+   
+    
 
 }

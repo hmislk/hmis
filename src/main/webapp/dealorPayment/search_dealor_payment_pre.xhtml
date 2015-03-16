@@ -13,7 +13,7 @@
                     <p:panel >
 
                         <f:facet name="header" >
-                            <h:outputLabel value="GRN DEALOR PAYMENT BILL SEARCH "/>                                                      
+                            <h:outputLabel value="GRN DEALER PAYMENT BILL SEARCH "/>                                                      
                             <h:panelGrid columns="8" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
@@ -61,7 +61,7 @@
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel value="#{bill.insId}"  ></h:outputLabel>                                    
                             </p:column>
-                            <p:column headerText="Dealor Name"   >                             
+                            <p:column headerText="Dealer Name"   >                             
                                 <h:outputLabel value="#{bill.toInstitution.name}" />
                             </p:column>                          
 
@@ -88,7 +88,7 @@
                                 </h:panelGroup>                               
                             </p:column> 
 
-                            <p:column headerText="Paymentmethod" >                                
+                            <p:column headerText="Payment Method" >                                
                                 <h:outputLabel value="#{bill.paymentMethod}" >                                       
                                 </h:outputLabel>
                             </p:column>

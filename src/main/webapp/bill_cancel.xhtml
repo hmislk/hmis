@@ -73,27 +73,69 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{billSearch.printPreview}" >
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                            <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
 
-                        <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                                <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
+
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <bi:opdBillPrintCoop bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq 'false'}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
+                                    <p:printer target="gpPosBill" ></p:printer>
                                 </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+                                
                             </div>
-
-                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
-
-
+                            <h:panelGroup id="gpPosBill">
+                                <div style="page-break-after: always;">
+                                    <bi:posOpdBill bill="#{billSearch.bill}" cancelled="true"/>  
+                                </div>
+                                <div></div>
+                                <div style="page-break-after: always;">
+                                    <bi:posOpdBill bill="#{billSearch.bill}" cancelled="true"/>  
+                                </div>
+                            </h:panelGroup>
                         </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq 'true'}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                    <p:printer target="gpPosBillWithoutLogo" ></p:printer>
                                 </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
                             </div>
-                            <bi:opdBillPrintCoop bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
+                            <h:panelGroup id="gpPosBillWithoutLogo">
+                                <bi:posOpdBillWithoutLogo bill="#{billSearch.bill}" cancelled="true"/>  
+
+                            </h:panelGroup>
                         </h:panelGroup>
+
                     </h:panelGroup>
 
 

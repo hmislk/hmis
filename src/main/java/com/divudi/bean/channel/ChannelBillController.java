@@ -11,6 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
@@ -74,6 +75,7 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
+    PaymentMethodData paymentMethodData;
     Institution institution;
     Institution settleInstitution;
     Bill printingBill;
@@ -163,12 +165,10 @@ public class ChannelBillController implements Serializable {
         getBillSession().getBill().setBalance(0.0);
         getBillSession().getBill().setPaidBill(b);
         getBillFacade().edit(getBillSession().getBill());
-        
-        
+
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-        
 
 //        editBillSession(b, bi);
         UtilityController.addSuccessMessage("Channel Booking Added");
@@ -489,8 +489,11 @@ public class ChannelBillController implements Serializable {
         bs.setBillItem(canBillItem);
         bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bs.setCreater(getSessionController().getLoggedUser());
-
         getBillSessionFacade().create(bs);
+
+        can.setSingleBillSession(bs);
+        getBillFacade().edit(can);
+
         return bs;
     }
 
@@ -501,8 +504,11 @@ public class ChannelBillController implements Serializable {
         bs.setBillItem(billItem);
         bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bs.setCreater(getSessionController().getLoggedUser());
-
         getBillSessionFacade().create(bs);
+
+        bill.setSingleBillSession(bs);
+        getBillFacade().edit(bill);
+
         return bs;
     }
 
@@ -809,7 +815,6 @@ public class ChannelBillController implements Serializable {
 //                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
 //                return true;
 //            }
-
         }
 
         if (institution != null) {
@@ -1015,6 +1020,18 @@ public class ChannelBillController implements Serializable {
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
                 break;
+
+            case Card:
+                bill.setBillType(BillType.ChannelCash);
+                break;
+
+            case Cheque:
+                bill.setBillType(BillType.ChannelCash);
+                break;
+
+            case Slip:
+                bill.setBillType(BillType.ChannelCash);
+                break;
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 break;
@@ -1074,7 +1091,6 @@ public class ChannelBillController implements Serializable {
         savingBill.setSingleBillSession(savingBillSession);
         savingBill.setBillItems(savingBillItems);
         savingBill.setBillFees(savingBillFees);
-        
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getInstitution(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
@@ -1087,9 +1103,9 @@ public class ChannelBillController implements Serializable {
 
         savingBill.setSingleBillItem(savingBillItem);
         savingBill.setSingleBillSession(savingBillSession);
-        
+
         getBillFacade().edit(savingBill);
-        
+
         return savingBill;
     }
 
@@ -1119,6 +1135,19 @@ public class ChannelBillController implements Serializable {
     public void setBillFee(List<BillFee> billFee) {
         this.billFee = billFee;
     }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+    
+    
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;

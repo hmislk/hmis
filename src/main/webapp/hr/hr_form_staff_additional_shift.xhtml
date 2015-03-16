@@ -5,13 +5,14 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Working Shift Sheet">
+            <p:panel header="Additional Shift">
                 <h:panelGrid columns="2">
-                    <p:panel header="Additional Working Details">
+                    <p:panel >
                         <h:panelGrid columns="2">                           
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
@@ -19,7 +20,9 @@
                             <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                           
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
+                                        navigator="true"
                                         pattern="yyyy MM dd HH:mm:ss">
+                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
                             </p:calendar>  
                             <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
                             <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
@@ -30,15 +33,19 @@
                                                var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From Time"/>
-                            <p:calendar id="requestedDate" 
-                                        value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
-                                        pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar> 
+                           <ez:enterDateTime id="fromDate" 
+                                              idValue="from"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerFrom()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerFrom()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.fromSystemTimeStamp}"/>
                             <h:outputLabel value="To Time"/>
-                            <p:calendar id="forDate" value="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
-                                        pattern="yyyy MM dd HH:mm:ss" >
-                            </p:calendar> 
-
+                           <ez:enterDateTime id="toDate" 
+                                              idValue="to"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerTo()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.toSystemTimeStamp}"/>
                             <h:outputLabel value="Approved Staff"/>
                             <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>                          
                             <h:outputLabel value="Approved Date"/>

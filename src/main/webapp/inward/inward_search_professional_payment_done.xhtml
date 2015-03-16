@@ -21,7 +21,7 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
                                  <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
-                                <h:outputLabel/> <h:outputLabel/>
+                               
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Inward Bill No"/>
@@ -47,6 +47,9 @@
                         <p:defaultCommand target="btnSearch" />
 
                         <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="#{searchController.total}"/>
+                            </f:facet>
                             <p:column>
                                 <p:commandButton ajax="false" value="View Bill" action="inward_reprint_staff_payment" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardSearch.bill}"/>
@@ -54,7 +57,7 @@
                             </p:column>
 
                             <p:column headerText="Inward Bill No" >
-                                <h:outputLabel  value="#{bi.paidForBillFee.bill.insId}"  ></h:outputLabel>
+                                <h:outputLabel  value="#{bi.paidForBillFee.id}"  ></h:outputLabel>
                             </p:column>  
                             <p:column headerText="Payment Bill No" >
                                 <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>

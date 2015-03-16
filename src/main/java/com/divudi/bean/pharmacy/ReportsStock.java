@@ -96,7 +96,10 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d order by s.itemBatch.item.name";
+        sql = "select s from Stock s "
+                + " where s.department=:d "
+                + " and s.stock>0 "
+                + "  order by s.itemBatch.item.name";
         m.put("d", department);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;

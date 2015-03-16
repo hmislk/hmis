@@ -24,22 +24,24 @@
                                 <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                                 <h:outputLabel value="Staff Category : "/>
                                 <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Specility : "/>
+                                <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
                                 <h:outputLabel value="Staff Designation : "/>
                                 <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                                 <h:outputLabel value="Staff Roster : "/>
                                 <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                             </h:panelGrid>
                             <h:panelGrid columns="3">
-                                 <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
+                                <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+                                <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                    <p:printer target="reportPrint"  />
+                                </p:commandButton>
 
-                            <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
-                            </p:commandButton> 
+                                <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                    <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                                </p:commandButton> 
                             </h:panelGrid>
-                           
+
                         </p:panel>
                         <p:panel header="Employee List" id="reportPrint">
 
@@ -49,15 +51,12 @@
                                          id="tbl2" 
                                          rowIndexVar="i"
                                          rowKey="#{s.id}"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         rows="10"
+
                                          >
                                 <p:column headerText="Id" filterBy="#{s.id}" exportable="false">
                                     #{s.id}
                                 </p:column>
-                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id" exportable="false">>
+                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id" exportable="false">
                                     <p:outputLabel value="#{s.id}" />
                                 </p:column>   
 
@@ -100,6 +99,12 @@
                                         <p:outputLabel value="Roster" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.roster.name}" />
+                                </p:column>
+                                   <p:column headerText="Employee Status">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Employee Status" />
+                                    </f:facet>
+                                       <p:outputLabel value="#{s.employeeStatus.label}" />
                                 </p:column>
                                 <p:column headerText="ADDRESS" >
                                     <f:facet name="header" >

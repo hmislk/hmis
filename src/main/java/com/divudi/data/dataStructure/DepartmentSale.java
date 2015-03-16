@@ -18,6 +18,7 @@ public class DepartmentSale {
     Department fromDepartment;
     private double saleQty;
     private double saleValue;
+    
 
     public Department getToDepartment() {
         return toDepartment;
