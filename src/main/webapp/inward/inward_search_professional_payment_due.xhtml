@@ -54,7 +54,8 @@
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                             <f:facet name="header">
-                                #{searchController.total}
+                                 <h:outputLabel value=" #{searchController.total}"/>
+                               
                             </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
@@ -67,18 +68,30 @@
                             </p:column>
 
                             <p:column headerText="Speciality">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Speciality"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.staff.speciality.name}"/>
                             </p:column>
 
                             <p:column headerText="Doctor" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Doctor"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.staff.person.name}"/>
                             </p:column>
 
                             <p:column headerText="Patient" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Patient"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
                             </p:column>
 
                             <p:column headerText="Bill No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.bill.insId}" 
                                                rendered="#{bf.bill.cancelled}" style="color: red;">
                                 </h:outputLabel>
@@ -88,21 +101,33 @@
                             </p:column>
 
                             <p:column headerText="Bht No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bht No"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="BilledAt" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="BilledAt"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.bill.createdAt}">
                                 </h:outputLabel>
                             </p:column>
 
 
                             <p:column headerText="Test" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Test"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.billItem.item.name}" />
                             </p:column>
 
                             <p:column headerText="Charge">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Charge"  />
+                                </f:facet>
                                 <h:outputLabel value="#{bf.feeValue}" />
                             </p:column>
 

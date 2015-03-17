@@ -399,9 +399,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     private boolean errorCheckForSaleBill() {
-        if (toDepartment == null) {
-            errorMessage = "Please select a department to issue items. Bill can NOT be settled until you select the department";
-            JsfUtil.addErrorMessage("Department");
+        if (toInstitution == null) {
+            errorMessage = "Please select a Institution to issue items. Bill can NOT be settled until you select the Institution";
+            JsfUtil.addErrorMessage("Institution");
             return true;
         }
         return false;
