@@ -79,7 +79,7 @@
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Rate">
-                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -102,7 +102,7 @@
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyIssueController.qty}" style="width: 50px!important;"   >
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyReturnwithouttresing.qty}" style="width: 50px!important;"   >
                                                 <p:ajax event="keyup"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:component('acDept')}" update="txtRate txtVal" ></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:component('acDept')}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
@@ -239,7 +239,7 @@
 
                                 <f:facet name="header" >
                                     <h:panelGrid columns="20"  >
-                                        <p:commandButton  accesskey="s" value="Issue" 
+                                        <p:commandButton  accesskey="s" value="Return" 
                                                           action="#{pharmacyReturnwithouttresing.settleBill()}" 
                                                           onclick="onSubmitButton();"
                                                           actionListener="#{pharmacyReturnwithouttresing.calculateAllRates}">
@@ -306,9 +306,9 @@
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Issue"
+                            <p:commandButton accesskey="n" value="New Return"
                                              onclick="onSubmitButton();"
-                                             ajax="false" action="/pharmacy/pharmacy_issue" 
+                                             ajax="false" action="/pharmacy/pharmacy_return_withouttresing" 
                                              actionListener="#{pharmacyReturnwithouttresing.resetAll()}" ></p:commandButton>
 
                         </div>

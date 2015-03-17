@@ -564,12 +564,38 @@ public class HumanResourceBean {
         m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.staff=:s "
+                + " and ss.staff=:s"
+                + " and ss.shift is not null "
                 + " and ss.shiftDate=:date "
-                + " and type(ss)!=:tp"
-                + " order by ss.staff.codeInterger ";
+                + " and type(ss)!=:tp" ;
 
-        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<StaffShift> list1 = getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+
+        ///////////////////
+        m = new HashMap();
+        m.put("date", date);
+        m.put("s", staff);        
+        m.put("dtp", DayType.DayOff);
+        sql = " Select ss from StaffShiftExtra ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate=:date "                
+                + " and ss.shift.dayType=:dtp "
+                + " and ss.additionalForm.retired=false ";
+
+        List<StaffShift> list2 = getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+
+        List<StaffShift> list3 = new ArrayList<>();
+
+        if (list1 != null) {
+            list3.addAll(list1);
+        }
+
+        if (list2 != null) {
+            list3.addAll(list2);
+        }
+        
+        return list3;
     }
 
     @EJB
@@ -1204,7 +1230,7 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.id";
+                + " order by st.shiftStartTime";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);

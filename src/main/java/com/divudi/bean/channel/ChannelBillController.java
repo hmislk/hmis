@@ -11,6 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
@@ -74,6 +75,7 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
+    PaymentMethodData paymentMethodData;
     Institution institution;
     Institution settleInstitution;
     Bill printingBill;
@@ -1133,6 +1135,19 @@ public class ChannelBillController implements Serializable {
     public void setBillFee(List<BillFee> billFee) {
         this.billFee = billFee;
     }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+    
+    
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
