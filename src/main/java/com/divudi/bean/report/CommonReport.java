@@ -2412,6 +2412,41 @@ public class CommonReport implements Serializable {
 
     }
 
+    
+    
+       public void createGrnDetailTablewithouttresing() {
+        recreteModal();
+
+        grnBilled = new BillsTotals();
+        grnCancelled = new BillsTotals();
+        grnReturn = new BillsTotals();
+        grnReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        //GRN Billed Bills
+        getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+        getGrnBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+        getGrnBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
+
+//        //GRN Cancelled Bill
+//        getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+//        getGrnCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+//        getGrnCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill
+//        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
+    }
     public void createGrnDetailTableStore() {
         recreteModal();
 

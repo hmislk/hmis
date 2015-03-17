@@ -89,20 +89,20 @@ public class PharmacyPurchaseController implements Serializable {
         String sql;
         BillItem bi = new BillItem();
         List<BillType> bts = new ArrayList<>();
-        
+
         bts.add(BillType.PharmacyGrnBill);
         bts.add(BillType.PharmacyGrnReturn);
         bts.add(BillType.PharmacyPurchaseBill);
-        
+
         sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
                 + " (bi.item.name, "
                 + " sum(bi.qty), "
                 + " sum(bi.pharmaceuticalBillItem.freeQty)) "
                 + " from BillItem bi "
                 + " where bi.bill.billType in :bts ";
-        
+
         m.put("bts", bts);
-        
+
         if (department != null) {
             sql = sql + " and bi.bill.department=:dept ";
             m.put("dept", department);
@@ -115,8 +115,8 @@ public class PharmacyPurchaseController implements Serializable {
 
         sql = sql + "group by bi.item "
                 + "order by bi.item.name";
-        
-        List<PharmacyStockRow> lsts =(List) billFacade.findObjects(sql, m);
+
+        List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m);
 
         rows = lsts;
     }
@@ -129,8 +129,6 @@ public class PharmacyPurchaseController implements Serializable {
         this.rows = rows;
     }
 
-    
-    
     public Institution getInstitution() {
         if (institution == null) {
             institution = getSessionController().getInstitution();
@@ -293,6 +291,18 @@ public class PharmacyPurchaseController implements Serializable {
 
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
 
+    }
+
+    public void calNetTotal() {
+        double grossTotal=0.0;
+        if (getBill().getDiscount() > 0) {
+            grossTotal = getBill().getTotal() + getBill().getDiscount();
+            System.out.println("gross"+grossTotal);
+            System.out.println("net1"+getBill().getNetTotal());
+            getBill().setNetTotal(grossTotal);
+             System.out.println("net2"+getBill().getNetTotal());
+        }
+        
     }
 
     public void settle() {
