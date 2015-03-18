@@ -145,7 +145,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq 'false'}">
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpPosBill" ></p:printer>
@@ -167,7 +167,28 @@
                                 <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>  
                             </div>
                         </h:panelGroup>
+                    </h:panelGroup>
+                        
+                        
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq 'true'}">
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                            </p:commandButton>
 
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <h:panelGroup id="gpPosBillWithoutLogo">
+                            <bi:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="true"/>  
+                                                       
+                        </h:panelGroup>
+                    </h:panelGroup>
+                        
                     </h:panelGroup>
 
 

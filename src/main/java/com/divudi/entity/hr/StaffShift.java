@@ -12,6 +12,7 @@ import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -161,7 +162,6 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
 //    int leaveDivident;
- 
 
     public DayType getDayType() {
         return dayType;
@@ -1150,6 +1150,9 @@ public class StaffShift implements Serializable {
     private List<FingerPrintRecord> fingerPrintRecordList;
 
     public List<FingerPrintRecord> getFingerPrintRecordList() {
+        if (fingerPrintRecordList == null) {
+            fingerPrintRecordList = new ArrayList<>();
+        }
         return fingerPrintRecordList;
     }
 

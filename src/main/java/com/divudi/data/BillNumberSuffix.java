@@ -21,6 +21,7 @@ public enum BillNumberSuffix {
     GRN,//Pharmacy GRN
     GRNCAN,//GRN Cancel
     GRNRET,//GRN Return
+    PHDIRRET,//Pharmacy Return to dealer Without traising
     GRNRETCAN,//GRN Return Cancel
     PO,//Purchase Order
     POCAN,//PO Cancel

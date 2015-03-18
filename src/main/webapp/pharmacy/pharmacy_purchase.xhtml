@@ -206,7 +206,7 @@
                             </p:inputText>
                             <p:outputLabel value="Discount"/>
                             <p:inputText autocomplete="off" id="dis" value="#{pharmacyPurchaseController.bill.discount}" >
-                                <p:ajax process="gro tx dis" update="net" event="keyup"/>
+                                <p:ajax process="@this" update="gro tx net" event="blur" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
                             </p:inputText>
                             <p:outputLabel value="Net Total"/>
                             <h:outputLabel id="net"  value="#{pharmacyPurchaseController.bill.netTotal}" > 

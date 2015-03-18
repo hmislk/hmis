@@ -23,17 +23,10 @@
                         <h:panelGrid columns="20"  >
                             <h:outputLabel value="Pharmacy Retail Bill" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}"  disabled="false" rendered="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment eq false}" >                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}"  disabled="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
                             </p:selectOneMenu>
-                            
-                            <p:selectOneMenu   id="cmbPs1" value="#{pharmacyPreSettleController.preBill.paymentMethod}"  disabled="true" rendered="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment eq true}" >                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax process="cmbPs1" update="creditCard cheque slip " event="change" />
-                            </p:selectOneMenu>
-                            
-                            <h:outputLabel value="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment}"/>
 
                             <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>

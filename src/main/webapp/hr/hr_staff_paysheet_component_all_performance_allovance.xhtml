@@ -18,9 +18,16 @@
                     <p:panel header="Detail" >
 
                         <h:panelGrid columns="2"  >
-                            <h:outputLabel value="Component "/>
-                            <h:outputLabel value="#{staffPaySheetComponentAllPerformanceAllowanceController.paysheetComponent.name}"/>
-                             
+                         <h:outputLabel value="Component"/>
+                            <p:selectOneMenu id="comp" value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
+                                <f:selectItem itemLabel="Select Paysheet Component"/>
+                                <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
+                                               var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
+                                <f:ajax event="change" execute="@this" 
+                                        render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
+                            </p:selectOneMenu>
+                            
+                          
                             <h:outputLabel value="From"/>                            
                             <p:calendar value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}" pattern="dd MM yyyy">
                                 <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>

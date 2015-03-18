@@ -145,6 +145,7 @@ public enum Privileges {
     PharmacySummery,
     PharmacyAdministration,
     PharmacySetReorderLevel,
+    PharmacyReturnWithoutTraising,
     //theater
     Theatre,
     TheatreAddSurgery,

@@ -51,6 +51,7 @@ public class UserPreference implements Serializable {
     boolean depNumGenFromToDepartment;
     boolean tranferNetTotalbyRetailRate;
     boolean allowtoChangePaymentMethodDuringPayment;
+    boolean opdPosBillWithoutLogo;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -63,11 +64,7 @@ public class UserPreference implements Serializable {
 
     public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
         this.applicationInstitution = applicationInstitution;
-    }
-    
-
-    
-    
+    }   
     
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {
@@ -138,10 +135,14 @@ public class UserPreference implements Serializable {
     public void setAllowtoChangePaymentMethodDuringPayment(boolean allowtoChangePaymentMethodDuringPayment) {
         this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
     }
-    
-    
-    
-    
+
+    public boolean isOpdPosBillWithoutLogo() {
+        return opdPosBillWithoutLogo;
+    }
+
+    public void setOpdPosBillWithoutLogo(boolean opdPosBillWithoutLogo) {
+        this.opdPosBillWithoutLogo = opdPosBillWithoutLogo;
+    }   
     
 
     public String getAbbreviationForHistory() {

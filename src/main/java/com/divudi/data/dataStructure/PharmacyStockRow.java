@@ -16,6 +16,7 @@ public class PharmacyStockRow {
     String code;
     String name;
     Double qty;
+    Double freeQty;
     Double purchaseValue;
     Double saleValue;
     Item item;
@@ -23,13 +24,19 @@ public class PharmacyStockRow {
     public PharmacyStockRow() {
     }
 
+    public PharmacyStockRow(String name, Double qty, Double freeQty) {
+        this.name = name;
+        this.qty = qty;
+        this.freeQty = freeQty;
+    }
+
+    
+    
     public PharmacyStockRow(Item item, Double qty, Double purchaseValue, Double saleValue) {
         this.qty = qty;
         this.purchaseValue = purchaseValue;
         this.saleValue = saleValue;
         this.item = item;
-        
-
     }
 
     public PharmacyStockRow(String code, String name, Double qty, Double purchaseValue, Double saleValue) {
@@ -48,6 +55,14 @@ public class PharmacyStockRow {
                 + "from Stock s where s.stock>:z and s.department=:d "
                 + "group by s.itemBatch.item.name, s.itemBatch.item.code "
                 + "order by s.itemBatch.item.name";
+    }
+
+    public Double getFreeQty() {
+        return freeQty;
+    }
+
+    public void setFreeQty(Double freeQty) {
+        this.freeQty = freeQty;
     }
 
     
