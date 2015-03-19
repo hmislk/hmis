@@ -913,6 +913,39 @@ public class SalaryCycleController implements Serializable {
         HashMap m = new HashMap();
         m.put("pc", psc);
         m.put("sc", salaryCycle);
+        
+        
+         if (getReportKeyWord().getInstitution() != null) {
+            jpql += " and spc.staffSalary.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            jpql += " and spc.staffSalary.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            jpql += " and spc.staffSalary.staff=:stf ";
+            m.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            jpql += " and spc.staffSalary.staff.staffCategory=:stfCat ";
+            m.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            jpql += " and spc.staffSalary.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            jpql += " and spc.staffSalary.staff.roster=:rs ";
+            m.put("rs", getReportKeyWord().getRoster());
+        }
+
+        
         return staffSalaryComponantFacade.findDoubleByJpql(jpql, m);
 
     }

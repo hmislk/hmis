@@ -582,8 +582,8 @@ public class StaffSalaryController implements Serializable {
         }
     }
 
-    private Long setHoliDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
-        long count = 0;
+    private Double setHoliDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
+        Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
             count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
@@ -613,7 +613,7 @@ public class StaffSalaryController implements Serializable {
             }
 
         } else {
-            return 0L;
+            return 0.0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -626,8 +626,8 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private Long setDayOffSleepingDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
-        Long count = 0L;
+    private Double setDayOffSleepingDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
+        Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
             count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
@@ -651,7 +651,7 @@ public class StaffSalaryController implements Serializable {
                 ss.setComponantValue(value);
             }
         } else {
-            return 0L;
+            return 0.0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -853,14 +853,14 @@ public class StaffSalaryController implements Serializable {
             getCurrent().setExtraDutySleepingDayMinute(extraTimeMinute);
 
             //Set Holiday Allowance
-            Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
-            getCurrent().setMerchantileCount(count.doubleValue());
+            Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
+            getCurrent().setMerchantileCount(count);
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
-            getCurrent().setPoyaCount(count.doubleValue());
+            getCurrent().setPoyaCount(count);
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
-            getCurrent().setDayOffCount(count.doubleValue());
+            getCurrent().setDayOffCount(count);
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
-            getCurrent().setSleepingDayCount(count.doubleValue());
+            getCurrent().setSleepingDayCount(count);
 
             double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             double basicValue = setNoPay_Basic(noPayCount);
