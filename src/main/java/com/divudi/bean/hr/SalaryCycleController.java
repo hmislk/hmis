@@ -660,6 +660,19 @@ public class SalaryCycleController implements Serializable {
         m.put("tp", list);
         return paysheetComponentFacade.findBySQL(jpql, m);
     }
+    
+    public List<PaysheetComponent> fetchPaysheetComponents(List<PaysheetComponentType> list) {
+        HashMap m = new HashMap();
+        String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
+                + " from StaffSalaryComponant spc"
+                + " where spc.retired=false "
+                //+ " and spc.retired=false "
+                + " and spc.staffPaysheetComponent.paysheetComponent.componentType in :tp"
+                + " order by spc.staffPaysheetComponent.paysheetComponent.orderNo";
+        //m.put("sc", salaryCycle);
+        m.put("tp", list);
+        return paysheetComponentFacade.findBySQL(jpql, m);
+    }
 
     List<String> headersSub;
 
@@ -916,6 +929,22 @@ public class SalaryCycleController implements Serializable {
         m.put("st", s);
         m.put("pc", psc);
         m.put("sc", salaryCycle);
+        return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
+
+    }
+    
+    public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc, boolean blocked) {
+        String jpql = "select spc from StaffSalaryComponant spc "
+                + " where spc.staffSalary=:st"
+                + " and spc.retired=false"
+                + " and spc.staffSalary.retired=false "
+                + " and spc.staffSalary.blocked=" + blocked
+                + " and spc.staffPaysheetComponent.paysheetComponent=:pc ";
+                //+ " and spc.salaryCycle=:sc ";
+        HashMap m = new HashMap();
+        m.put("st", s);
+        m.put("pc", psc);
+        //m.put("sc", salaryCycle);
         return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
 
     }
