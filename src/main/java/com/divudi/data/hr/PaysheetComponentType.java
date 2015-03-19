@@ -149,7 +149,15 @@ public enum PaysheetComponentType {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
             PaysheetComponentType.FixedAllowance,
-            PaysheetComponentType.VariableAllowance,});
+            PaysheetComponentType.VariableAllowance});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsAddidtionsWithPerformance() {
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
+            PaysheetComponentType.FixedAllowance,
+            PaysheetComponentType.VariableAllowance,
+            PaysheetComponentType.PerformanceAllowance});
 
     }
 
@@ -162,6 +170,18 @@ public enum PaysheetComponentType {
             PaysheetComponentType.LoanInstallemant,
             PaysheetComponentType.LoanNetSalary,
             PaysheetComponentType.VariableDeduction});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsDeductionsWithSalaryAdvance() {
+        return Arrays.asList(new PaysheetComponentType[]{
+            PaysheetComponentType.FixedDeduction,
+            PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.Advance_Payment_Deduction,
+            PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.LoanNetSalary,
+            PaysheetComponentType.VariableDeduction,
+            PaysheetComponentType.Salary_Advance_Deduction});
 
     }
 

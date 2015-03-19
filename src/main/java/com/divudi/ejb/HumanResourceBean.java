@@ -2620,6 +2620,8 @@ public class HumanResourceBean {
 //
 //        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
 //    }
+    
+    
     public long calculateOffDays(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
@@ -2635,8 +2637,10 @@ public class HumanResourceBean {
         hm.put("td", toDate);
         hm.put("dtp", dayType);
         hm.put("stf", staff);
-
-        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+        
+        Long lg= staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+        System.err.println("OFF Day Count "+lg);
+        return lg;
     }
 
     public double calculateOffDays(Date fromDate, Date toDate, Staff staff, DayType dayType, double salaryPerDay) {
