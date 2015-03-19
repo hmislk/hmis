@@ -242,28 +242,28 @@ public class StaffSalaryAdvanceController implements Serializable {
     @Inject
     SalaryCycleController salaryCycleController;
 
-    public void onEditListener(StaffSalary staffSalary) {
-        current = staffSalary;
-
-        if (current == null) {
-            return;
-        }
-
-        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance());
-        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance());
-
-        for (PaysheetComponent psc : paysheetComponentsAddition) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
-            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
-
-        }
-        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
-            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
-
-        }
-
-    }
+//    public void onEditListener(StaffSalary staffSalary) {
+//        current = staffSalary;
+//
+//        if (current == null) {
+//            return;
+//        }
+//
+//        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance());
+//        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance());
+//
+//        for (PaysheetComponent psc : paysheetComponentsAddition) {
+//            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
+//            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+//
+//        }
+//        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+//            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
+//            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
+//
+//        }
+//
+//    }
 
     public void onEditBlockedUpdate(StaffSalary staffSalary) {
 //        current = staffSalary;

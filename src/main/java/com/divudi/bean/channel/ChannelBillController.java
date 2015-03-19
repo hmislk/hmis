@@ -951,6 +951,7 @@ public class ChannelBillController implements Serializable {
                 bf.setSpeciality(f.getSpeciality());
                 bf.setStaff(f.getStaff());
             }
+
             bf.setFee(f);
             bf.setFeeAt(new Date());
             bf.setFeeDiscount(0.0);
@@ -986,9 +987,44 @@ public class ChannelBillController implements Serializable {
             billFeeList.add(bf);
             System.out.println("billFees = " + billFeeList);
         }
+        if (paymentMethod != PaymentMethod.Agent) {
+            changeAgentFeeToHospitalFee();
+        }
 
         return billFeeList;
 
+    }
+
+    public void changeAgentFeeToHospitalFee() {
+        List<ItemFee> itemFees = getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees();
+        double agentFee = 0.0;
+        double agentFfee = 0.0;
+        for (ItemFee ifl : itemFees) {
+            if (ifl.getFeeType() == FeeType.OtherInstitution) {
+                agentFee = ifl.getFee();
+                System.out.println("agentFee = " + agentFee);
+                agentFfee = ifl.getFfee();
+                System.out.println("agentFfee = " + agentFfee);
+                
+                ifl.setFee(0.0);
+                ifl.setFfee(0.0);
+            }
+        }
+        for (ItemFee ifl : itemFees) {
+            if (ifl.getFeeType() == FeeType.OwnInstitution) {
+                
+                System.out.println("1.agentFee = " + agentFee);
+                System.out.println("1.agentFfee = " + agentFfee);
+                agentFee += ifl.getFee();
+                agentFfee += ifl.getFfee();
+                System.out.println("2.agentFee = " + agentFee);
+                System.out.println("2.agentFfee = " + agentFfee);
+                
+                
+                ifl.setFee(agentFee);
+                ifl.setFfee(agentFfee);
+            }
+        }
     }
 
     public Bill getPrintingBill() {
@@ -1146,8 +1182,6 @@ public class ChannelBillController implements Serializable {
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
-    
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
