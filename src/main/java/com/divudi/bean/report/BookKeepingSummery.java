@@ -2523,15 +2523,15 @@ public class BookKeepingSummery implements Serializable {
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
         hm.put("ins", institution);
-        hm.put("bclass", BilledBill.class);
+//        hm.put("bclass", BilledBill.class);
         String sql = "Select b.paidForBillFee.bill.patientEncounter.admissionType.name,"
                 + " b.paidForBillFee.staff.speciality.name , sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
                 + " and b.bill.institution=:ins "
-                + " and b.bill.cancelled=false"
-                + " and type(b.bill)=:bclass"
+//                + " and b.bill.cancelled=false"
+//                + " and type(b.bill)=:bclass"
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
                 + " and b.bill.createdAt between :fromDate and :toDate"
