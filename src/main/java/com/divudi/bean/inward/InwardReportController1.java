@@ -48,6 +48,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -58,9 +59,13 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardReportController1 implements Serializable {
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date fromDatePaid;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date toDatePaid;
     Category category;
     Item service;
@@ -435,7 +440,7 @@ public class InwardReportController1 implements Serializable {
         sql += " group by bf.paidForBillFee.staff.speciality "
                 + " order by bf.paidForBillFee.staff.speciality.name ";
 
-        return getBillFeeFacade().findAggregates(sql, m);
+        return getBillFeeFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -464,6 +469,8 @@ public class InwardReportController1 implements Serializable {
     public void createDoctorPaymentInwardPaid(Date frmDate, Date tDate, boolean byDischargedDate) {
         professionalsPaid = new ArrayList<>();
         professionalGrossPaid = 0;
+        System.out.println("frmDate = " + frmDate);
+        System.out.println("tDate = " + tDate);
         List<Object[]> list = fetchDoctorPaymentInwardPaid(frmDate, tDate, byDischargedDate);
         System.err.println("Professional Paid " + list);
         for (Object[] obj : list) {
