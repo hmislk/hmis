@@ -771,7 +771,9 @@ public class HumanResourceBean {
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :dtp "
-                + " and ss.leaveType is null "
+                + " and ss.leaveType is null"
+                + " and (ss.lateInVarified>0 "
+                + " or ss.earlyOutVarified>0)"
                 + " order by ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
@@ -790,7 +792,7 @@ public class HumanResourceBean {
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :dtp "
-                + " and ss.autoLeave=true"
+                + " and ss.autoLeave=true "
                 + " and (ss.considerForLateIn=true "
                 + " or ss.considerForEarlyOut=true) "
                 + " order by ss.shiftDate ";

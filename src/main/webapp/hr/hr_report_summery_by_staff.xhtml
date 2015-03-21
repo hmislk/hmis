@@ -48,6 +48,7 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
+                        <p:commandButton ajax="false" value="Reset" action="#{hrReportController.reset()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -65,12 +66,29 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
                                 </p:column>
-                                 <p:column headerText="Shift id">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Shift id" ></p:outputLabel>
-                                    </f:facet>
+                                 <p:column headerText="Shift id">                                  
                                     <p:outputLabel value="#{ss.shift.id}" ></p:outputLabel>
                                 </p:column>
+                                 <p:column headerText="Form id">                                  
+                                     <p:outputLabel value="#{ss.leaveForm.id}" ></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="Auto">                                  
+                                     <p:outputLabel value="#{ss.lateInVarified}" > <f:converter converterId="longToTime"/></p:outputLabel>
+                                     <h:outputLabel value=" - "/>
+                                     <p:outputLabel value="#{ss.earlyOutVarified}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                     <p:outputLabel value="#{ss.considerForLateIn}" ></p:outputLabel>
+                                     <p:outputLabel value="#{ss.considerForEarlyOut}" ></p:outputLabel>
+                                     <p:outputLabel value="#{ss.autoLeave}" ></p:outputLabel>
+                                     
+                                </p:column>
+                                 <p:column headerText="Leave Type">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Leave Type" ></p:outputLabel>
+                                    </f:facet>
+                                     <h:outputLabel value="#{ss.leaveType}"/>
+                                </p:column>
+
+                                
                                 <p:column headerText="Day Type">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Day Type" ></p:outputLabel>
@@ -279,7 +297,10 @@
                                 </f:facet> 
                                 <p:column headerText="Leave Date" >
                                     <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
+                                </p:column>
+                                  <p:column headerText="id" >
+                                    <p:outputLabel value="#{ss.id}"></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Leave Qty" >
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
