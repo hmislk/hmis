@@ -72,7 +72,6 @@ public class AmpController implements Serializable {
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
-    List<Amp> pharmacyItemList;
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -146,7 +145,6 @@ public class AmpController implements Serializable {
     public void createItemList() {
         Map m = new HashMap();
         m.put("dep", DepartmentType.Store);
-
         String sql = "select c from Amp c "
                 + " where c.retired=false "
                 + " and (c.departmentType is null"
@@ -154,21 +152,9 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findBySQL(sql, m);
-        //System.out.println("a size is " + a.size());
-
     }
 
-    public List<Amp> getItemsByCode() {
-        if (itemsByCode == null) {
-            itemsByCode = getFacade().findBySQL("select a from Amp a where a.retired=false order by a.code");
-        }
-        return itemsByCode;
-    }
-
-    public void setItemsByCode(List<Amp> itemsByCode) {
-        this.itemsByCode = itemsByCode;
-    }
-
+   
     public void onTabChange(TabChangeEvent event) {
         setTabId(event.getTab().getId());
     }
@@ -221,27 +207,7 @@ public class AmpController implements Serializable {
         return ampList;
     }
     
-    public void fillAllPharmacyitems(){
-        Map m = new HashMap();
-        m.put("dep", DepartmentType.Store);
-        
-        String sql;
-        sql = "select c from Amp c where "
-                    + " c.retired=false and"
-                    + " (c.departmentType is null"
-                    + " or c.departmentType!=:dep) "
-                    //+ " and c.category is null "
-                    + " order by c.name ";
-        
-        /* select c from Amp c where "
-                    + " c.retired=false and"
-                    + " (c.departmentType is null"
-                    + " or c.departmentType!=:dep )and "
-                    + "(upper(c.name) like :n ) order by c.name */
-        System.out.println("sql = " + sql);
-        pharmacyItemList = getEjbFacade().findBySQL(sql, m);
-        System.out.println("pharmacyItemList = " + pharmacyItemList);
-    }
+    
 
     public List<Amp> completeAmpByCode(String qry) {
 
@@ -556,17 +522,6 @@ public class AmpController implements Serializable {
         this.department = department;
     }
 
-    public List<Amp> getPharmacyItemList() {
-        return pharmacyItemList;
-    }
-
-    public void setPharmacyItemList(List<Amp> pharmacyItemList) {
-        this.pharmacyItemList = pharmacyItemList;
-    }
-
-    
-
-    
     
     /**
      *

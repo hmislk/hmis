@@ -61,7 +61,7 @@
 
                         </p:panelGrid>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:dataTable id="tb1" value="#{inwardReportController1.professionals}" var="pro" >
+                            <p:dataTable id="tb1" value="#{inwardReportController1.professionals}" var="pro" rowStyleClass="#{pro.value2 eq 0.0 ? 'redText':''}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Professional Fee"/>
                                 </f:facet>
