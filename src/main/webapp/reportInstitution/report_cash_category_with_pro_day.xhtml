@@ -35,36 +35,36 @@
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
-                     <h:panelGrid columns="3">
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                     outside:outside,
-                                     pharmacy:pharmacy,
-                                     inward_collection:inward_collection,
-                                     agent_collection:agent_collection,
-                                     credit_collection:credit_collection,
-                                     credit_collection_inward:credit_collection_inward,
-                                     col,
-                                     opd_professional:opd_professional,
-                                     inward_professional:inward_professional,
-                                     credit_card:credit_card,
-                                     slip:slip,
-                                     cheque:cheque,
-                                     finalSum,
-                                     bnkDiposit"
-                                     fileName="Book_Keeping_Summery_with_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
+                    <h:panelGrid columns="3">
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward_collection:inward_collection,
+                                         agent_collection:agent_collection,
+                                         credit_collection:credit_collection,
+                                         credit_collection_inward:credit_collection_inward,
+                                         col,
+                                         opd_professional:opd_professional,
+                                         inward_professional:inward_professional,
+                                         credit_card:credit_card,
+                                         slip:slip,
+                                         cheque:cheque,
+                                         finalSum,
+                                         bnkDiposit"
+                                         fileName="Book_Keeping_Summery_with_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
 
-                      <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createCashCategoryWithProDay}"/>
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProDay}"/>
                     </h:panelGrid>
-                    
+
                 </f:facet>
             </p:panel>
             <!--            <p:spacer height="30" />-->

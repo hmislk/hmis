@@ -527,7 +527,42 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
-
+//    sql = "select bf.paidForBillFee.staff.speciality,"
+//                + " sum(bf.paidForBillFee.feeValue) "
+//                + " from BillItem bf"
+//                + " where bf.retired=false "
+//                + " and bf.bill.cancelled=false "
+//                + " and type(bf.bill)=:bclass"
+//                + " and bf.bill.billType=:btp"
+//                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+//                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+//
+//        if (byDischargDate) {
+//            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+//        } else {
+//            sql += " and bf.createdAt between :fd and :td ";
+//        }
+//
+//        if (speciality != null) {
+//            sql += " and bf.paidForBillFee.staff.speciality=:s ";
+//            m.put("s", speciality);
+//        }
+//
+//        if (admissionType != null) {
+//            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+//            m.put("admTp", admissionType);
+//        }
+//        if (paymentMethod != null) {
+//            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+//            m.put("pm", paymentMethod);
+//        }
+//        if (institution != null) {
+//            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+//            m.put("cd", institution);
+//        }
+    
+    
+//daily return
     public List<Object[]> fetchDoctorPaymentInward(Date fromDate, Date toDate) {
         String sql = "Select b.paidForBillFee.bill.patientEncounter.admissionType,"
                 + " sum(b.netValue) "
@@ -548,7 +583,6 @@ public class BillBeanController implements Serializable {
         System.out.println("hm = " + hm);
         System.out.println("sql = " + sql);
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
-
     }
 
     
@@ -580,6 +614,7 @@ public class BillBeanController implements Serializable {
                 + " sum(b.paidForBillFee.feeValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
+                + " and b.bill.cancelled=false " //inward report not tally
                 + " and b.bill.billType=:bType "
                 + " and b.paidForBillFee.bill.patientEncounter.admissionType=:adt"
                 + " and( b.paidForBillFee.bill.billType=:refType1 "
