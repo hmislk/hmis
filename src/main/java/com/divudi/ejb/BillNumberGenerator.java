@@ -348,7 +348,7 @@ public class BillNumberGenerator {
         String sql = "SELECT count(b) FROM BilledBill b where b.retired=false  AND b.billType= :btp1";
         String result;
         HashMap h = new HashMap();
-        h.put("btp1", BillType.gpBooking);
+        h.put("btp1", BillType.ClinicalOpdBooking);
         Long l = getBillFacade().countBySql(sql, h);
         List<Bill> b = getBillFacade().findBySQL(sql, h);
         if (l != null) {

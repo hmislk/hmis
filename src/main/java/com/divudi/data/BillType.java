@@ -59,6 +59,7 @@ public enum BillType {
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
     PharmacyGrnReturn,
+    PharmacyReturnWithoutTraising,
     GrnPayment,
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
@@ -77,6 +78,8 @@ public enum BillType {
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
     ChannelProPayment,
+    ChannelAgencyPayment,
+    ChannelAgencyCommission,
     gpBooking,
     gpSettling,
     Appointment,

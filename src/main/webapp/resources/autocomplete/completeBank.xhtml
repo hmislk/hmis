@@ -13,7 +13,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:autoComplete completeMethod="#{institutionController.completeBank}" 
-                        var="dept" 
+                        var="dept" id="bank"
                         itemLabel="#{dept.name}"
                         itemValue="#{dept}"
                         forceSelection="true" 
@@ -26,5 +26,6 @@
                 <h:outputLabel value="#{dept.institutionCode}"/>
             </p:column>
         </p:autoComplete>
+        <p:watermark for="bank" value="Bank"/>
     </cc:implementation>
 </html>

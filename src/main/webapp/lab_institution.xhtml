@@ -55,6 +55,10 @@
 
                                 <h:panelGrid id="gpDetail" columns="1">
                                     <h:panelGrid id="gpDetailText" columns="2">
+                                        
+                                        <h:outputText id="lblId" value="Id" ></h:outputText>
+                                        <h:inputText autocomplete="off" id="txtId" value="#{institutionController.current.id}"  ></h:inputText>
+                                        
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtName" value="#{institutionController.current.name}"  ></h:inputText>
                                         
@@ -91,6 +95,9 @@
 
                                         <h:outputText id="lblEMail" value="Email" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtEmail" value="#{institutionController.current.email}"  ></h:inputText>
+                                        
+                                        <h:outputText id="lblAdress" value="Adress" ></h:outputText>
+                                        <h:inputText autocomplete="off" id="txtAdress" value="#{institutionController.current.address}"  ></h:inputText>
 
 
                                     </h:panelGrid>

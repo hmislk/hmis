@@ -69,10 +69,22 @@ public class StaffPaysheetComponent implements Serializable {
     private double loanFullAmount;
     private String comment;
     boolean completed;
+    private boolean sheduleForPaid;
+    String chequeNumber;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequeDate;
+    @ManyToOne
+    Institution chequeBank;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequePaidDate;
+    @ManyToOne
+    WebUser chequePaidBy;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateAffectFrom;
     double numberOfInstallment;
 //    boolean sentNetSalaryToBaBank;
+    
+    
 
     public double getNumberOfInstallment() {
         return numberOfInstallment;
@@ -330,4 +342,54 @@ public class StaffPaysheetComponent implements Serializable {
     public void setDateAffectFrom(Date dateAffectFrom) {
         this.dateAffectFrom = dateAffectFrom;
     }
+
+    public boolean isSheduleForPaid() {
+        return sheduleForPaid;
+    }
+
+    public void setSheduleForPaid(boolean sheduleForPaid) {
+        this.sheduleForPaid = sheduleForPaid;
+    }
+
+    public String getChequeNumber() {
+        return chequeNumber;
+    }
+
+    public void setChequeNumber(String chequeNumber) {
+        this.chequeNumber = chequeNumber;
+    }
+
+    public Date getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(Date chequeDate) {
+        this.chequeDate = chequeDate;
+    }
+
+    public Institution getChequeBank() {
+        return chequeBank;
+    }
+
+    public void setChequeBank(Institution chequeBank) {
+        this.chequeBank = chequeBank;
+    }
+
+    public Date getChequePaidDate() {
+        return chequePaidDate;
+    }
+
+    public void setChequePaidDate(Date chequePaidDate) {
+        this.chequePaidDate = chequePaidDate;
+    }
+
+    public WebUser getChequePaidBy() {
+        return chequePaidBy;
+    }
+
+    public void setChequePaidBy(WebUser chequePaidBy) {
+        this.chequePaidBy = chequePaidBy;
+    }
+
+   
 }

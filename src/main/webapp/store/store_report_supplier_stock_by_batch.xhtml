@@ -22,7 +22,7 @@
 
                             <p:autoComplete style="position: relative; width: " completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
                             </p:autoComplete>
-                            <h:outputLabel value="DEALOR" ></h:outputLabel>
+                            <h:outputLabel value="DEALER" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.institution}" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDistributorStocks()}" ></p:commandButton>

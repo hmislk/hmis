@@ -116,6 +116,8 @@ public class Staff implements Serializable {
     @Transient
     double basic;
     @Transient
+    double transDblValue;
+    @Transient
     double transWorkedDays;
     @ManyToOne
     private Institution bankBranch;
@@ -124,6 +126,7 @@ public class Staff implements Serializable {
     private String epfAccountNo;
     private String accountNo;
     String epfNo;
+  
 
     String acNo;
 
@@ -136,6 +139,16 @@ public class Staff implements Serializable {
     Integer codeInterger;
     boolean allowedLateInLeave = true;
     boolean allowedEarlyOutLeave = true;
+
+    public double getTransDblValue() {
+        return transDblValue;
+    }
+
+    public void setTransDblValue(double transDblValue) {
+        this.transDblValue = transDblValue;
+    }
+    
+    
 
     public Date getDateRetired() {
         return dateRetired;
@@ -374,6 +387,10 @@ public class Staff implements Serializable {
     }
 
     public Institution getInstitution() {
+        if(institution != null){
+            institution.split();
+        }
+        
         return institution;
     }
 
@@ -653,5 +670,8 @@ public class Staff implements Serializable {
     public void setEpfAccountNo(String epfAccountNo) {
         this.epfAccountNo = epfAccountNo;
     }
+
+   
+    
 
 }

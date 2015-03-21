@@ -242,28 +242,28 @@ public class StaffSalaryAdvanceController implements Serializable {
     @Inject
     SalaryCycleController salaryCycleController;
 
-    public void onEditListener(StaffSalary staffSalary) {
-        current = staffSalary;
-
-        if (current == null) {
-            return;
-        }
-
-        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponentsUserDefinded(PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
-        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponentsUserDefinded(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
-
-        for (PaysheetComponent psc : paysheetComponentsAddition) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
-            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
-
-        }
-        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
-            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
-
-        }
-
-    }
+//    public void onEditListener(StaffSalary staffSalary) {
+//        current = staffSalary;
+//
+//        if (current == null) {
+//            return;
+//        }
+//
+//        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance());
+//        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance());
+//
+//        for (PaysheetComponent psc : paysheetComponentsAddition) {
+//            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
+//            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+//
+//        }
+//        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+//            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
+//            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
+//
+//        }
+//
+//    }
 
     public void onEditBlockedUpdate(StaffSalary staffSalary) {
 //        current = staffSalary;
@@ -345,6 +345,28 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     }
 
+    private double calValue(double value, double percentage) {
+
+        if (value == 0 || percentage == 0) {
+            return 0;
+        }
+
+        double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
+        System.err.println("Value " + value);
+        System.err.println("Worked Days " + workedDays);
+        if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
+            return value * (percentage / 100);
+        } else {
+            double dbl = (value / finalVariables.getWorkingDaysPerMonth());
+            System.err.println("DBL 1 " + dbl);
+            dbl = dbl * workedDays * (percentage / 100);
+
+            System.err.println("DBL 2 " + dbl);
+            return dbl;
+        }
+
+    }
+
     private void setBasic() {
 //        getHumanResourceBean().calculateBasic(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
 
@@ -366,6 +388,35 @@ public class StaffSalaryAdvanceController implements Serializable {
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
         System.err.println("BASIC " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+
+    private void setPerformaceAllovance() {
+        StaffPaysheetComponent percentageComponent = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowancePercentage);
+        StaffPaysheetComponent component = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowance);
+
+        if (percentageComponent == null || component == null) {
+            return;
+        }
+
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setSalaryCycle(salaryCycle);
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(component);
+        ss.setStaffPaysheetComponentPercentage(percentageComponent);
+        if (ss.getStaffPaysheetComponent() != null) {
+            double value = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue(), percentageComponent.getStaffPaySheetComponentValue());
+            ss.setComponantValue(value);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("Performance " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
@@ -401,6 +452,12 @@ public class StaffSalaryAdvanceController implements Serializable {
         return (overTimeSec.longValue() / 60L);
     }
 
+    public double getOverTimeValuePerMinute() {
+
+        return roundOff(humanResourceBean.getOverTimeValue(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()) / (200 * 60));
+
+    }
+
     public double getBasicPerMinute() {
 
         for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -425,11 +482,11 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         if (ss.getStaffPaysheetComponent() != null) {
             Long overTimeMinute = calculateOverTimeMinute();
-            double basicPerMinute = getBasicPerMinute();
-            ss.setComponantValue(overTimeMinute * basicPerMinute * finalVariables.getOverTimeMultiply());
+            double otValuePerMinute = getOverTimeValuePerMinute();
+            ss.setComponantValue(overTimeMinute * otValuePerMinute * finalVariables.getOverTimeMultiply());
             getCurrent().setOverTimeMinute(overTimeMinute);
-            getCurrent().setBasicRatePerMinute(basicPerMinute);
-            getCurrent().setOverTimeRatePerMinute(basicPerMinute);
+            getCurrent().setBasicRatePerMinute(otValuePerMinute);
+            getCurrent().setOverTimeRatePerMinute(otValuePerMinute);
         } else {
             return;
         }
@@ -506,8 +563,8 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
     }
 
-    private Long setHoliDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
-        long count = 0;
+    private Double setHoliDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
+        Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
             count = getHumanResourceBean().calculateHolidayWork(
@@ -538,7 +595,7 @@ public class StaffSalaryAdvanceController implements Serializable {
             }
 
         } else {
-            return 0L;
+            return 0.0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -551,8 +608,8 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     }
 
-    private Long setDayOffSleepingDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
-        Long count = 0L;
+    private Double setDayOffSleepingDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
+        Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
             count = getHumanResourceBean().calculateOffDays(
@@ -577,7 +634,7 @@ public class StaffSalaryAdvanceController implements Serializable {
                 ss.setComponantValue(value);
             }
         } else {
-            return 0L;
+            return 0.0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -710,6 +767,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         if (getCurrent().getStaff() != null) {
 
             setBasic();
+            setPerformaceAllovance();
 
             List<StaffPaysheetComponent> listAdd = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
 
@@ -742,18 +800,18 @@ public class StaffSalaryAdvanceController implements Serializable {
                     getCurrent().calculateComponentTotal();
                     getCurrent().calcualteEpfAndEtf();
 
-                    double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
+//                    double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
 
-                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
-                        continue;
-                    }
+//                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
+//                        continue;
+//                    }
 
                     StaffSalaryComponant ss = new StaffSalaryComponant();
                     ss.setCreatedAt(new Date());
                     ss.setSalaryCycle(salaryCycle);
                     ss.setCreater(getSessionController().getLoggedUser());
                     ss.setStaffPaysheetComponent(spc);
-                    ss.setComponantValue(calValue(spc.getStaffPaySheetComponentValue()));
+                    ss.setComponantValue(spc.getStaffPaySheetComponentValue());
                     getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
                     getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
                     getCurrent().getStaffSalaryComponants().add(ss);
@@ -777,7 +835,7 @@ public class StaffSalaryAdvanceController implements Serializable {
             getCurrent().setExtraDutySleepingDayMinute(extraTimeMinute);
 
             //Set Holiday Allowance
-            Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
+            Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             getCurrent().setMerchantileCount(count.doubleValue());
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
             getCurrent().setPoyaCount(count.doubleValue());
@@ -1051,6 +1109,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         items = null;
+        boolean flag = false;
 
         for (Staff s : getStaffController().getSelectedList()) {
             setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
@@ -1061,7 +1120,8 @@ public class StaffSalaryAdvanceController implements Serializable {
 //                save();
             } else {
                 // Allready in database
-
+                flag = true;
+                break;
             }
 
             getCurrent().calculateComponentTotal();
@@ -1071,6 +1131,10 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         }
 
+        if (flag) {
+            items = null;
+            UtilityController.addErrorMessage("There is allready salary generated .please delete generated salary");
+        }
         //   createStaffSalaryTable();
     }
 

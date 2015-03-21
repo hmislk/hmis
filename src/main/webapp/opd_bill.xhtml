@@ -263,7 +263,7 @@
                                             </p:column>
                                             <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                         </p:autoComplete>
-                                        <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}">
+                                        <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
                                             <f:ajax execute="acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                         </h:commandButton>
                                         <p:defaultCommand target="btnAddIx" />
@@ -280,11 +280,7 @@
                                                         <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
 
-                                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                                                        <p:printer target="tblSs" >
 
-                                                        </p:printer>
-                                                    </p:commandButton>
 
                                                 </f:facet>
                                                 <p:column headerText="No.">
@@ -345,47 +341,58 @@
 
                                         </p:tab>
                                         <p:tab title="Credit" >
-                                            <p:autoComplete id="creditCompany" 
-                                                            forceSelection="true" 
-                                                            value="#{billController.creditCompany}"  
-                                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                                <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
-                                                         execute="@this" 
-                                                         render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
-                                            </p:autoComplete>   
-                                            <p:autoComplete  style="width: 400px;" 
-                                                             forceSelection="true" 
-                                                             value="#{billController.toStaff}" 
-                                                             id="creditStaff"
-                                                             completeMethod="#{staffController.completeStaff}" 
-                                                             var="mys" 
-                                                             itemLabel="#{mys.person.nameWithTitle}" 
-                                                             itemValue="#{mys}"
-                                                             converter="stfcon" >
-                                                <p:column headerText="Name" >
-                                                    <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Annual Entitlement">
-                                                    <h:outputLabel value="#{mys.annualWelfareQualified}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column  headerText="Annual Utilized Value">
-                                                    <h:outputLabel value="#{mys.annualWelfareUtilized}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
+                                            <p:panelGrid columns="2">
+                                                <p:outputLabel value="Credit Company"></p:outputLabel>
+                                                <p:autoComplete id="creditCompany" 
+                                                                forceSelection="true"
+                                                                value="#{billController.creditCompany}"  
+                                                                completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                                itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
 
-                                                <p:ajax process="@this" 
-                                                        update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
-                                                        event="itemSelect"  listener="#{billController.calTotals()}" />
+                                                    <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
+                                                             execute="@this" 
+                                                             render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
+                                                </p:autoComplete> 
 
-                                            </p:autoComplete>
-                                            <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
-                                        </p:tab>                                       
+
+                                                <p:outputLabel value="Staff Mamber"></p:outputLabel>
+                                                <p:autoComplete  style="width: 300px;" 
+                                                                 forceSelection="true" 
+                                                                 value="#{billController.toStaff}" 
+                                                                 id="creditStaff"
+                                                                 completeMethod="#{staffController.completeStaff}" 
+                                                                 var="mys" 
+                                                                 itemLabel="#{mys.person.nameWithTitle}" 
+                                                                 itemValue="#{mys}"
+                                                                 converter="stfcon" >
+                                                    <p:column headerText="Name" >
+                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Annual Entitlement">
+                                                        <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column  headerText="Annual Utilized Value">
+                                                        <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+
+                                                    <p:ajax process="@this" 
+                                                            update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
+                                                            event="itemSelect"  listener="#{billController.calTotals()}" />
+
+                                                </p:autoComplete>
+
+                                                <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
+                                            </p:panelGrid>
+                                        </p:tab>  
+
+
+
                                         <p:tab title="Staff">
-                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 300px;">
                                             </p:autoComplete>
                                         </p:tab>
                                         <p:tab title="Referrals">
@@ -602,33 +609,59 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBill" ></p:printer>
+                                </p:commandButton>
 
-                        <div class="nonPrintBlock">
-                            <p:commandButton value="Print" ajax="false" action="#"  >
-                                <p:printer target="gpPosBill" ></p:printer>
-                            </p:commandButton>
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
 
-                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                            </p:commandButton>
-
-                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
-                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                         return false;"/>
-                        </div>
-                        <h:panelGroup id="gpPosBill">
-                            <div style="page-break-after: always;">
-                                <ui:repeat value="#{billController.bills}" var="b">
-                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                </ui:repeat>
+                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
                             </div>
-                            <div></div>
-                            <div style="page-break-after: always;">
-                                <ui:repeat value="#{billController.bills}" var="b">
-                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                </ui:repeat>
-                            </div>
-                        </h:panelGroup>
+                            <h:panelGroup id="gpPosBill">
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{billController.bills}" var="b">
+                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                                <div></div>
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{billController.bills}" var="b">
+                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGrid>
+                        
+                        
+                        
+                        
+                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                                </p:commandButton>
 
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpPosBillWithoutLogo">
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{billController.bills}" var="b">
+                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>                                
+                            </h:panelGroup>
+                        </h:panelGrid>
+                        
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">

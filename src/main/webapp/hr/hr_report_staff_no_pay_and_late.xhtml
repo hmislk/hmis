@@ -42,6 +42,8 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -63,34 +65,52 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel style="text-align: center" value="  No Pay And Late No Pay  Report "  />
+                                    <h:outputLabel style="font-size:20px" value="  No Pay And Late No Pay  Report "  />
                                     <h:outputLabel/>
-                                    <br></br>
+                                  
                                     <h:outputLabel style="text-align: center" value="#{hrReportController.reportKeyWord.staff}"  />
                                     <h:outputLabel/>
                                 </f:facet>
                                 <p:column headerText="Emp No">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Emp No"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="EPF NO">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="EPF NO"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.epfNo}"></p:outputLabel>
                                 </p:column>    
                                 <p:column headerText="Emp Name">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="Merchantile Amount" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Merchantile Amount"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.merchantileAllowanceValue}"></p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.merchantileAllowanceValueTotal}"></p:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Merchantile Count" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Merchantile Count"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.merchantileCount}"></p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.merchantileCountTotal}"></p:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Poya Amount" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Poya Amount"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.poyaAllowanceValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -101,6 +121,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Poya Count" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Poya Count"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.poyaCount}"></p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.poyaCountTotal}">
@@ -109,6 +132,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Off Day Amount" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Off Day Amount"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.dayOffAllowance}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -119,6 +145,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Off Day Count" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Off Day Count"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.dayOffCount}"></p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.totaldayOffCount}">
@@ -127,6 +156,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Late No Pay" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Late No Pay"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -137,6 +169,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="No Pay Value" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="No Pay Value"  />
+                                </f:facet>
                                     <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)-(ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -150,6 +185,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="No Pay Total" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="No Pay Total"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.noPayValueAllowance+ss.noPayValueBasic}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -161,6 +199,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="No Pay For Basic" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="No Pay For Basic"  />
+                                </f:facet>
                                     <p:outputLabel value="#{(ss.noPayValueBasic)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -171,6 +212,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="No Pay For Allovance" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="No Pay For Allovance"  />
+                                </f:facet>
                                     <p:outputLabel value="#{(ss.noPayValueAllowance)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -182,6 +226,9 @@
                                 </p:column>
 
                                 <p:column headerText="Late No Pay Count" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Late No Pay Count"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.lateNoPayCount}">
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -191,6 +238,9 @@
                                     </f:facet>
                                 </p:column>                                
                                 <p:column headerText="No Pay Count" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="No Pay Count"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.noPayCount-ss.lateNoPayCount}">
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -201,6 +251,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Total" style="text-align: right;">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Total"  />
+                                </f:facet>
                                     <p:outputLabel value="#{ss.noPayCount}">                                          
                                     </p:outputLabel>
                                     <f:facet name="footer">

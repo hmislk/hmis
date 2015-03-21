@@ -15,6 +15,7 @@ import java.util.List;
 public enum PaysheetComponentType {
 
     addition(null),
+    PerformanceAllowancePercentage(null),
     BasicSalary(addition),
     FixedAllowance(addition),
     VariableAllowance(addition),
@@ -27,6 +28,7 @@ public enum PaysheetComponentType {
     ExtraDutyPoya(addition),
     ExtraDutyDayOff(addition),
     ExtraDutySleepingDay(addition),
+    PerformanceAllowance(addition),
     @Deprecated
     HolidayAllowance(addition),
     MerchantileAllowance(addition),
@@ -108,6 +110,7 @@ public enum PaysheetComponentType {
     public List<PaysheetComponentType> getSystemDefinedComponents() {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
+            PaysheetComponentType.PerformanceAllowance,
             PaysheetComponentType.DayOffAllowance,
             PaysheetComponentType.SleepingDayAllowance,
             PaysheetComponentType.ExtraDutyNormal,
@@ -146,7 +149,15 @@ public enum PaysheetComponentType {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
             PaysheetComponentType.FixedAllowance,
-            PaysheetComponentType.VariableAllowance,});
+            PaysheetComponentType.VariableAllowance});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsAddidtionsWithPerformance() {
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
+            PaysheetComponentType.FixedAllowance,
+            PaysheetComponentType.VariableAllowance,
+            PaysheetComponentType.PerformanceAllowance});
 
     }
 
@@ -159,6 +170,18 @@ public enum PaysheetComponentType {
             PaysheetComponentType.LoanInstallemant,
             PaysheetComponentType.LoanNetSalary,
             PaysheetComponentType.VariableDeduction});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsDeductionsWithSalaryAdvance() {
+        return Arrays.asList(new PaysheetComponentType[]{
+            PaysheetComponentType.FixedDeduction,
+            PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.Advance_Payment_Deduction,
+            PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.LoanNetSalary,
+            PaysheetComponentType.VariableDeduction,
+            PaysheetComponentType.Salary_Advance_Deduction});
 
     }
 

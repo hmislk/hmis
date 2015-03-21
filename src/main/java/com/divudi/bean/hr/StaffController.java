@@ -39,6 +39,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -212,6 +213,12 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
+    
+    
+    
+    
+    
+    
 
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
@@ -221,7 +228,7 @@ public class StaffController implements Serializable {
                 + " and type(p)!=:class"
                 + " and LENGTH(p.code) > 0 "
                 + " and LENGTH(p.person.name) > 0 "
-                + " order by p.person.name ";
+                + " order by p.codeInterger ";
 
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
@@ -295,17 +302,22 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.workingDepartment=:dep ";
+            sql += " and ss.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
+            sql += " and ss.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
+            sql += " and ss.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
@@ -335,17 +347,17 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.workingDepartment=:dep ";
+            sql += " and ss.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
+            sql += " and ss.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
+            sql += " and ss.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
@@ -937,6 +949,62 @@ public class StaffController implements Serializable {
         return ejbFacade;
     }
 
+    List<Staff> staffes;
+    List<Staff> selectedStaffes;
+    double resetStaffBalance;
+
+    public double getResetStaffBalance() {
+        return resetStaffBalance;
+    }
+
+    public void setResetStaffBalance(double resetStaffBalance) {
+        this.resetStaffBalance = resetStaffBalance;
+    }
+    
+    
+
+    public List<Staff> getSelectedStaffes() {
+        return selectedStaffes;
+    }
+
+    public void setSelectedStaffes(List<Staff> selectedStaffes) {
+        this.selectedStaffes = selectedStaffes;
+    }
+    
+    public List<Staff> getStaffes() {
+        return staffes;
+    }
+
+    public void setStaffes(List<Staff> staffes) {
+        this.staffes = staffes;
+    }
+    
+    public String admin_staff_view_signature(){
+        fillStaffes();
+        return "/admin_staff_view_signature";
+    }
+    
+    public String admin_edit_staff_balance(){
+        fillStaffes();
+        return "/admin_edit_staff_balance";
+    }
+    
+    public void resetStaffBalance(){
+        for(Staff s:selectedStaffes){
+            s.setAnnualWelfareUtilized(resetStaffBalance);
+            getFacade().edit(s);
+            getFacade().flush();
+        }
+        JsfUtil.addSuccessMessage("Balances Updated");
+    }
+    
+    public void fillStaffes() {
+        String temSql;
+        temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+        staffes = getFacade().findBySQL(temSql);
+    }
+    
+    
     public List<Staff> getItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";

@@ -109,6 +109,9 @@ public class PaysheetComponentSystemController implements Serializable {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
+        }else{
+            getFacade().create(current);
+            UtilityController.addSuccessMessage("Save New Successfull");
         }
 //        else {
 //            if (checkComponent()) {

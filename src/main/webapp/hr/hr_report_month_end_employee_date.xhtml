@@ -26,6 +26,8 @@
                             <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -58,43 +60,82 @@
                                     
                                 </f:facet>
                                 <p:column headerText="Staff Code" style="text-align: left;">
-                                    #{ss.staff.codeInterger}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Staff Code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.codeInterger}" />
                                 </p:column>
                                 <p:column headerText="Staff" style="text-align: left;">
-                                    #{ss.staff.person.name}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.person.name}" />
                                 </p:column>
                                 <p:column headerText="Worked Days" style="text-align: right;">
-                                    #{ss.workedDays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.workedDays}" />
                                 </p:column>
                                 <p:column headerText="Annual Leave" style="text-align: right;">
-                                    #{ss.leave_annual}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Annual Leave" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leave_annual}" />
                                 </p:column>
                                 <p:column headerText="Casual Leave" style="text-align: right;">
-                                    #{ss.leave_casual}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Casual Leave" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leave_casual}" />
                                 </p:column>
                                 <p:column headerText="Medical Leave" style="text-align: right;">
-                                    #{ss.leave_medical}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Medical Leave" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leave_medical}" />
                                 </p:column>
                                 <p:column headerText="No Pay Leave" style="text-align: right;">
-                                    #{ss.leave_nopay-ss.lateNoPays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="No Pay Leave" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leave_nopay-ss.lateNoPays}" />
                                 </p:column>                             
                                 <p:column headerText="Late No Pay Days" style="text-align: right;">
-                                    #{ss.lateNoPays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Late No Pay Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.lateNoPays}" />
                                 </p:column>
                                 <p:column headerText="Late Days" style="text-align: right;">
-                                    #{ss.latedays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Late Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.latedays}" />
                                 </p:column>
                                 <p:column headerText="Off Days" style="text-align: right;">
-                                    #{ss.dayoff}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Off Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.dayoff}" />
                                 </p:column>
                                 <p:column headerText="Sleeping Days" style="text-align: right;">
-                                    #{ss.sleepingDays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sleeping Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.sleepingDays}" />
                                 </p:column>
                                 <p:column headerText="Poya Days" style="text-align: right;">
-                                    #{ss.poyaDays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Poya Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.poyaDays}" />
                                 </p:column>
                                 <p:column headerText="Merhcantile Days" style="text-align: right;">
-                                    #{ss.merhchantileDays}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Merhcantile Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.merhchantileDays}" />
                                 </p:column>
 <!--                                <p:column headerText="Extra Duty Days">
                                     #{ss.extraDutyDays}

@@ -46,21 +46,39 @@
                                     </h:panelGrid>
                                 </f:facet>
                                 <p:column headerText="Staff No">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff No"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Staff Name">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Staff Name"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
                                 <p:column headerText="Crated Date" >
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Crated Date"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
                                 </p:column>  
                                 <p:column headerText="Leave Date" >
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Leave Date"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
                                 </p:column>  
                                 <p:column headerText="Leave Qty" >
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Leave Qty"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Comments" >
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Comments"/>
+                                </f:facet>
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 

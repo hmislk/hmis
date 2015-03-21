@@ -54,6 +54,12 @@
                                 <h:outputLabel value="Transfer NetTotal by retailRate"></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.tranferNetTotalbyRetailRate}" />
                                 
+                                <h:outputLabel value="Allow to Change Payment Method During Settle"></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment}" />
+                                
+                                <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.opdPosBillWithoutLogo}"/>
+                                
                             </h:panelGrid>
 
                         </h:panelGrid>

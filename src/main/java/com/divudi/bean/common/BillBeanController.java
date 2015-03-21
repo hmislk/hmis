@@ -371,6 +371,32 @@ public class BillBeanController implements Serializable {
 
     }
     
+    public double calFeeValueInward(Date fromDate, Date toDate, FeeType feetype,Institution institution, Department de) {
+        String sql = "SELECT sum(bf.feeGrossValue)"
+                + " FROM BillFee bf "
+                + " WHERE bf.bill.billType=:bTp"
+                + " and bf.fee.feeType=:ftp1 "
+                + " and bf.bill.department=:dep"
+                + " and bf.bill.institution=:ins"
+                //+ " and bf.billItem.item.department.institution=:ins"
+                + " and bf.bill.createdAt between :fromDate and :toDate ";
+                //+ " and bf.bill.paymentMethod in :pms";
+
+        HashMap temMap = new HashMap();
+        
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        temMap.put("dep", de);
+        temMap.put("bTp", BillType.InwardBill);
+        temMap.put("ftp1", feetype);
+        //temMap.put("ftp2", FeeType.Staff);
+        //temMap.put("pms", paymentMethods);
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
     public double calFeeValue(Date fromDate, Date toDate, FeeType feetype,Institution institution, PaymentMethod paymentMethod) {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
@@ -519,11 +545,36 @@ public class BillBeanController implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
-
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
+    
+    public List<Object[]> fetchDoctorPaymentInwardTemporaryTesting(Date fromDate, Date toDate) {
+        String sql = "Select b.paidForBillFee.bill.patientEncounter.admissionType,"
+                + " sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and(b.paidForBillFee.bill.billType=:refType1 "
+                + " or b.paidForBillFee.bill.billType=:refType2 )"
+                + " and b.bill.createdAt between :fromDate and :toDate"
+                + " group by b.paidForBillFee.bill.patientEncounter.admissionType "
+                + " order by b.paidForBillFee.bill.patientEncounter.admissionType.name ";
+        HashMap hm = new HashMap();
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType1", BillType.InwardBill);
+        hm.put("refType2", BillType.InwardProfessional);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
     public List<Object[]> fetchDoctorPaymentInward(AdmissionType admissionType, Date fromDate, Date toDate) {
         String sql = "Select b.paidForBillFee.staff.speciality,"
                 + " sum(b.paidForBillFee.feeValue) "
