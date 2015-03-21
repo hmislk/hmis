@@ -568,7 +568,6 @@ public class BillBeanController implements Serializable {
                 + " sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
-                + " and b.bill.cancelled=false " //inward report not tally
                 + " and b.bill.billType=:bType "
                 + " and(b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
@@ -584,7 +583,6 @@ public class BillBeanController implements Serializable {
         System.out.println("hm = " + hm);
         System.out.println("sql = " + sql);
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
-
     }
 
     

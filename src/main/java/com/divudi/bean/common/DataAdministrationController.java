@@ -68,6 +68,23 @@ public class DataAdministrationController {
     @Inject
     SessionController sessionController;
 
+    
+    
+    
+    public void addBillFeesToProfessionalCancelBills() {
+        List<Bill> bs ;
+        String s;
+        Map m = new HashMap();
+        s="select b from Bill b where type(b) =:bct and b.billType=:bt";
+        bs=billFacade.findBySQL(s, m, 10);
+        for(Bill b:bs){
+            System.out.println("b = " + b);
+            
+        }
+    }
+    
+    
+    
     public void restBillNumber() {
         String sql = "Select b from BillNumber b where b.retired=false";
         List<BillNumber> list = billNumberFacade.findBySQL(sql);
