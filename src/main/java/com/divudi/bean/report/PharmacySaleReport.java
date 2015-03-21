@@ -40,6 +40,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemBatchFacade;
+import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -173,6 +174,19 @@ public class PharmacySaleReport implements Serializable {
 
     public Category getCategory() {
         return category;
+    }
+    
+    List<Item> nonMovingItems;
+    
+    @EJB
+    StockFacade stockFacade;
+    
+    public void fillNonMoving(){
+        Map allItems;
+        List<Item> movedItems;
+        String j;
+        j="select s.item from Stock s where s.stock >:sv and s.department=:dpt order by s.item.name";
+        
     }
 
     public void setCategory(Category category) {
