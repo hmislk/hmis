@@ -59,11 +59,17 @@
                                 <f:facet name="header">
                                     <h:outputLabel style="text-align: center" value="  Worked Normal Day : "  />                                 
                                 </f:facet>                                                                                              
-                                <p:column headerText="Staff Shift">
+                                <p:column headerText=" Shift">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Staff Shift" ></p:outputLabel>
+                                        <p:outputLabel value=" Shift" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="Shift id">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Shift id" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.shift.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Day Type">
                                     <f:facet name="header" >

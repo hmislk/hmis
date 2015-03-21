@@ -15,14 +15,18 @@ import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.HrForm;
+import com.divudi.entity.hr.LeaveFormSystem;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
@@ -254,18 +258,18 @@ public class StaffSalaryController implements Serializable {
             return;
         }
 
-        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(),getSalaryCycle());
-        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(),getSalaryCycle());
+        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getSalaryCycle());
+        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
 
-        System.err.println("Add Size "+paysheetComponentsAddition.size());
-        System.err.println("Sub Size "+paysheetComponentsSubstraction.size());
+        System.err.println("Add Size " + paysheetComponentsAddition.size());
+        System.err.println("Sub Size " + paysheetComponentsSubstraction.size());
         for (PaysheetComponent psc : paysheetComponentsAddition) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false,getSalaryCycle());
+            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
             getCurrent().getTransStaffSalaryComponantsAddition().add(c);
 
         }
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false,getSalaryCycle());
+            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
             getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
 
         }
@@ -427,7 +431,7 @@ public class StaffSalaryController implements Serializable {
         ss.setStaffPaysheetComponent(component);
         ss.setStaffPaysheetComponentPercentage(percentageComponent);
         if (ss.getStaffPaysheetComponent() != null) {
-            double value = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue(),percentageComponent.getStaffPaySheetComponentValue());
+            double value = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue(), percentageComponent.getStaffPaySheetComponentValue());
             ss.setComponantValue(value);
         } else {
             return;
@@ -969,13 +973,27 @@ public class StaffSalaryController implements Serializable {
 //                staffShiftFacade.flush();
             }
 
-            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
             staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
         }
 
 //        System.err.println("Automatic Late In End " + stfCurrent.getStaff().getCodeInterger());
+    }
+
+    public List<StaffShift> fetchStaffShiftForResetLateAndEarly(StaffShift stfCurrent) {
+        String sql = " Select s from  StaffShift s "
+                + " where s.retired=false "
+                + " and ((s.referenceStaffShiftLateIn=:stf "
+                + " and s.considerForLateIn=true)"
+                + " or (s.referenceStaffShiftEarlyOut=:stf "
+                + " and s.considerForEarlyOut=true))";
+        HashMap hm = new HashMap();
+        hm.put("stf", stfCurrent);
+
+        return staffShiftFacade.findBySQL(sql, hm);
+
     }
 
     @Inject
@@ -1000,7 +1018,7 @@ public class StaffSalaryController implements Serializable {
                 staffShiftFacade.edit(earlyOut);
             }
 
-            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(),stfCurrent.getShiftDate());
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
             staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1016,13 +1034,56 @@ public class StaffSalaryController implements Serializable {
         stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
         stfCurrent.setConsiderForEarlyOut(true);
         staffShiftFacade.edit(stfCurrent);
-        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(),stfCurrent.getShiftDate());
         HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
         staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
         staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
 
 //        }
 //        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
+    }
+
+    @EJB
+    LeaveFormFacade leaveFormFacade;
+    @EJB
+    StaffLeaveFacade staffLeaveFacade;
+
+    public void calStaffAutoLeaveReset(StaffShift stfCurrent) {
+
+        LeaveFormSystem hr = staffLeaveFromLateAndEarlyController.fetchLeaveForm(stfCurrent, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
+        hr.setRetired(true);
+        hr.setRetiredAt(new Date());
+        hr.setRetirer(sessionController.getLoggedUser());
+        leaveFormFacade.edit(hr);
+
+        StaffLeaveSystem staffLeaveSystem = staffLeaveFromLateAndEarlyController.fetchStaffLeaves(stfCurrent, hr);
+        staffLeaveSystem.setRetired(true);
+        staffLeaveSystem.setRetiredAt(new Date());
+        staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
+        staffLeaveFacade.edit(staffLeaveSystem);
+
+//        stfCurrent.resetLeaveData(leaveType);
+        stfCurrent.calLeaveTime();
+        stfCurrent.setLeaveType(null);
+        stfCurrent.setAutoLeave(false);
+        stfCurrent.setConsiderForLateIn(false);
+        stfCurrent.setConsiderForEarlyOut(false);
+        staffShiftFacade.edit(stfCurrent);
+
+        List<StaffShift> list = fetchStaffShiftForResetLateAndEarly(stfCurrent);
+
+        if (list == null) {
+            return;
+        }
+
+        for (StaffShift s : list) {
+            s.setConsiderForEarlyOut(false);
+            s.setConsiderForLateIn(false);
+            staffShiftFacade.edit(s);
+
+        }
+
+//        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {
@@ -1032,12 +1093,28 @@ public class StaffSalaryController implements Serializable {
         stfCurrent.setConsiderForLateIn(true);
         staffShiftFacade.edit(stfCurrent);
 
-        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
         HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
         staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
         staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
 
 //        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
+    }
+
+    private void resetAutoLeave(Staff staff, Date fromDate, Date toDate) {
+        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAutoLeaveReset(staff, fromDate, toDate);
+
+        if (staffShifts == null) {
+            return;
+        }
+
+        for (StaffShift ss : staffShifts) {
+            // Calculate Late in for 1 1\2 h 
+
+//                System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
+            calStaffAutoLeaveReset(ss);
+
+        }
     }
 
     private void generateAutoLeave(Staff staff, Date fromDate, Date toDate) {
@@ -1053,6 +1130,7 @@ public class StaffSalaryController implements Serializable {
             //Automatic No Pay Diduction
             double fromMinute = 90 * 60;
 
+            // Calculate Late in for 1 1\2 h 
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
 //                System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
@@ -1108,8 +1186,9 @@ public class StaffSalaryController implements Serializable {
 
         for (Staff s : getStaffController().getSelectedList()) {
             setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
-            generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             if (getCurrent().getId() == null) {
+                resetAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+                generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
                 fetchAndSetBankData();
                 addSalaryComponent();
 //                save();

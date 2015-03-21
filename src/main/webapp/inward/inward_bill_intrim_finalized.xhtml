@@ -310,7 +310,7 @@
                                         <h:outputLabel value="Start Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.fromTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss a"/>
                                     </h:outputLabel>                                         
                                 </p:column>
                                 <p:column headerText="Stopped Time">
@@ -318,7 +318,7 @@
                                         <h:outputLabel value="Stopped Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.toTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss a"/>
                                     </h:outputLabel>                                                              
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Total">
