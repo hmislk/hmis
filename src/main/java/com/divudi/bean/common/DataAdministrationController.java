@@ -10,6 +10,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -75,11 +76,25 @@ public class DataAdministrationController {
         List<Bill> bs ;
         String s;
         Map m = new HashMap();
-        s="select b from Bill b where type(b) =:bct and b.billType=:bt";
-        bs=billFacade.findBySQL(s, m, 10);
+        
+        s="select b from Bill b where type(b) =:bct and b.billType=:bt and b.cancelledBill is not null order by b.id desc";
+        
+        m.put("bct", BilledBill.class);
+        m.put("bt", BillType.PaymentBill);
+        
+        bs=billFacade.findBySQL(s, m);
         for(Bill b:bs){
             System.out.println("b = " + b);
-            
+            Bill cb=b.getCancelledBill();
+            int n=0;
+            for(BillItem bi:cb.getBillItems()){
+                System.out.println("bi = " + bi);
+                System.out.println("b.getBillItems().get(n).getPaidForBillFee() = " + b.getBillItems().get(n).getPaidForBillFee());
+                bi.setPaidForBillFee(b.getBillItems().get(n).getPaidForBillFee());
+                System.out.println("bi.getPaidForBillFee() = " + bi.getPaidForBillFee());
+                n++;
+                billItemFacade.edit(bi);
+            }
         }
     }
     

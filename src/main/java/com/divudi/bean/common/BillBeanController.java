@@ -580,6 +580,7 @@ public class BillBeanController implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        Bill b;
         System.out.println("hm = " + hm);
         System.out.println("sql = " + sql);
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
