@@ -413,6 +413,20 @@ public class InwardReportController1 implements Serializable {
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
 
+        
+//        Remove Cancelled
+        
+        
+         sql = "select bf.paidForBillFee.staff.speciality,"
+                + " sum(bf.paidForBillFee.feeValue) "
+                + " from BillItem bf"
+                + " where bf.retired=false "
+                + " and type(bf.bill)=:bclass"
+                + " and bf.bill.billType=:btp"
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+        
+        
         if (byDischargDate) {
             sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
         } else {
