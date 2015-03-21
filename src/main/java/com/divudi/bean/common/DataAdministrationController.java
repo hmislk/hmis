@@ -82,7 +82,7 @@ public class DataAdministrationController {
         m.put("bct", BilledBill.class);
         m.put("bt", BillType.PaymentBill);
         
-        bs=billFacade.findBySQL(s, m, 10);
+        bs=billFacade.findBySQL(s, m);
         for(Bill b:bs){
             System.out.println("b = " + b);
             Bill cb=b.getCancelledBill();
