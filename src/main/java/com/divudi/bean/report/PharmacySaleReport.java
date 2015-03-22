@@ -40,6 +40,8 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemBatchFacade;
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -173,6 +175,46 @@ public class PharmacySaleReport implements Serializable {
 
     public Category getCategory() {
         return category;
+    }
+    
+    List<Item> nonMovingItems;
+    
+    @EJB
+    StockFacade stockFacade;
+    @EJB
+    ItemFacade itemFacade;        
+    Department departmentMoving;
+
+    public List<Item> getNonMovingItems() {
+        return nonMovingItems;
+    }
+
+    public void setNonMovingItems(List<Item> nonMovingItems) {
+        this.nonMovingItems = nonMovingItems;
+    }
+    
+    public void fillNonMoving(){
+        Map allItems;
+        List<Item> movedItems;
+        Stock s = new Stock();
+        
+        
+//        s.getDepartment();
+//        s.getItemBatch().getItem();
+//        s.getItemBatch().getItem();
+        HashMap m = new HashMap();
+        m.put("dpt", getDepartmentMoving());
+        String j;
+        
+        j="select s.itemBatch.item "
+                + " from Stock s "
+                + " where s.stock > 0 "
+                + " and s.department=:dpt "
+                + " group by s.itemBatch.item "
+                + " order by s.itemBatch.item.name";
+        
+        nonMovingItems=itemFacade.findBySQL(j, m);
+        System.out.println("nonMovingItems = " + nonMovingItems);
     }
 
     public void setCategory(Category category) {
@@ -656,6 +698,36 @@ public class PharmacySaleReport implements Serializable {
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
+
+    }
+    
+    private double calBillFee(Date date, FeeType fTy, BillType bty) {
+
+        String sql;
+
+        sql = "select sum(f.feeGrossValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType = :billType "
+                + " and f.bill.createdAt between :fd and :td "
+                + " and f.bill.toInstitution=:ins "
+                + " and f.fee.feeType=:ft";
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("billType", bty);        
+        m.put("ins", institution);
+        m.put("ft", fTy);
+        //    m.put("ins", getSessionController().getInstitution());        
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2377,10 +2449,14 @@ public class PharmacySaleReport implements Serializable {
             double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
 
             regentFee = regentFeeCash + regentFeeCredit;
+            
+//            //inward bills
+//            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
+//            //double 
 
             newRow.setValue1(hospitalFee);
             newRow.setValue2(regentFee);
-            newRow.setValue3(proTot);
+            newRow.setValue3(proTot);            
 
             hospitalFeeTot += hospitalFee;
             profeTotal += proTot;
@@ -2398,6 +2474,63 @@ public class PharmacySaleReport implements Serializable {
         labBhtIssueBilledBills = getLabBills(BillType.InwardBill, new BilledBill());
         labBhtIssueBilledBillTotals = getLabBillTotal(BillType.InwardBill, new BilledBill());
 
+        billedSummery.setBilledTotal(hospitalFeeTot);
+        billedSummery.setCancelledTotal(profeTotal);
+        billedSummery.setRefundedTotal(regentTot);
+
+    }
+    
+    public void createLabSummeryInward() {
+        billedSummery = new PharmacySummery();
+
+        billedSummery.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
+        
+        
+        double regentFee;
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
+
+            double proTotCash = calBillFee(nowDate, FeeType.Staff, BillType.InwardBill);
+
+            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, BillType.InwardBill);
+            
+//            //inward bills
+//            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
+//            //double 
+
+            newRow.setValue1(hospitalFeeCash);
+            newRow.setValue2(regentFeeCash);
+            newRow.setValue3(proTotCash);            
+
+            hospitalFeeTot += hospitalFeeCash;
+            profeTotal += proTotCash;
+            regentTot += regentFeeCash;
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+        
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
@@ -4109,7 +4242,7 @@ public class PharmacySaleReport implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 
-            fromDate = getCommonFunctions().getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -4120,7 +4253,7 @@ public class PharmacySaleReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfMonth(new Date());
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -4929,7 +5062,16 @@ public class PharmacySaleReport implements Serializable {
         public void setTransferOutQty(double transferOutQty) {
             this.transferOutQty = transferOutQty;
         }
+        
+        
+    }
 
+    public Department getDepartmentMoving() {
+        return departmentMoving;
+    }
+
+    public void setDepartmentMoving(Department departmentMoving) {
+        this.departmentMoving = departmentMoving;
     }
 
 }

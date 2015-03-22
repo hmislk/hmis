@@ -12,70 +12,84 @@
             <ui:define name="content">
                 <h:form >
                     <p:panel header="Pharmacy Reports" >
-                        <p:panelGrid columns="4" styleClass="alignTop">
-                            <p:panel header="Stock Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Department Stock By Batch" action="pharmacy_report_department_stock_by_batch" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Department Stock By Expiary" action="pharmacy_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Department Stock By Item" action="pharmacy_report_department_stock_by_item" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Department Stock By Product" action="pharmacy_report_department_stock_by_product" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Staff Stock By Batch" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Suppliers' Stock" action="pharmacy_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
-                                    <p:commandButton value="Category Stock" action="pharmacy_report_category_stock_by_batch" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Category Stock By Category" action="pharmacy_report_category_stock_by_category" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="All Suppliers' Stock" action="pharmacy_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="View All Items" action="pharmacy_report_all_items" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Purchase Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch" ajax="false" ></p:commandButton> 
-                                    <p:commandButton value="Purchase Ordered not Approved" action="pharmacy_transfer_issued_list_not_approve_report" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload" ajax="false" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Sale Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Prescreption Report" action="report_prescreption" ajax="false" ></p:commandButton> 
-                                    <!--<p:commandButton value="Prescreption Report" action="pharmacy_report_institution_movement" ajax="false" ></p:commandButton>-->                            
-                                    <p:commandButton value="Institution Item Movement" action="pharmacy_report_institution_movement" ajax="false" ></p:commandButton> 
-                                    <p:commandButton value="Fast Moving" action="pharmacy_report_department_fast_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Slow Moving" action="pharmacy_report_department_slow_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Non Moving" action="pharmacy_report_department_non_moving" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Transfer Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report" ajax="false" ></p:commandButton>
 
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Item Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Items by name" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Items by code" action="pharmacy_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Item Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Items by name" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Items by code" action="pharmacy_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Stock Taking Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="After Stock Taking Report" action="pharmacy_report_after_stock_taking" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
+                        <table class="alignTop">
 
-                        </p:panelGrid>
+                            <tr>
+                                <td rowspan="2" >
+                                    <p:panel header="Stock Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Batch Stocks" action="pharmacy_report_department_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Expiaring Stocks" action="pharmacy_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Item Stocks" action="pharmacy_report_department_stock_by_item" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Product Stocks" action="pharmacy_report_department_stock_by_product" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Staff Stocks" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Suppliers' Stock" action="pharmacy_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
+                                            <p:commandButton value="Category Stock" action="pharmacy_report_category_stock_by_batch" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Category Summery" action="pharmacy_report_category_stock_by_category" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="All Suppliers' Stock" action="pharmacy_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" ></p:commandButton>                            
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                                <td>
+                                    <p:panel header="Purchase Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch" ajax="false" ></p:commandButton> 
+                                            <p:commandButton value="Purchase Ordered not Approved" action="pharmacy_transfer_issued_list_not_approve_report" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Item-vice Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive" ajax="false" ></p:commandButton>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                                <td>
+                                    <p:panel header="Sale Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Prescreption Report" action="report_prescreption" ajax="false" ></p:commandButton> 
+                                            <p:commandButton value="Institution Item Movement" action="pharmacy_report_institution_movement" ajax="false" ></p:commandButton> 
+                                            <p:commandButton value="Fast Moving" action="pharmacy_report_department_fast_moving" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Slow Moving" action="pharmacy_report_department_slow_moving" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Non Moving" action="pharmacy_report_department_non_moving" ajax="false" ></p:commandButton>                            
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                                <td>
+                                    <p:panel header="Transfer Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report" ajax="false" ></p:commandButton>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p:panel header="Item Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Items List" action="/pharmacy/list_amps" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Items Summery" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                                <td>
+                                    <p:panel header="Stock Taking Reports" >
+                                        <p:panelGrid columns="1" styleClass="alignTop">
+                                            <p:commandButton value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="After Stock Taking Report" action="pharmacy_report_after_stock_taking" ajax="false" ></p:commandButton>                            
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </td>
+                                <td>
+
+                                </td>
+                            </tr>
+                        </table>
+
+                        
 
                     </p:panel>
                 </h:form>

@@ -25,7 +25,7 @@
         margin:1px!important; 
         padding: 1px!important;
         background-size: 100% auto!important; 
-/*        border: 1px solid!important;*/
+        border: none;
         font-size: 100%;
         line-height: 2!important;">
             
@@ -97,7 +97,7 @@
                 
                 <h:outputLabel value="Order No"/>
                 <h:outputLabel/>
-                <h:outputLabel value="#{cc.attrs.bill.depId}" style="font-weight: bold;"/>
+                <h:outputLabel value="#{cc.attrs.bill.deptId}" style="font-weight: bold;"/>
                 <h:outputLabel/>
                 <h:outputLabel value="Bill Time"/>
                 <h:outputLabel/>
@@ -166,7 +166,7 @@
                         </h:outputLabel>
                     </p:column>
 
-<!--                    <p:column style="text-align: right;">
+                   <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Price"/>
                         </f:facet>                           
@@ -177,7 +177,7 @@
 
                     
 
-                    <p:column>
+<!--                    <p:column>
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>

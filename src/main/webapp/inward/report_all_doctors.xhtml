@@ -18,6 +18,10 @@
 
 
                         <p:commandButton ajax="false" value="List" action="#{doctorController.listDoctors()}"></p:commandButton>
+                        
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">

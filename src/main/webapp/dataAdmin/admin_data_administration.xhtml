@@ -14,20 +14,27 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Data Administration" style="color: red;background: yellow;" ></h:outputLabel>
+                            <h:outputLabel value="Data Administration" ></h:outputLabel>
                         </f:facet>
                         <p:panel >
-                            <h:outputLabel value="Very Dangerous Section. Please do not touch this page without the written permission from the lead software developer." style="font-size: 20px; color: red; background: yellow;" ></h:outputLabel>
+                            <h:outputLabel 
+                                value="Very Dangerous Section." 
+                                style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
+                                <br/>
+                            <h:outputLabel 
+                                value="Please do not touch this page without the written permission from the lead software developer." 
+                                style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
                         </p:panel>
                         <p:panelGrid columns="1"                         >
-                            <p:commandButton ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="Remove All Bills with Bill Items"  onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="Reset Bill Number"  onclick="onSubmitButton();"/>
-                             <p:commandButton ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="Make Rate From Purchase Rate To Sale In Transfer Bills"  onclick="onSubmitButton();"/>
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="Add bill fees to professional fee cancel bills"  onclick="if (! confirm('Really want to do that?')) return false"/>
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="Remove All Bills with Bill Items"  onclick="if (! confirm('Really want to do that?')) return false"/>
+                            <p:commandLink ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="Reset Bill Number"  onclick="if (! confirm('Really want to do that?')) return false"/>
+                            <p:commandLink ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (! confirm('Really want to do that?')) return false"/>
                         </p:panelGrid>
-                        
-                        
+
+
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
 

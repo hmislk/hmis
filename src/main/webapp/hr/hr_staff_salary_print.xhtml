@@ -226,6 +226,17 @@
                             <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
                         </h:panelGroup>
                     </p:tab>
+                    
+                    <p:tab id="printPaysheet" title="Paysheet">
+                        <p:commandButton value="Print" ajax="false" action="#"
+                                         disabled="#{staffSalaryController.current.blocked}">
+                            <p:printer target="gpBillPreviewPaysheet" ></p:printer>
+                        </p:commandButton>
+                        <h:panelGroup   id="gpBillPreviewPaysheet">
+                            <salary:pay_sheet bill="#{staffSalaryController.current}"></salary:pay_sheet>
+                        </h:panelGroup>
+                    </p:tab>
+                    
 
                 </p:tabView>
             </p:panel>

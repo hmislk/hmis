@@ -74,17 +74,17 @@
 
                             <h:outputLabel value="Requested Date"/>
                             <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
-                                        pattern="dd MMMM yyyy">
+                                        pattern="dd MM yy">
                             </p:calendar>
                             <h:outputLabel value="Leave Approved Person"/>
                             <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"/>                            
                             <h:outputLabel value="Leave Approved Date"/>
                             <p:calendar id="approvedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedAt}"
-                                        pattern="dd MMMM yyyy" >
+                                        pattern="dd MM yy" >
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                            <h:outputLabel/>
+                           
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
@@ -105,11 +105,11 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                            pattern="dd MMMM yyyy">     
+                                            pattern="dd MM yy">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
-                                            pattern="dd MMMM yyyy">
+                                            pattern="dd MM yy">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
                                 <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
@@ -132,6 +132,9 @@
                                          scrollHeight="300" >
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
+                                </p:column>
+                                <p:column headerText="id">
+                                    <p:outputLabel value="#{l.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
@@ -156,6 +159,10 @@
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
+                                </p:column>
+                                  <p:column headerText="Created AT">
+                                      <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
+                                    
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

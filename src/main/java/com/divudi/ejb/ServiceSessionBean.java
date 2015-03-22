@@ -230,12 +230,13 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
-        //System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
 
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
             BillType.ChannelOnCall,
-            BillType.ChannelStaff};
+            BillType.ChannelStaff,
+            BillType.ClinicalOpdBooking};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs where "
@@ -249,10 +250,12 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
-        //System.out.println("sql = " + sql);
-        //System.out.println("hh = " + hh);
-        //System.out.println("lgValue= " + lgValue);
-
+        System.out.println("serviceSession = " + serviceSession);
+        System.out.println("serviceSession.getSessionNumberGenerator() = " + serviceSession.getSessionNumberGenerator());
+        System.out.println("sql = " + sql);
+        System.out.println("hh = " + hh);
+        System.out.println("lgValue= " + lgValue);
+        System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;
         }

@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 public class StaffSalary implements Serializable {
 
-    @OneToMany(mappedBy = "staffSalary", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "staffSalary", fetch = FetchType.EAGER)
     private List<StaffSalaryComponant> staffSalaryComponants;
 
     private static final long serialVersionUID = 1L;
@@ -137,6 +137,57 @@ public class StaffSalary implements Serializable {
     private Date holdPaidAt;
     @ManyToOne
     private WebUser holdPaidBy;
+    @ManyToOne
+    Institution chequeBank;    
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date chequeDate;
+    String chequeNumberSalary;
+    String chequeNumberOverTime;
+    String chequeNumberSalaryAndOverTime;
+
+    public String getChequeNumberSalary() {
+        return chequeNumberSalary;
+    }
+
+    public void setChequeNumberSalary(String chequeNumberSalary) {
+        this.chequeNumberSalary = chequeNumberSalary;
+    }
+
+    public String getChequeNumberOverTime() {
+        return chequeNumberOverTime;
+    }
+
+    public void setChequeNumberOverTime(String chequeNumberOverTime) {
+        this.chequeNumberOverTime = chequeNumberOverTime;
+    }
+
+    public String getChequeNumberSalaryAndOverTime() {
+        return chequeNumberSalaryAndOverTime;
+    }
+
+    public void setChequeNumberSalaryAndOverTime(String chequeNumberSalaryAndOverTime) {
+        this.chequeNumberSalaryAndOverTime = chequeNumberSalaryAndOverTime;
+    }
+
+    
+    
+    
+    public Institution getChequeBank() {
+        return chequeBank;
+    }
+
+    public void setChequeBank(Institution chequeBank) {
+        this.chequeBank = chequeBank;
+    }
+
+    public Date getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(Date chequeDate) {
+        this.chequeDate = chequeDate;
+    }
+    
 
     public Institution getEpfBankBranch() {
         return epfBankBranch;
@@ -319,6 +370,9 @@ public class StaffSalary implements Serializable {
     }
 
     public Institution getInstitution() {
+        if(institution != null){
+            institution.split();
+        }
         return institution;
     }
 

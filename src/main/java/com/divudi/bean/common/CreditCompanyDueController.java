@@ -363,7 +363,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfMonth(new Date());
+            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }

@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
         <h:form>
@@ -20,27 +21,52 @@
                                 pattern="yyyy MM dd HH:mm:ss" >
                     </p:calendar> 
                     <p:commandButton value="Fill" action="#{phDateController.createHollydays}" ajax="false" />
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:printer target="tb1" ></p:printer>
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <pe:exporter type="xlsx" target="tb1" fileName="hr_report_holiday"  />
+                    </p:commandButton>
                 </p:panel>
                 <p:panel>
                     <p:dataTable id="tb1" value="#{phDateController.phDates}" var="ph">
                         <p:column headerText="Date">
+                            <f:facet name="header">
+                                <h:outputLabel value="Date"/>
+                            </f:facet>
                             <p:outputLabel value="#{ph.phDate}" >
                                 <f:convertDateTime pattern="yyyy MM dd" />
                             </p:outputLabel>
                         </p:column>
+                        
                         <p:column headerText="Hollyday Name">
+                            <f:facet name="header">
+                                <h:outputLabel value="Hollyday Name"/>
+                            </f:facet>
                             <p:outputLabel value="#{ph.name}" >
                             </p:outputLabel>
                         </p:column>
+                        
                         <p:column headerText="Hollyday Type">
+                            <f:facet name="header">
+                                <h:outputLabel value="Hollyday Type"/>
+                            </f:facet>
                             <p:outputLabel value="#{ph.phType}" >
                             </p:outputLabel>
                         </p:column>
+                        
                         <p:column headerText="Creater">
+                            <f:facet name="header">
+                                <h:outputLabel value="Creater"/>
+                            </f:facet>
                             <p:outputLabel value="#{ph.creater.webUserPerson.nameWithTitle}" >
                             </p:outputLabel>
                         </p:column>
+                        
                         <p:column headerText="Created At">
+                            <f:facet name="header">
+                                <h:outputLabel value="Created At"/>
+                            </f:facet>
                             <p:outputLabel value="#{ph.createdAt}" >
                                 <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                             </p:outputLabel>

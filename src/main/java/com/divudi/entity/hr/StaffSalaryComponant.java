@@ -52,6 +52,8 @@ public class StaffSalaryComponant implements Serializable {
     @ManyToOne
     StaffPaysheetComponent staffPaysheetComponent;
     @ManyToOne
+    private StaffPaysheetComponent staffPaysheetComponentPercentage;
+    @ManyToOne
     StaffSalary staffSalary;
     @ManyToOne
     Staff staff;
@@ -303,5 +305,15 @@ public class StaffSalaryComponant implements Serializable {
     public void setPaidBy(WebUser paidBy) {
         this.paidBy = paidBy;
     }
+
+    public StaffPaysheetComponent getStaffPaysheetComponentPercentage() {
+        return staffPaysheetComponentPercentage;
+    }
+
+    public void setStaffPaysheetComponentPercentage(StaffPaysheetComponent staffPaysheetComponentPercentage) {
+        this.staffPaysheetComponentPercentage = staffPaysheetComponentPercentage;
+    }
+    
+    
 
 }

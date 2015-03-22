@@ -13,9 +13,9 @@
                 <h:form >
                     <p:panelGrid columns="1" >
                         <p:commandButton ajax="false" value="All Visits" action="/clinical/clinical_reports_all_opd_visits" actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" >
-                            
                         </p:commandButton>
-                        
+                        <p:commandButton ajax="false" value="Daily Visits" action="/clinical/report_queue" actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" >
+                        </p:commandButton>
                     </p:panelGrid>
                     
                 </h:form>

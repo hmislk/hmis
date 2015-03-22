@@ -11,7 +11,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" columnClasses="grid1 grid1 grid1" styleClass="alignTop"  >
+                    <h:panelGrid columns="4"  styleClass="alignTop"  >
                         <p:panel header="Manage Admission Types">
                             <p:panelGrid columns="1">
                                 <p:commandButton  ajax="false" value="Manage Admission Types" 
@@ -39,7 +39,7 @@
 
                         <p:panel header="Manage Time-based Services">
                             <p:panelGrid columns="1">
-                                <p:commandButton value="Manage Timebased Service Categogries" action="inward_timed_item_category" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Service Categogries" action="inward_timed_item_category" onclick="onSubmitButton();"  style="alignment-adjust: auto"></p:commandButton>
                                 <p:commandButton value="Manage Timebased Services" action="inward_timed_item" onclick="onSubmitButton();" ></p:commandButton>
                                 <p:commandButton value="Manage Timebased Services (Theatre Only)" action="inward_timed_item_theatre_only" onclick="onSubmitButton();" ></p:commandButton>
                                 <p:commandButton value="Manage Timebased Services (Inward Only)" action="inward_timed_item_inward_only" onclick="onSubmitButton();" ></p:commandButton>

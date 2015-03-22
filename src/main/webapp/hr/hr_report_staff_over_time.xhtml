@@ -42,6 +42,8 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -63,22 +65,31 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff Over Time"/>
-                                    <br/>
+                                    <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
+
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}">                                        
                                     </h:outputLabel>
 
 
                                 </f:facet>
                                 <p:column headerText="Emp No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp No"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.code}" >
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Emp Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp Name"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="Over 45 OT Minute" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Over 45 OT Minute"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -89,6 +100,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Extra Normal OT Minute" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra Normal OT Minute"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyNormalMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -99,6 +113,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Rate Per Minute" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rate Per Minute"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -109,6 +126,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="OT Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="OT Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -121,6 +141,9 @@
                                 <p:column/>
 
                                 <p:column headerText="PH OT Min" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="PH OT Min"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -131,6 +154,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="RPM OT(1.5)" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="RPM OT(1.5)"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -141,6 +167,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="PH OT Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="PH OT Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -153,6 +182,9 @@
 
                                 <p:column/>
                                 <p:column headerText="OFF DAY OT Min" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="OFF DAY OT Min"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -163,6 +195,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="RPM(2.5)" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="RPM(2.5)"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*2.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -172,6 +207,9 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="OFF DAY OT Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="OFF DAY OT Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
@@ -184,6 +222,9 @@
                                 <p:column/>
 
                                 <p:column headerText="Total" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>

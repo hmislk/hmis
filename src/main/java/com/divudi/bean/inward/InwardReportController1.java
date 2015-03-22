@@ -11,6 +11,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
+import com.divudi.data.table.String2Value1;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -47,6 +48,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -57,8 +59,14 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardReportController1 implements Serializable {
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDatePaid;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDatePaid;
     Category category;
     Item service;
 
@@ -70,6 +78,7 @@ public class InwardReportController1 implements Serializable {
     List<String1Value2> timedServices;
     List<RoomChargeInward> roomChargeInwards;
     List<String1Value2> professionals;
+    List<String1Value2> professionalsPaid;
     List<String2Value4> inwardCharges;
     List<String1Value2> finalValues;
     List<BillFee> billFees;
@@ -113,6 +122,7 @@ public class InwardReportController1 implements Serializable {
     double timedGross;
     double timedDiscount;
     double professionalGross;
+    double professionalGrossPaid;
     double inwardGross;
     double inwardMargin;
     double inwardDiscount;
@@ -337,16 +347,20 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    public List<Object[]> fetchDoctorPaymentInwardModified() {
+    public List<Object[]> fetchDoctorPaymentInwardModified(Date frmDate, Date tDate, boolean byDischargedDate) {
         HashMap hm = new HashMap();
         String sql = "Select b.staff.speciality,"
                 + " sum(b.feeValue) "
                 + " FROM BillFee b "
                 + " where b.retired=false "
-                + " and b.bill.patientEncounter.discharged=true "
                 + " and(b.bill.billType=:refType1 "
-                + " or b.bill.billType=:refType2 )"
-                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate";
+                + " or b.bill.billType=:refType2 )";
+
+        if (byDischargedDate) {
+            sql += " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate";
+        } else {
+            sql += " and b.createdAt between :fromDate and :toDate";
+        }
 
         if (admissionType != null) {
             sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
@@ -368,16 +382,86 @@ public class InwardReportController1 implements Serializable {
 
         hm.put("refType1", BillType.InwardBill);
         hm.put("refType2", BillType.InwardProfessional);
-        hm.put("fromDate", fromDate);
-        hm.put("toDate", toDate);
+        hm.put("fromDate", frmDate);
+        hm.put("toDate", tDate);
+
+        System.err.println("sql = " + sql);
+        System.err.println("hm = " + hm);
 
         return billFeeFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
-    public void createDoctorPaymentInward() {
+    private List<Object[]> fetchDoctorPaymentInwardPaid(Date frmDate, Date tDate, boolean byDischargDate) {
+
+        String sql;
+        Map m = new HashMap();
+        m.put("bclass", BilledBill.class);
+        m.put("fd", frmDate);
+        m.put("td", tDate);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
+
+        sql = "select bf.paidForBillFee.staff.speciality,"
+                + " sum(bf.paidForBillFee.feeValue) "
+                + " from BillItem bf"
+                + " where bf.retired=false "
+                + " and bf.bill.cancelled=false "
+                + " and type(bf.bill)=:bclass"
+                + " and bf.bill.billType=:btp"
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+
+        
+//        Remove Cancelled
+        
+        
+         sql = "select bf.paidForBillFee.staff.speciality,"
+                + " sum(bf.paidForBillFee.feeValue) "
+                + " from BillItem bf"
+                + " where bf.retired=false "
+                + " and type(bf.bill)=:bclass"
+                + " and bf.bill.billType=:btp"
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+        
+        
+        if (byDischargDate) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+        } else {
+            sql += " and bf.createdAt between :fd and :td ";
+        }
+
+        if (speciality != null) {
+            sql += " and bf.paidForBillFee.staff.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (admissionType != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            m.put("cd", institution);
+        }
+
+        sql += " group by bf.paidForBillFee.staff.speciality "
+                + " order by bf.paidForBillFee.staff.speciality.name ";
+
+        return getBillFeeFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createDoctorPaymentInward(Date frmDate, Date tDate, boolean byDischargedDate) {
         professionals = new ArrayList<>();
-        List<Object[]> list = fetchDoctorPaymentInwardModified();
+        professionalGross = 0;
+        List<Object[]> list = fetchDoctorPaymentInwardModified(frmDate, tDate, byDischargedDate);
         System.err.println("Professional " + list);
         for (Object[] obj : list) {
             Speciality sp = (Speciality) obj[0];
@@ -394,6 +478,46 @@ public class InwardReportController1 implements Serializable {
 
         }
 
+    }
+
+    public void createDoctorPaymentInwardPaid(Date frmDate, Date tDate, boolean byDischargedDate) {
+        professionalsPaid = new ArrayList<>();
+        professionalGrossPaid = 0;
+        System.out.println("frmDate = " + frmDate);
+        System.out.println("tDate = " + tDate);
+        List<Object[]> list = fetchDoctorPaymentInwardPaid(frmDate, tDate, byDischargedDate);
+        System.err.println("Professional Paid " + list);
+        for (Object[] obj : list) {
+            Speciality sp = (Speciality) obj[0];
+            double dbl = (Double) obj[1];
+
+            String1Value2 string1Value2 = new String1Value2();
+            string1Value2.setSpeciality(sp);
+            string1Value2.setString(sp.getName());
+            string1Value2.setValue1(dbl);
+
+            professionalGrossPaid += string1Value2.getValue1();
+
+            professionalsPaid.add(string1Value2);
+
+        }
+
+    }
+
+    public List<String1Value2> getProfessionalsPaid() {
+        return professionalsPaid;
+    }
+
+    public void setProfessionalsPaid(List<String1Value2> professionalsPaid) {
+        this.professionalsPaid = professionalsPaid;
+    }
+
+    public double getProfessionalGrossPaid() {
+        return professionalGrossPaid;
+    }
+
+    public void setProfessionalGrossPaid(double professionalGrossPaid) {
+        this.professionalGrossPaid = professionalGrossPaid;
     }
 
     public void createTimedService() {
@@ -1377,12 +1501,48 @@ public class InwardReportController1 implements Serializable {
 
         createOpdServiceWithoutPro();
         createRoomTable();
-        createDoctorPaymentInward();
+        createDoctorPaymentInward(getFromDate(), getToDate(), true);
         createTimedService();
         createInwardService();
         createFinalSummeryMonth();
         createPaidByPatient();
         createCreditPayment();
+
+    }
+
+    public void processProfessionalPayment() {
+        makeNull();
+
+        createDoctorPaymentInward(getFromDate(), getToDate(), false);
+        createDoctorPaymentInwardPaid(getFromDatePaid(), getToDatePaid(), false);
+
+        for (String1Value2 added : professionals) {
+
+            for (String1Value2 paid : professionalsPaid) {
+                if (paid.getSpeciality().equals(added.getSpeciality())) {
+                    added.setValue2(paid.getValue1());
+//                    break;
+                }
+            }
+        }
+
+    }
+
+    public void processProfessionalPaymentByDischargedDate() {
+        makeNull();
+
+        createDoctorPaymentInward(getFromDate(), getToDate(), true);
+        createDoctorPaymentInwardPaid(getFromDatePaid(), getToDatePaid(), true);
+
+        for (String1Value2 added : professionals) {
+
+            for (String1Value2 paid : professionalsPaid) {
+                if (paid.getSpeciality().equals(added.getSpeciality())) {
+                    added.setValue2(paid.getValue1());
+                    break;
+                }
+            }
+        }
 
     }
 
@@ -2633,6 +2793,29 @@ public class InwardReportController1 implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public Date getFromDatePaid() {
+        if (fromDatePaid == null) {
+            fromDatePaid = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
+
+        return fromDatePaid;
+    }
+
+    public void setFromDatePaid(Date fromDatePaid) {
+        this.fromDatePaid = fromDatePaid;
+    }
+
+    public Date getToDatePaid() {
+        if (toDatePaid == null) {
+            toDatePaid = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
+        return toDatePaid;
+    }
+
+    public void setToDatePaid(Date toDatePaid) {
+        this.toDatePaid = toDatePaid;
     }
 
     public class CategoryTime {

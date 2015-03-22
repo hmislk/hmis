@@ -177,11 +177,11 @@
                                     </h:outputText>
                                 </td>
                             </ui:repeat>
-                            <td style="text-align: right;"><h:outputLabel value="#{scc.transTotalDeduction}" >
+                            <td style="text-align: right;"><h:outputLabel value="#{scc.transTotalDeduction-(scc.noPayValueBasic+scc.noPayValueAllowance)}" >
                                     <f:convertNumber pattern="0.00" />
                                 </h:outputLabel>
                             </td>
-                            <td style="text-align: right;"><h:outputLabel value="#{scc.transNetSalry}" >
+                            <td style="text-align: right;"><h:outputLabel value="#{(scc.transTotalDeduction-(scc.noPayValueBasic+scc.noPayValueAllowance))+(scc.transTotalAllowance+scc.transEpfEtfDiductableSalary)}" >
                                     <f:convertNumber pattern="0.00" />
                                 </h:outputLabel>
                             </td>
@@ -282,12 +282,12 @@
                             </td>
                         </ui:repeat>
                         <td style="text-align: right;">                                
-                            <h:outputLabel value="#{salaryCycleController.transTotDeduct}" >
+                            <h:outputLabel value="#{salaryCycleController.transTotDeduct-(salaryCycleController.noPayBasic+salaryCycleController.noPayValAll)}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputLabel value="#{salaryCycleController.transNetSal}" >
+                            <h:outputLabel value="#{(salaryCycleController.transTotDeduct-(salaryCycleController.noPayBasic+salaryCycleController.noPayValAll))+(salaryCycleController.epfDeduct+salaryCycleController.transTotAll)}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>
                         </td>

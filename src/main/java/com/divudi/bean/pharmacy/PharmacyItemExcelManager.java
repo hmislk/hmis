@@ -17,6 +17,7 @@ import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -50,6 +51,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
@@ -410,6 +412,44 @@ public class PharmacyItemExcelManager implements Serializable {
             getItemFacade().edit(i);
         }
     }
+
+    public void upadatePaidValueInBillFee() {
+
+        Map m = new HashMap();
+
+        String sql = "select bf,bi"
+                + " from BillItem bi join  bi.paidForBillFee bf "
+                + " where bi.retired=false "
+                + " and bf.retired=false"
+                + " and (bf.paidValue!=bi.netValue "
+                + " or bf.paidValue=0 "
+                + " or bf.staff.speciality is null)"
+                + " and bi.bill.billType=:btp "
+                + " and (bf.bill.billType=:refBtp1"
+                + " or bf.bill.billType=:refBtp2)";
+
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
+
+        List<Object[]> list2 = billFeeFacade.findObjectsArrayBySQL(sql, m, TemporalType.DATE);
+
+        System.err.println("List Size " + list2.size());
+
+        for (Object[] obj : list2) {
+            BillFee billFee = (BillFee) obj[0];
+            BillItem billItem = (BillItem) obj[1];
+
+            System.err.println("BHT " + billFee.getBill().getPatientEncounter().getBhtNo() + "Fee Value : " + billFee.getFeeValue() + " Paid : " + billFee.getPaidValue() + " Paid NetTOtal :" + billItem.getNetValue());
+             System.err.println("Bill Fee Class : " + billFee.getBill().getClass() +  " BillItem Class :" + billItem.getBill().getClass());
+            billFee.setPaidValue(billFee.getFeeValue());
+            billFeeFacade.edit(billFee);
+        }
+
+    }
+
+    @EJB
+    BillFeeFacade billFeeFacade;
 
     public void resetMarginAndDiscountAndNetTotal() {
         String sql = "Select b from Bill b "
@@ -1550,7 +1590,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n ",m);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n ", m);
                 System.out.println("m is " + m);
 
                 if (amp == null) {
@@ -1673,7 +1713,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ",m);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ", m);
                 System.out.println("m = " + m);
                 System.out.println("amp");
                 if (amp == null) {

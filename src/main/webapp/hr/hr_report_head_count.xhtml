@@ -26,6 +26,8 @@
                             <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -50,25 +52,33 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.departmentAttendances}" var="ss">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Head Count Report" />
+                                </f:facet>
                                 <p:column headerText="Date">
-                                    #{ss.date}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Date" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.date}" />
                                 </p:column>
                                 <p:column headerText="Department">
-                                    #{ss.department.name}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Department" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.department.name}" />
                                 </p:column>
                                 <p:column headerText="Head Count">
-                                    #{ss.present}
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Head Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.present}" />
                                     <f:facet name="footer">
-                                        #{hrReportController.totalAttendance}
+                                        <p:outputLabel value="#{hrReportController.totalAttendance}" />
                                     </f:facet>
                                 </p:column>
-
                             </p:dataTable>
                         </p:panel>
-
-
                     </p:panel>
-
                 </h:form>
             </ui:define>
 

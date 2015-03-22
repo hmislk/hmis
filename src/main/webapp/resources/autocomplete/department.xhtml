@@ -16,7 +16,7 @@
                         var="dept" itemLabel="#{dept.name}"
                         itemValue="#{dept}" forceSelection="true" 
                         value="#{cc.attrs.value}" 
-                        converter="dep" >
+                        converter="dep" id="department">
             <p:column headerText="Department">
                 <h:outputLabel value="#{dept.name}"/>
             </p:column>
@@ -24,5 +24,6 @@
                 <h:outputLabel value="#{dept.institution.name}"/>
             </p:column>
         </p:autoComplete>
+        <p:watermark for="department" value="Department"/>
     </cc:implementation>
 </html>
