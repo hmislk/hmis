@@ -141,11 +141,11 @@
                                         <p:menuitem  ajax="false" 
                                                      action="/pharmacy/pharmacy_search_pre_bill_for_return_item_only" 
                                                      actionListener="#{searchController.makeListNull}"   
-                                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySale')}"></p:menuitem>                                                                                    
+                                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"></p:menuitem>                                                                                    
                                         <p:menuitem  ajax="false" 
                                                      action="/pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash" 
                                                      actionListener="#{searchController.makeListNull}"   
-                                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySale')}"></p:menuitem>                                                                                    
+                                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"></p:menuitem>                                                                                    
                                         <p:menuitem ajax="false" action="//pharmacy/pharmacy_search_return_bill_pre" actionListener="#{searchController.makeListNull}"  value="Search Return Bill (Item)" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                     </p:submenu>

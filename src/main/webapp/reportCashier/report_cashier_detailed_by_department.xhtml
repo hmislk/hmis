@@ -32,7 +32,8 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
+                                <pe:exporter type="xlsx" target="billed:billed,cancelled:cancelled,refund:refund,billedPh:billedPh,
+                                             cancelledPh:cancelledPh,refundPh:refundPh,payment:payment,paymentCancel:paymentCancel," fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
 
 

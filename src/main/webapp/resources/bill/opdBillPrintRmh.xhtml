@@ -39,8 +39,7 @@
 
 
 
-                    <div class="receiptnoPrintingRuhunu"
-                         style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
+                    <div >
 
                         <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.duplicate eq false}"
                                        styleClass="opdRefNo"/>
@@ -69,11 +68,11 @@
                         </h:outputLabel>
                     </div>
 
-                    <div class="opdPaymentMethod" >
-                        <h:panelGroup>
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />                                
-                        </h:panelGroup>
-                    </div>
+                    <!--                    <div class="opdPaymentMethod" >
+                                            <h:panelGroup>
+                                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />                                
+                                            </h:panelGroup>
+                                        </div>-->
 
                     <div class="opdReferralInstitution" >
                         <h:panelGroup>
@@ -89,9 +88,9 @@
 
                     <div class="opdAppAt" >      
 
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+<!--                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
                             <f:convertDateTime pattern="hh:mm a"/>
-                        </h:outputLabel>
+                        </h:outputLabel>-->
 
                     </div>
 
@@ -100,14 +99,21 @@
                         </h:outputLabel>
                     </div>
 
-                    <div class="opdPatientPhone" >
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
-                                       >
-                        </h:outputLabel>
-                    </div>
+                    <!--                    <div class="opdPatientPhone" >
+                                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
+                                                           >
+                                            </h:outputLabel>
+                                        </div>-->
 
-                    <div class="cashierPrintingRuhunu" >
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
+                    <!--                    <div class="cashierPrintingRuhunu" >
+                                            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
+                                            </h:outputLabel>
+                                        </div>-->
+
+                    <div style="position:absolute!important;
+    left:95%!important;
+    top: 96%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.code}">
                         </h:outputLabel>
                     </div>
 
@@ -118,18 +124,21 @@
 
 
 
-                    <div class="itemsPrintingRuhunu" >
+                    <div style="font-size: 20px;
+                         position: absolute;
+                         left: 5%;
+                         top: 65%;" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <h:column >
 
-                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
+                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 20px!important;" >
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>
                                     <br/>
                                     <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
                                         <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
-                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 12px!important; font-weight: bold;" >
+                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 20px!important; font-weight: bold;" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </h:panelGroup>
@@ -137,10 +146,14 @@
                         </h:dataTable>
                     </div>
 
-                    <div class="ratesPrintingRuhunu"  >
+                    <div style="position: absolute;
+                         font-size: 20px;
+                         left: 80%;
+                         top: 65%;
+                         text-align: right;"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 20px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -161,10 +174,10 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="TOTAL" />
-                                </td>
-                                <td style="text-align: right!important; ">
+                                <!--                                <td style="text-align: left; min-width: 3cm;">
+                                                                    <h:outputLabel value="TOTAL" />
+                                                                </td>-->
+                                <td style="text-align: right!important; font-size: 20px;">
                                     <h:outputLabel value="#{cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

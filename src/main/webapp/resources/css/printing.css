@@ -746,11 +746,10 @@ root {
     
 }
 
-.receiptnoPrintingRuhunu{
-    font-size: 12px!important;
+.receiptnoPrintingRuhunu{    
     position: absolute!important;
-    left: 36%!important;
-    top: 6.5%!important;
+    left: 7.7cm;
+    top: 3.8cm;
 }
 
 .billdatePrintingRuhunu{
@@ -888,8 +887,9 @@ root {
 .totalsPrintingRuhunu{
     position: absolute;
     left: 30%!important;
-    bottom: 10%!important;
-    font-size: 150%;
+   bottom:10%!important;
+/*top: 13.8cm;*/
+    font-size: 20px;
     font-weight: bolder;
     text-align: right;
 }
