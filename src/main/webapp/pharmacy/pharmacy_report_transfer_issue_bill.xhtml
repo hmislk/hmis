@@ -63,14 +63,22 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:column headerText="Bill No">
+                                <p:column headerText="Bill No"
+                                          sortBy="#{i.deptId}"
+                                          filterBy="#{i.deptId}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
                                 </p:column>
 
-                                <p:column headerText="Cancelled No">
+                                <p:column headerText="Cancelled No"
+                                          sortBy="#{i.cancelledBill.deptId}"
+                                          filterBy="#{i.cancelledBill.deptId}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled No"/>
                                     </f:facet>
