@@ -63,14 +63,23 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:column headerText="Bill No">
+                                <p:column headerText="Bill No"
+                                          sortBy="#{i.bill.deptId}"
+                                          filterBy="#{i.bill.deptId}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Date">
+                                <p:column headerText="Date"
+                                          sortBy="#{i.bill.createdAt}"
+                                          filterBy="#{i.bill.createdAt}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
@@ -87,7 +96,12 @@
                                     </h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code">
+                                <p:column headerText="Code"
+                                          sortBy="#{i.item.code}"
+                                          filterBy="#{i.item.code}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
