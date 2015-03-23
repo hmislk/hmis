@@ -1265,6 +1265,8 @@ public class BillSearch implements Serializable {
 
             b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             b.setCreater(getSessionController().getLoggedUser());
+            
+            b.setPaidForBillFee(nB.getPaidForBillFee());
 
             getBillItemFacede().create(b);
 

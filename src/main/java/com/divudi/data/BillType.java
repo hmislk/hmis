@@ -22,7 +22,7 @@ public enum BillType {
     OpdBathcBill,
     SurgeryBill,
     LabBill,
-    PaymentBill,
+    PaymentBill,//To Pay Professional Payments
     OpdBill,
     InwardPaymentBill,
     InwardFinalBill,
@@ -77,6 +77,7 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
+    @Deprecated
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,

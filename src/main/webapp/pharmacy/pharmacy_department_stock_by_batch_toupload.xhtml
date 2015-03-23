@@ -42,21 +42,34 @@
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>  
                                 </f:facet>
                                 
-                                <p:column headerText="Category"  >
+                                <p:column headerText="Category" 
+                                          sortBy="#{i.itemBatch.item.category.name}"
+                                          filterBy="#{i.itemBatch.item.category.name}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Category"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.category.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Product"  >
+                                <p:column headerText="Product"  
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Product"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Code">
+                                <p:column headerText="Code"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
@@ -70,7 +83,12 @@
                                     <h:outputLabel value="#{i.itemBatch.item.barcode}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Generic Name">
+                                <p:column headerText="Generic Name"
+                                          
+                                          sortBy="#{i.itemBatch.item.vmp.name}"
+                                          filterBy="#{i.itemBatch.item.vmp.name}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Generic Name"/>
                                     </f:facet>
