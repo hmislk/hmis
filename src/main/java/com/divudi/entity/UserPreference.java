@@ -280,7 +280,9 @@ public class UserPreference implements Serializable {
     }
 
     public String getLogoName() {
-        
+        if (logoName == null || "".equals(logoName)) {
+            logoName = null;
+        }
         return logoName;
     }
 
