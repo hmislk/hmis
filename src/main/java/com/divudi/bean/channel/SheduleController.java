@@ -401,6 +401,8 @@ public class SheduleController implements Serializable {
         saveFees(getCurrent());
 
         getCurrent().setTotal(calTot());
+        getCurrent().setTotalFfee(calFTot());
+        
         facade.edit(getCurrent());
 
         prepareAdd();
@@ -411,6 +413,14 @@ public class SheduleController implements Serializable {
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
             tot += i.getFee();
+        }
+        return tot;
+    }
+    
+    private double calFTot() {
+        double tot = 0.0;
+        for (ItemFee i : getItemFees()) {
+            tot += i.getFfee();
         }
         return tot;
     }

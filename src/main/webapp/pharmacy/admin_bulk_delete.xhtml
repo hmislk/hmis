@@ -23,19 +23,32 @@
 
                         <p:panel id="paItems">
                             <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
-                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}">
+                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,25,50"
+                                         >
                                 <p:column id="colSelect"  selectionMode="multiple" >
                                 </p:column>
-                                <p:column headerText="Category" >
+                                <p:column headerText="Category" 
+                                          sortBy="#{i.category.name}" 
+                                          filterBy="#{i.category.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{i.category.name}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Code" >
-                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Name" >
+                                <p:column headerText="Name" 
+                                          sortBy="#{i.name}"
+                                          filterBy="#{i.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{i.name}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Generic" >
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.code}"
+                                          filterBy="#{i.code}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Generic" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
                                 </p:column>
                             </p:dataTable>
