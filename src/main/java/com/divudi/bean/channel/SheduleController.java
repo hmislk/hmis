@@ -86,7 +86,7 @@ public class SheduleController implements Serializable {
 
     public ItemFee createStaffFee() {
         ItemFee stf = new ItemFee();
-        stf.setName("Staff Fee");
+        stf.setName("Doctor Fee");
         stf.setFeeType(FeeType.Staff);
         stf.setFee(0.0);
         stf.setFfee(0.0);
