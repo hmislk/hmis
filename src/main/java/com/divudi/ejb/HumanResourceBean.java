@@ -601,19 +601,37 @@ public class HumanResourceBean {
     @EJB
     StaffLeaveEntitleFacade staffLeaveEntitleFacade;
 
-    public double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
-        String sql = " select l.count "
+    public StaffLeaveEntitle fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date date) {
+        String sql = " select l "
                 + " from StaffLeaveEntitle l "
                 + " where l.retired=false "
                 + " and l.staff=:stf "
                 + " and l.leaveType in :ltp "
-                + " and l.fromDate=:fd "
-                + " and l.toDate=:td ";
+                + " and l.fromDate<=:cu  "
+                + " and l.toDate>=:cu ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", leaveType.getLeaveTypes());
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
+        hm.put("cu", date);
+//        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+    }
+    
+    public Double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate,Date toDate) {
+        String sql = " select sum(l.count) "
+                + " from StaffLeaveEntitle l "
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+                + " and l.leaveType in :ltp "
+                + " and l.fromDate=:frm  "
+                + " and l.toDate=:to ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
 
         return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
@@ -753,22 +771,48 @@ public class HumanResourceBean {
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :dtp "
-                + " and ss.leaveType is null "
+                + " and ss.leaveType is null"
+                + " and (ss.lateInVarified>0 "
+                + " or ss.earlyOutVarified>0)"
                 + " order by ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
-    public LeaveType getLeaveType(Staff staff, Date fromDate, Date toDate) {
-        double staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, fromDate, toDate);
+    
+    
+    public List<StaffShift> fetchStaffShiftForAutoLeaveReset(Staff staff, Date fromDate, Date toDate) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType not in :dtp "
+                + " and ss.autoLeave=true "
+                + " and (ss.considerForLateIn=true "
+                + " or ss.considerForEarlyOut=true) "
+                + " order by ss.shiftDate ";
 
-        if (staffLeaveEntitle > fetchStaffLeave(staff, LeaveType.Annual, fromDate, toDate)) {
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    
+    public LeaveType getLeaveType(Staff staff, Date date) {
+        StaffLeaveEntitle staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, date);
+
+        if (staffLeaveEntitle != null
+                && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Annual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
             return LeaveType.AnnualHalf;
         }
 
-        staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Casual, fromDate, toDate);
+        staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Casual, date);
 
-        if (staffLeaveEntitle > fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
+        if (staffLeaveEntitle != null
+                && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Casual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
             return LeaveType.CasualHalf;
         }
 

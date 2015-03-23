@@ -29,6 +29,7 @@ import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
@@ -1085,6 +1086,33 @@ public class HrReportController implements Serializable {
         this.staffShiftsDayOff = staffShiftsDayOff;
     }
 
+    public void reset() {
+        if (staffShiftsNormal != null) {
+            for (StaffShift s : staffShiftsNormal) {
+                if (s.isConsiderForEarlyOut()
+                        || s.isConsiderForLateIn()
+                        || s.isAutoLeave()) {
+                    s.setConsiderForEarlyOut(false);
+                    s.setConsiderForLateIn(false);
+                    s.setAutoLeave(false);
+
+                }
+                s.setLeaveType(null);
+                staffShiftFacade.edit(s);
+            }
+        }
+
+        if (staffLeaveSystem != null) {
+            for (StaffLeave s : staffLeaveSystem) {
+                s.setRetired(true);
+                s.setRetiredAt(new Date());
+                s.setRetirer(sessionController.getLoggedUser());
+                staffLeaveFacade.edit(s);
+            }
+        }
+
+    }
+
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select  Staff");
@@ -2089,7 +2117,7 @@ public class HrReportController implements Serializable {
         }
 
     }
-    
+
     @Inject
     PhDateController phDateController;
 
@@ -2102,7 +2130,7 @@ public class HrReportController implements Serializable {
             return;
         }
 
-        int i=0;
+        int i = 0;
         for (StaffShift ss : list) {
             DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
             ss.setDayType(dtp);
@@ -2110,8 +2138,8 @@ public class HrReportController implements Serializable {
                 if (ss.getShift() != null) {
                     ss.setDayType(ss.getShift().getDayType());
                 }
-            }else{
-                System.err.println("$$$$ "+dtp + "  "+ ++i);
+            } else {
+                System.err.println("$$$$ " + dtp + "  " + ++i);
             }
             staffShiftFacade.edit(ss);
         }

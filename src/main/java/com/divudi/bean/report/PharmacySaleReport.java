@@ -40,6 +40,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemBatchFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -180,13 +181,40 @@ public class PharmacySaleReport implements Serializable {
     
     @EJB
     StockFacade stockFacade;
+    @EJB
+    ItemFacade itemFacade;        
+    Department departmentMoving;
+
+    public List<Item> getNonMovingItems() {
+        return nonMovingItems;
+    }
+
+    public void setNonMovingItems(List<Item> nonMovingItems) {
+        this.nonMovingItems = nonMovingItems;
+    }
     
     public void fillNonMoving(){
         Map allItems;
         List<Item> movedItems;
-        String j;
-        j="select s.item from Stock s where s.stock >:sv and s.department=:dpt order by s.item.name";
+        Stock s = new Stock();
         
+        
+//        s.getDepartment();
+//        s.getItemBatch().getItem();
+//        s.getItemBatch().getItem();
+        HashMap m = new HashMap();
+        m.put("dpt", getDepartmentMoving());
+        String j;
+        
+        j="select s.itemBatch.item "
+                + " from Stock s "
+                + " where s.stock > 0 "
+                + " and s.department=:dpt "
+                + " group by s.itemBatch.item "
+                + " order by s.itemBatch.item.name";
+        
+        nonMovingItems=itemFacade.findBySQL(j, m);
+        System.out.println("nonMovingItems = " + nonMovingItems);
     }
 
     public void setCategory(Category category) {
@@ -5034,7 +5062,16 @@ public class PharmacySaleReport implements Serializable {
         public void setTransferOutQty(double transferOutQty) {
             this.transferOutQty = transferOutQty;
         }
+        
+        
+    }
 
+    public Department getDepartmentMoving() {
+        return departmentMoving;
+    }
+
+    public void setDepartmentMoving(Department departmentMoving) {
+        this.departmentMoving = departmentMoving;
     }
 
 }

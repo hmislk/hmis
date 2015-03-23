@@ -202,6 +202,15 @@
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
                                         </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}">
+                                                <f:convertDateTime pattern="dd MM yy"></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <p:spacer width="10"></p:spacer>
+                                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}">
+                                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </td>
 
                                     </tr>
                                     <tr></tr>
