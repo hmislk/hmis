@@ -122,6 +122,11 @@ public class StaffAdditionalFormController implements Serializable {
                     getCurrentAdditionalForm().getStaffShift().setRetired(true);
                     getCurrentAdditionalForm().getStaffShift().setRetirer(sessionController.getLoggedUser());
                 }
+                
+                if(getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift()!=null){
+                    getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift().setRetired(false);
+                    staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift());
+                }
 
                 staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift());
             }
@@ -607,6 +612,8 @@ public class StaffAdditionalFormController implements Serializable {
 
                 staffShiftFacade.edit(staffShiftExtra.getPreviousStaffShift());
             }
+            
+            staffShiftExtra.setReferenceStaffShift(currentAdditionalForm.getStaffShift());
 
             currentAdditionalForm.getStaffShift().setRetired(true);
             currentAdditionalForm.getStaffShift().setRetiredAt(new Date());
@@ -618,7 +625,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
         staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
 
-        if (staffShiftExtra.getShift() == null) {
+        if (shift != null) {
             staffShiftExtra.setShift(shift);
         }
 //        }
@@ -629,6 +636,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setShiftDate(date);
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
+        
         staffShiftFacade.edit(staffShiftExtra);
 
         currentAdditionalForm.setStaffShift(staffShiftExtra);

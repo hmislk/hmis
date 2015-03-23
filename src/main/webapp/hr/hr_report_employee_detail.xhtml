@@ -56,14 +56,18 @@
                                 <p:column headerText="Id" filterBy="#{s.id}" exportable="false">
                                     #{s.id}
                                 </p:column>
-                                <p:column sortBy="#{s.id}" filterBy="#{s.id}" filterMatchMode="contains" headerText="Staff Id" exportable="false">
-                                    <p:outputLabel value="#{s.id}" />
-                                </p:column>   
-
-                                <p:column filterBy="#{s.person.id}" headerText="Person Id" exportable="false">
-                                    <p:outputLabel value="#{s.person.id}" />
-                                </p:column>   
-
+                                <p:column headerText="Code NO" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Code NO" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.codeInterger}" />
+                                </p:column>
+                                <p:column headerText="EPF Code" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="EPF Code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.epfNo}" />
+                                </p:column>
                                 <p:column filterBy="#{s.person.name}" headerText="Name">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Name" />
@@ -82,18 +86,13 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.nameWithInitials}" />
                                 </p:column>
-                                <p:column headerText="Code NO" >
+                                <p:column headerText="Speciality" >
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Code NO" />
+                                        <p:outputLabel value="Speciality" />
                                     </f:facet>
-                                    <p:outputLabel value="#{s.codeInterger}" />
+                                    <p:outputLabel value="#{s.speciality.name}" />
                                 </p:column>
-                                <p:column headerText="EPF Code" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="EPF Code" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{s.epfNo}" />
-                                </p:column>
+                                
                                 <p:column headerText="Roster" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Roster" />
