@@ -106,6 +106,35 @@ public class HrReportController implements Serializable {
     @EJB
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
+    double totalWorkedTime;
+    
+    private void calculateWorkedTime(){
+        totalWorkedTime=0;
+        
+        for(StaffShift staffShift:staffShiftsNormal){
+            totalWorkedTime+=staffShift.getWorkedWithinTimeFrameVarified();
+        
+        }
+    
+    }
+
+    public double getTotalWorkedTime() {
+        return totalWorkedTime;
+    }
+
+    public void setTotalWorkedTime(double totalWorkedTime) {
+        this.totalWorkedTime = totalWorkedTime;
+    }
+
+    public PhDateController getPhDateController() {
+        return phDateController;
+    }
+
+    public void setPhDateController(PhDateController phDateController) {
+        this.phDateController = phDateController;
+    }
+    
+    
 
     private UploadedFile file;
 
@@ -1118,7 +1147,7 @@ public class HrReportController implements Serializable {
             UtilityController.addErrorMessage("Please Select  Staff");
             return;
         }
-        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getReportKeyWord().getStaff());
+        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
         System.err.println("Sh Normal " + staffShiftsNormal);
         staffShiftsHoliday = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
                 getSalaryCycle().getSalaryToDate(),
@@ -1136,8 +1165,12 @@ public class HrReportController implements Serializable {
         System.err.println("User Leave " + staffLeavesNoPay);
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("System Leave " + staffLeaveSystem);
+        
+        calculateWorkedTime();
     }
 
+    
+    
     List<StaffLeave> staffLeaveSystem;
 
     public List<StaffLeave> getStaffLeaveSystem() {
@@ -1195,6 +1228,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeave ss "
                 + " where ss.retired=false "
+                + " and ss.form.retired=false "
                 + " and ss.leaveDate between :frm  and :to "
                 + " and ss.staff=:stf"
                 + " and ss.leaveType in :ltp ";

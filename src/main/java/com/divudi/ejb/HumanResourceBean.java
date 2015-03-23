@@ -640,7 +640,8 @@ public class HumanResourceBean {
     public double fetchStaffLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select sum(l.qty) "
                 + " from StaffLeave l"
-                + " where l.retired=false "
+                + " where l.retired=false"
+                + " and l.form.retired=false "
                 + " and l.staff=:stf "
                 + " and l.leaveType in  :ltp "
                 + " and l.leaveDate between  :fd and :td ";
