@@ -446,7 +446,12 @@
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
                                             <div >
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                                    <div style="page-break-after: always;">
                                                     <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </div>
+                                                    <div style="page-break-after: always;">
+                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </div>
                                                 </h:panelGroup>
                                             </div>
                                             <div >
