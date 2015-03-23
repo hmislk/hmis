@@ -63,10 +63,18 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:column headerText="Bill No"  >
+                                <p:column headerText="Bill No"  
+                                          sortBy="#{i.bill.deptId}"
+                                          filterBy="#{i.bill.deptId}"
+                                          filterMatchMode="contains"
+                                          >
                                     <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Date">
+                                <p:column headerText="Date"
+                                           sortBy="#{i.bill.createdAt}"
+                                          filterBy="#{i.bill.createdAt}"
+                                          filterMatchMode="contains"
+                                          >
                                     <h:outputLabel value="#{i.bill.createdAt}"  >
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
@@ -76,7 +84,11 @@
                                     </h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code">
+                                <p:column headerText="Code"
+                                           sortBy="#{i.pharmaceuticalBillItem.itemBatch.item.code}"
+                                          filterBy="#{i.pharmaceuticalBillItem.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>                           

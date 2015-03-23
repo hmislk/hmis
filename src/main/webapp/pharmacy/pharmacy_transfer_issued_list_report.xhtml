@@ -54,7 +54,11 @@
                 <p:panel id="datatable">
                 <p:dataTable id="tbl1" value="#{searchController.bills}" var="p">                       
 
-                    <p:column headerText="Issue No">                        
+                    <p:column headerText="Issue No"
+                              sortBy="#{p.deptId}"
+                              filterBy="#{p.deptId}"
+                              filterMatchMode="contains"
+                              >                        
                         <h:outputLabel value="#{p.deptId}"/>                          
                     </p:column>
 
