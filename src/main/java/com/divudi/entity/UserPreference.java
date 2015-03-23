@@ -59,6 +59,9 @@ public class UserPreference implements Serializable {
     ApplicationInstitution applicationInstitution;
 
     public ApplicationInstitution getApplicationInstitution() {
+        if(applicationInstitution==null){
+            applicationInstitution = ApplicationInstitution.Ruhuna;
+        }
         return applicationInstitution;
     }
 
