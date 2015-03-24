@@ -20,7 +20,7 @@
                 <p:tab title="Cycle">
                     <p:selectOneMenu id="advanced" 
                                      value="#{staffSalaryController.salaryCycle}" 
-                                     converter="salaryCycleConverter" 
+                                     converter="salaryCycleConverter"                                      
                                      effect="fade" var="t" 
                                      filter="true" 
                                      filterMatchMode="startsWith"  >
@@ -41,9 +41,9 @@
                         <p:column headerText="Month">
                             <h:outputText value="#{t.salaryMonth}" />
                         </p:column>
-                        <f:ajax execute="@this" render="cycleDetail" event="change" listener="#{salaryCycleController.cycleSelectListener()}" />
+                        <p:ajax process="@this" update="cycleDetail" event="change"  />
                     </p:selectOneMenu>
-                    <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
+                  
                     <h:panelGrid columns="2" id="cycleDetail">
                         <h:outputLabel value="Salary From Date "/>
                         <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
