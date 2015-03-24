@@ -62,6 +62,7 @@ public class SearchController implements Serializable {
     Date toDate;
     private int maxResult = 50;
     private BillType billType;
+
     ////////////
     private List<Bill> bills;
     private List<Bill> selectedBills;
@@ -72,6 +73,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigationsSigle;
     Bill cancellingIssueBill;
     Bill bill;
+    List<Bill> phamacypharchusebills;
+
     ////////////
     Speciality speciality;
     Staff staff;
@@ -101,6 +104,7 @@ public class SearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     TransferController transferController;
+    Institution dealar;
 
     public void makeListNull() {
         maxResult = 50;
@@ -1154,6 +1158,43 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createTableByBillTypeWithDealer() {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where b.retired=false and "
+                + " type(b)in :bcs  "
+                + " and b.department=:dep "
+                + " and  "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (dealar != null) {
+            sql += " and b.fromInstitution=:dealer ";
+
+        }
+
+        sql += " order by b.createdAt desc  ";
+        
+        List<BillType> biltyp = new ArrayList();
+        biltyp.add(billType)
+        List<Class> bcs = new ArrayList();
+        bcs.add(PreBill.class);
+        bcs.add(BilledBill.class);
+
+        temMap.put("dealer", getDealar());
+       
+        temMap.put("dep", getSessionController().getDepartment());
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bcs", bcs);
+        temMap.put("", sql)
+        //temMap.put("dep", getSessionController().getDepartment());
+        phamacypharchusebills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     //System.err.println("SIZE : " + lst.size());
+        System.out.println("temMap = " + temMap);
+    }
+
     public void createTableByBillTypeAllDepartment() {
 
         String sql;
@@ -1228,7 +1269,7 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
-        tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("bTp", BillType.PharmacyPurchaseBill);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
@@ -4981,6 +5022,22 @@ public class SearchController implements Serializable {
 
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
+    }
+
+    public Institution getDealar() {
+        return dealar;
+    }
+
+    public void setDealar(Institution dealar) {
+        this.dealar = dealar;
+    }
+
+    public List<Bill> getPhamacypharchusebills() {
+        return phamacypharchusebills;
+    }
+
+    public void setPhamacypharchusebills(List<Bill> phamacypharchusebills) {
+        this.phamacypharchusebills = phamacypharchusebills;
     }
 
 }
