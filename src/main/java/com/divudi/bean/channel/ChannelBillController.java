@@ -816,20 +816,20 @@ public class ChannelBillController implements Serializable {
 //                return true;
 //            }
         }
-
+        System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
-            if (getAgentRefNo().trim().isEmpty()) {
+            if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 UtilityController.addErrorMessage("Please Enter Agent Ref No");
                 return true;
             }
         }
-
+        System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getDisplayCount() >= getSs().getMaxNo()) {
             UtilityController.addErrorMessage("No Space to Book");
             return true;
         }
-
-        if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo())) {
+        System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
             UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
@@ -1005,22 +1005,21 @@ public class ChannelBillController implements Serializable {
                 System.out.println("agentFee = " + agentFee);
                 agentFfee = ifl.getFfee();
                 System.out.println("agentFfee = " + agentFfee);
-                
+
                 ifl.setFee(0.0);
                 ifl.setFfee(0.0);
             }
         }
         for (ItemFee ifl : itemFees) {
             if (ifl.getFeeType() == FeeType.OwnInstitution) {
-                
+
                 System.out.println("1.agentFee = " + agentFee);
                 System.out.println("1.agentFfee = " + agentFfee);
                 agentFee += ifl.getFee();
                 agentFfee += ifl.getFfee();
                 System.out.println("2.agentFee = " + agentFee);
                 System.out.println("2.agentFfee = " + agentFfee);
-                
-                
+
                 ifl.setFee(agentFee);
                 ifl.setFfee(agentFfee);
             }
