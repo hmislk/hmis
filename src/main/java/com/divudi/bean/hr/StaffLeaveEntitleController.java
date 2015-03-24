@@ -243,7 +243,7 @@ public class StaffLeaveEntitleController implements Serializable {
 
         if (leaveType != null) {
             sql += " and c.leaveType= :ltp ";
-            hm.put("ltp", staff);
+            hm.put("ltp", leaveType);
         }
 
         sql += "  order by c.staff.code";
