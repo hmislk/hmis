@@ -61,8 +61,8 @@
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.opdPosBillWithoutLogo}"/>
                                 
                                 <h:outputLabel value="Logo Name"></h:outputLabel>
-                                <h:inputText value="#{sessionController.institutionPreference.logoName}"/>
-                                
+                                <h:inputText id="imgName" value="#{sessionController.institutionPreference.logoName}"/>
+                                <p:watermark for="imgName" value="Eg- /abc.jpg" />
                             </h:panelGrid>
 
                         </h:panelGrid>
