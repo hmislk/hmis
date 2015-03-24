@@ -79,14 +79,24 @@
                                             <h:outputLabel value="#{reportsTransfer.department.name} - Slow Moving Items by Value"/>
                                         </f:facet>
 
-                                        <p:column headerText="Code" style="width: 70px;" >
+                                        <p:column headerText="Code" style="width: 70px;" 
+                                                  sortBy="#{i.item.code}"
+                                                  filterBy="#{i.item.code}"
+                                                  filterMatchMode="contains"
+                                                  
+                                                  
+                                                  >
                                             <f:facet name="header">
                                                 <h:outputLabel value="Code"/>
                                             </f:facet>
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Item">
+                                        <p:column headerText="Item"
+                                                  sortBy="#{i.item.name}"
+                                                  filterBy="#{i.item.name}"
+                                                  filterMatchMode="contains"
+                                                  >
                                             <f:facet name="header">
                                                 <h:outputLabel value="Item"/>
                                             </f:facet>

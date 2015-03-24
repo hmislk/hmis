@@ -52,6 +52,7 @@ public class UserPreference implements Serializable {
     boolean tranferNetTotalbyRetailRate;
     boolean allowtoChangePaymentMethodDuringPayment;
     boolean opdPosBillWithoutLogo;
+    String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -59,6 +60,9 @@ public class UserPreference implements Serializable {
     ApplicationInstitution applicationInstitution;
 
     public ApplicationInstitution getApplicationInstitution() {
+        if(applicationInstitution==null){
+            applicationInstitution = ApplicationInstitution.Ruhuna;
+        }
         return applicationInstitution;
     }
 
@@ -276,6 +280,17 @@ public class UserPreference implements Serializable {
 
     public void setTranferNetTotalbyRetailRate(boolean tranferNetTotalbyRetailRate) {
         this.tranferNetTotalbyRetailRate = tranferNetTotalbyRetailRate;
+    }
+
+    public String getLogoName() {
+        if (logoName == null || "".equals(logoName)) {
+            logoName = null;
+        }
+        return logoName;
+    }
+
+    public void setLogoName(String logoName) {
+        this.logoName = logoName;
     }
     
     

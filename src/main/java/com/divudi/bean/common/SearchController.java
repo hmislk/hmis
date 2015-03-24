@@ -3900,14 +3900,26 @@ public class SearchController implements Serializable {
     public void channelPaymentBills() {
         String sql;
         Map m = new HashMap();
+        
+        BillType[] bt={
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+        };
+        
+        List<BillType> bts=Arrays.asList(bt);
 
         sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
-                + " and bi.bill.billType=:bt"
+                + " and bi.bill.billType=:bt "
+                + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("bt", BillType.ChannelProPayment);
+        m.put("bt", BillType.PaymentBill);
+        m.put("bts", bts);
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
