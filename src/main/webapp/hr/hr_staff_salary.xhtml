@@ -136,11 +136,47 @@
                         <p:column headerText="Staff">
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                         </p:column>
-                        <p:column headerText="Gross">
+                        <p:column headerText="Total Salary">
                             <h:outputLabel value="#{i.transGrossSalary}">
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="No Pay Basic">
+                            <h:outputLabel value="#{i.noPayValueBasic}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="EPF +ETF Deductable">
+                            <h:outputLabel value="#{i.transEpfEtfDiductableSalary}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>                       
+                        <p:column headerText="Total Allowance">
+                            <h:outputLabel value="#{i.transTotalAllowance}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Gross Salary">
+                            <h:outputLabel value="#{i.transTotalAllowance+i.transEpfEtfDiductableSalary}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>                       
+                        <p:column headerText="Total Deduction">
+                            <h:outputLabel value="#{i.transTotalDeduction-(i.noPayValueBasic+i.noPayValueAllowance)}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Net Salary">
+                            <h:outputLabel value="#{(i.transTotalDeduction-(i.noPayValueBasic+scc.noPayValueAllowance))+(i.transTotalAllowance+i.transEpfEtfDiductableSalary)}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>   
+                        <p:column headerText="OT Payment">
+                            <h:outputLabel value="#{i.transExtraDutyValue+i.overTimeValue}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
+                        </p:column>   
                         <p:column headerText="EPF">
                             <h:outputLabel value="#{i.epfStaffValue}">
                                 <f:convertNumber pattern="0.00"/>
@@ -156,16 +192,7 @@
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Net Salary">
-                            <h:outputLabel value="#{i.transNetSalry}">
-                                <f:convertNumber pattern="0.00"/>
-                            </h:outputLabel>
-                        </p:column>   
-                        <p:column headerText="OT Payment">
-                            <h:outputLabel value="#{i.transExtraDutyValue+i.overTimeValue}">
-                                <f:convertNumber pattern="0.00"/>
-                            </h:outputLabel>
-                        </p:column>   
+
                         <p:column>
                             <p:commandButton process="@this" 
                                              update=":#{p:component('lst')}" 

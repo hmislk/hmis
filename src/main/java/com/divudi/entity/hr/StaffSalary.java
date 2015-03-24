@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 public class StaffSalary implements Serializable {
 
-    @OneToMany(mappedBy = "staffSalary", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "staffSalary", fetch = FetchType.EAGER)
     private List<StaffSalaryComponant> staffSalaryComponants;
 
     private static final long serialVersionUID = 1L;

@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.faces.bean.SessionScoped;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 
@@ -22,7 +23,7 @@ import javax.faces.view.ViewScoped;
  * @author Buddhika
  */
 @Named(value = "commonReportController")
-@ViewScoped
+@SessionScoped
 public class CommonReportController {
 
     List<Class<?>> availableClasses ;

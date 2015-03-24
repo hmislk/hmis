@@ -79,12 +79,12 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Inv.No" ></h:outputLabel>
+                            <h:outputLabel value="Inv.No" class="billDetails"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -96,7 +96,7 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" class="billDetails">
                             </h:outputLabel>
                         </td>
 
@@ -104,12 +104,12 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Method" ></h:outputLabel>
+                            <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -130,11 +130,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" ></h:outputLabel>
+                                <h:outputLabel value="Name" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  class="billDetails">
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -152,11 +152,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Staff Name" ></h:outputLabel>
+                                <h:outputLabel value="Staff Name" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  class="billDetails">
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -172,11 +172,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="To Unit" ></h:outputLabel>
+                                <h:outputLabel value="To Unit" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  class="billDetails">
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -191,11 +191,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Company" ></h:outputLabel>
+                                <h:outputLabel value="Company" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  class="billDetails">
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -350,10 +350,10 @@
                     </tr>
                     
                     <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
+                        <td  class="totalsItemBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
-                        <td  class="totalsBlock">
+                        <td  class="totalsItemBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>

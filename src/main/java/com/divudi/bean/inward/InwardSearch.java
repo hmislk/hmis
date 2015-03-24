@@ -1108,6 +1108,10 @@ public class InwardSearch implements Serializable {
             b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             b.setCreater(getSessionController().getLoggedUser());
 
+            b.setPaidForBillFee(nB.getPaidForBillFee());
+            
+            System.out.println("nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
+            
             getBillItemFacede().create(b);
 
             cancelBillComponents(can, b);

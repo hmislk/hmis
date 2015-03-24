@@ -79,6 +79,7 @@ public class BookKeepingSummery implements Serializable {
     List<BillItem> creditCompanyCollections;
     List<BillItem> creditCompanyCollectionsInward;
     List<DepartmentPayment> departmentProfessionalPayments;
+    List<DepartmentPayment> channellingProfessionalPayments;
     List<String1Value2> inwardProfessionalPayments;
     //Value
     double opdHospitalTotal;
@@ -93,6 +94,7 @@ public class BookKeepingSummery implements Serializable {
     double creditCompanyTotal;
     double creditCompanyTotalInward;
     double pettyCashTotal;
+    double channellingProfessionalPaymentTotal;
     double departmentProfessionalPaymentTotal;
     double inwardProfessionalPaymentTotal;
     double creditCardTotal;
@@ -116,6 +118,7 @@ public class BookKeepingSummery implements Serializable {
         chequeBill = null;
         creditCompanyCollections = null;
         departmentProfessionalPayments = null;
+        channellingProfessionalPayments = null;
         inwardProfessionalPayments = null;
         //Value
         opdHospitalTotal = 0;
@@ -129,6 +132,7 @@ public class BookKeepingSummery implements Serializable {
         pettyCashTotal = 0;
         departmentProfessionalPaymentTotal = 0;
         inwardProfessionalPaymentTotal = 0;
+        channellingProfessionalPaymentTotal = 0;
         creditCardTotal = 0;
         chequeTotal = 0;
         slipTotal = 0;
@@ -150,6 +154,25 @@ public class BookKeepingSummery implements Serializable {
 
     public void setDepartmentProfessionalPaymentTotal(double departmentProfessionalPaymentTotal) {
         this.departmentProfessionalPaymentTotal = departmentProfessionalPaymentTotal;
+    }
+
+    public double getChannellingProfessionalPaymentTotal() {
+        return channellingProfessionalPaymentTotal;
+    }
+
+    public void setChannellingProfessionalPaymentTotal(double channellingProfessionalPaymentTotal) {
+        this.channellingProfessionalPaymentTotal = channellingProfessionalPaymentTotal;
+    }
+
+    public List<DepartmentPayment> getChannellingProfessionalPayments() {
+        if (channellingProfessionalPayments == null) {
+            channellingProfessionalPayments = new ArrayList<>();
+        }
+        return channellingProfessionalPayments;
+    }
+
+    public void setChannellingProfessionalPayments(List<DepartmentPayment> channellingProfessionalPayments) {
+        this.channellingProfessionalPayments = channellingProfessionalPayments;
     }
 
     public List<DepartmentPayment> getDepartmentPayments() {
@@ -2477,6 +2500,40 @@ public class BookKeepingSummery implements Serializable {
         createFinalSummery();
     }
 
+    public void createDoctorPaymentChannelling() {
+        System.err.println("Doctor Payment Channelling");
+        channellingProfessionalPayments = new ArrayList<>();
+        List<BillType> bts = new ArrayList<>();
+
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        bts.add(BillType.ChannelAgent);
+
+        System.out.println("fetching channeling payments");
+        List<Object[]> list = getBillBean().fetchDoctorPayment(fromDate, toDate, bts);
+        System.out.println("list = " + list);
+        
+        for (Object[] obj : list) {
+            
+            System.out.println("obj = " + obj);
+            
+            Department department = (Department) obj[0];
+            double dbl = (Double) obj[1];
+
+            DepartmentPayment newRow = new DepartmentPayment();
+            newRow.setDepartment(department);
+            newRow.setTotalPayment(dbl);
+            
+            System.out.println("newRow = " + newRow);
+
+            if (dbl != 0) {
+                channellingProfessionalPayments.add(newRow);
+            }
+
+        }
+
+    }
+
     public void createDoctorPaymentOpd() {
         System.err.println("Doctor Payment OPD");
         departmentProfessionalPayments = new ArrayList<>();
@@ -2523,15 +2580,15 @@ public class BookKeepingSummery implements Serializable {
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
         hm.put("ins", institution);
-        hm.put("bclass", BilledBill.class);
+//        hm.put("bclass", BilledBill.class);
         String sql = "Select b.paidForBillFee.bill.patientEncounter.admissionType.name,"
                 + " b.paidForBillFee.staff.speciality.name , sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
                 + " and b.bill.institution=:ins "
-                + " and b.bill.cancelled=false"
-                + " and type(b.bill)=:bclass"
+                //                + " and b.bill.cancelled=false"
+                //                + " and type(b.bill)=:bclass"
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
                 + " and b.bill.createdAt between :fromDate and :toDate"
@@ -2616,50 +2673,51 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
-    public void createDoctorPaymentInwardTemporaryTesting() {
-        System.err.println("Doctor Payment Inward");
-        inwardProfessionalPayments = new ArrayList<>();
-        List<Object[]> list = getBillBean().fetchDoctorPaymentInwardTemporaryTesting(fromDate, toDate);
-
-        for (Object[] obj : list) {
-            AdmissionType admissionType = (AdmissionType) obj[0];
-            double dbl = (Double) obj[1];
-
-            String1Value2 header = new String1Value2();
-            header.setSummery(true);
-            header.setString(admissionType.getName());
-
-            if (dbl != 0) {
-                inwardProfessionalPayments.add(header);
-            }
-
-            List<Object[]> listInner = getBillBean().fetchDoctorPaymentInward(admissionType, fromDate, toDate);
-
-            for (Object[] objIn : listInner) {
-                Speciality speciality = (Speciality) objIn[0];
-                dbl = (Double) objIn[1];
-
-                if (dbl != 0) {
-                    String1Value2 data = new String1Value2();
-                    data.setString(speciality.getName());
-                    data.setValue1(dbl);
-                    inwardProfessionalPayments.add(data);
-                }
-            }
-
-            String1Value2 footer = new String1Value2();
-            footer.setSummery(true);
-            footer.setString(admissionType.getName() + " Total : ");
-            footer.setValue2(dbl);
-
-            if (dbl != 0) {
-                inwardProfessionalPayments.add(footer);
-            }
-
-        }
-
-    }
-
+//    
+//    public void createDoctorPaymentInwardTemporaryTesting() {
+//        System.err.println("Doctor Payment Inward");
+//        inwardProfessionalPayments = new ArrayList<>();
+//        List<Object[]> list = getBillBean().fetchDoctorPaymentInwardTemporaryTesting(fromDate, toDate);
+//
+//        for (Object[] obj : list) {
+//            AdmissionType admissionType = (AdmissionType) obj[0];
+//            double dbl = (Double) obj[1];
+//
+//            String1Value2 header = new String1Value2();
+//            header.setSummery(true);
+//            header.setString(admissionType.getName());
+//
+//            if (dbl != 0) {
+//                inwardProfessionalPayments.add(header);
+//            }
+//
+//            List<Object[]> listInner = getBillBean().fetchDoctorPaymentInward(admissionType, fromDate, toDate);
+//
+//            for (Object[] objIn : listInner) {
+//                Speciality speciality = (Speciality) objIn[0];
+//                dbl = (Double) objIn[1];
+//
+//                if (dbl != 0) {
+//                    String1Value2 data = new String1Value2();
+//                    data.setString(speciality.getName());
+//                    data.setValue1(dbl);
+//                    inwardProfessionalPayments.add(data);
+//                }
+//            }
+//
+//            String1Value2 footer = new String1Value2();
+//            footer.setSummery(true);
+//            footer.setString(admissionType.getName() + " Total : ");
+//            footer.setValue2(dbl);
+//
+//            if (dbl != 0) {
+//                inwardProfessionalPayments.add(footer);
+//            }
+//
+//        }
+//
+//    }
+//
     public void createDoctorPaymentInward() {
         System.err.println("Doctor Payment Inward");
         inwardProfessionalPayments = new ArrayList<>();
@@ -2721,7 +2779,9 @@ public class BookKeepingSummery implements Serializable {
         agentCollections = agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
+        /////
         createDoctorPaymentOpd();
+        createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
@@ -2735,6 +2795,13 @@ public class BookKeepingSummery implements Serializable {
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2Hos();
         departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill);
+
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelPaid);
+        channellingProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, bts);
+
         createDoctorPaymentInwardByCategoryAndSpeciality();
         creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
@@ -2803,13 +2870,9 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createCashCategoryWithProMonth() {
+        System.out.println("creating cash category with pro month");
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-
-//        if (Math.abs(lng) > 32) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
-//            return;
-//        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOutSideFeeWithPro();
@@ -2818,6 +2881,7 @@ public class BookKeepingSummery implements Serializable {
 //        agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
 //        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
         createDoctorPaymentOpd();
+        createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
@@ -2847,7 +2911,7 @@ public class BookKeepingSummery implements Serializable {
         ////////              
         dd = new String1Value2();
         dd.setString("Net Cash");
-        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + departmentProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
+        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
         dd.setValue1(tmp);
         finalValues.add(dd);
 

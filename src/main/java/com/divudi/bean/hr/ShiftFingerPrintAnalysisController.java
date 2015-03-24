@@ -1043,9 +1043,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         String code = ss.getStaff().getCode();
 
-        if (ss.getShift().getDayType() == DayType.DayOff
-                || ss.getShift().getDayType() == DayType.PublicHoliday
-                || ss.getShift().getDayType() == DayType.SleepingDay) {
+        if (ss.getShift().getDayType() != DayType.Normal) {
             return false;
         }
 
@@ -1226,7 +1224,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             newSh.setDate(st.getDate());
             newSh.setFlag(st.isFlag());
             for (StaffShift ss : st.getStaffShift()) {
-                Collections.sort(ss.getFingerPrintRecordList(), new FingerPrintComparator());
+//                Collections.sort(ss.getFingerPrintRecordList(), new FingerPrintComparator());
                 if (errorCheckForSave(ss, newSh)) {
                     continue;
                 }
