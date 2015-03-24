@@ -122,8 +122,8 @@ public class StaffAdditionalFormController implements Serializable {
                     getCurrentAdditionalForm().getStaffShift().setRetired(true);
                     getCurrentAdditionalForm().getStaffShift().setRetirer(sessionController.getLoggedUser());
                 }
-                
-                if(getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift()!=null){
+
+                if (getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift() != null) {
                     getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift().setRetired(false);
                     staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift().getReferenceStaffShift());
                 }
@@ -581,15 +581,14 @@ public class StaffAdditionalFormController implements Serializable {
             DayType dayType = phDateController.getHolidayType(date);
             shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
 
-            if (shift == null) {
-                shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.Extra);
-            }
-
         } else {
             if (currentAdditionalForm.getStaffShift() != null) {
                 UtilityController.addErrorMessage("Please Select Staff Shift");
                 return;
             }
+
+            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.Extra);
+
         }
 
         currentAdditionalForm.setTimes(Times.All);
@@ -612,7 +611,7 @@ public class StaffAdditionalFormController implements Serializable {
 
                 staffShiftFacade.edit(staffShiftExtra.getPreviousStaffShift());
             }
-            
+
             staffShiftExtra.setReferenceStaffShift(currentAdditionalForm.getStaffShift());
 
             currentAdditionalForm.getStaffShift().setRetired(true);
@@ -636,7 +635,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setShiftDate(date);
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
-        
+
         staffShiftFacade.edit(staffShiftExtra);
 
         currentAdditionalForm.setStaffShift(staffShiftExtra);

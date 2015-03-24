@@ -17,11 +17,11 @@
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
                             <h:outputLabel value="From Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.fromDate}" >
+                            <p:calendar value="#{staffLeaveEntitleController.current.fromDate}" pattern="dd/MM/yy">
                                 <!--<f:ajax execute="@this" event="dateSelect" render="frm" />-->
                             </p:calendar>
                             <h:outputLabel value="To Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.toDate}">
+                            <p:calendar value="#{staffLeaveEntitleController.current.toDate}" pattern="dd/MM/yy">
                                 <!--<f:ajax execute="@this" event="dateSelect" render="to" />-->
                             </p:calendar>
                             <h:outputLabel value="Leave Type : "/>

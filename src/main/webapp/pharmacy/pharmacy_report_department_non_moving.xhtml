@@ -51,11 +51,19 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet>                               
-                                <p:column headerText="Item"  >
+                                <p:column headerText="Item" 
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains"
+                                          >
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code">
+                                <p:column headerText="Code"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
