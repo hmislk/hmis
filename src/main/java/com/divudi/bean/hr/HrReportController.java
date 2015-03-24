@@ -107,15 +107,15 @@ public class HrReportController implements Serializable {
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
     double totalWorkedTime;
-    
-    private void calculateWorkedTime(){
-        totalWorkedTime=0;
-        
-        for(StaffShift staffShift:staffShiftsNormal){
-            totalWorkedTime+=staffShift.getWorkedWithinTimeFrameVarified();
-        
+
+    private void calculateWorkedTime() {
+        totalWorkedTime = 0;
+
+        for (StaffShift staffShift : staffShiftsNormal) {
+            totalWorkedTime += staffShift.getWorkedWithinTimeFrameVarified();
+
         }
-    
+
     }
 
     public double getTotalWorkedTime() {
@@ -133,8 +133,6 @@ public class HrReportController implements Serializable {
     public void setPhDateController(PhDateController phDateController) {
         this.phDateController = phDateController;
     }
-    
-    
 
     private UploadedFile file;
 
@@ -1142,6 +1140,41 @@ public class HrReportController implements Serializable {
 
     }
 
+    public void resetSystemLeave() {
+
+        String sql = "select s from StaffLeaveSystem s "
+                + " where s.retired=false";
+        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
+
+        for (StaffLeave s : list) {
+            if (s.getStaffShift() != null) {
+                if (s.getStaffShift().isConsiderForEarlyOut()
+                        || s.getStaffShift().isConsiderForLateIn()
+                        || s.getStaffShift().isAutoLeave()) {
+                    s.getStaffShift().setConsiderForEarlyOut(false);
+                    s.getStaffShift().setConsiderForLateIn(false);
+                    s.getStaffShift().setAutoLeave(false);
+
+                }
+                s.getStaffShift().setLeaveType(null);
+                staffShiftFacade.edit(s.getStaffShift());
+            }
+
+            s.setRetired(true);
+            s.setRetiredAt(new Date());
+            s.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(s);
+
+            if (s.getForm() != null) {
+                s.getForm().setRetired(true);
+                s.getForm().setRetiredAt(new Date());
+                s.getForm().setRetirer(sessionController.getLoggedUser());
+                formFacade.edit(s.getForm());
+            }
+        }
+
+    }
+
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select  Staff");
@@ -1165,12 +1198,10 @@ public class HrReportController implements Serializable {
         System.err.println("User Leave " + staffLeavesNoPay);
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("System Leave " + staffLeaveSystem);
-        
+
         calculateWorkedTime();
     }
 
-    
-    
     List<StaffLeave> staffLeaveSystem;
 
     public List<StaffLeave> getStaffLeaveSystem() {

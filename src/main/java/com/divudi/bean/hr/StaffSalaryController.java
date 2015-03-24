@@ -492,10 +492,10 @@ public class StaffSalaryController implements Serializable {
 
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            double otSec= humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
+            double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-            System.err.println("W : "+workedWithinTimeFrameVarified/60+" : O "+otSec/60);
-            
+            System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
+
             overTimeSec += otSec;
             frmCal.add(Calendar.DAY_OF_WEEK, 7);
             toCal.add(Calendar.DAY_OF_WEEK, 7);
@@ -1115,19 +1115,20 @@ public class StaffSalaryController implements Serializable {
         leaveFormFacade.edit(hr);
 
         StaffLeaveSystem staffLeaveSystem = staffLeaveFromLateAndEarlyController.fetchStaffLeaves(stfCurrent, hr);
-        staffLeaveSystem.setRetired(true);
-        staffLeaveSystem.setRetiredAt(new Date());
-        staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
-        staffLeaveFacade.edit(staffLeaveSystem);
+        if (staffLeaveSystem != null) {
+            staffLeaveSystem.setRetired(true);
+            staffLeaveSystem.setRetiredAt(new Date());
+            staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(staffLeaveSystem);
 
-        stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
-        stfCurrent.calLeaveTime();
-        stfCurrent.setLeaveType(null);
-        stfCurrent.setAutoLeave(false);
-        stfCurrent.setConsiderForLateIn(false);
-        stfCurrent.setConsiderForEarlyOut(false);
-        staffShiftFacade.edit(stfCurrent);
-
+            stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
+            stfCurrent.calLeaveTime();
+            stfCurrent.setLeaveType(null);
+            stfCurrent.setAutoLeave(false);
+            stfCurrent.setConsiderForLateIn(false);
+            stfCurrent.setConsiderForEarlyOut(false);
+            staffShiftFacade.edit(stfCurrent);
+        }
         List<StaffShift> list = fetchStaffShiftForResetLateAndEarly(stfCurrent);
 
         if (list == null) {
