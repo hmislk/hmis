@@ -51,11 +51,21 @@
                                 </p:commandButton>
                             </p:column>
 
-                            <p:column headerText="Bill No" >                                
+                            <p:column headerText="Bill No" 
+                                      sortBy="#{bill.deptId}"
+                                      filterBy="#{bill.deptId}"
+                                      filterMatchMode="contains"
+                                      
+                                      >                                
                                 <h:outputLabel  value="#{bill.deptId}"  />
                             </p:column>
 
-                            <p:column headerText="Department"  >                                
+                            <p:column headerText="Department"  
+                                      sortBy="#{bill.department.name}"
+                                      filterBy="#{bill.department.name}"
+                                      filterMatchMode="contains"
+                                      
+                                      >                                
                                 <h:outputLabel value="#{bill.department.name}" />                                    
                             </p:column>   
 
@@ -106,7 +116,11 @@
                                                             <h:outputLabel value="#{bill.paymentScheme.paymentMethod}" />
                                                         </p:column>-->
 
-                            <p:column headerText="Paymentscheme" >
+                            <p:column headerText="Payment scheme" 
+                                      sortBy="#{bill.paymentScheme.name}"
+                                      filterBy="#{bill.paymentScheme.name}"
+                                      filterMatchMode="contains"
+                                      >
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
 

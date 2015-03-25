@@ -37,7 +37,10 @@
                                     <h:outputLabel value="#{reportsStock.department.name} - All Supplier Stock"/>  
                                 </f:facet>
                                 
-                                <p:column headerText="Supplier">
+                                <p:column headerText="Supplier" 
+                                          sortBy="#{i.institution.name}"
+                                          filterBy="#{i.institution.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Supplier"/>
                                     </f:facet>
@@ -51,7 +54,10 @@
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>-->
                                 
-                                <p:column headerText="Stock Quentity">
+                                <p:column headerText="Stock Quentity" 
+                                          sortBy="#{i.qty}"
+                                          filterBy="#{i.qty}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock Quantity"/>
                                     </f:facet>
