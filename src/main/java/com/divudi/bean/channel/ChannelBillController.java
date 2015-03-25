@@ -870,6 +870,9 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
+    
+    
+    
     public void add() {
         if (errorCheck()) {
             return;
@@ -882,6 +885,20 @@ public class ChannelBillController implements Serializable {
         printingBill = getBillFacade().find(printingBill.getId());
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
+
+    }
+    
+    public void addOnCall() {
+        if (errorCheck()) {
+            return;
+        }
+        
+        if(printingBill == null){
+            printingBill = new Bill();
+        }
+
+        printingBill.setPaymentMethod(PaymentMethod.OnCall);
+        add();
 
     }
 
