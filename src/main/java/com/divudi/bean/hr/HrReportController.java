@@ -47,6 +47,7 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -2335,6 +2336,10 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffShift() {
+        if(Arrays.asList(dayTypesSelected).isEmpty() ){
+            JsfUtil.addErrorMessage("Select Day Type");
+            return;
+        }
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
@@ -2344,7 +2349,7 @@ public class HrReportController implements Serializable {
         hm.put("dts", Arrays.asList(dayTypesSelected));
         
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         calWorkedTimeTotal(staffShifts);
     }
 
