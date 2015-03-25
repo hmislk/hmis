@@ -70,17 +70,23 @@
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Quantity" style="text-align: right;">
+                                <p:column headerText="Quantity" style="text-align: right;"
+                                          sortBy="#{i.stock}"
+                                          >
                                     <h:outputLabel value="#{i.stock}"  >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </h:outputLabel>                                 
                                 </p:column>
-                                <p:column headerText="Expiary">
+                                <p:column headerText="Expiary"
+                                          sortBy="#{i.itemBatch.dateOfExpire}"
+                                          >
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
                                         <f:convertDateTime pattern="dd/MMMM/yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate" style="text-align: right;"
+                                          sortBy="#{i.itemBatch.purcahseRate}"
+                                          >
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>

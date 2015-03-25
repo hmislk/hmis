@@ -63,7 +63,11 @@
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Quantity" style="text-align: right;">
+                                <p:column headerText="Quantity" 
+                                          sortBy="#{i.stock}"
+                                          filterBy="#{i.stock}"
+                                          filterMatchMode="contains"
+                                          style="text-align: right;">
                                      <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>                                     
                                     </f:facet>
@@ -73,7 +77,8 @@
                                     </h:outputLabel>                                 
                                 </p:column>
 
-                                <p:column headerText="Expiry">
+                                <p:column headerText="Expiry" 
+                                          sortBy="#{i.itemBatch.dateOfExpire}">
                                   <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>
@@ -94,7 +99,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate"
+                                          sortBy="#{i.itemBatch.purcahseRate}"
+                                          style="text-align: right;">
                                      <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>                                     
                                     </f:facet>
@@ -104,7 +111,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" 
+                                          sortBy="#{i.itemBatch.purcahseRate * i.stock}"
+                                          style="text-align: right;">
                                      <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>                                     
                                     </f:facet>
@@ -119,7 +128,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Retail Price" style="text-align: right;">
+                                <p:column headerText="Retail Price" 
+                                          sortBy="#{i.itemBatch.retailsaleRate}"
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Price"/>                                     
                                     </f:facet>
@@ -128,7 +139,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;">
+                                <p:column headerText="Retail Sale Value" 
+                                          sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>                                     
                                     </f:facet>

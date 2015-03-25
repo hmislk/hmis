@@ -469,9 +469,11 @@ public class StaffSalaryController implements Serializable {
     FinalVariables finalVariables;
 
     public Long calculateOverTimeMinute() {
+        System.out.println("calculating over time in minutes");
         Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+        System.out.println("dateCount = " + dateCount);
         Long numOfWeeks = dateCount / 7;
-
+        System.out.println("numOfWeeks = " + numOfWeeks);
         if (numOfWeeks == 0l) {
             return 0l;
         }
@@ -479,7 +481,7 @@ public class StaffSalaryController implements Serializable {
         Double overTimeSec = 0.0;
 
         Date fromDate = getSalaryCycle().getWorkedFromDate();
-
+        System.out.println("fromDate = " + fromDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fromDate);
 
@@ -491,13 +493,16 @@ public class StaffSalaryController implements Serializable {
         for (int i = 0; i < numOfWeeks; i++) {
 
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            
-            
+            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
+            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
             
             //The below line was commented by safrin. Buddhiks uncommented it. Please double check.
-            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+//            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+            
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
-
+            
+            System.out.println("otSec = " + otSec);
+            
             System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
 
             overTimeSec += otSec;
@@ -538,14 +543,24 @@ public class StaffSalaryController implements Serializable {
     public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
-
+        System.out.println("ss = " + ss);
         if (ss.getStaffPaysheetComponent() != null) {
+            
             Long overTimeMinute = calculateOverTimeMinute();
+            System.out.println("overTimeMinute = " + overTimeMinute);
+            
             double overTimePerMinute = getOverTimeValuePerMinute();
+            System.out.println("overTimePerMinute = " + overTimePerMinute);
+            
             ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
+            
             getCurrent().setOverTimeMinute(overTimeMinute);
+            System.out.println("overTimeMinute = " + overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
+            
             getCurrent().setOverTimeRatePerMinute(overTimePerMinute);
+            
+            
         } else {
             return;
         }
