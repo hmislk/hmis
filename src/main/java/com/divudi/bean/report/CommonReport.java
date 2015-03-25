@@ -120,6 +120,9 @@ public class CommonReport implements Serializable {
     private BillsTotals cancellededBills;
     private BillsTotals refundedBills;
     private BillsTotals billedBillsPh;
+    
+    private BillsTotals billedBillsCh;
+    
     private BillsTotals billedBillsPh2;
     private BillsTotals cancellededBillsPh;
     private BillsTotals cancellededBillsPh2;
@@ -1205,6 +1208,11 @@ public class CommonReport implements Serializable {
 
         return billedBillsPh;
     }
+        public BillsTotals getUserBillsOwnCh() {
+
+        return billedBillsCh;
+    }
+
 
     public BillsTotals getUserBillsPhOther() {
         return billedBillsPh2;
@@ -3644,6 +3652,7 @@ public class CommonReport implements Serializable {
         this.refundedBillsPh = refundedBillsPh;
     }
 
+    
     public BillsTotals getBilledBillsPh2() {
         if (billedBillsPh2 == null) {
             billedBillsPh2 = new BillsTotals();
@@ -3926,6 +3935,14 @@ public class CommonReport implements Serializable {
 
     public void setReferenceItem(Item referenceItem) {
         this.referenceItem = referenceItem;
+    }
+
+    public BillsTotals getBilledBillsCh() {
+        return billedBillsCh;
+    }
+
+    public void setBilledBillsCh(BillsTotals billedBillsCh) {
+        this.billedBillsCh = billedBillsCh;
     }
 
 }
