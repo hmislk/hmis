@@ -300,7 +300,7 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="rePrint">
+                        <p:tab title="Reprint" id="rePrint" >
 
                             <p:commandButton value="Print" ajax="false" action="#">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
@@ -309,7 +309,8 @@
 
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
                                 <div >
-                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                         <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                     </h:panelGroup>
                                 </div>
