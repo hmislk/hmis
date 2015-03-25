@@ -2470,6 +2470,7 @@ public class HumanResourceBean {
 //        return otNormalSpecial;
 //
 //    }
+    
     public double calculateWorkTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.workedWithinTimeFrameVarified) "
                 + " from StaffShift ss "
