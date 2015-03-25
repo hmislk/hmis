@@ -68,6 +68,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.apache.tools.ant.types.DataType;
 import org.primefaces.model.UploadedFile;
 
 /**
@@ -107,6 +108,17 @@ public class HrReportController implements Serializable {
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
     double totalWorkedTime;
+    DayType[] dayTypesSelected;
+
+    public DayType[] getDayTypesSelected() {
+        return dayTypesSelected;
+    }
+
+    public void setDayTypesSelected(DayType[] dayTypesSelected) {
+        this.dayTypesSelected = dayTypesSelected;
+    }
+    
+    
 
     private void calculateWorkedTime() {
         totalWorkedTime = 0;
@@ -2326,6 +2338,11 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
+//        StaffShift ss = new StaffShift();
+//        ss.getDayType();
+        sql+= " and ss.dayType in :dts ";
+        hm.put("dts", Arrays.asList(dayTypesSelected));
+        
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
         calWorkedTimeTotal(staffShifts);
@@ -2405,6 +2422,7 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffSalary() {
+        System.out.println("Creating Staff Salary" );
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffSalaryQuary(hm);

@@ -380,12 +380,12 @@ public class HumanResourceBean {
         System.out.println("workingTimeForOverTimePerWeek = " + workingTimeForOverTimePerWeek);
         System.out.println("numberOfWeeks = " + numberOfWeeks);
         if (workingTimeForOverTimePerWeek != 0 && numberOfWeeks != 0) {
-            
+
             double normalWorkTime = numberOfWeeks * workingTimeForOverTimePerWeek * 60 * 60;
-            System.out.println("normalWorkTime = " + normalWorkTime);
+//            System.out.println("normalWorkTime = " + normalWorkTime);
             double overTime = totalWorkedTime - normalWorkTime;
-            System.out.println("overTime = " + overTime);
-            
+//            System.out.println("overTime = " + overTime);
+
             if (overTime > 0) {
                 return overTime;
             }
@@ -2473,7 +2473,6 @@ public class HumanResourceBean {
 //        return otNormalSpecial;
 //
 //    }
-    
     public double calculateWorkTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.workedWithinTimeFrameVarified) "
                 + " from StaffShift ss "
@@ -2481,7 +2480,7 @@ public class HumanResourceBean {
                 + " and ss.leavedTime=0 "
                 + " and type(ss)!=:cls"
                 + " and ss.dayType not in :dtp "
-                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.shiftStartTime between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("cls", StaffShiftExtra.class);
@@ -2491,7 +2490,23 @@ public class HumanResourceBean {
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
         System.out.println("hm = " + hm);
         System.out.println("sql = " + sql);
-        double dbl = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        double dbl = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        sql = "Select ss "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.leavedTime=0 "
+                + " and type(ss)!=:cls"
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftStartTime between :fd  and :td "
+                + " and ss.staff=:stf ";
+        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        for (StaffShift ss : sss) {
+            System.err.println("ss = " + ss);
+            System.out.println("ss.getId() = " + ss.getId());
+            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
+
+        }
         return dbl;
     }
 

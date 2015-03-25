@@ -484,10 +484,23 @@ public class StaffSalaryController implements Serializable {
         System.out.println("fromDate = " + fromDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fromDate);
+        frmCal.setTime(fromDate);
+        frmCal.set(Calendar.HOUR, 7);
+        frmCal.set(Calendar.MINUTE, 0);
+        frmCal.set(Calendar.SECOND, 0);
+        frmCal.set(Calendar.MILLISECOND,0);
 
         Calendar toCal = Calendar.getInstance();
         toCal.setTime(fromDate);
-        toCal.add(Calendar.DAY_OF_WEEK, 7);
+        toCal.set(Calendar.HOUR, 7);
+        toCal.set(Calendar.MINUTE, 0);
+        toCal.set(Calendar.SECOND, 0);
+        toCal.set(Calendar.MILLISECOND,0);
+        toCal.add(Calendar.DATE, 7);
+//        toCal.add((Calendar.MILLISECOND), -1);
+        System.err.println("adding 6 days only. No Milli seconds ");
+        
+        
         System.err.println("FROM1 " + frmCal.getTime());
         System.err.println("TO1 " + toCal.getTime());
         for (int i = 0; i < numOfWeeks; i++) {
@@ -506,8 +519,8 @@ public class StaffSalaryController implements Serializable {
             System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
 
             overTimeSec += otSec;
-            frmCal.add(Calendar.DAY_OF_WEEK, 7);
-            toCal.add(Calendar.DAY_OF_WEEK, 7);
+            frmCal.add(Calendar.DATE, 7);
+            toCal.add(Calendar.DATE, 7);
 
             System.err.println("FROM " + i + frmCal.getTime());
             System.err.println("TO " + i + toCal.getTime());
