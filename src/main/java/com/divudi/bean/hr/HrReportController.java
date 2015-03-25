@@ -724,9 +724,11 @@ public class HrReportController implements Serializable {
     }
 
     public String createStaffShiftQuary(HashMap hm) {
+
         String sql = "";
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
+                + " and ss.shift is not null"
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -2326,6 +2328,17 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        calWorkedTimeTotal(staffShifts);
+    }
+
+    private void calWorkedTimeTotal(List<StaffShift> list) {
+        if (list == null) {
+            return;
+        }
+        totalWorkedTime = 0;
+        for (StaffShift s : list) {
+            totalWorkedTime += s.getWorkedWithinTimeFrameVarified();
+        }
     }
 
     public void createStaffShiftWorked() {
