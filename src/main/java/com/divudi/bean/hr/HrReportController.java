@@ -106,6 +106,33 @@ public class HrReportController implements Serializable {
     @EJB
     FormFacade formFacade;
     List<FingerPrintRecord> selectedFingerPrintRecords;
+    double totalWorkedTime;
+
+    private void calculateWorkedTime() {
+        totalWorkedTime = 0;
+
+        for (StaffShift staffShift : staffShiftsNormal) {
+            totalWorkedTime += staffShift.getWorkedWithinTimeFrameVarified();
+
+        }
+
+    }
+
+    public double getTotalWorkedTime() {
+        return totalWorkedTime;
+    }
+
+    public void setTotalWorkedTime(double totalWorkedTime) {
+        this.totalWorkedTime = totalWorkedTime;
+    }
+
+    public PhDateController getPhDateController() {
+        return phDateController;
+    }
+
+    public void setPhDateController(PhDateController phDateController) {
+        this.phDateController = phDateController;
+    }
 
     private UploadedFile file;
 
@@ -697,9 +724,11 @@ public class HrReportController implements Serializable {
     }
 
     public String createStaffShiftQuary(HashMap hm) {
+
         String sql = "";
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
+                + " and ss.shift is not null"
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -1113,12 +1142,47 @@ public class HrReportController implements Serializable {
 
     }
 
+    public void resetSystemLeave() {
+
+        String sql = "select s from StaffLeaveSystem s "
+                + " where s.retired=false";
+        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
+
+        for (StaffLeave s : list) {
+            if (s.getStaffShift() != null) {
+                if (s.getStaffShift().isConsiderForEarlyOut()
+                        || s.getStaffShift().isConsiderForLateIn()
+                        || s.getStaffShift().isAutoLeave()) {
+                    s.getStaffShift().setConsiderForEarlyOut(false);
+                    s.getStaffShift().setConsiderForLateIn(false);
+                    s.getStaffShift().setAutoLeave(false);
+
+                }
+                s.getStaffShift().setLeaveType(null);
+                staffShiftFacade.edit(s.getStaffShift());
+            }
+
+            s.setRetired(true);
+            s.setRetiredAt(new Date());
+            s.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(s);
+
+            if (s.getForm() != null) {
+                s.getForm().setRetired(true);
+                s.getForm().setRetiredAt(new Date());
+                s.getForm().setRetirer(sessionController.getLoggedUser());
+                formFacade.edit(s.getForm());
+            }
+        }
+
+    }
+
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select  Staff");
             return;
         }
-        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getReportKeyWord().getStaff());
+        staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
         System.err.println("Sh Normal " + staffShiftsNormal);
         staffShiftsHoliday = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
                 getSalaryCycle().getSalaryToDate(),
@@ -1136,6 +1200,8 @@ public class HrReportController implements Serializable {
         System.err.println("User Leave " + staffLeavesNoPay);
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("System Leave " + staffLeaveSystem);
+
+        calculateWorkedTime();
     }
 
     List<StaffLeave> staffLeaveSystem;
@@ -1195,6 +1261,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeave ss "
                 + " where ss.retired=false "
+                + " and ss.form.retired=false "
                 + " and ss.leaveDate between :frm  and :to "
                 + " and ss.staff=:stf"
                 + " and ss.leaveType in :ltp ";
@@ -2261,6 +2328,17 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        calWorkedTimeTotal(staffShifts);
+    }
+
+    private void calWorkedTimeTotal(List<StaffShift> list) {
+        if (list == null) {
+            return;
+        }
+        totalWorkedTime = 0;
+        for (StaffShift s : list) {
+            totalWorkedTime += s.getWorkedWithinTimeFrameVarified();
+        }
     }
 
     public void createStaffShiftWorked() {

@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="data" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="billedCh" styleClass="noBorder" value="#{cc.attrs.data.bills}"  var="bCh" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{bCh.billType}"  >
+            <f:facet name="header">
+                <h:outputLabel value="Channel Bills"/>
+            </f:facet>
+            <p:column headerText="Time"  >
+                <f:facet name="header">  
+                    <h:outputLabel value="Time"/>
+                </f:facet> 
+                <h:outputLabel value="#{bCh.createdAt}" >
+                    <f:convertDateTime pattern="h:mm a"/>
+                </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Id" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Id"/>
+                </f:facet> 
+                <h:outputLabel value="#{bCh.deptId}"/>
+            </p:column>
+
+            <p:column headerText="Patient Name" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Patient Name"/>
+                </f:facet> 
+                <h:outputLabel value=" #{bCh.patient.person.nameWithTitle}"/>               
+            </p:column>
+
+            <p:column headerText="Total." style=" text-align: right">
+                <f:facet name="header">  
+                    <h:outputLabel value="Total."/>
+                </f:facet> 
+                <h:outputLabel value="#{bCh.total}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+
+
+            <p:column headerText="Dis." style=" text-align: right">
+                <f:facet name="header">  
+                    <h:outputLabel value="Dis."/>
+                </f:facet> 
+                <h:outputLabel value="#{bCh.discount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Cash" style=" text-align: right"  >
+                <f:facet name="header">  
+                    <h:outputLabel value="Cash"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{bCh.paymentMethod=='Cash'}" value="#{bCh.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{bCh.paymentMethod!='Cash'}" value="0.00" />
+            </p:column>
+
+            <p:column headerText="Credit" style=" text-align: right" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Credit"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{bCh.paymentMethod=='Credit'}" value="#{bCh.netTotal}"  >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{bCh.paymentMethod!='Credit'}" value="0.00"/>
+            </p:column>
+
+            <p:column headerText="C Card" style=" text-align: right" >
+                <f:facet name="header">  
+                    <h:outputLabel value="C Card"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{bCh.paymentMethod=='Card'}" value="#{bCh.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{bCh.paymentMethod!='Card'}" value="0.00"/>
+            </p:column>
+
+            <p:column headerText="Checque" style=" text-align: right" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Checque"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{bCh.paymentMethod=='Cheque'}" value="#{bCh.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{bCh.paymentMethod!='Cheque'}" value="0.00"/>
+            </p:column>
+
+            <p:column headerText="Slip" style=" text-align: right" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Slip"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{bCh.paymentMethod=='Slip'}" value="#{bCh.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{bCh.paymentMethod!='Slip'}" value="0.00"/>
+            </p:column>
+
+            <p:column headerText="Remark" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Remark"/>
+                </f:facet> 
+                <h:outputLabel value="C" rendered="#{bCh.cancelled==true}"/>
+                <h:outputLabel value="R" rendered="#{bCh.refunded==true}"/>
+            </p:column>
+
+            <p:columnGroup type="footer">  
+                <p:row>  
+                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>  
+                    <p:column  style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.cash}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column  style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.credit}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column  style=" text-align: right">  
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.card}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style=" text-align: right"> 
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.cheque}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.slip}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>  
+            </p:columnGroup>  
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

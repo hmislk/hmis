@@ -640,7 +640,8 @@ public class HumanResourceBean {
     public double fetchStaffLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select sum(l.qty) "
                 + " from StaffLeave l"
-                + " where l.retired=false "
+                + " where l.retired=false"
+                + " and l.form.retired=false "
                 + " and l.staff=:stf "
                 + " and l.leaveType in  :ltp "
                 + " and l.leaveDate between  :fd and :td ";
@@ -2474,10 +2475,12 @@ public class HumanResourceBean {
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.leavedTime=0 "
+                + " and type(ss)!=:cls"
                 + " and ss.dayType not in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
+        hm.put("cls", StaffShiftExtra.class);
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
