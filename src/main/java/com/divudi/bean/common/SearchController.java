@@ -1158,41 +1158,56 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createTableByBillTypeWithDealer() {
+    public void createTableByBillTypeWithDealer(BillType btp, List<BillType> bts) {
 
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from Bill b where b.retired=false and "
-                + " type(b)in :bcs  "
+        sql = "select b from Bill b where b.retired=false  "
+                + " and type(b)in :bcs  "
                 + " and b.department=:dep "
-                + " and  "
                 + " and b.createdAt between :fromDate and :toDate ";
 
+        if (btp != null) {
+            sql += " and b.billType=:btp ";
+             temMap.put("btp", btp);
+        }
+        if (bts != null) {
+            sql += " and b.billType in :bts ";
+            temMap.put("bts", bts);
+        }
         if (dealar != null) {
             sql += " and b.fromInstitution=:dealer ";
-
+            temMap.put("dealer", getDealar());
         }
-
         sql += " order by b.createdAt desc  ";
-        
-        List<BillType> biltyp = new ArrayList();
-        biltyp.add(billType)
-        List<Class> bcs = new ArrayList();
+
+      List<Class> bcs = new ArrayList();
         bcs.add(PreBill.class);
         bcs.add(BilledBill.class);
-
-        temMap.put("dealer", getDealar());
-       
         temMap.put("dep", getSessionController().getDepartment());
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("bcs", bcs);
-        temMap.put("", sql)
+   
+        
         //temMap.put("dep", getSessionController().getDepartment());
         phamacypharchusebills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         //     //System.err.println("SIZE : " + lst.size());
-        System.out.println("temMap = " + temMap);
+        
+    }
+
+    public void createPurchrseBill() {
+        createTableByBillTypeWithDealer(billType.PharmacyPurchaseBill, null);
+    }
+    
+    public void createGRN(){
+        createTableByBillTypeWithDealer(billType.PharmacyGrnBill, null);
+    }
+    
+    public void createPerchurseOrGRN(){
+        createTableByBillTypeWithDealer(billType.PharmacyPurchaseBill, null);
+        createTableByBillTypeWithDealer(billType.PharmacyGrnBill, null);
     }
 
     public void createTableByBillTypeAllDepartment() {
