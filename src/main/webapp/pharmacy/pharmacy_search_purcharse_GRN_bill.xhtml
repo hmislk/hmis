@@ -46,7 +46,11 @@
                                 <h:outputLabel value="PHARMACY PURCHASE BILL  and GRN BIll WITH DEALER "/>
                             </f:facet>
 
-                            <p:column headerText="BILL NO" >
+                            <p:column headerText="BILL NO" 
+                                      sortBy="#{bill.deptId}"
+                                      filterBy="#{bill.deptId}"
+                                      filterMatchMode="contains">
+                                
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -54,14 +58,22 @@
                             </p:column> 
 
 
-                            <p:column headerText="Dealer Name" >
+                            <p:column headerText="Dealer Name"
+                                      sortBy="#{bill.toInstitution.name}"
+                                      filterBy="#{bill.toInstitution.name}"
+                                      filterMatchMode="contains">
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.toInstitution.name}" rendered="#{bill.toInstitution.name eq null}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                 </h:commandLink>
                             </p:column> 
                             
-                            <p:column headerText="Bill Type" >
+                            <p:column headerText="Bill Type"
+                                       sortBy="#{bill.billType}"
+                                      filterBy="#{bill.billType}"
+                                      filterMatchMode="contains"
+                                      
+                                      >
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.billType}" >
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -107,7 +119,12 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>       
-                            <p:column headerText="Payment Method" >
+                            <p:column headerText="Payment Method"
+                                      sortBy="#{bill.paymentMethod}"
+                                      filterBy="#{bill.paymentMethod}"
+                                      filterMatchMode="contains"
+                                      
+                                      >
                                 <h:commandLink action="pharmacy_reprint_purchase" >
                                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

@@ -491,7 +491,11 @@ public class StaffSalaryController implements Serializable {
         for (int i = 0; i < numOfWeeks; i++) {
 
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-//            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+            
+            
+            
+            //The below line was commented by safrin. Buddhiks uncommented it. Please double check.
+            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
             System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
