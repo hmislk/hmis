@@ -26,6 +26,7 @@
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.fromDate}" 
+                                    navigator="true"
                                     pattern="dd MM yyyy" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>
@@ -39,6 +40,7 @@
                         </p:autoComplete>
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.toDate}" 
+                                    navigator="true"
                                     pattern="dd MM yyyy" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>

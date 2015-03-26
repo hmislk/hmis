@@ -2840,10 +2840,10 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
-        if (Math.abs(lng) > 32) {
-            UtilityController.addErrorMessage("Date Range is too Long");
-            return;
-        }
+//        if (Math.abs(lng) > 32) {
+//            UtilityController.addErrorMessage("Date Range is too Long");
+//            return;
+//        }
 
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));

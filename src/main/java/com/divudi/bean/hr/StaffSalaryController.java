@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -468,11 +469,64 @@ public class StaffSalaryController implements Serializable {
     FinalVariables finalVariables;
 
     public Long calculateOverTimeMinute() {
-        double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
-        workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
+        System.out.println("calculating over time in minutes");
         Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+        System.out.println("dateCount = " + dateCount);
         Long numOfWeeks = dateCount / 7;
-        Double overTimeSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified);
+        System.out.println("numOfWeeks = " + numOfWeeks);
+        if (numOfWeeks == 0l) {
+            return 0l;
+        }
+
+        Double overTimeSec = 0.0;
+
+        Date fromDate = getSalaryCycle().getWorkedFromDate();
+        System.out.println("fromDate = " + fromDate);
+        Calendar frmCal = Calendar.getInstance();
+        frmCal.setTime(fromDate);
+        frmCal.setTime(fromDate);
+        frmCal.set(Calendar.HOUR, 7);
+        frmCal.set(Calendar.MINUTE, 0);
+        frmCal.set(Calendar.SECOND, 0);
+        frmCal.set(Calendar.MILLISECOND,0);
+
+        Calendar toCal = Calendar.getInstance();
+        toCal.setTime(fromDate);
+        toCal.set(Calendar.HOUR, 7);
+        toCal.set(Calendar.MINUTE, 0);
+        toCal.set(Calendar.SECOND, 0);
+        toCal.set(Calendar.MILLISECOND,0);
+        toCal.add(Calendar.DATE, 7);
+//        toCal.add((Calendar.MILLISECOND), -1);
+        System.err.println("adding 6 days only. No Milli seconds ");
+        
+        
+        System.err.println("FROM1 " + frmCal.getTime());
+        System.err.println("TO1 " + toCal.getTime());
+        for (int i = 0; i < numOfWeeks; i++) {
+
+            double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
+            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
+            
+            //The below line was commented by safrin. Buddhiks uncommented it. Please double check.
+//            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+            
+            double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
+            
+            System.out.println("otSec = " + otSec);
+            
+            System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
+
+            overTimeSec += otSec;
+            frmCal.add(Calendar.DATE, 7);
+            toCal.add(Calendar.DATE, 7);
+
+            System.err.println("FROM " + i + frmCal.getTime());
+            System.err.println("TO " + i + toCal.getTime());
+        }
+
+        System.err.println("OTSec "+overTimeSec);
         return (overTimeSec.longValue() / 60L);
     }
 
@@ -502,14 +556,24 @@ public class StaffSalaryController implements Serializable {
     public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
-
+        System.out.println("ss = " + ss);
         if (ss.getStaffPaysheetComponent() != null) {
+            
             Long overTimeMinute = calculateOverTimeMinute();
+            System.out.println("overTimeMinute = " + overTimeMinute);
+            
             double overTimePerMinute = getOverTimeValuePerMinute();
+            System.out.println("overTimePerMinute = " + overTimePerMinute);
+            
             ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
+            
             getCurrent().setOverTimeMinute(overTimeMinute);
+            System.out.println("overTimeMinute = " + overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
+            
             getCurrent().setOverTimeRatePerMinute(overTimePerMinute);
+            
+            
         } else {
             return;
         }
@@ -1074,25 +1138,30 @@ public class StaffSalaryController implements Serializable {
     public void calStaffAutoLeaveReset(StaffShift stfCurrent) {
 
         LeaveFormSystem hr = staffLeaveFromLateAndEarlyController.fetchLeaveForm(stfCurrent, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
+        if (hr == null) {
+            System.out.println("HR Null");
+            return;
+        }
         hr.setRetired(true);
         hr.setRetiredAt(new Date());
         hr.setRetirer(sessionController.getLoggedUser());
         leaveFormFacade.edit(hr);
 
         StaffLeaveSystem staffLeaveSystem = staffLeaveFromLateAndEarlyController.fetchStaffLeaves(stfCurrent, hr);
-        staffLeaveSystem.setRetired(true);
-        staffLeaveSystem.setRetiredAt(new Date());
-        staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
-        staffLeaveFacade.edit(staffLeaveSystem);
+        if (staffLeaveSystem != null) {
+            staffLeaveSystem.setRetired(true);
+            staffLeaveSystem.setRetiredAt(new Date());
+            staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(staffLeaveSystem);
 
-        stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
-        stfCurrent.calLeaveTime();
-        stfCurrent.setLeaveType(null);
-        stfCurrent.setAutoLeave(false);
-        stfCurrent.setConsiderForLateIn(false);
-        stfCurrent.setConsiderForEarlyOut(false);
-        staffShiftFacade.edit(stfCurrent);
-
+            stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
+            stfCurrent.calLeaveTime();
+            stfCurrent.setLeaveType(null);
+            stfCurrent.setAutoLeave(false);
+            stfCurrent.setConsiderForLateIn(false);
+            stfCurrent.setConsiderForEarlyOut(false);
+            staffShiftFacade.edit(stfCurrent);
+        }
         List<StaffShift> list = fetchStaffShiftForResetLateAndEarly(stfCurrent);
 
         if (list == null) {
@@ -1183,7 +1252,7 @@ public class StaffSalaryController implements Serializable {
 
             }
 
-            if (ss.getStaff().isAllowedEarlyOutLeave()                   
+            if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()
                     && ss.getEarlyInVarified() > 0) {
 //                System.err.println("******Automatic Early Out Leave (Out) " + ss.getStaff().getCodeInterger());

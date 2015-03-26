@@ -20,19 +20,27 @@
             <h:outputStylesheet library="css" name="pharmacypos.css"></h:outputStylesheet>
 
             <h:panelGroup id="panelAddedBillPrint">
-                <div>
+                <div class="fiveinchbill">
 
                     <div class="institutionName">
-                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                        <h:graphicImage library="image" name="#{sessionController.institutionPreference.logoName}" rendered="#{sessionController.institutionPreference.logoName ne null}" style="width: 7cm; margin: auto; "></h:graphicImage>                        
                     </div>
 
                     <div class="institutionContact">
-                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
                         <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.department.printingName}" rendered="#{cc.attrs.bill.department.printingName ne null}"></h:outputLabel>
                         </div>
                         <div>
-                            <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.department.address}" rendered="#{cc.attrs.bill.department.address ne null}"></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" rendered="#{cc.attrs.bill.department.telephone1 ne null}"></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone2}" rendered="#{cc.attrs.bill.department.telephone2 ne null}"></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" rendered="#{cc.attrs.bill.department.fax ne null}"></h:outputLabel>
                         </div>
                     </div>
                     <p:spacer height="15"/>
@@ -141,6 +149,27 @@
                                         </td>
 
                                     </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <b>
+                                                <h:outputLabel value="Invoice No" ></h:outputLabel>
+                                            </b>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <b>
+                                                <h:outputLabel value="#{cc.attrs.bill.insId}" >
+                                                </h:outputLabel>
+                                            </b>
+                                        </td>
+
+                                    </tr>
 
                                     <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
 
@@ -203,16 +232,31 @@
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
                                         </td>
                                         <td>
-                                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}">
-                                                <f:convertDateTime pattern="dd MM yy"></f:convertDateTime>
-                                            </h:outputLabel>
-                                            <p:spacer width="10"></p:spacer>
+                                            
+                                        </td>
+
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Time" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}">
                                                 <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
                                             </h:outputLabel>
                                         </td>
+                                        <td>
+                                        </td>
 
                                     </tr>
+                                    
                                     <tr></tr>
                                     <tr></tr>    
                                     <tr>

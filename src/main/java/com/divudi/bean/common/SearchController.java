@@ -101,7 +101,8 @@ public class SearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     TransferController transferController;
-
+    List<PatientInvestigation> userPatientInvestigations;
+    
     public void makeListNull() {
         maxResult = 50;
         bills = null;
@@ -2881,11 +2882,15 @@ public class SearchController implements Serializable {
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
                 + " b.createdAt between :fromDate and :toDate  ";
+        
+//        String sql = "select pi from PatientInvestigation pi where "
+//                + " pi.billItem.bill.createdAt between :fromDate and :toDate  ";
 
         Map temMap = new HashMap();
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(p.name) like :patientName )";
+//            sql += " and  (upper(pi.billItem.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
@@ -2913,6 +2918,25 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+    }
+    
+    
+    public String fillUserPatientReport(){
+        String jpql;
+        Map m = new HashMap();
+        m.put("pn", getSessionController().getPhoneNo());
+        m.put("bn", getSessionController().getBillNo());
+        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
+        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
+        jpql = " select pr from PatientInvestigation pr where pr.retired=false and "
+                + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
+                + " (upper(pr.billItem.bill.insId)=:bn or upper(pr.billItem.bill.deptId)=:bn) "
+                + " order by pr.id desc "; 
+        userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
+        System.out.println("m = " + m);
+        System.out.println("userPatientInvestigations = " + userPatientInvestigations);
+        
+        return "/reports_list";
     }
 
     public void createPatientInvestigationsTableSingle() {
@@ -3876,14 +3900,26 @@ public class SearchController implements Serializable {
     public void channelPaymentBills() {
         String sql;
         Map m = new HashMap();
+        
+        BillType[] bt={
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+        };
+        
+        List<BillType> bts=Arrays.asList(bt);
 
         sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
-                + " and bi.bill.billType=:bt"
+                + " and bi.bill.billType=:bt "
+                + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("bt", BillType.ChannelProPayment);
+        m.put("bt", BillType.PaymentBill);
+        m.put("bts", bts);
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -4981,6 +5017,14 @@ public class SearchController implements Serializable {
 
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
+    }
+
+    public List<PatientInvestigation> getUserPatientInvestigations() {
+        return userPatientInvestigations;
+    }
+
+    public void setUserPatientInvestigations(List<PatientInvestigation> userPatientInvestigations) {
+        this.userPatientInvestigations = userPatientInvestigations;
     }
 
 }
