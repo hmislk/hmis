@@ -633,7 +633,12 @@ public class StaffSalaryController implements Serializable {
 //    }
     private Long setExtraDuty(PaysheetComponentType paysheetComponentType, DayType dayType) {
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
-        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+
+        if (current != null) {
+            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
+        } else {
+            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         getCurrent().getStaffSalaryComponants().add(ss);
