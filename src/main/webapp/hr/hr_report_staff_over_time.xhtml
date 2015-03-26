@@ -86,9 +86,9 @@
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>                              
-                                <p:column headerText="Over 45 OT Minute" style="text-align: right;">
+                                <p:column headerText="Over 45 OT (Minutes)" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Over 45 OT Minute"  />
+                                        <h:outputLabel value="Over 45 OT (Minutes)"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.overTimeMinute}">
                                     </p:outputLabel>
@@ -98,9 +98,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Extra Normal OT Minute" style="text-align: right;">
+                                <p:column headerText="Normal OT (Minutes)" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Extra Normal OT Minute"  />
+                                        <h:outputLabel value="Normal OT (Minutes)"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyNormalMinute}">
                                     </p:outputLabel>
@@ -125,34 +125,29 @@
                                 </p:column>
 
 
-                                <p:column headerText="OT Value" style="text-align: right;">
+                                <p:column  style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Addiontal OT"  />
+                                        <h:outputLabel value="Over 45 OT"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.overTimeValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
-
-                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="OT Value" style="text-align: right;">
+                                <p:column  style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Normal OT"  />
+                                        <h:outputLabel value="Normal OT Value"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyNormalValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
-
-                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="OT Value" style="text-align: right;">
+                                
+                                <p:column headerText="Total OT Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total OT"  />
                                     </f:facet>
