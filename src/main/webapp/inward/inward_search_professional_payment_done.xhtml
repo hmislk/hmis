@@ -20,8 +20,8 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
-                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
-                               
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
+
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Inward Bill No"/>
@@ -64,7 +64,14 @@
                             </p:column>
                             <p:column headerText="Bht No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                            </p:column>  
+                            </p:column>
+
+                            <p:column headerText="Discharged At" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Specility" >
                                 <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>
                             </p:column>    
@@ -103,7 +110,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                           
+
 
                         </p:dataTable>
 
