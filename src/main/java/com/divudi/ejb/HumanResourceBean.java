@@ -41,6 +41,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2502,14 +2503,14 @@ public class HumanResourceBean {
                 + " and ss.staff=:stf ";
         List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         for (StaffShift ss : sss) {
-            
+
             System.out.println("ss.getId() = " + ss.getId());
             System.err.println("Name = " + ss.getShift().getName());
             System.err.println("Weekday = " + ss.getDayOfWeek());
             System.err.println("Date = " + ss.getShiftDate());
             System.err.println("Start = " + ss.getShiftStartTime());
             System.err.println("End = " + ss.getShiftEndTime());
-            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60*60));
+            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60 * 60));
 
         }
         return dbl;
@@ -2545,7 +2546,66 @@ public class HumanResourceBean {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+
+//No. THer error is due to calculating by seconds. SQL can not find such find cals accut. I will have one other method.
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+    
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff, DayType dayType, double rate) {
+        String sql = "Select ss "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", dayType);
+
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        
+        
+        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        double d=0.0;
+        for(StaffShift ss:sss){
+            System.out.println("id = " + ss.getId());
+            double td;
+            td= roundOff(((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified())*
+                    ss.getMultiplyingFactorOverTime()*
+                    rate))/60;
+            
+            System.out.println("rate = " + rate);
+            System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeFromStartRecordVarified());
+            System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
+            System.out.println("(ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()) = " + (ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()));
+            System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
+            System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
+            System.out.println("ss.getOverTimeValuePerSecond() / 60 = " + ss.getOverTimeValuePerSecond()/60);
+//            System.out.println("ss.getShift().getName(); = " + ss.getShift().getName());
+            System.out.println("ss.getShiftDate() = " + ss.getShiftDate());;
+            System.out.println("ss.getShiftStartTime() = " + ss.getShiftStartTime());;
+            System.out.println("ss.getShiftEndTime() = " + ss.getShiftEndTime());
+            
+            
+            System.out.println("td = " + td);
+            d+=td;
+            System.out.println("d = " + d);
+        }
+        return d;
     }
 
     public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
