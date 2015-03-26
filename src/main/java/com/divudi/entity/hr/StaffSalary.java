@@ -493,12 +493,13 @@ public class StaffSalary implements Serializable {
     }
 
     private double roundOff(double d) {
-        DecimalFormat newFormat = new DecimalFormat("#.##");
-        try {
-            return Double.valueOf(newFormat.format(d));
-        } catch (Exception e) {
-            return 0;
-        }
+        return  d; 
+//        DecimalFormat newFormat = new DecimalFormat("#.##");
+//        try {
+//            return Double.valueOf(newFormat.format(d));
+//        } catch (Exception e) {
+//            return 0;
+//        }
     }
 
     public void calculateComponentTotal() {

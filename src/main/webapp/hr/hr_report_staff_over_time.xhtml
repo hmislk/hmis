@@ -91,7 +91,6 @@
                                         <h:outputLabel value="Over 45 OT Minute"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.overTimeMinute}">
-                                        <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOvertimeMinit}">
@@ -104,7 +103,6 @@
                                         <h:outputLabel value="Extra Normal OT Minute"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyNormalMinute}">
-                                        <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel style="text-align: right;" value="#{hrReportController.totalExtraDutyNormalMinute}">
@@ -125,20 +123,51 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+
+
                                 <p:column headerText="OT Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="OT Value"  />
+                                        <h:outputLabel value="Addiontal OT"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.overTimeValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="OT Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Normal OT"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.extraDutyNormalValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="OT Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total OT"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
+
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column/>
+
+
 
                                 <p:column headerText="PH OT Min" style="text-align: right;">
                                     <f:facet name="header">

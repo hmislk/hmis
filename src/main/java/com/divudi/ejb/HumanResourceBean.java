@@ -2502,9 +2502,14 @@ public class HumanResourceBean {
                 + " and ss.staff=:stf ";
         List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         for (StaffShift ss : sss) {
-            System.err.println("ss = " + ss);
+            
             System.out.println("ss.getId() = " + ss.getId());
-            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
+            System.err.println("Name = " + ss.getShift().getName());
+            System.err.println("Weekday = " + ss.getDayOfWeek());
+            System.err.println("Date = " + ss.getShiftDate());
+            System.err.println("Start = " + ss.getShiftStartTime());
+            System.err.println("End = " + ss.getShiftEndTime());
+            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60*60));
 
         }
         return dbl;
