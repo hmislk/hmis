@@ -377,9 +377,15 @@ public class HumanResourceBean {
     }
 
     public double getOverTimeFromRoster(double workingTimeForOverTimePerWeek, double numberOfWeeks, double totalWorkedTime) {
+        System.out.println("workingTimeForOverTimePerWeek = " + workingTimeForOverTimePerWeek);
+        System.out.println("numberOfWeeks = " + numberOfWeeks);
         if (workingTimeForOverTimePerWeek != 0 && numberOfWeeks != 0) {
+
             double normalWorkTime = numberOfWeeks * workingTimeForOverTimePerWeek * 60 * 60;
+//            System.out.println("normalWorkTime = " + normalWorkTime);
             double overTime = totalWorkedTime - normalWorkTime;
+//            System.out.println("overTime = " + overTime);
+
             if (overTime > 0) {
                 return overTime;
             }
@@ -618,8 +624,8 @@ public class HumanResourceBean {
         return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
 
     }
-    
-    public Double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate,Date toDate) {
+
+    public Double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = " select sum(l.count) "
                 + " from StaffLeaveEntitle l "
                 + " where l.retired=false "
@@ -780,8 +786,6 @@ public class HumanResourceBean {
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
-    
-    
     public List<StaffShift> fetchStaffShiftForAutoLeaveReset(Staff staff, Date fromDate, Date toDate) {
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -801,7 +805,6 @@ public class HumanResourceBean {
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
-    
     public LeaveType getLeaveType(Staff staff, Date date) {
         StaffLeaveEntitle staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, date);
 
@@ -2477,7 +2480,7 @@ public class HumanResourceBean {
                 + " and ss.leavedTime=0 "
                 + " and type(ss)!=:cls"
                 + " and ss.dayType not in :dtp "
-                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.shiftStartTime between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("cls", StaffShiftExtra.class);
@@ -2485,8 +2488,26 @@ public class HumanResourceBean {
         hm.put("td", toDate);
         hm.put("stf", staff);
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        double dbl = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
-        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        sql = "Select ss "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.leavedTime=0 "
+                + " and type(ss)!=:cls"
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftStartTime between :fd  and :td "
+                + " and ss.staff=:stf ";
+        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        for (StaffShift ss : sss) {
+            System.err.println("ss = " + ss);
+            System.out.println("ss.getId() = " + ss.getId());
+            System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
+
+        }
+        return dbl;
     }
 
     public double calculateLeaveTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
