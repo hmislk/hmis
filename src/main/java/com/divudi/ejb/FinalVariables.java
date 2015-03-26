@@ -25,7 +25,7 @@ public class FinalVariables {
     }
 
     public Integer getSessionSessionDayCounter() {
-        return 5;
+        return 10;
     }
 
     public double getCahnnelingDurationMinute() {
