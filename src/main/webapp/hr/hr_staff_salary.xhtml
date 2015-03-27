@@ -65,7 +65,7 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.workedToDate)}" onclick="onSubmitButton();"/>
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
@@ -130,7 +130,7 @@
                                 <f:convertDateTime pattern="dd MMMM" />
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Code ">
+                        <p:column headerText="Code" sortBy="#{i.staff.codeInterger}">
                             <h:outputLabel value="#{i.staff.codeInterger}"/>
                         </p:column>
                         <p:column headerText="Staff">

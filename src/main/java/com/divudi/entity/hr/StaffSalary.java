@@ -138,7 +138,7 @@ public class StaffSalary implements Serializable {
     @ManyToOne
     private WebUser holdPaidBy;
     @ManyToOne
-    Institution chequeBank;    
+    Institution chequeBank;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date chequeDate;
     String chequeNumberSalary;
@@ -169,9 +169,6 @@ public class StaffSalary implements Serializable {
         this.chequeNumberSalaryAndOverTime = chequeNumberSalaryAndOverTime;
     }
 
-    
-    
-    
     public Institution getChequeBank() {
         return chequeBank;
     }
@@ -187,7 +184,6 @@ public class StaffSalary implements Serializable {
     public void setChequeDate(Date chequeDate) {
         this.chequeDate = chequeDate;
     }
-    
 
     public Institution getEpfBankBranch() {
         return epfBankBranch;
@@ -250,6 +246,7 @@ public class StaffSalary implements Serializable {
     }
 
     public void setBlocked(boolean blocked) {
+
         this.blocked = blocked;
     }
 
@@ -262,14 +259,17 @@ public class StaffSalary implements Serializable {
     }
 
     public double getLateNoPayBasicValue() {
+        lateNoPayBasicValue = roundOff(lateNoPayBasicValue);
         return lateNoPayBasicValue;
     }
 
     public void setLateNoPayBasicValue(double lateNoPayBasicValue) {
+        lateNoPayBasicValue = roundOff(lateNoPayBasicValue);
         this.lateNoPayBasicValue = lateNoPayBasicValue;
     }
 
     public double getLateNoPayAllovanceValue() {
+        lateNoPayAllovanceValue = roundOff(lateNoPayAllovanceValue);
         return lateNoPayAllovanceValue;
     }
 
@@ -278,10 +278,12 @@ public class StaffSalary implements Serializable {
     }
 
     public double getOverTimeRatePerMinute() {
+        overTimeRatePerMinute = roundOff(overTimeRatePerMinute);
         return overTimeRatePerMinute;
     }
 
     public void setOverTimeRatePerMinute(double overTimeRatePerMinute) {
+        overTimeRatePerMinute = roundOff(overTimeRatePerMinute);
         this.overTimeRatePerMinute = overTimeRatePerMinute;
     }
 
@@ -290,10 +292,12 @@ public class StaffSalary implements Serializable {
     }
 
     public double getOverTimeMinute() {
+        overTimeMinute = roundOff(overTimeMinute);
         return overTimeMinute;
     }
 
     public void setOverTimeMinute(double overTimeMinute) {
+        overTimeMinute = roundOff(overTimeMinute);
         this.overTimeMinute = overTimeMinute;
     }
 
@@ -338,18 +342,22 @@ public class StaffSalary implements Serializable {
     }
 
     public double getDayOffAllowance() {
+        dayOffAllowance = roundOff(dayOffAllowance);
         return dayOffAllowance;
     }
 
     public void setDayOffAllowance(double dayOffAllowance) {
+        dayOffAllowance = roundOff(dayOffAllowance);
         this.dayOffAllowance = dayOffAllowance;
     }
 
     public double getBasicRatePerMinute() {
+        basicRatePerMinute = roundOff(basicRatePerMinute);
         return basicRatePerMinute;
     }
 
     public void setBasicRatePerMinute(double basicRatePerMinute) {
+        basicRatePerMinute = roundOff(basicRatePerMinute);
         this.basicRatePerMinute = basicRatePerMinute;
     }
 
@@ -362,15 +370,17 @@ public class StaffSalary implements Serializable {
     }
 
     public double getSleepingDayAllowance() {
+        sleepingDayAllowance = roundOff(sleepingDayAllowance);
         return sleepingDayAllowance;
     }
 
     public void setSleepingDayAllowance(double sleepingDayAllowance) {
+        sleepingDayAllowance = roundOff(sleepingDayAllowance);
         this.sleepingDayAllowance = sleepingDayAllowance;
     }
 
     public Institution getInstitution() {
-        if(institution != null){
+        if (institution != null) {
             institution.split();
         }
         return institution;
@@ -381,26 +391,32 @@ public class StaffSalary implements Serializable {
     }
 
     public double getBrValue() {
+        brValue = roundOff(brValue);
         return brValue;
     }
 
     public void setBrValue(double brValue) {
+        brValue = roundOff(brValue);
         this.brValue = brValue;
     }
 
     public double getComponentValueAddition() {
+        componentValueAddition = roundOff(componentValueAddition);
         return componentValueAddition;
     }
 
     public void setComponentValueAddition(double componentValueAddition) {
+        componentValueAddition = roundOff(componentValueAddition);
         this.componentValueAddition = componentValueAddition;
     }
 
     public double getComponentValueSubstraction() {
+        componentValueSubstraction = roundOff(componentValueSubstraction);
         return componentValueSubstraction;
     }
 
     public void setComponentValueSubstraction(double componentValueSubstraction) {
+        componentValueSubstraction = roundOff(componentValueSubstraction);
         this.componentValueSubstraction = componentValueSubstraction;
     }
 
@@ -609,14 +625,14 @@ public class StaffSalary implements Serializable {
         return roundOff(componentValueAddition + adjustmentToAllowance + noPayValueAllowance);
     }
 
-    
-
     public double getTransTotalDeduction() {
         return roundOff(componentValueSubstraction + noPayValueBasic + noPayValueAllowance + epfStaffValue);
     }
 
     public double getTransNetSalry() {
-        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
+     return   (getTransTotalDeduction()-(getNoPayValueBasic()+getNoPayValueAllowance()))+
+                (getTransTotalAllowance()+getTransEpfEtfDiductableSalary());
+//        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
     }
 
     public SalaryCycle getSalaryCycle() {
@@ -709,82 +725,102 @@ public class StaffSalary implements Serializable {
     }
 
     public double getBasicValue() {
+        basicValue = roundOff(basicValue);
         return basicValue;
     }
 
     public void setBasicValue(double basicValue) {
+        basicValue = roundOff(basicValue);
         this.basicValue = basicValue;
     }
 
     public double getOverTimeValue() {
+        overTimeValue = roundOff(overTimeValue);
         return overTimeValue;
     }
 
     public void setOverTimeValue(double overTimeValue) {
+        overTimeValue = roundOff(overTimeValue);
         this.overTimeValue = overTimeValue;
     }
 
     public double getNoPayValueBasic() {
+        noPayValueBasic = roundOff(noPayValueBasic);
         return noPayValueBasic;
     }
 
     public void setNoPayValueBasic(double noPayValueBasic) {
+        noPayValueBasic = roundOff(noPayValueBasic);
         this.noPayValueBasic = noPayValueBasic;
     }
 
     public double getNoPayValueAllowance() {
+        noPayValueAllowance = roundOff(noPayValueAllowance);
         return noPayValueAllowance;
     }
 
     public void setNoPayValueAllowance(double noPayValueAllowance) {
+        noPayValueAllowance = roundOff(noPayValueAllowance);
         this.noPayValueAllowance = noPayValueAllowance;
     }
 
     public double getAdjustmentToBasic() {
+        adjustmentToBasic = roundOff(adjustmentToBasic);
         return adjustmentToBasic;
     }
 
     public void setAdjustmentToBasic(double adjustmentToBasic) {
+        adjustmentToBasic = roundOff(adjustmentToBasic);
         this.adjustmentToBasic = adjustmentToBasic;
     }
 
     public double getAdjustmentToAllowance() {
+        adjustmentToAllowance = roundOff(adjustmentToAllowance);
         return adjustmentToAllowance;
     }
 
     public void setAdjustmentToAllowance(double adjustmentToAllowance) {
+        adjustmentToAllowance = roundOff(adjustmentToAllowance);
         this.adjustmentToAllowance = adjustmentToAllowance;
     }
 
     public double getEtfSatffValue() {
+        etfSatffValue = roundOff(etfSatffValue);
         return etfSatffValue;
     }
 
     public void setEtfSatffValue(double etfSatffValue) {
+        etfSatffValue = roundOff(etfSatffValue);
         this.etfSatffValue = etfSatffValue;
     }
 
     public double getEtfCompanyValue() {
+        etfCompanyValue = roundOff(etfCompanyValue);
         return etfCompanyValue;
     }
 
     public void setEtfCompanyValue(double etfCompanyValue) {
+        etfCompanyValue = roundOff(etfCompanyValue);
         this.etfCompanyValue = etfCompanyValue;
     }
 
     public double getEpfStaffValue() {
+        epfStaffValue = roundOff(epfStaffValue);
         return epfStaffValue;
     }
 
     public void setEpfStaffValue(double epfStaffValue) {
+        epfStaffValue = roundOff(epfStaffValue);
         this.epfStaffValue = epfStaffValue;
     }
 
     public double getEpfCompanyValue() {
+        epfCompanyValue = roundOff(epfCompanyValue);
         return epfCompanyValue;
     }
 
     public void setEpfCompanyValue(double epfCompanyValue) {
+        epfCompanyValue = roundOff(epfCompanyValue);
         this.epfCompanyValue = epfCompanyValue;
     }
 
@@ -811,98 +847,122 @@ public class StaffSalary implements Serializable {
     }
 
     public double getMerchantileAllowanceValue() {
+        merchantileAllowanceValue = roundOff(merchantileAllowanceValue);
         return merchantileAllowanceValue;
     }
 
     public void setMerchantileAllowanceValue(double merchantileAllowanceValue) {
+        merchantileAllowanceValue = roundOff(merchantileAllowanceValue);
         this.merchantileAllowanceValue = merchantileAllowanceValue;
     }
 
     public double getPoyaAllowanceValue() {
+        poyaAllowanceValue = roundOff(poyaAllowanceValue);
         return poyaAllowanceValue;
     }
 
     public void setPoyaAllowanceValue(double poyaAllowanceValue) {
+        poyaAllowanceValue = roundOff(poyaAllowanceValue);
         this.poyaAllowanceValue = poyaAllowanceValue;
     }
 
     public double getExtraDutyNormalMinute() {
+        extraDutyNormalMinute = roundOff(extraDutyNormalMinute);
         return extraDutyNormalMinute;
     }
 
     public void setExtraDutyNormalMinute(double extraDutyNormalMinute) {
+        extraDutyNormalMinute = roundOff(extraDutyNormalMinute);
         this.extraDutyNormalMinute = extraDutyNormalMinute;
     }
 
     public double getExtraDutyMerchantileMinute() {
+        extraDutyMerchantileMinute = roundOff(extraDutyMerchantileMinute);
         return extraDutyMerchantileMinute;
     }
 
     public void setExtraDutyMerchantileMinute(double extraDutyMerchantileMinute) {
+        extraDutyMerchantileMinute = roundOff(extraDutyMerchantileMinute);
         this.extraDutyMerchantileMinute = extraDutyMerchantileMinute;
     }
 
     public double getExtraDutyPoyaMinute() {
+        extraDutyPoyaMinute = roundOff(extraDutyPoyaMinute);
         return extraDutyPoyaMinute;
     }
 
     public void setExtraDutyPoyaMinute(double extraDutyPoyaMinute) {
+        extraDutyPoyaMinute = roundOff(extraDutyPoyaMinute);
         this.extraDutyPoyaMinute = extraDutyPoyaMinute;
     }
 
     public double getExtraDutyDayOffMinute() {
+        extraDutyDayOffMinute = roundOff(extraDutyDayOffMinute);
         return extraDutyDayOffMinute;
     }
 
     public void setExtraDutyDayOffMinute(double extraDutyDayOffMinute) {
+        extraDutyDayOffMinute = roundOff(extraDutyDayOffMinute);
         this.extraDutyDayOffMinute = extraDutyDayOffMinute;
     }
 
     public double getExtraDutySleepingDayMinute() {
+        extraDutySleepingDayMinute = roundOff(extraDutySleepingDayMinute);
         return extraDutySleepingDayMinute;
     }
 
     public void setExtraDutySleepingDayMinute(double extraDutySleepingDayMinute) {
+        extraDutySleepingDayMinute = roundOff(extraDutySleepingDayMinute);
         this.extraDutySleepingDayMinute = extraDutySleepingDayMinute;
     }
 
     public double getExtraDutyNormalValue() {
+        extraDutyNormalValue = roundOff(extraDutyNormalValue);
         return extraDutyNormalValue;
     }
 
     public void setExtraDutyNormalValue(double extraDutyNormalValue) {
+        extraDutyNormalValue = roundOff(extraDutyNormalValue);
         this.extraDutyNormalValue = extraDutyNormalValue;
     }
 
     public double getExtraDutyMerchantileValue() {
+        extraDutyMerchantileValue = roundOff(extraDutyMerchantileValue);
         return extraDutyMerchantileValue;
     }
 
     public void setExtraDutyMerchantileValue(double extraDutyMerchantileValue) {
+        extraDutyMerchantileValue = roundOff(extraDutyMerchantileValue);
         this.extraDutyMerchantileValue = extraDutyMerchantileValue;
     }
 
     public double getExtraDutyPoyaValue() {
+        extraDutyPoyaValue = roundOff(extraDutyPoyaValue);
         return extraDutyPoyaValue;
     }
 
     public void setExtraDutyPoyaValue(double extraDutyPoyaValue) {
+        extraDutyPoyaValue = roundOff(extraDutyPoyaValue);
         this.extraDutyPoyaValue = extraDutyPoyaValue;
     }
 
     public double getExtraDutyDayOffValue() {
+        extraDutyDayOffValue = roundOff(extraDutyDayOffValue);
         return extraDutyDayOffValue;
     }
 
     public void setExtraDutyDayOffValue(double extraDutyDayOffValue) {
+        extraDutyDayOffValue = roundOff(extraDutyDayOffValue);
         this.extraDutyDayOffValue = extraDutyDayOffValue;
     }
 
     public double getExtraDutySleepingDayValue() {
+        extraDutySleepingDayValue = roundOff(extraDutySleepingDayValue);
         return extraDutySleepingDayValue;
     }
 
     public void setExtraDutySleepingDayValue(double extraDutySleepingDayValue) {
+        extraDutySleepingDayValue = roundOff(extraDutySleepingDayValue);
         this.extraDutySleepingDayValue = extraDutySleepingDayValue;
     }
 
