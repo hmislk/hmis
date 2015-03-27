@@ -493,10 +493,12 @@ public class StaffSalary implements Serializable {
     }
 
     private double roundOff(double d) {
+//        return  d; 
         DecimalFormat newFormat = new DecimalFormat("#.##");
         try {
             return Double.valueOf(newFormat.format(d));
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
+            System.out.println("e = " + e);
             return 0;
         }
     }
@@ -547,6 +549,8 @@ public class StaffSalary implements Serializable {
                         overTimeValue += value;
                         break;
                     case ExtraDutyNormal:
+                        System.out.println("extraDutyNormalValue = " + extraDutyNormalValue);
+                        System.out.println("value = " + value);
                         extraDutyNormalValue += value;
                         break;
                     case ExtraDutyMerchantile:
