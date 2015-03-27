@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
@@ -14,6 +15,7 @@ import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -223,10 +225,28 @@ public class SheduleController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
+    
+    @EJB
+    DepartmentFacade departmentFacade;
+    
+    public List<Department> getInstitutionDepatrments() {
+        List<Department> d;
+        if (getCurrent().getInstitution() == null) {
+            return new ArrayList<>();
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
+            d = departmentFacade.findBySQL(sql);
+        }
+
+        return d;
+    }
+
+    
     public ServiceSession getCurrent() {
         if (current == null) {
             current = new ServiceSession();
             current.setInstitution(sessionController.getInstitution());
+            current.setDepartment(sessionController.getDepartment());
 //            createFees();
         }
         return current;
