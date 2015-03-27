@@ -28,7 +28,10 @@
                                           converter="stfcon"   >   
                             <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />
                         </p:autoComplete>  
+                        
+                        
                     </h:panelGrid>
+                    
 
 
 
@@ -124,6 +127,8 @@
                         <p:inputText autocomplete="off" value="#{sheduleController.current.reserveNumbers}"/>
                         <p:outputLabel value="Reserver Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
+                        <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}"></p:inputText>
 
                     </p:panelGrid>
                     <br/>

@@ -156,6 +156,7 @@ public class Item implements Serializable {
     String agencyNumbers;
     String reserveName;
     String reserveNumbers;
+    int maxTableRows;
 
     public String getCreditNumbers() {
         return creditNumbers;
@@ -188,11 +189,15 @@ public class Item implements Serializable {
     public void setReserveName(String reserveName) {
         this.reserveName = reserveName;
     }
-    
-    
-    
-    
-    
+
+    public int getMaxTableRows() {
+        return maxTableRows;
+    }
+
+    public void setMaxTableRows(int maxTableRows) {
+        this.maxTableRows = maxTableRows;
+    }
+
     public Date getEffectiveFrom() {
         return effectiveFrom;
     }

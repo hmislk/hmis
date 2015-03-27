@@ -34,6 +34,7 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 
@@ -54,6 +56,9 @@ public class BookingController implements Serializable {
 
     private Speciality speciality;
     private Staff staff;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date channelDay;
     private ServiceSession selectedServiceSession;
     private BillSession selectedBillSession;
     ////////////////////
@@ -144,7 +149,6 @@ public class BookingController implements Serializable {
             System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
-                              
 
             } else {
                 if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
@@ -363,6 +367,7 @@ public class BookingController implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
+
         if (staff != null) {
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
@@ -576,5 +581,15 @@ public class BookingController implements Serializable {
     public void setItemFeeFacade(ItemFeeFacade ItemFeeFacade) {
         this.ItemFeeFacade = ItemFeeFacade;
     }
+
+    public Date getChannelDay() {
+        return channelDay;
+    }
+
+    public void setChannelDay(Date channelDay) {
+        this.channelDay = channelDay;
+    }
+
+    
 
 }
