@@ -88,18 +88,16 @@
                         </p:selectOneMenu>
 
                     </p:panelGrid>
-                    <p:panelGrid columns="5" >
+                    <p:panelGrid columns="2" >
 
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
-                        <h:outputLabel value="" ></h:outputLabel>
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
 
                         <p:outputLabel value="Duration in Minutes"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.duration}"/>
-                        <h:outputLabel value="" ></h:outputLabel>
                         <p:outputLabel value="Room Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.roomNo}"/>
 
@@ -108,7 +106,6 @@
                                         completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                         converter="sscon"   >                            
                         </p:autoComplete>
-                        <h:outputLabel value="" ></h:outputLabel>
                         <p:outputLabel value="After Session" rendered="false"/>
                         <p:autoComplete  rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
                                          completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -117,7 +114,6 @@
 
                         <p:outputLabel value="Displaying Count"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.displayCount}"/>
-                        <h:outputLabel value="" ></h:outputLabel>              
                         <p:outputLabel value="Displaying Percent"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.displayPercent}"/>
                         <p:outputLabel value="Session Number"></p:outputLabel>

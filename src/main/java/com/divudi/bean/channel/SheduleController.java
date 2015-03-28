@@ -315,6 +315,10 @@ public class SheduleController implements Serializable {
             UtilityController.addErrorMessage("Starting time Must be Filled");
             return true;
         }
+        if (getCurrent().getName()== null) {
+            UtilityController.addErrorMessage("Please Select Session Name");
+            return true;
+        }
 
         if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
             UtilityController.addErrorMessage("Set Weekday or Date");

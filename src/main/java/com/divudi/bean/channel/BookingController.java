@@ -57,7 +57,7 @@ public class BookingController implements Serializable {
     private Speciality speciality;
     private Staff staff;
 
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
     private ServiceSession selectedServiceSession;
     private BillSession selectedBillSession;
@@ -367,6 +367,7 @@ public class BookingController implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
+        
 
         if (staff != null) {
             sql = "Select s From ServiceSession s "
