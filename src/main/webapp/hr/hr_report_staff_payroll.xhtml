@@ -169,8 +169,8 @@
 
             .zebra tfoot td:only-child{
                 -moz-border-radius: 0 0 6px 6px;
-                -webkit-border-radius: 0 0 6px 6px
-                    border-radius: 0 0 6px 6px
+                -webkit-border-radius: 0 0 6px 6px;
+                    border-radius: 0 0 6px 6px;
             }
 
         </style>
@@ -241,7 +241,9 @@
                         <th>Code</th>
                         <th>EPF</th>
                         <th>Join</th>
-                        <th>Satff </th>
+                        <th>Retired</th>
+                        <th>Left</th>
+                        <th>Staff</th>
                         <th>Des</th>
                         <th>Basic</th>
                         <th>BR</th>
@@ -251,7 +253,7 @@
                         <th>Basic Adjust</th>
                         <th>Total Salary</th>
                         <th>No Pay Basic</th>
-                        <th>EPF/ETF Diductable Salary</th>
+                        <th>EPF/ETF Deductable Salary</th>
                         <ui:repeat value="#{salaryCycleController.headersAdd}" var="h">
                             <th>#{h}</th>
                         </ui:repeat>
@@ -263,7 +265,7 @@
                         <ui:repeat value="#{salaryCycleController.headersSub}" var="hh">
                             <th>#{hh}</th>
                         </ui:repeat>
-                        <th>Total Diduct</th>
+                        <th>Total Deduct</th>
                         <th>Net Salary </th>
                         <th>EPF Company</th>
                         <th>ETF Company</th>
@@ -275,6 +277,16 @@
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.codeInterger}" /></td>
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.epfNo}" /></td>
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.dateJoined}" >
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputLabel>
+                            </td>
+                            <td style="white-space: nowrap;" >
+                                <h:outputLabel value="#{scc.staff.dateRetired}" >
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputLabel>
+                            </td>
+                            <td style="white-space: nowrap;" >
+                                <h:outputLabel value="#{scc.staff.dateLeft}" >
                                     <f:convertDateTime pattern="dd MM yy" />
                                 </h:outputLabel>
                             </td>
