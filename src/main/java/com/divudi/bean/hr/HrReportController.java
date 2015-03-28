@@ -741,7 +741,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.shift is not null"
+                + " and ss.shift is not null "
+                + " and ss.workedWithinTimeFrameVarified!=0"
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -755,6 +756,12 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
 
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
@@ -1233,6 +1240,7 @@ public class HrReportController implements Serializable {
         }
 
         annualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
+        System.out.println("annualEntitle = " + annualEntitle);
         annualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
         staffLeavesAnnual = createStaffLeave(LeaveType.Annual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
 
@@ -1450,7 +1458,7 @@ public class HrReportController implements Serializable {
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null) ) "
-                + " and ss.shiftDate between :frm  and :to ";
+                + " and ss.shiftStartTime between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
 
@@ -1486,7 +1494,7 @@ public class HrReportController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private long fetchWorkedDays(Staff staff) {
@@ -1590,9 +1598,9 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " group by ss.dayOfWeek"
-                + " order by ss.dayOfWeek ";
-        return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
+        sql += " group by ss.dayOfWeek "
+                + " order by ss.dayOfWeek,ss.codeInterger ";
+        return staffShiftFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private List<Object[]> fetchStaffShiftData() {
@@ -1891,8 +1899,14 @@ public class HrReportController implements Serializable {
 
     public void createMonthEndWorkTimeReport() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
+        if(dateCount>8){
+            return;
+        }
         System.err.println(dateCount);
-        double numOfWeeks = dateCount / 7.0;
+//        double numOfWeeks = dateCount / 7.0;
+        
+        
+        
         List<Staff> staffList = fetchStaff();
         weekDayWorks = new ArrayList<>();
         for (Staff stf : staffList) {
@@ -1950,8 +1964,10 @@ public class HrReportController implements Serializable {
 //                    weekDayWork.setOverTime(overTime);
 //                }
 //            }
-            weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), numOfWeeks, weekDayWork.getTotal()));
+            weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), 1, weekDayWork.getTotal()));
 
+            
+            
             //Fetch Basic
             double value = humanResourceBean.getOverTimeValue(stf, getToDate());
 
@@ -2336,17 +2352,19 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffShift() {
-        if(Arrays.asList(dayTypesSelected).isEmpty() ){
-            JsfUtil.addErrorMessage("Select Day Type");
-            return;
-        }
+//        if(Arrays.asList(dayTypesSelected).isEmpty() ){
+//            JsfUtil.addErrorMessage("Select Day Type");
+//            return;
+//        }
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
 //        StaffShift ss = new StaffShift();
 //        ss.getDayType();
+        if(dayTypesSelected!=null&&!Arrays.asList(dayTypesSelected).isEmpty()){
         sql+= " and ss.dayType in :dts ";
         hm.put("dts", Arrays.asList(dayTypesSelected));
+        }
         
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);

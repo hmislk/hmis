@@ -341,7 +341,7 @@ public class StaffSalaryController implements Serializable {
         if (value == 0) {
             return 0;
         }
-
+        System.out.println("calculating value");
         //Check Employee Join Date Come within Salary Cycle
         if (checkDateRange(getCurrent().getStaff().getDateJoined())
                 //Check Employee Date Left within Salary Cycle
@@ -358,7 +358,8 @@ public class StaffSalaryController implements Serializable {
             }
 
         } else {
-
+            System.out.println("returning full value");
+            
             return value;
         }
 
