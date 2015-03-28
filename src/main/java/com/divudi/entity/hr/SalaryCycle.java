@@ -47,6 +47,10 @@ public class SalaryCycle implements Serializable {
     Date workedToDate;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date workedFromDate;
+     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date dayOffPhToDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date dayOffPhFromDate;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date salaryAdvanceFromDate;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -283,4 +287,24 @@ public class SalaryCycle implements Serializable {
         this.salaryAdvanceToDate = salaryAdvanceToDate;
     }
 
+    public Date getDayOffPhToDate() {
+        return dayOffPhToDate;
+    }
+
+    public void setDayOffPhToDate(Date dayOffPhToDate) {
+        this.dayOffPhToDate = dayOffPhToDate;
+    }
+
+    public Date getDayOffPhFromDate() {
+        return dayOffPhFromDate;
+    }
+
+    public void setDayOffPhFromDate(Date dayOffPhFromDate) {
+        this.dayOffPhFromDate = dayOffPhFromDate;
+    }
+
+    
+    
+    
+    
 }

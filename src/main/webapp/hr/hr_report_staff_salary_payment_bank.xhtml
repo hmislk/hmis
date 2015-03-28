@@ -144,19 +144,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{(ss.transExtraDutyValue+ss.overTimeValue)+ss.transNetSalry}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalofTotals}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                                
 
                             </p:dataTable>
                         </p:panel>
