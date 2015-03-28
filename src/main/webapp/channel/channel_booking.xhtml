@@ -11,7 +11,6 @@
     <ui:define name="content">
 
         <h:form>
-
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">     
 
                 <p:panel header="Specialities">       
@@ -235,7 +234,7 @@
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
 
-                        <p:commandButton value="Print" ajax="false" action="#"
+                        <p:commandButton value="Reprint" ajax="false" action="#"
                                          disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
@@ -300,7 +299,7 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="rePrint" >
+                        <p:tab title="Print" id="rePrint" >
 
                             <p:commandButton value="Print" ajax="false" action="#">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
@@ -393,7 +392,7 @@
                         </p:tab>
 
 
-                        <p:tab title="Settle" id="settle">
+                        <p:tab title="Settl" id="settle">
                             <p:panel  id="set">
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
 
