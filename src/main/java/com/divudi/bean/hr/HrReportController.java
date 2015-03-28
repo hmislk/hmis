@@ -755,6 +755,12 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
+        
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
 
         if (getReportKeyWord().getStaffCategory() != null) {
             sql += " and ss.staff.staffCategory=:stfCat";
@@ -2337,17 +2343,19 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffShift() {
-        if(Arrays.asList(dayTypesSelected).isEmpty() ){
-            JsfUtil.addErrorMessage("Select Day Type");
-            return;
-        }
+//        if(Arrays.asList(dayTypesSelected).isEmpty() ){
+//            JsfUtil.addErrorMessage("Select Day Type");
+//            return;
+//        }
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
 //        StaffShift ss = new StaffShift();
 //        ss.getDayType();
+        if(dayTypesSelected!=null){
         sql+= " and ss.dayType in :dts ";
         hm.put("dts", Arrays.asList(dayTypesSelected));
+        }
         
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);

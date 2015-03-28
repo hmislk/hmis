@@ -2679,6 +2679,7 @@ public class HumanResourceBean {
     }
 
     public long calculateWorkedDaysForSalary(Date fromDate, Date toDate, Staff staff) {
+        System.out.println("calculating worked days for salary");
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -2691,8 +2692,12 @@ public class HumanResourceBean {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
-
-        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        Long l;
+        l=staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+        System.out.println("l = " + l);
+        return l;
     }
 
     public Double calculateHolidayWork(Date fromDate, Date toDate, Staff staff, DayType dayType) {
