@@ -43,14 +43,17 @@
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-
+                            <h:outputLabel value="Blocked"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
+                            <h:outputLabel value="Hold"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
 
                         </h:panelGrid>
 

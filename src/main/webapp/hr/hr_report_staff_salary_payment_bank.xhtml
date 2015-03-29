@@ -52,13 +52,16 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                             <h:outputLabel value="Bank : "/>
                             <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}"/>
-
+                            <h:outputLabel value="Show Blocked"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
+                            <h:outputLabel value="Show Hold"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process Net Salary" action="#{hrReportController.createStaffSalaryNetSalary()}"/>
                         <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPayment()}"/>
                         <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPayment()}"/>
-                        
+
                         <p:inputText value="#{hrReportController.chequeNo}" id="chq"/>
                         <p:watermark for="chq" value="Cheque Number"/>
                         <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
@@ -113,10 +116,16 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Account No"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.accountNo}"  />
+                                    <p:inputText value="#{ss.accountNo}"  />
                                 </p:column>
 
-                              
+                                <p:column headerText="Block">
+                                    <p:selectBooleanCheckbox value="#{ss.blocked}" />                                    
+                                </p:column>
+                                <p:column headerText="Hold">
+                                    <p:selectBooleanCheckbox value="#{ss.hold}" />                                    
+                                </p:column>
+
                                 <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Salary"/>
@@ -144,7 +153,15 @@
                                     </f:facet>
                                 </p:column>
 
-                                
+                                <p:column>
+                                    <p:commandButton process="@this" 
+                                                     ajax="false"
+                                                     value="Update"  
+                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
+                                                     onclick="onSubmitButton();">                              
+                                    </p:commandButton>                          
+                                </p:column>
+
 
                             </p:dataTable>
                         </p:panel>

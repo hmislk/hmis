@@ -359,7 +359,7 @@ public class StaffSalaryController implements Serializable {
 
         } else {
             System.out.println("returning full value");
-            
+
             return value;
         }
 
@@ -635,11 +635,11 @@ public class StaffSalaryController implements Serializable {
     private Long setExtraDuty(PaysheetComponentType paysheetComponentType, DayType dayType) {
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
 
-        if (current != null) {
-            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
-        } else {
-            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
-        }
+//        if (current != null) {
+//            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
+//        } else {
+        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+//        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         getCurrent().getStaffSalaryComponants().add(ss);
@@ -1376,6 +1376,11 @@ public class StaffSalaryController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+         if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
