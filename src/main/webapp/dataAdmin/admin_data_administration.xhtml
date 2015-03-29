@@ -20,16 +20,22 @@
                             <h:outputLabel 
                                 value="Very Dangerous Section." 
                                 style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
-                                <br/>
+                            <br/>
                             <h:outputLabel 
                                 value="Please do not touch this page without the written permission from the lead software developer." 
                                 style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
                         </p:panel>
                         <p:panelGrid columns="1"                         >
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (! confirm('Really want to do that?')) return false"/>
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (! confirm('Really want to do that?')) return false"/>
-                            <p:commandLink ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (! confirm('Really want to do that?')) return false"/>
-                            <p:commandLink ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (! confirm('Really want to do that?')) return false"/>
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
+                            <p:commandLink ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
+                            <p:commandLink ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
+                            <p:commandLink ajax="false"  action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" value="5. Remove Unused Pharmaceutical Categories" onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
                         </p:panelGrid>
 
 

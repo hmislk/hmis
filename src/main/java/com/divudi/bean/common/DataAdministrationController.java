@@ -11,6 +11,8 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Category;
+import com.divudi.entity.Item;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -20,6 +22,8 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillNumberFacade;
+import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
@@ -27,10 +31,13 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -68,6 +75,43 @@ public class DataAdministrationController {
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     SessionController sessionController;
+    @EJB
+    ItemFacade itemFacade;
+    
+    @EJB
+    CategoryFacade categoryFacade;
+    
+    public void removeUnsedPharmaceuticalCategories() {
+        Map m = new HashMap();
+        String sql;
+        
+        sql = "SELECT c FROM PharmaceuticalItemCategory c ";
+      
+
+        Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+
+        sql = "SELECT item.category "
+                + " FROM Item i ";
+        
+        m = new HashMap();
+        
+        Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+
+        System.out.println("Used Cats " + usedCats.size());
+        System.out.println("All Cats after removing " + allCats.size());
+        allCats.removeAll(usedCats);
+        System.out.println("All Cats after removing " + allCats.size());
+        
+        
+        for(Category c:allCats){
+            System.out.println("c = " + c);
+            System.out.println("c.getName() = " + c.getName());
+            c.setRetired(true);
+            c.setRetiredAt(new Date());
+            c.setRetireComments("Bulk1");
+            categoryFacade.edit(c);
+        }
+    }
 
     public void addBillFeesToProfessionalCancelBills() {
         List<Bill> bs;

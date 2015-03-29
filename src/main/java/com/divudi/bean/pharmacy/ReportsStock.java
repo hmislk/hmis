@@ -538,13 +538,17 @@ public class ReportsStock implements Serializable {
         sql = "SELECT s.itemBatch.item "
                 + " FROM Stock s "
                 + " WHERE s.department=:d "
-                + " AND s.stock > 0 "
-                + " GROUP BY s.itemBatch.item "
-                + " ORDER BY s.itemBatch.item.name";
+                + " AND s.stock > 0 ";
         m = new HashMap();
         m.put("d", department);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
+        if (category != null) {
+            sql += " AND s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
+        }
+        sql = sql + " GROUP BY s.itemBatch.item "
+                + " ORDER BY s.itemBatch.item.name";
 
         Set<Item> sis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
@@ -554,7 +558,7 @@ public class ReportsStock implements Serializable {
         sis.removeAll(bis);
         System.out.println("sis.size() after removing " + sis.size());
         items = new ArrayList<>(sis);
-        
+
         Collections.sort(items);
     }
 

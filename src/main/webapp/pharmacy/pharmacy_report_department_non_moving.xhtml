@@ -30,9 +30,10 @@
                                 <h:outputLabel value="To" ></h:outputLabel>
                                 <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
-                                <h:outputLabel value="From" ></h:outputLabel>
-                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
-                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.category}" >
+                                <h:outputLabel value="Category" ></h:outputLabel>
+                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
+                                                itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true" value="#{reportsStock.category}"
+                                               >
                                 </p:autoComplete>
                             </h:panelGrid>
 
