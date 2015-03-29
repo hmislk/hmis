@@ -40,7 +40,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-public class Item implements Serializable {
+public class Item implements Serializable, Comparable<Item> {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
@@ -842,6 +842,13 @@ public class Item implements Serializable {
     public void setReserveNumbers(String reserveNumbers) {
         this.reserveNumbers = reserveNumbers;
     }
+
+    @Override
+    public int compareTo(Item o) {
+        return this.name.compareTo(o.name);
+    }
+
+   
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

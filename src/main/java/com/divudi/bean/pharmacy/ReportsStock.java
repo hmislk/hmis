@@ -41,7 +41,12 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
+import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.facade.ItemFacade;
+import java.util.Collection;
+import java.util.Collections;
+import org.eclipse.persistence.internal.core.helper.CoreClassConstants;
 
 /**
  *
@@ -139,7 +144,7 @@ public class ReportsStock implements Serializable {
         }
         return "pharmacy_report_department_stock_by_single_product";
     }
-    
+
     public void fillDepartmentNonEmptyProductStocks() {
 
         Map m = new HashMap();
@@ -174,7 +179,7 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
     }
-    
+
     public void fillDepartmentNonEmptyItemStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -199,11 +204,11 @@ public class ReportsStock implements Serializable {
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
-            
+
         }
         pharmacyStockRows = lsts;
     }
-    
+
     public void fillDepartmentInventryStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -473,8 +478,22 @@ public class ReportsStock implements Serializable {
         if (st != null) {
             getStockFacade().edit(st);
             UtilityController.addSuccessMessage("Edit Successful");
-        }else
-        return;
+        } else {
+            return;
+        }
+    }
+
+    @EJB
+    ItemFacade itemFacade;
+
+    List<Item> items;
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
     public void fillDepartmentNonmovingStocks() {
@@ -484,34 +503,59 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s "
-                + " where s.department=:d "
-                + " and s.stock > 0 "
-                + " and s.itemBatch.item.id not in "
-                + " (select bi.item.id "
-                + " FROM BillItem bi where  "
+
+        sql = "SELECT bi.item "
+                + " FROM BillItem bi "
+                + " WHERE  "
                 + " bi.bill.department=:d "
-                + " and (bi.bill.billType=:t1 or bi.bill.billType=:t2  or bi.bill.billType=:t3)"
-                + "  and bi.bill.billDate between :fd and :td "
-                + " group by bi.item having SUM(bi.qty) > 0 ) "
-                + " order by s.itemBatch.dateOfExpire";
+                + " AND bi.bill.billType in :bts "
+                + " AND bi.bill.billDate between :fd and :td ";
+
         m.put("d", department);
-        m.put("t1", BillType.PharmacyTransferIssue);
-        m.put("t2", BillType.PharmacyPre);
-        m.put("t3", BillType.PharmacyBhtPre);
+        ArrayList<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyTransferIssue);
+        bts.add(BillType.PharmacyPre);
+        bts.add(BillType.PharmacySale);
+        bts.add(BillType.PharmacyBhtPre);
+        bts.add(BillType.PharmacyIssue);
+
+        if (category != null) {
+            sql += " AND bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+
+        sql += " GROUP BY bi.item";
+
+        m.put("bts", bts);
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
+
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        stocks = getStockFacade().findBySQL(sql, m);
-//        stockPurchaseValue = 0.0;
-//        stockSaleValue = 0.0;
-        System.out.println("stocks.size() = " + stocks.size());
-//        for (Stock ts : stocks) {
-////            ts.getItemBatch().getDateOfExpire()
-//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-//        }
+
+        Set<Item> bis = new HashSet<>(itemFacade.findBySQL(sql, m));
+
+        sql = "SELECT s.itemBatch.item "
+                + " FROM Stock s "
+                + " WHERE s.department=:d "
+                + " AND s.stock > 0 "
+                + " GROUP BY s.itemBatch.item "
+                + " ORDER BY s.itemBatch.item.name";
+        m = new HashMap();
+        m.put("d", department);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+
+        Set<Item> sis = new HashSet<>(itemFacade.findBySQL(sql, m));
+
+        System.out.println("bis.size() before removing = " + bis.size());
+        System.out.println("sis.size() before removing " + sis.size());
+
+        sis.removeAll(bis);
+        System.out.println("sis.size() after removing " + sis.size());
+        items = new ArrayList<>(sis);
+        
+        Collections.sort(items);
     }
 
     public void fillStaffStocks() {
@@ -565,7 +609,7 @@ public class ReportsStock implements Serializable {
         Map m;
         String sql;
         records = new ArrayList<>();
-        
+
         m = new HashMap();
         m.put("cat", category);
         m.put("dep", department);
@@ -585,7 +629,7 @@ public class ReportsStock implements Serializable {
         }
 
     }
-    
+
     List<StockReportRecord> stockRecords;
 
     public List<StockReportRecord> getStockRecords() {
@@ -595,15 +639,13 @@ public class ReportsStock implements Serializable {
     public void setStockRecords(List<StockReportRecord> stockRecords) {
         this.stockRecords = stockRecords;
     }
-    
-    
-    
+
     public void fillCategoryStocksByCatagory() {
-        
+
         Map m;
         String sql;
         records = new ArrayList<>();
-        
+
         m = new HashMap();
         m.put("dep", department);
         sql = "select sum(s.stock * s.itemBatch.purcahseRate), s.itemBatch.item.category from Stock s where s.department=:dep group by s.itemBatch.item.category";
@@ -611,7 +653,7 @@ public class ReportsStock implements Serializable {
 
         totalPurchaseValue = 0.0;
         stockRecords = new ArrayList<>();
-        
+
         for (Object[] obj : objs) {
             Double sv = (Double) obj[0];
             Category c = (Category) obj[1];
