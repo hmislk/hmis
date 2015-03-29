@@ -90,9 +90,11 @@ public class DataAdministrationController {
 
         Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
 
-        sql = "SELECT item.category "
-                + " FROM Item i ";
+        sql = "SELECT i.category "
+                + " FROM Item i "
+                + " GROUP BY i.category";
         
+        System.out.println("sql = " + sql);
         m = new HashMap();
         
         Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
