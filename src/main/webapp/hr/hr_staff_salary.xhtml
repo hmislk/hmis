@@ -135,6 +135,10 @@
                         <p:column headerText="Code" sortBy="#{i.staff.codeInterger}">
                             <h:outputLabel value="#{i.staff.codeInterger}"/>
                         </p:column>
+                        <p:column headerText="Status">
+                            <h:outputLabel rendered="#{i.staff.dateRetired ne null}" value="#{i.staff.dateRetired}"/>
+                            <h:outputLabel rendered="#{i.staff.dateLeft ne null}" value="#{i.staff.dateLeft}"/>
+                        </p:column>
                         <p:column headerText="Staff">
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                         </p:column>
