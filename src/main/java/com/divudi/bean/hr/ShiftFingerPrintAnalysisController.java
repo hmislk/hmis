@@ -396,7 +396,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         ss.setLeaveType(null);
         StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
         //Setting Leave Type To StaffShift From Staff Leave
-        if (ss instanceof StaffShiftExtra && staffLeave != null) {
+        if (!(ss instanceof StaffShiftExtra) && staffLeave != null) {
             ss.setLeaveType(staffLeave.getLeaveType());
         }
 
