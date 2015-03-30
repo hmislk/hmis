@@ -19,7 +19,7 @@
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromDepartment}"/>
+            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toDepartment}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
@@ -34,11 +34,16 @@
                 </p:commandButton>
             </p:column>
 
-            <p:column headerText="Issue No">                        
+            <p:column headerText="Order No">                        
                 <h:outputLabel value="#{bill.deptId}"/>                          
             </p:column>
-            <p:column headerText="From Department">                       
-                <h:outputLabel value="#{bill.fromDepartment.name}"/>                          
+            
+            <p:column headerText="Issue No">                        
+                <h:outputLabel value="#{bill.insId}"/>                          
+            </p:column>
+            
+            <p:column headerText="To Department">                       
+                <h:outputLabel value="#{bill.toDepartment.name}"/>                          
             </p:column>  
             <p:column headerText="Issued By">
                 <h:outputLabel value="#{bill.creater.webUserPerson.name}"/>     
