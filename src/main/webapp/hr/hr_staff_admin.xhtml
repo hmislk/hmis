@@ -77,7 +77,16 @@
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}"/>
                                             </p:selectOneMenu>
+                                            
+                                            <h:outputText  value="Zone Code" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.zoneCode}"  />
+                                            
+                                            <h:outputText  value="Initials" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.initials}"  />
 
+                                            <h:outputText  value="SurName" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.surName}"  />
+                                            
                                             <h:outputText  value="Name" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.name}"  />
 
