@@ -50,7 +50,10 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-
+                            <h:outputLabel value="Blocked"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
+                            <h:outputLabel value="Hold"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
 
                         </h:panelGrid>
 

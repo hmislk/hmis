@@ -30,7 +30,7 @@
                                 <h:outputLabel value="Department : "/>
                                 <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                                 <h:outputLabel value="Institution : "/>
-                                <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                                 <h:outputLabel value="Staff Category : "/>
                                 <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                                 <h:outputLabel value="Staff Designation : "/>
@@ -74,6 +74,13 @@
                                         <h:outputLabel value="Emp No"/>
                                     </f:facet>
                                     <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+
+                                </p:column>
+                                 <p:column headerText="Day Of Week ">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Day Of Week"/>
+                                    </f:facet>
+                                     <p:outputLabel value=" #{ss.dayOfWeek}" ></p:outputLabel>
 
                                 </p:column>
                                 <p:column headerText="Emp Name">

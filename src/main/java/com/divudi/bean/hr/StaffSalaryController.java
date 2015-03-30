@@ -341,7 +341,7 @@ public class StaffSalaryController implements Serializable {
         if (value == 0) {
             return 0;
         }
-
+        System.out.println("calculating value");
         //Check Employee Join Date Come within Salary Cycle
         if (checkDateRange(getCurrent().getStaff().getDateJoined())
                 //Check Employee Date Left within Salary Cycle
@@ -358,6 +358,7 @@ public class StaffSalaryController implements Serializable {
             }
 
         } else {
+            System.out.println("returning full value");
 
             return value;
         }
@@ -488,45 +489,46 @@ public class StaffSalaryController implements Serializable {
         frmCal.set(Calendar.HOUR, 7);
         frmCal.set(Calendar.MINUTE, 0);
         frmCal.set(Calendar.SECOND, 0);
-        frmCal.set(Calendar.MILLISECOND,0);
+        frmCal.set(Calendar.MILLISECOND, 0);
 
         Calendar toCal = Calendar.getInstance();
         toCal.setTime(fromDate);
         toCal.set(Calendar.HOUR, 7);
         toCal.set(Calendar.MINUTE, 0);
         toCal.set(Calendar.SECOND, 0);
-        toCal.set(Calendar.MILLISECOND,0);
+        toCal.set(Calendar.MILLISECOND, 0);
         toCal.add(Calendar.DATE, 7);
-//        toCal.add((Calendar.MILLISECOND), -1);
+        toCal.add((Calendar.MILLISECOND), -1);
         System.err.println("adding 6 days only. No Milli seconds ");
-        
-        
-        System.err.println("FROM1 " + frmCal.getTime());
-        System.err.println("TO1 " + toCal.getTime());
+
+//        System.err.println("FROM1 " + frmCal.getTime());
+//        System.err.println("TO1 " + toCal.getTime());
+//        
         for (int i = 0; i < numOfWeeks; i++) {
 
+            System.out.println("i = " + i);
+
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
-            System.out.println("workedWithinTimeFrameVarified = " + workedWithinTimeFrameVarified);
-            
+//            System.out.println("worked Within TimeFrameVarified = " + workedWithinTimeFrameVarified / (60*60));
+
+            System.err.println("FROM " + i + frmCal.getTime());
+            System.err.println("TO " + i + toCal.getTime());
+
             //The below line was commented by safrin. Buddhiks uncommented it. Please double check.
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
-            
-            System.out.println("otSec = " + otSec);
-            
-            System.err.println("W : " + workedWithinTimeFrameVarified / 60 + " : O " + otSec / 60);
+
+//            System.out.println("otSec = " + otSec);
+            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
+            System.err.println("OT Time : " + otSec / (60 * 60));
 
             overTimeSec += otSec;
             frmCal.add(Calendar.DATE, 7);
             toCal.add(Calendar.DATE, 7);
 
-            System.err.println("FROM " + i + frmCal.getTime());
-            System.err.println("TO " + i + toCal.getTime());
         }
 
-        System.err.println("OTSec "+overTimeSec);
+//        System.err.println("OTSec " + overTimeSec);
         return (overTimeSec.longValue() / 60L);
     }
 
@@ -558,22 +560,21 @@ public class StaffSalaryController implements Serializable {
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
         System.out.println("ss = " + ss);
         if (ss.getStaffPaysheetComponent() != null) {
-            
+
             Long overTimeMinute = calculateOverTimeMinute();
             System.out.println("overTimeMinute = " + overTimeMinute);
-            
+
             double overTimePerMinute = getOverTimeValuePerMinute();
             System.out.println("overTimePerMinute = " + overTimePerMinute);
-            
+
             ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
-            
+
             getCurrent().setOverTimeMinute(overTimeMinute);
             System.out.println("overTimeMinute = " + overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
-            
+
             getCurrent().setOverTimeRatePerMinute(overTimePerMinute);
-            
-            
+
         } else {
             return;
         }
@@ -633,7 +634,12 @@ public class StaffSalaryController implements Serializable {
 //    }
     private Long setExtraDuty(PaysheetComponentType paysheetComponentType, DayType dayType) {
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
+
+//        if (current != null) {
+//            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
+//        } else {
         ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+//        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         getCurrent().getStaffSalaryComponants().add(ss);
@@ -1370,6 +1376,11 @@ public class StaffSalaryController implements Serializable {
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+         if (getReportKeyWord().getInstitution()!= null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {

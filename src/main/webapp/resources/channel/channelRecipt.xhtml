@@ -85,7 +85,7 @@
                                     <tr>
                                         <td>
                                             <b>
-                                                <h:outputLabel value="Number" ></h:outputLabel>
+                                                <h:outputLabel value="Number" style="font-size: 20px!important;;" ></h:outputLabel>
                                             </b>
                                         </td>
                                         <td>
@@ -94,14 +94,14 @@
                                         <td>
                                             <h:outputLabel value=":" ></h:outputLabel>
                                         </td>
-                                        <td>
+                                        <td style="font-size: 20px;">
                                             <b>
                                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                                    <h:outputLabel value="#{cbi.billSession.serialNo}" ></h:outputLabel>
+                                                    <h:outputLabel value="#{cbi.billSession.serialNo}" 
+                                                                   style="font-size: 20px!important; font-weight: bold; margin: 3px;padding: 3px; border: 1px solid black;" ></h:outputLabel>
                                                 </ui:repeat>
                                             </b>
                                         </td>
-
                                     </tr>
 
                                     <tr>
@@ -270,7 +270,7 @@
                                             <h:outputLabel value=":" ></h:outputLabel>
                                         </td>
                                         <td>
-                                            <h:outputLabel value="................."></h:outputLabel>
+                                            <h:outputLabel value="_______________"></h:outputLabel>
                                         </td>
 
                                     </tr>

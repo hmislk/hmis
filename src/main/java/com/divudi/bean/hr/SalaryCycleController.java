@@ -648,7 +648,7 @@ public class SalaryCycleController implements Serializable {
         return paysheetComponentFacade.findBySQL(jpql, m);
     }
 
-    public List<PaysheetComponent> fetchPaysheetComponents(List<PaysheetComponentType> list,SalaryCycle salaryCycle) {
+    public List<PaysheetComponent> fetchPaysheetComponents(List<PaysheetComponentType> list, SalaryCycle salaryCycle) {
         HashMap m = new HashMap();
         String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
                 + " from StaffSalaryComponant spc"
@@ -660,7 +660,7 @@ public class SalaryCycleController implements Serializable {
         m.put("tp", list);
         return paysheetComponentFacade.findBySQL(jpql, m);
     }
-    
+
     public List<PaysheetComponent> fetchPaysheetComponents(List<PaysheetComponentType> list) {
         HashMap m = new HashMap();
         String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
@@ -791,14 +791,14 @@ public class SalaryCycleController implements Serializable {
         Map m;
 
         headersAdd = new ArrayList<>();
-        paysheetComponentsAddition = fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(),getCurrent());
+        paysheetComponentsAddition = fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getCurrent());
 
         for (PaysheetComponent paysheetComponent : paysheetComponentsAddition) {
             headersAdd.add(paysheetComponent.getName());
         }
 
         headersSub = new ArrayList<>();
-        paysheetComponentsSubstraction = fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(),getCurrent());
+        paysheetComponentsSubstraction = fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getCurrent());
         for (PaysheetComponent paysheetComponent : paysheetComponentsSubstraction) {
             headersSub.add(paysheetComponent.getName());
         }
@@ -852,8 +852,10 @@ public class SalaryCycleController implements Serializable {
 
         for (StaffSalary s : staffSalarys) {
             for (PaysheetComponent psc : paysheetComponentsAddition) {
-                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked,getCurrent());
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, getCurrent());                  
+                Double dbl = fetchSalaryComponentsValue(s, psc, blocked, getCurrent());
                 if (c != null) {
+                    c.setComponantValue(dbl);
                     s.getTransStaffSalaryComponantsAddition().add(c);
                 } else {
                     s.getTransStaffSalaryComponantsAddition().add(new StaffSalaryComponant(0, psc));
@@ -861,8 +863,11 @@ public class SalaryCycleController implements Serializable {
                 }
             }
             for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked,getCurrent());
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, getCurrent());
+                Double dbl = fetchSalaryComponentsValue(s, psc, blocked, getCurrent());
+
                 if (c != null) {
+                    c.setComponantValue(0-dbl);
                     s.getTransStaffSalaryComponantsSubtraction().add(c);
                 } else {
                     s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
@@ -906,16 +911,15 @@ public class SalaryCycleController implements Serializable {
         String jpql = "select sum(spc.componantValue) "
                 + " from StaffSalaryComponant spc "
                 + " where spc.retired=false "
-                + " and spc.staffSalary.blocked=" + blocked
+                + " and spc.staffSalary.blocked= " + blocked
                 + " and spc.staffSalary.retired=false"
                 + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
                 + " and spc.salaryCycle=:sc ";
         HashMap m = new HashMap();
         m.put("pc", psc);
         m.put("sc", salaryCycle);
-        
-        
-         if (getReportKeyWord().getInstitution() != null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             jpql += " and spc.staffSalary.institution=:ins ";
             m.put("ins", getReportKeyWord().getInstitution());
         }
@@ -945,12 +949,11 @@ public class SalaryCycleController implements Serializable {
             m.put("rs", getReportKeyWord().getRoster());
         }
 
-        
         return staffSalaryComponantFacade.findDoubleByJpql(jpql, m);
 
     }
 
-    public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc, boolean blocked,SalaryCycle salaryCycle) {
+    public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc, boolean blocked, SalaryCycle salaryCycle) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary=:st"
                 + " and spc.retired=false"
@@ -965,7 +968,24 @@ public class SalaryCycleController implements Serializable {
         return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
 
     }
-    
+
+    public Double fetchSalaryComponentsValue(StaffSalary s, PaysheetComponent psc, boolean blocked, SalaryCycle salaryCycle) {
+        String jpql = "select sum(spc.componantValue) "
+                + " from StaffSalaryComponant spc "
+                + " where spc.staffSalary=:st"
+                + " and spc.retired=false"
+                + " and spc.staffSalary.retired=false "
+                + " and spc.staffSalary.blocked=" + blocked
+                + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
+                + " and spc.salaryCycle=:sc ";
+        HashMap m = new HashMap();
+        m.put("st", s);
+        m.put("pc", psc);
+        m.put("sc", salaryCycle);
+        return staffSalaryComponantFacade.findDoubleByJpql(jpql, m);
+
+    }
+
     public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc, boolean blocked) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary=:st"
@@ -973,7 +993,7 @@ public class SalaryCycleController implements Serializable {
                 + " and spc.staffSalary.retired=false "
                 + " and spc.staffSalary.blocked=" + blocked
                 + " and spc.staffPaysheetComponent.paysheetComponent=:pc ";
-                //+ " and spc.salaryCycle=:sc ";
+        //+ " and spc.salaryCycle=:sc ";
         HashMap m = new HashMap();
         m.put("st", s);
         m.put("pc", psc);
