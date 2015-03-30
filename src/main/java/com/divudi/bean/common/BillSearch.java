@@ -230,6 +230,12 @@ public class BillSearch implements Serializable {
             UtilityController.addSuccessMessage("Bill Item Retired");
         }
     }
+    
+    public void updateBillfee(BillFee bf) {
+
+            getBillFeeFacade().edit(bf);
+            UtilityController.addSuccessMessage("Bill Item Retired");
+    }
 
     private void createBillFees() {
         String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
@@ -1259,6 +1265,8 @@ public class BillSearch implements Serializable {
 
             b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             b.setCreater(getSessionController().getLoggedUser());
+            
+            b.setPaidForBillFee(nB.getPaidForBillFee());
 
             getBillItemFacede().create(b);
 

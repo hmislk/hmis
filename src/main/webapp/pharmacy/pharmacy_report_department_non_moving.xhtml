@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-       xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
 
@@ -17,83 +17,78 @@
 
                     <p:panel header="Non Moving Stock Report" >
 
-                        <h:panelGrid columns="12"  >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
-                            </p:autoComplete>
-                            
-                            <p:spacer width="10" ></p:spacer>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.fromDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                            
-                            <p:spacer width="10" ></p:spacer>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                            
-                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentNonmovingStocks}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Three Months Nonmoving" actionListener="#{reportsStock.fillThreeMonthsNonmoving()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Six Months Nonmoving" actionListener="#{reportsStock.fillSixMonthsNonmoving()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="One Year Nonmoving" actionListener="#{reportsStock.fillOneYearNonmoving()}" ></p:commandButton>
-                            
-                            <p:commandButton value="Print" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                        <p:panelGrid columns="2" styleClass="alignTop" >
 
-                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <h:panelGrid columns="2"  >
+                                <h:outputLabel value="Department" ></h:outputLabel>
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
+                                </p:autoComplete>
+
+                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar value="#{reportsStock.fromDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+
+                                <h:outputLabel value="To" ></h:outputLabel>
+                                <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+
+                                <h:outputLabel value="Category" ></h:outputLabel>
+                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
+                                                itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true" value="#{reportsStock.category}"
+                                               >
+                                </p:autoComplete>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" >
+                                <h:panelGrid columns="4" >
+                                    <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentNonmovingStocks}" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Three Months Nonmoving" actionListener="#{reportsStock.fillThreeMonthsNonmoving()}" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Six Months Nonmoving" actionListener="#{reportsStock.fillSixMonthsNonmoving()}" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="One Year Nonmoving" actionListener="#{reportsStock.fillOneYearNonmoving()}" ></p:commandButton>
+
+                                </h:panelGrid>
+                                <h:panelGrid columns="4" >
+                                    <p:commandButton value="Print" ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton value="Excel" ajax="false">
+                                        <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
+                                                     facetBackground="#008000" facetFontSize="15" 
+                                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                                     fontName="Courier New" />
+                                    </p:commandButton>
+                                </h:panelGrid>
+
+                            </h:panelGrid>
+
+                        </p:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview"   style="min-width: 100%!important;">
+                            <p:dataTable id="tbl"  value="#{reportsStock.items}" var="i"  
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet>                               
-                                <p:column headerText="Item"  >
-                                    <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
+                                <p:column headerText="Item" 
+                                          sortBy="#{i.name}"
+                                          filterBy="#{i.name}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Code">
+
+                                <p:column headerText="Code"
+                                          sortBy="#{i.code}"
+                                          filterBy="#{i.code}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.code}" ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Quantity" style="text-align: right;">
-                                    <h:outputLabel value="#{i.stock}"  >
-                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                    </h:outputLabel>                                 
-                                </p:column>
-                                <p:column headerText="Expiary">
-                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd/MMMM/yyyy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
-                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Purchase Value" style="text-align: right;">
-                                    <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Retail Price" style="text-align: right;">
-                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Retail Sale Value" style="text-align: right;">
-                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

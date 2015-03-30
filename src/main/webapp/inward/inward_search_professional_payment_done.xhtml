@@ -20,8 +20,8 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
-                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
-                                <h:outputLabel/> <h:outputLabel/>
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
+
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Inward Bill No"/>
@@ -47,6 +47,9 @@
                         <p:defaultCommand target="btnSearch" />
 
                         <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="#{searchController.total}"/>
+                            </f:facet>
                             <p:column>
                                 <p:commandButton ajax="false" value="View Bill" action="inward_reprint_staff_payment" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardSearch.bill}"/>
@@ -54,14 +57,21 @@
                             </p:column>
 
                             <p:column headerText="Inward Bill No" >
-                                <h:outputLabel  value="#{bi.paidForBillFee.bill.insId}"  ></h:outputLabel>
+                                <h:outputLabel  value="#{bi.paidForBillFee.id}"  ></h:outputLabel>
                             </p:column>  
                             <p:column headerText="Payment Bill No" >
                                 <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Bht No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                            </p:column>  
+                            </p:column>
+
+                            <p:column headerText="Discharged At" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Specility" >
                                 <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>
                             </p:column>    
@@ -100,7 +110,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                           
+
 
                         </p:dataTable>
 

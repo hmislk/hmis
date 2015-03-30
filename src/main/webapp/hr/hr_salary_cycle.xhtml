@@ -54,9 +54,17 @@
                                     <h:outputText  value="Salary Advance To Date " ></h:outputText>
                                     <p:calendar value="#{salaryCycleController.current.salaryAdvanceToDate}" pattern="dd MMMM yyyy" />
                                     <h:outputText  value="Worked From Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.workedFromDate}" pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{salaryCycleController.current.workedFromDate}" 
+                                                pattern="dd MMMM yyyy hh:mm:ss a" />
                                     <h:outputText  value="Worked To Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.workedToDate}" pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{salaryCycleController.current.workedToDate}"
+                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                     <h:outputText  value="Day off / PH  From Date " ></h:outputText>
+                                    <p:calendar value="#{salaryCycleController.current.dayOffPhFromDate}" 
+                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                    <h:outputText  value="Day off / PH  To Date " ></h:outputText>
+                                    <p:calendar value="#{salaryCycleController.current.dayOffPhToDate}"
+                                                pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton  ajax="false" id="btnSave" value="Save"  action="#{salaryCycleController.saveSelected()}" styleClass="buttons">

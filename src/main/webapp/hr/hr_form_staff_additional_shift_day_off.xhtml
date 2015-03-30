@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Additional Shift">
+                <h:panelGrid columns="2">
+                    <p:panel >
+                        <h:panelGrid columns="2">                           
+                            <h:outputLabel value="Form Number"/>
+                            <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
+                            <h:outputLabel value="Staff : "/>
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                           
+                            <h:outputLabel value="Shift Date "/>
+                            <p:calendar value="#{staffAdditionalFormController.date}"
+                                        navigator="true"
+                                        pattern="yyyy MM dd HH:mm:ss">
+                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
+                           </p:calendar>  
+                           
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="From Time"/>
+                           <ez:enterDateTime id="fromDate" 
+                                              idValue="from"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerFrom()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerFrom()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.fromSystemTimeStamp}"/>
+                            <h:outputLabel value="To Time"/>
+                           <ez:enterDateTime id="toDate" 
+                                              idValue="to"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerTo()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.toSystemTimeStamp}"/>
+                            <h:outputLabel value="Approved Staff"/>
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>                          
+                            <h:outputLabel value="Approved Date"/>
+                            <p:calendar id="approvedDate" 
+                                        value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
+                                        pattern="dd MMMM yyyy" >
+                            </p:calendar>
+                            <h:outputLabel value="Comment"/>
+                            <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
+                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                             disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
+                                             action="#{staffAdditionalFormController.saveAdditionalFormShiftDayOff()}"/>
+
+                            <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
+                            <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Search Forms">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar value="#{staffAdditionalFormController.fromDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="forDateS" value="#{staffAdditionalFormController.toDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="Staff : "/>
+                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
+                            <h:outputLabel value="Approved Person"/>
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
+
+                            <p:commandButton ajax="false" value="Search Shift Date " 
+                                             action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShiftDayOff()}" />
+
+                        </h:panelGrid>
+                        <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
+                                     rowStyleClass="#{add.retired eq true ? 'redText':''}"
+                                     scrollable="true"
+                                     scrollHeight="300" >
+                            <p:column headerText="View" >
+                                <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"></p:commandButton>
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="From">
+                                <p:outputLabel value="#{add.fromTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="To">
+                                <p:outputLabel value="#{add.toTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Shift Start">
+                                <p:outputLabel value="#{add.staffShift.shiftStartTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Shift End">
+                                <p:outputLabel value="#{add.staffShift.shiftEndTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Aproved By">
+                                <p:outputLabel value="#{add.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Comment">
+                                <p:outputLabel value="#{add.comments}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Creater">
+                                <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                <br></br>
+                                <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>

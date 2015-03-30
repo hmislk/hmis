@@ -561,7 +561,7 @@ public class ChannelReportController implements Serializable {
                 + " and b.createdAt between :frm and :to ";
 
         if (webUser != null) {
-            sql+=" and b.creater=:wb ";
+            sql += " and b.creater=:wb ";
             hm.put("wb", webUser);
         }
         hm.put("class", bill.getClass());
@@ -595,7 +595,6 @@ public class ChannelReportController implements Serializable {
 //        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-
     public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp) {
         HashMap hm = new HashMap();
 
@@ -610,12 +609,11 @@ public class ChannelReportController implements Serializable {
                 + " and b.bill.createdAt between :frm and :to ";
 
         //hm.put("class", bill.getClass());
-        
-        if(webUser!=null){
-            sql+=" and b.bill.creater=:wb";
+        if (webUser != null) {
+            sql += " and b.bill.creater=:wb";
             hm.put("wb", webUser);
         }
-        
+
         hm.put("bt", billType);
         hm.put("pm", paymentMethod);
         hm.put("ft", ftp);
@@ -649,7 +647,6 @@ public class ChannelReportController implements Serializable {
 //        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-
     public double createBillSessionQueryTotal(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -861,6 +858,63 @@ public class ChannelReportController implements Serializable {
             getBillFacade().edit(bs.getBill());
             System.out.println("Out");
         }
+    }
+
+    List<Bill> billedBills;
+    List<Bill> cancelBills;
+    List<Bill> refundBills;
+
+    public void channelBillClassList() {
+        
+        billedBills = new ArrayList<>();
+        cancelBills = new ArrayList<>();
+        refundBills = new ArrayList<>();
+        
+        billedBills = channelListByBillClass(new BilledBill());
+        cancelBills = channelListByBillClass(new CancelledBill());
+        refundBills = channelListByBillClass(new RefundBill());
+    }
+
+    public List<Bill> channelListByBillClass(Bill bill) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and type(b)=:class "
+                + " and b.createdAt between :fDate and :tDate "
+                + " order by b.singleBillSession.sessionDate ";
+
+        hm.put("bt", bts);
+        hm.put("class", bill.getClass());
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    List<Bill> channelBills;
+
+    public void channelBillList() {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and b.createdAt between :fDate and :tDate "
+                + " order by b.singleBillSession.sessionDate ";
+
+        hm.put("bt", bts);
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+
+        channelBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
     }
 
     public void createChannelFees() {
@@ -1314,6 +1368,30 @@ public class ChannelReportController implements Serializable {
     /**
      * Creates a new instance of ChannelReportController
      */
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
+    public List<Bill> getCancelBills() {
+        return cancelBills;
+    }
+
+    public void setCancelBills(List<Bill> cancelBills) {
+        this.cancelBills = cancelBills;
+    }
+
+    public List<Bill> getRefundBills() {
+        return refundBills;
+    }
+
+    public void setRefundBills(List<Bill> refundBills) {
+        this.refundBills = refundBills;
+    }
+
     public ChannelReportController() {
     }
 
@@ -1454,6 +1532,14 @@ public class ChannelReportController implements Serializable {
 
     public double getCancelTotal() {
         return cancelTotal;
+    }
+
+    public List<Bill> getChannelBills() {
+        return channelBills;
+    }
+
+    public void setChannelBills(List<Bill> channelBills) {
+        this.channelBills = channelBills;
     }
 
     public void setCancelTotal(double cancelTotal) {

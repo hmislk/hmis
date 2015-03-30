@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+    <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>#{labels.topic}</title>
+        <!--<h:outputStylesheet library="css" name="style.css" />-->
+    </h:head>
+    <h:body  >
+
+        <h:form>
+
+
+            <div id="background">
+                <div id="page">
+                    <div id="header" style="float: right">
+
+                        <span id="infos">
+                            <h:commandLink value="Staff Login" action="index" ></h:commandLink>
+                            |
+                            <h:commandLink value="Administrator" action="index" ></h:commandLink>
+                        </span>
+                        <h:commandLink action="index" ></h:commandLink>
+
+                        <!-- /#logo -->
+
+                    </div>
+                    <!-- /#header -->
+                    <div id="contents">
+                        <div id="main">
+                            <div  style="position: absolute; top: 25%; left: 35%">
+                                <p:panel style="height: 50%; width: 100%">
+                                    <p:outputLabel value="Fill the Details and click the button to view your reports"></p:outputLabel>
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Bill Number"></p:outputLabel>
+                                        <p:inputText value="#{sessionController.billNo}" style="width: 150px; margin-left: 20px;"  ></p:inputText>
+                                        <p:outputLabel value="Phone Number"></p:outputLabel>
+                                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                     autocomplete="off" maxlength="11" 
+                                                     value="#{sessionController.phoneNo}"
+                                                     style="width: 150px;  margin-left: 20px;">
+                                        </p:inputMask>
+                                        <p:outputLabel></p:outputLabel>
+                                        <h:commandButton class ="button" value= "View Reports" action="#{searchController.fillUserPatientReport}" ></h:commandButton>
+                                    </h:panelGrid>
+                                </p:panel>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /#contents -->
+                    <div id="footer" align="center" style="position: absolute; top: 80%">
+                        <div id="description">
+                            <div> 
+                                <span><a href="http://www.lakmedi.com">Copyright &copy; 2012 Lakmedipro Pvt Ltd. All rights reserved</a> 
+                                </span></div>
+                        </div>
+                    </div>
+                    <!-- /#footer -->
+                </div>
+                <!-- /#page -->
+            </div>
+            <!-- /#background -->
+
+        </h:form>
+
+    </h:body>
+</html>

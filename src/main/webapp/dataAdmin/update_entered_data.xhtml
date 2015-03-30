@@ -37,17 +37,25 @@
                         </p:panel>
                         <p:panel header="Inward" >
                             <p:commandButton styleClass="linkButton" ajax="false" 
+                                             rendered="false"
                                              value="Reset Inward Charge Type " 
                                              action="#{pharmacyItemExcelManager.resetInwardChargeType()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" 
+                                             rendered="false"
                                              value="Reset Paid Amount " 
                                              action="#{pharmacyItemExcelManager.resetFinalBillPaidValue()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" 
+                                             rendered="false"
                                              value="Set Credit Used Amount " 
                                              action="#{pharmacyItemExcelManager.restCreditUsedAmount()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" 
+                                             rendered="false"
                                              value="Set Margin,Discount,NetTotal To Bill " 
                                              action="#{pharmacyItemExcelManager.resetMarginAndDiscountAndNetTotal()}" onclick="onSubmitButton();" />
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="View Paid Value " 
+                                             rendered="false"
+                                             action="#{pharmacyItemExcelManager.upadatePaidValueInBillFee()}" onclick="onSubmitButton();" />
 
 
                         </p:panel>
@@ -72,13 +80,18 @@
                                              action="#{staffShiftController.updateStaffShiftStartTimeAndEndTime}"/>                            
                             <p:commandButton styleClass="linkButton"  ajax="false" value="Update Over Time Value Per Sec Staff Shift"
                                              action="#{hrReportController.updateOverTimeValuePerSecond}" rendered="false"/>
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Holiday Staff Shift"
+                                             action="#{hrReportController.updateHoliday}" rendered="true"/>
                             <p:commandButton styleClass="linkButton"  ajax="false" value="Update Automatic Leave Date"
                                              action="#{hrReportController.updateAutomaticData}" rendered="false"/>
                             <p:commandButton styleClass="linkButton"  ajax="false" value="Update Late No Pay"
                                              action="#{hrReportController.updateLateLeaveData}" rendered="false"/>
-                               <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Paysheet Componet"
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Paysheet Componet"
                                              action="#{hrReportController.updateStaffPaysheetComponent}"/>
-                       </p:panel>
+                            <p:commandButton styleClass="llinkButton" ajax="false" value="Reset Automated Leave"
+                                             action="#{hrReportController.resetSystemLeave()}"/>
+                        
+                        </p:panel>
 
 
 

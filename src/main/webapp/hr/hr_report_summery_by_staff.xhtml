@@ -48,6 +48,7 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
+                        <p:commandButton ajax="false" value="Reset" action="#{hrReportController.reset()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -59,12 +60,35 @@
                                 <f:facet name="header">
                                     <h:outputLabel style="text-align: center" value="  Worked Normal Day : "  />                                 
                                 </f:facet>                                                                                              
-                                <p:column headerText="Staff Shift">
+                                <p:column headerText=" Shift">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Staff Shift" ></p:outputLabel>
+                                        <p:outputLabel value=" Shift" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
                                 </p:column>
+                                <p:column headerText="Shift id">                                  
+                                    <p:outputLabel value="#{ss.shift.id}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Form id">                                  
+                                    <p:outputLabel value="#{ss.leaveForm.id}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Auto">                                  
+                                    <p:outputLabel value="#{ss.lateInVarified}" > <f:converter converterId="longToTime"/></p:outputLabel>
+                                    <h:outputLabel value=" - "/>
+                                    <p:outputLabel value="#{ss.earlyOutVarified}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                    <p:outputLabel value="#{ss.considerForLateIn}" ></p:outputLabel>
+                                    <p:outputLabel value="#{ss.considerForEarlyOut}" ></p:outputLabel>
+                                    <p:outputLabel value="#{ss.autoLeave}" ></p:outputLabel>
+
+                                </p:column>
+                                <p:column headerText="Leave Type">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Leave Type" ></p:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.leaveType}"/>
+                                </p:column>
+
+
                                 <p:column headerText="Day Type">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Day Type" ></p:outputLabel>
@@ -104,7 +128,13 @@
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                                 
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalWorkedTime}">
+                                            <f:converter converterId="longToTime"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>                     
+
                             </p:dataTable>
 
                             <p:dataTable id="tb2" value="#{hrReportController.staffShiftsHoliday}" var="ss">
@@ -120,7 +150,9 @@
                                 <p:column headerText="Day Type">
                                     <h:outputLabel value="#{ss.dayType}"/>
                                 </p:column>
-
+                                <p:column headerText="Multiply">
+                                    <h:outputLabel value="#{ss.multiplyingFactorSalary}"/>
+                                </p:column>
                                 <p:column headerText="Shift Date">
                                     <h:outputLabel value="#{ss.shiftDate}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
@@ -199,10 +231,13 @@
                                 </p:column>                                 
                             </p:dataTable>
 
-                            <p:dataTable id="tb4" value="#{hrReportController.staffShiftExtraDuties}" var="ss">
+                            <p:dataTable id="tb4" value="#{hrReportController.staffShiftExtraDuties}" rowIndexVar="i" var="ss">
                                 <f:facet name="header">
                                     <h:outputLabel style="text-align: center" value="  Extra Duties Report : "  />                                 
-                                </f:facet>                                                                                              
+                                </f:facet>            
+                                <p:column headerText="No">
+                                    <h:outputLabel value="#{i+1}"/>
+                                </p:column>
                                 <p:column headerText="Staff Shift">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Staff Shift" ></p:outputLabel>
@@ -264,8 +299,8 @@
                                 </p:column> 
 
                             </p:dataTable>
-                            
-                             <p:dataTable id="tb6" value="#{hrReportController.staffLeaveSystem}" var="ss">
+
+                            <p:dataTable id="tb6" value="#{hrReportController.staffLeaveSystem}" var="ss">
                                 <f:facet name="header" >
                                     <h:panelGrid columns="4" style="border-style: hidden!important">
                                         <h:outputLabel value="No Pay System "/>                                      
@@ -273,7 +308,10 @@
                                 </f:facet> 
                                 <p:column headerText="Leave Date" >
                                     <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
+                                </p:column>
+                                <p:column headerText="id" >
+                                    <p:outputLabel value="#{ss.id}"></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Leave Qty" >
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 

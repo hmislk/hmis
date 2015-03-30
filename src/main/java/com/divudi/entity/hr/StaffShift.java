@@ -6,15 +6,18 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -161,7 +164,6 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
 //    int leaveDivident;
- 
 
     public DayType getDayType() {
         return dayType;
@@ -577,6 +579,8 @@ public class StaffShift implements Serializable {
         }
 
     }
+    
+   
 
     public void calExtraTimeWithStartOrEndRecord() {
         if (getStartRecord() == null || getEndRecord() == null) {
@@ -1150,6 +1154,9 @@ public class StaffShift implements Serializable {
     private List<FingerPrintRecord> fingerPrintRecordList;
 
     public List<FingerPrintRecord> getFingerPrintRecordList() {
+        if (fingerPrintRecordList == null) {
+            fingerPrintRecordList = new ArrayList<>();
+        }
         return fingerPrintRecordList;
     }
 

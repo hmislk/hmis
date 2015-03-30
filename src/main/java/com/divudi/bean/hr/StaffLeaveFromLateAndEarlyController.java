@@ -172,7 +172,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     }
 
-    public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from, double to) {
+    public List<StaffShift> fetchStaffShiftLateIn(StaffShift staffShift, double from, double to) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
@@ -180,13 +180,17 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.considerForLateIn=false "
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
-                + "  and ss.staff=:stf ";
-        hm.put("stf", staff);
+                + "  and ss.staff=:stf "
+                + " and ss.shiftDate<:date "
+                + " and ss.id !=" + staffShift.getId();
+        hm.put("stf", staffShift.getStaff());
+        hm.put("date", staffShift.getShiftDate());
 
         sql += " and ss.lateInVarified!=0";
 
         sql += " and ss.lateInVarified> :frmTime  "
-                + " and ss.lateInVarified< :toTime";
+                + " and ss.lateInVarified< :toTime "
+                + " order by ss.shiftDate ";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
@@ -213,7 +217,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return staffShiftFacade.findBySQL(sql, hm);
     }
 
-    public List<StaffShift> fetchStaffShiftEarlyOut(Staff staff, double from, double to) {
+    public List<StaffShift> fetchStaffShiftEarlyOut(StaffShift staffShift, double from, double to) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
@@ -221,8 +225,11 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.considerForEarlyOut=false "
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
-                + "  and ss.staff=:stf ";
-        hm.put("stf", staff);
+                + "  and ss.staff=:stf "
+                + " and ss.shiftDate<:date "
+                + " and ss.id !=" + staffShift.getId();
+        hm.put("stf", staffShift.getStaff());
+        hm.put("date", staffShift.getShiftDate());
 
         sql += " and ss.earlyOutVarified!=0";
         sql += " and ss.earlyOutVarified> :frmTime  "
@@ -497,6 +504,25 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return leaveForm;
     }
 
+    public LeaveFormSystem fetchLeaveForm(StaffShift staffShift, Date fromDate, Date toDate) {
+        String sql = "select l"
+                + " from LeaveFormSystem l"
+                + " where l.retired=false"
+                + " and l.staffShift=:stf"
+                + " and l.fromDate=:fd "
+                + " and l.toDate=:td ";
+
+        HashMap hm = new HashMap();
+        hm.put("stf", staffShift);
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        LeaveForm lf = leaveFormFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        return lf != null ? (LeaveFormSystem) lf : null;
+
+    }
+
     public void saveStaffLeaves(StaffShift staffShift, LeaveType leaveType, HrForm form) {
         StaffLeaveSystem staffLeave = new StaffLeaveSystem();
         staffLeave.setCreatedAt(new Date());
@@ -510,6 +536,21 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         staffLeave.calLeaveQty();
         staffLeaveFacade.create(staffLeave);
 
+    }
+
+    public StaffLeaveSystem fetchStaffLeaves(StaffShift staffShift, HrForm form) {
+        String sql = "select s from StaffLeaveSystem s "
+                + " where s.retired=false "
+                + " and s.staffShift=:stf "
+                + " and s.form=:fr";
+
+        HashMap hm = new HashMap();
+        hm.put("stf", staffShift);
+        hm.put("fr", form);
+
+        StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
     public void addLeaveDataToStaffShift(StaffShift ss, LeaveType leaveType, HrForm form) {

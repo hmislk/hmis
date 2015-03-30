@@ -18,7 +18,7 @@
             <pe:exporter type="xlsx" target="tb1" fileName="bht_details"  />
         </p:commandButton>
         <p:dataTable id="tb1" value="#{cc.attrs.bill.billItems}" var="bip"
-                     rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?'':'noDisplayRow' }">
+                     rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?bip.inwardChargeType.label eq 'Linen Charges' ?'redText':'':'noDisplayRow' }">
             <p:column headerText="Inward Charge Type">
                 <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
             </p:column>

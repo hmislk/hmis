@@ -4,7 +4,9 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.channel.SheduleController;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -13,6 +15,8 @@ import javax.ejb.Stateless;
 @Stateless
 public class FinalVariables {
 
+    @Inject
+    SheduleController sheduleController;
 //    public double getMaximumWorkingHourPerWeek() {
 //        return 45;
 //    }
@@ -25,7 +29,14 @@ public class FinalVariables {
     }
 
     public Integer getSessionSessionDayCounter() {
-        return 5;
+        int maxRowNumber=0;
+        System.out.println("maxRowNumber = " + maxRowNumber);
+        maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
+        System.out.println("maxRowNumber = " + maxRowNumber);
+        if(getSheduleController().getCurrent().getMaxTableRows() == 0){
+           return 7;
+        }
+        return maxRowNumber;
     }
 
     public double getCahnnelingDurationMinute() {
@@ -48,6 +59,15 @@ public class FinalVariables {
         return 1.5;
     }
 
+      
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
+
+    public SheduleController getSheduleController() {
+        return sheduleController;
+    }
+
+    public void setSheduleController(SheduleController sheduleController) {
+        this.sheduleController = sheduleController;
+    }
 }

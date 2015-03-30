@@ -213,12 +213,6 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
-    
-    
-    
-    
-    
-    
 
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
@@ -283,7 +277,7 @@ public class StaffController implements Serializable {
         this.toDate = toDate;
     }
 
-    public void createActiveStaffTable() {
+    public void createActiveStaffTable(Date ssDate) {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -291,10 +285,12 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and (ss.dateLeft is null or ss.dateLeft > :to ) "
                 + " and ss.employeeStatus!=:sts";
+
+        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
+        hm.put("to", ssDate );
+
         hm.put("sts", EmployeeStatus.Temporary);
-        hm.put("to", toDate);
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss=:stf ";
@@ -305,8 +301,8 @@ public class StaffController implements Serializable {
             sql += " and ss.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
         }
@@ -327,10 +323,65 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        //System.out.println(sql);
+        System.out.println(sql);
+        System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
 
     }
+    
+    
+     public void createActiveStaffTable() {
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 "
+                + " and ss.employeeStatus!=:sts";
+
+//        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
+//        hm.put("to", ssDate );
+
+        hm.put("sts", EmployeeStatus.Temporary);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.codeInterger ";
+        System.out.println(sql);
+        System.out.println("hm = " + hm);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+    
 
     public void createTable() {
         HashMap hm = new HashMap();
@@ -794,7 +845,7 @@ public class StaffController implements Serializable {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Staff Details Updated");
         } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -803,7 +854,7 @@ public class StaffController implements Serializable {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("New Staff Created");
         }
 
         updateStaffEmployment();
@@ -960,8 +1011,6 @@ public class StaffController implements Serializable {
     public void setResetStaffBalance(double resetStaffBalance) {
         this.resetStaffBalance = resetStaffBalance;
     }
-    
-    
 
     public List<Staff> getSelectedStaffes() {
         return selectedStaffes;
@@ -970,7 +1019,7 @@ public class StaffController implements Serializable {
     public void setSelectedStaffes(List<Staff> selectedStaffes) {
         this.selectedStaffes = selectedStaffes;
     }
-    
+
     public List<Staff> getStaffes() {
         return staffes;
     }
@@ -978,33 +1027,32 @@ public class StaffController implements Serializable {
     public void setStaffes(List<Staff> staffes) {
         this.staffes = staffes;
     }
-    
-    public String admin_staff_view_signature(){
+
+    public String admin_staff_view_signature() {
         fillStaffes();
         return "/admin_staff_view_signature";
     }
-    
-    public String admin_edit_staff_balance(){
+
+    public String admin_edit_staff_balance() {
         fillStaffes();
         return "/admin_edit_staff_balance";
     }
-    
-    public void resetStaffBalance(){
-        for(Staff s:selectedStaffes){
+
+    public void resetStaffBalance() {
+        for (Staff s : selectedStaffes) {
             s.setAnnualWelfareUtilized(resetStaffBalance);
             getFacade().edit(s);
             getFacade().flush();
         }
         JsfUtil.addSuccessMessage("Balances Updated");
     }
-    
+
     public void fillStaffes() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
         staffes = getFacade().findBySQL(temSql);
     }
-    
-    
+
     public List<Staff> getItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";

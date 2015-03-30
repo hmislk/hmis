@@ -41,28 +41,38 @@
 
                         <h:panelGroup styleClass="noBorder summeryBorder"  id="gpBillPreview">
 
-                            <p:dataTable id="tbl" style="min-width: 100%;"  rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" style="min-width: 100%;"  rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15">
 
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="Supplied By #{reportsStock.institution.name}"/>                                    
                                 </f:facet>
 
-                                <p:column headerText="Item">
+                                <p:column headerText="Item" sortBy="#{i.itemBatch.item.name}" filterBy="#{i.itemBatch.item.name}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Code">
+
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.itemBatch.item.name}" 
+                                          filterBy="#{i.itemBatch.item.name}" 
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Stock Quantity">
+                                <p:column headerText="Stock Quantity" 
+                                          sortBy="#{i.stock}"
+                                          filterBy="#{i.stock}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock Quantity"/>    
                                     </f:facet>
@@ -71,7 +81,8 @@
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Expiary">
+                                <p:column headerText="Expiary" 
+                                          sortBy="#{i.itemBatch.item.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>    
                                     </f:facet>
@@ -80,7 +91,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate"
+                                          sortBy="#{i.itemBatch.purcahseRate}"
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>    
                                     </f:facet>
@@ -89,7 +102,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" 
+                                          sortBy="#{i.itemBatch.purcahseRate}" 
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>    
                                     </f:facet>
@@ -103,7 +118,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Rate" style="text-align: right;">
+                                <p:column headerText="Retail Sale Rate" 
+                                          sortBy="#{i.itemBatch.retailsaleRate}"
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Rate"/>    
                                     </f:facet>
@@ -112,7 +129,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;">
+                                <p:column headerText="Retail Sale Value" 
+                                          sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>    
                                     </f:facet>
@@ -126,7 +145,7 @@
                                     </f:facet>
                                 </p:column>
                                 <p:columnGroup type="footer">
-                                  <p:row>
+                                    <p:row>
                                         <p:column colspan="9" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>

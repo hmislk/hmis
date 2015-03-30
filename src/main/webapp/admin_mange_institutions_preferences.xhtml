@@ -57,6 +57,15 @@
                                 <h:outputLabel value="Allow to Change Payment Method During Settle"></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment}" />
                                 
+                                <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.opdPosBillWithoutLogo}"/>
+                                
+                                <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.channelWithOutReferenceNumber}"/>
+                                
+                                <h:outputLabel value="Logo Name"></h:outputLabel>
+                                <h:inputText id="imgName" value="#{sessionController.institutionPreference.logoName}"/>
+                                <p:watermark for="imgName" value="Eg- /abc.jpg" />
                             </h:panelGrid>
 
                         </h:panelGrid>

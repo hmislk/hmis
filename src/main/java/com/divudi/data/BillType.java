@@ -22,7 +22,7 @@ public enum BillType {
     OpdBathcBill,
     SurgeryBill,
     LabBill,
-    PaymentBill,
+    PaymentBill,//To Pay Professional Payments
     OpdBill,
     InwardPaymentBill,
     InwardFinalBill,
@@ -59,6 +59,7 @@ public enum BillType {
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
     PharmacyGrnReturn,
+    PharmacyReturnWithoutTraising,
     GrnPayment,
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
@@ -76,8 +77,10 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
+    @Deprecated
     ChannelProPayment,
     ChannelAgencyPayment,
+    ChannelAgencyCommission,
     gpBooking,
     gpSettling,
     Appointment,

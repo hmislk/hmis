@@ -55,8 +55,10 @@
                                          fontName="Courier New"  />
                         </p:commandButton>
 
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                        <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                          action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
+                        
+                        
                     </h:panelGrid>
 
 
@@ -99,6 +101,13 @@
             <in:inward_professional_payment id="inward_professional"/>
 
             <p:spacer height="30"/>
+
+            <in:channelling_professional_payment id="channelling_professional"/>  
+
+            <p:spacer height="30"/>
+            
+            
+            
 
             <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}">
                 <p:column>

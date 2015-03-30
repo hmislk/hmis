@@ -229,15 +229,20 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 + " from StaffLeaveEntitle ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:stf "
-                + " and ss.fromDate=:frm "
-                + " and ss.toDate<=:td "
+                + " and ss.fromDate<=:frm  "
+                + " and ss.toDate>=:frm "
                 + " and ss.leaveType in :ltp ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", list);
         hm.put("frm", frm);
-        hm.put("td", td);
-        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+//        hm.put("td", td);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        return stf;
+        
+        //Need to Add toLogicTo Date  
+
     }
 
     public void calLeaveCount() {
@@ -253,9 +258,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
             return;
         }
 
-        StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType(),
-                commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()),
-                commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
+        StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(
+                getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType(),
+                getCurrentLeaveForm().getFromDate(),
+                getCurrentLeaveForm().getToDate());
         System.out.println("getCurrentLeaveForm().getStaff() = " + getCurrentLeaveForm().getStaff());
         System.out.println("getCurrentLeaveForm().getLeaveType() = " + getCurrentLeaveForm().getLeaveType());
         System.out.println("commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
@@ -376,7 +382,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 JsfUtil.addErrorMessage("Please Select Shift That Lie Entitled");
                 return true;
             }
-           
+
             Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
 //            if (datRang != 1) {
@@ -585,7 +591,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and l.roster.department.institution=:ins ";
             m.put("ins", getReportKeyWord().getInstitution());
@@ -662,7 +668,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and l.roster.department.institution=:ins ";
             m.put("ins", getReportKeyWord().getInstitution());
@@ -688,6 +694,35 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         sql = " select l from LeaveForm l where "
                 + " l.approvedAt between :fd and :td ";
+
+        if (staff != null) {
+            sql += " and l.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and l.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void createleaveTableByShiftDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select l from LeaveForm l where "
+                + " l.staffShift.shiftDate between :fd and :td ";
 
         if (staff != null) {
             sql += " and l.staff=:st ";

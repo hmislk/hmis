@@ -74,6 +74,10 @@
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
                     <p:column>
+                        #{sts.id}
+                    </p:column>
+                     
+                    <p:column>
                         #{sts.shiftStartTime}
                     </p:column>
                      <p:column>
@@ -104,7 +108,7 @@
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
-                                                   itemLabel="#{i.timeLabel}||#{i.id}" itemValue="#{i}" />
+                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
@@ -119,7 +123,7 @@
                             <h:panelGroup >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}||#{i.id}"  itemValue="#{i}" />
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="endRc "
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   

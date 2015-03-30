@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="BHT Income by Categories" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Discharge From : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="Discharge To : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="Paid From : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.fromDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="Paid To : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.toDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                        </h:panelGrid>
+                        <p:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController1.processProfessionalPayment()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Discharged Date" action="#{inwardReportController1.processProfessionalPaymentByDischargedDate()}" onclick="onSubmitButton();"  ></p:commandButton>
+
+
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
+                            </p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                        </p:panelGrid>
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tb1" value="#{inwardReportController1.professionals}" var="pro" rowStyleClass="#{pro.value2 eq 0.0 ? 'redText':''}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Professional Fee"/>
+                                </f:facet>
+                                
+                                <p:column headerText="Speciality">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Speciality" />
+                                    </f:facet>           
+                                     <p:outputLabel value="#{pro.speciality.name}" />
+                                  
+                                </p:column>
+                                <p:column headerText="Gross" style="text-align: right; padding: 5px;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Added" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{pro.value1}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.professionalGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Paid" style="text-align: right; padding: 5px;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Paid" />
+                                    </f:facet>
+                                      <h:outputLabel value="#{pro.value2}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.professionalGrossPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>                              
+                                <p:column headerText="Due Value" style="text-align: right; padding: 5px;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Due Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{pro.value1-pro.value2}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.professionalGross-inwardReportController1.professionalGrossPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+
+                         
+
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
