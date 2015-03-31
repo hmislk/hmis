@@ -41,9 +41,9 @@
                             <p:autoComplete style="width: 400px;"
                                             forceSelection="true" 
                                             value="#{channelReportController.webUser}" id="scStaff"
-                                            completeMethod="#{staffController.completeStaff}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon" styleClass="noPrintButton"  >                                            
+                                            completeMethod="#{webUserController.completeUser}" var="mys" 
+                                            itemLabel="#{mys.webUserPerson.name}" itemValue="#{mys}"
+                                            converter="webUs" styleClass="noPrintButton"  >                                            
                             </p:autoComplete>
 
                             <p:commandButton id="btnProcess" ajax="false" value="Process" styleClass="noPrintButton" 
