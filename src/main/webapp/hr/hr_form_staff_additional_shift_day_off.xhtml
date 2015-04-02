@@ -23,7 +23,14 @@
                                         navigator="true"
                                         pattern="yyyy MM dd HH:mm:ss">
                                 <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
-                            </p:calendar> 
+                           </p:calendar>  
+                           
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                            </p:selectOneMenu>
                             <h:outputLabel value="From Time"/>
                            <ez:enterDateTime id="fromDate" 
                                               idValue="from"
@@ -49,7 +56,7 @@
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
-                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
+                                             action="#{staffAdditionalFormController.saveAdditionalFormShiftDayOff()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
@@ -71,7 +78,8 @@
                             <h:outputLabel value="Approved Person"/>
                             <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
 
-                            <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShift()}" />
+                            <p:commandButton ajax="false" value="Search Shift Date " 
+                                             action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShiftDayOff()}" />
 
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 

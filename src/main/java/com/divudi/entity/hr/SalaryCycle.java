@@ -31,25 +31,29 @@ public class SalaryCycle implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date salaryFromDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date salaryToDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date overTimeFromDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date overTimeToDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date extraDutyFromDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date extraDutyToDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date workedToDate;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date workedFromDate;
-     @Temporal(javax.persistence.TemporalType.DATE)
+     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date dayOffPhToDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date dayOffPhFromDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date salaryAdvanceFromDate;
-      @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date salaryAdvanceToDate;
     private int salaryYear;
     private int salaryMonth;
@@ -88,8 +92,6 @@ public class SalaryCycle implements Serializable {
         }
 
     }
-    
-    
 
     public Date getWorkedToDate() {
         return workedToDate;
@@ -285,4 +287,24 @@ public class SalaryCycle implements Serializable {
         this.salaryAdvanceToDate = salaryAdvanceToDate;
     }
 
+    public Date getDayOffPhToDate() {
+        return dayOffPhToDate;
+    }
+
+    public void setDayOffPhToDate(Date dayOffPhToDate) {
+        this.dayOffPhToDate = dayOffPhToDate;
+    }
+
+    public Date getDayOffPhFromDate() {
+        return dayOffPhFromDate;
+    }
+
+    public void setDayOffPhFromDate(Date dayOffPhFromDate) {
+        this.dayOffPhFromDate = dayOffPhFromDate;
+    }
+
+    
+    
+    
+    
 }

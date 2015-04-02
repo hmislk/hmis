@@ -54,6 +54,13 @@
                                 <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
                                  
                                 </p:column>
+                                  <p:column headerText="Form Num">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Form Num"/>
+                                </f:facet>
+                                      <p:outputLabel value="  #{ss.additionalForm.code}" ></p:outputLabel>
+                                  
+                                </p:column>
                                 <p:column headerText="Emp Name">
                                      <f:facet name="header">
                                     <h:outputLabel value="Emp Name"/>
@@ -64,8 +71,9 @@
                                 <p:column headerText="Department Name">
                                      <f:facet name="header">
                                     <h:outputLabel value="Department Name"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.department.name}" ></p:outputLabel>
+                                </f:facet>                                
+                                <p:outputLabel value=" #{ss.staff.workingDepartment.name}" ></p:outputLabel>
+                                <p:outputLabel value=" #{ss.staff.workingDepartment.institution.name}" ></p:outputLabel>
                                    
                                 </p:column>
                                 <p:column headerText="Staff Category" rendered="false">

@@ -30,6 +30,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.DepartmentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -97,6 +98,9 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
+
+    @EJB
+    DepartmentFacade departmentFacade;
 
     public Institution getInstitution() {
         return institution;
@@ -561,7 +565,7 @@ public class ChannelReportController implements Serializable {
                 + " and b.createdAt between :frm and :to ";
 
         if (webUser != null) {
-            sql+=" and b.creater=:wb ";
+            sql += " and b.creater=:wb ";
             hm.put("wb", webUser);
         }
         hm.put("class", bill.getClass());
@@ -595,7 +599,6 @@ public class ChannelReportController implements Serializable {
 //        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-
     public double calDoctorFeeNetTotal(List<PaymentMethod> paymentMethod, List<BillType> billType, FeeType ftp) {
         HashMap hm = new HashMap();
 
@@ -610,12 +613,11 @@ public class ChannelReportController implements Serializable {
                 + " and b.bill.createdAt between :frm and :to ";
 
         //hm.put("class", bill.getClass());
-        
-        if(webUser!=null){
-            sql+=" and b.bill.creater=:wb";
+        if (webUser != null) {
+            sql += " and b.bill.creater=:wb";
             hm.put("wb", webUser);
         }
-        
+
         hm.put("bt", billType);
         hm.put("pm", paymentMethod);
         hm.put("ft", ftp);
@@ -649,7 +651,6 @@ public class ChannelReportController implements Serializable {
 //        return billFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-
     public double createBillSessionQueryTotal(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -861,6 +862,271 @@ public class ChannelReportController implements Serializable {
             getBillFacade().edit(bs.getBill());
             System.out.println("Out");
         }
+    }
+
+    List<Bill> billedBills;
+    List<Bill> cancelBills;
+    List<Bill> refundBills;
+
+    public void channelBillClassList() {
+
+        billedBills = new ArrayList<>();
+        cancelBills = new ArrayList<>();
+        refundBills = new ArrayList<>();
+
+        billedBills = channelListByBillClass(new BilledBill());
+        cancelBills = channelListByBillClass(new CancelledBill());
+        refundBills = channelListByBillClass(new RefundBill());
+    }
+
+    public List<Bill> channelListByBillClass(Bill bill) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and type(b)=:class "
+                + " and b.createdAt between :fDate and :tDate "
+                + " order by b.singleBillSession.sessionDate ";
+
+        hm.put("bt", bts);
+        hm.put("class", bill.getClass());
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    List<Department> deps;
+    List<DepartmentBill> depBills;
+
+    public void createDepartmentBills() {
+        deps = getDepartments();
+        depBills = new ArrayList<>();
+        for (Department d : deps) {
+            DepartmentBill db = new DepartmentBill();
+            db.setBillDepartment(d);
+            db.setBills(getDepartmentBills(d));
+            if (db.getBills() != null) {
+                depBills.add(db);
+
+            }
+        }
+    }
+
+    public List<Department> getDepartments() {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = " select d from Department d "
+                + " where d.retired=false "
+                + " order by d.name";
+        return getDepartmentFacade().findBySQL(sql, hm);
+    }
+
+    public List<Bill> getDepartmentBills(Department dep) {
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and b.department=:dep "
+                + " and b.createdAt between :fDate and :tDate "
+                + " order by b.singleBillSession.sessionDate ";
+
+        hm.put("bt", bts);
+        hm.put("dep", dep);
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
+    
+    List<Bill> summeryBilledBills;
+    List<Bill> summeryCancelBills;
+    List<Bill> summeryRefundBills;
+    
+    double billedBillTotal;
+    double canceledBillTotal;
+    double refundBillTotal;
+
+    public void channelCashierBillClassList() {
+
+        summeryBilledBills = new ArrayList<>();
+        summeryCancelBills = new ArrayList<>();
+        summeryRefundBills = new ArrayList<>();
+        
+        summeryBilledBills = createUserBills(new BilledBill(), getWebUser(), getDepartment());
+        summeryCancelBills = createUserBills(new CancelledBill(), getWebUser(), getDepartment());
+        summeryRefundBills = createUserBills(new RefundBill(), getWebUser(), getDepartment());
+        
+        billedBillTotal = calTotal(new BilledBill(), getWebUser(), getDepartment());
+        canceledBillTotal = calTotal(new CancelledBill(), getWebUser(), getDepartment());
+        refundBillTotal = calTotal(new RefundBill(), getWebUser(), getDepartment());
+    }
+    
+    public List<Bill> createUserBills(Bill billClass, WebUser webUser, Department department) {
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
+        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType in :bt "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            temMap.put("web", webUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bill", billClass.getClass());
+        temMap.put("bt", bts);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double calTotal(Bill billClass, WebUser wUser, Department department) {
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
+        PaymentMethod[] paymentMethods = {PaymentMethod.Agent, PaymentMethod.Card, PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
+        List<PaymentMethod> pms = Arrays.asList(paymentMethods);
+        
+        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+                + " type(b)=:bill and b.retired=false  "
+                + " and b.billType in :bt "
+                + " and (b.paymentMethod in pm)"
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:w";
+            temMap.put("w", wUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bt", bts);
+        temMap.put("pm", pms);
+
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> getSummeryBilledBills() {
+        return summeryBilledBills;
+    }
+
+    public void setSummeryBilledBills(List<Bill> summeryBilledBills) {
+        this.summeryBilledBills = summeryBilledBills;
+    }
+
+    public List<Bill> getSummeryCancelBills() {
+        return summeryCancelBills;
+    }
+
+    public void setSummeryCancelBills(List<Bill> summeryCancelBills) {
+        this.summeryCancelBills = summeryCancelBills;
+    }
+
+    public List<Bill> getSummeryRefundBills() {
+        return summeryRefundBills;
+    }
+
+    public void setSummeryRefundBills(List<Bill> summeryRefundBills) {
+        this.summeryRefundBills = summeryRefundBills;
+    }
+
+    public double getBilledBillTotal() {
+        return billedBillTotal;
+    }
+
+    public void setBilledBillTotal(double billedBillTotal) {
+        this.billedBillTotal = billedBillTotal;
+    }
+
+    public double getCanceledBillTotal() {
+        return canceledBillTotal;
+    }
+
+    public void setCanceledBillTotal(double canceledBillTotal) {
+        this.canceledBillTotal = canceledBillTotal;
+    }
+
+    public double getRefundBillTotal() {
+        return refundBillTotal;
+    }
+
+    public void setRefundBillTotal(double refundBillTotal) {
+        this.refundBillTotal = refundBillTotal;
+    }
+    
+    
+
+    public List<Department> getDeps() {
+        return deps;
+    }
+
+    public void setDeps(List<Department> deps) {
+        this.deps = deps;
+    }
+
+    public List<DepartmentBill> getDepBills() {
+        return depBills;
+    }
+
+    public void setDepBills(List<DepartmentBill> depBills) {
+        this.depBills = depBills;
+    }
+    
+    List<Bill> channelBills;
+
+    public void channelBillList() {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and b.createdAt between :fDate and :tDate "
+                + " order by b.singleBillSession.sessionDate ";
+
+        hm.put("bt", bts);
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+
+        channelBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
     }
 
     public void createChannelFees() {
@@ -1314,6 +1580,30 @@ public class ChannelReportController implements Serializable {
     /**
      * Creates a new instance of ChannelReportController
      */
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
+    public List<Bill> getCancelBills() {
+        return cancelBills;
+    }
+
+    public void setCancelBills(List<Bill> cancelBills) {
+        this.cancelBills = cancelBills;
+    }
+
+    public List<Bill> getRefundBills() {
+        return refundBills;
+    }
+
+    public void setRefundBills(List<Bill> refundBills) {
+        this.refundBills = refundBills;
+    }
+
     public ChannelReportController() {
     }
 
@@ -1456,6 +1746,14 @@ public class ChannelReportController implements Serializable {
         return cancelTotal;
     }
 
+    public List<Bill> getChannelBills() {
+        return channelBills;
+    }
+
+    public void setChannelBills(List<Bill> channelBills) {
+        this.channelBills = channelBills;
+    }
+
     public void setCancelTotal(double cancelTotal) {
         this.cancelTotal = cancelTotal;
     }
@@ -1490,6 +1788,14 @@ public class ChannelReportController implements Serializable {
 
     public void setTotalRefund(double totalRefund) {
         this.totalRefund = totalRefund;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
     }
 
     List<ChannelReportColumnModel> columns;
@@ -1852,6 +2158,29 @@ public class ChannelReportController implements Serializable {
 
         public void setOnCall(double onCall) {
             this.onCall = onCall;
+        }
+
+    }
+
+    public class DepartmentBill {
+
+        Department billDepartment;
+        List<Bill> bills;
+
+        public Department getBillDepartment() {
+            return billDepartment;
+        }
+
+        public void setBillDepartment(Department billDepartment) {
+            this.billDepartment = billDepartment;
+        }
+
+        public List<Bill> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<Bill> bills) {
+            this.bills = bills;
         }
 
     }

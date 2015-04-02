@@ -488,7 +488,9 @@
                                         <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form"  />
                                         <p:submenu label="Additional">
                                             <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}"  />    
-                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift" actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            
                                         </p:submenu>                                       
                                     </p:submenu>
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 

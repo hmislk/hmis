@@ -16,27 +16,37 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Shift" />
+                            <h:outputLabel value="Worked Time" />
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
 
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                        <h:panelGrid columns="2" >
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From : " />
+                                <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="To : " />
+                                <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="Employee : "/>
+                                <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Institution : "/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Staff Category : "/>
+                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Designation : "/>
+                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                <h:outputLabel value="Staff Roster : "/>
+                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="Day Type"/>
+                                <p:selectManyCheckbox value="#{hrReportController.dayTypesSelected}" layout="grid" columns="1" >
+                                    <f:selectItems value="#{enumController.dayTypes}" var="e" itemLabel="#{e}" itemValue="#{e}" ></f:selectItems>
+                                </p:selectManyCheckbox>
+                            </h:panelGrid>
                         </h:panelGrid>
+
+
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
 
@@ -49,7 +59,7 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff Shift"/>
+                                    <h:outputLabel value="Worked Time"/>
                                 </f:facet>
 
                                 <p:column headerText="ID">
@@ -57,13 +67,20 @@
                                         <h:outputLabel value="ID"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.id}" ></p:outputLabel>
-
                                 </p:column>
+
                                 <p:column headerText="Emp No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Emp No"/>
                                     </f:facet>
                                     <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+
+                                </p:column>
+                                 <p:column headerText="Day Of Week ">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Day Of Week"/>
+                                    </f:facet>
+                                     <p:outputLabel value=" #{ss.dayOfWeek}" ></p:outputLabel>
 
                                 </p:column>
                                 <p:column headerText="Emp Name">
@@ -94,13 +111,13 @@
                                     <p:outputLabel value="  #{ss.shift.name}" ></p:outputLabel>
 
                                 </p:column>
-                                <p:column headerText="Day Type">
+                                <p:column headerText="Day Type" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Day Type"/>
                                     </f:facet>
-                                    <p:outputLabel value="    #{ss.dayType}" ></p:outputLabel>
-
+                                    <p:outputLabel value="#{ss.dayType}" ></p:outputLabel>
                                 </p:column>
+
                                 <p:column headerText="Lieu Allowed">
                                     <f:facet name="header">
                                         <h:outputLabel value="Lieu Allowed"/>
@@ -112,9 +129,8 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Shift Date"/>
                                     </f:facet>
-
                                     <h:outputLabel value="#{ss.shiftDate}">                                        
-
+                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time">

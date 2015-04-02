@@ -75,7 +75,7 @@
                                           filterBy="#{i.itemBatch.item.code}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item"/>                                     
+                                        <h:outputLabel value="Code"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
@@ -86,7 +86,7 @@
                                           filterBy="#{i.stock}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item"/>                                     
+                                        <h:outputLabel value="Quantity"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}"  >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
@@ -96,7 +96,7 @@
                                 <p:column headerText="Expiry"
                                           sortBy="#{i.itemBatch.dateOfExpire}" >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item"/>                                     
+                                        <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
                                         <f:convertDateTime pattern="MM/yy" ></f:convertDateTime>
