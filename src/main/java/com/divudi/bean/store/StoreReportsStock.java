@@ -122,6 +122,40 @@ public class StoreReportsStock implements Serializable {
         }
     }
 
+    public void fillDepartmentStocksWithOutStockZero() {
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select s from Stock s where s.department=:d"
+                + " and s.itemBatch.item.departmentType=:depty "
+                + " and s.stock>0 ";
+
+        if (category != null) {
+            sql += " and s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
+        }
+
+        if (item != null) {
+            sql += " and s.itemBatch.item=:item ";
+            m.put("item", item);
+        }
+
+        sql += " order by s.itemBatch.item.name,s.itemBatch.serialNo ";
+
+        m.put("depty", DepartmentType.Store);
+        m.put("d", department);
+        stocks = getStockFacade().findBySQL(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+    }
+
     public void fillInventoryAssets() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -486,7 +520,12 @@ public class StoreReportsStock implements Serializable {
         m = new HashMap();
         m.put("cat", category);
         m.put("dep", department);
-        sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.category=:cat order by s.itemBatch.item.name";
+        m.put("depty", DepartmentType.Store);//Before Add show items Without code
+        
+        sql = "select s from Stock s where s.department=:dep "
+                + " and s.itemBatch.item.category=:cat "
+                + " and s.itemBatch.item.departmentType=:depty "
+                + " order by s.itemBatch.item.name";
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -806,8 +845,6 @@ public class StoreReportsStock implements Serializable {
         grnReturnbills = creditBean.getGrnReturnBills(grnbill, billTypesListReturn);
         paymentbills = creditBean.getPaidBills(grnbill, BillType.GrnPayment);
     }
-    
-    
 
     public void setSelectedInventoryStock(Stock selectedInventoryStock) {
         makeBillsNull();
@@ -823,6 +860,4 @@ public class StoreReportsStock implements Serializable {
         this.item = item;
     }
 
-    
-    
 }
