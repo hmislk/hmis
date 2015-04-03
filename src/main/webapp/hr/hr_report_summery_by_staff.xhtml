@@ -72,10 +72,13 @@
                                 <p:column headerText="Form id">                                  
                                     <p:outputLabel value="#{ss.leaveForm.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Auto">                                  
-                                    <p:outputLabel value="#{ss.lateInVarified}" > <f:converter converterId="longToTime"/></p:outputLabel>
-                                    <h:outputLabel value=" - "/>
-                                    <p:outputLabel value="#{ss.earlyOutVarified}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                <p:column headerText="Late In">                                  
+                                    <p:outputLabel value="#{ss.lateInVarified}" rendered="#{ss.lateInVarified>(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="Early Out">                                  
+                                    <p:outputLabel value="#{ss.earlyOutVarified}"  rendered="#{ss.earlyOutVarified>(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                </p:column>
+                                 <p:column headerText="Auto">                                  
                                     <p:outputLabel value="#{ss.considerForLateIn}" ></p:outputLabel>
                                     <p:outputLabel value="#{ss.considerForEarlyOut}" ></p:outputLabel>
                                     <p:outputLabel value="#{ss.autoLeave}" ></p:outputLabel>
