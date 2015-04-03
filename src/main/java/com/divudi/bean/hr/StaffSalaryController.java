@@ -1025,7 +1025,7 @@ public class StaffSalaryController implements Serializable {
 
         List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(stfCurrent, fromTime, toTime);
         LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
-
+        
         if (staffShiftEarlyIn != null) {
             for (StaffShift stf : staffShiftEarlyIn) {
                 staffShiftLateInTenMinuteLinked.add(stf);
@@ -1047,7 +1047,10 @@ public class StaffSalaryController implements Serializable {
             }
 
             LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
+           
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
+            
+            
             staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
         }
