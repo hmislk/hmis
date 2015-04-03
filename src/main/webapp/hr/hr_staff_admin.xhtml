@@ -23,8 +23,6 @@
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
-                            <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
-                            <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
                             <p:panel >
 
                                 <h:panelGrid id="gpSelectText" >
@@ -51,6 +49,14 @@
                                 </h:panelGrid>
 
                             </p:panel>
+
+                            <p:panel >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
+                                    <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
+                                </h:panelGrid>
+
+                            </p:panel>
                         </h:panelGrid  >
 
                         <p:panel >
@@ -66,12 +72,12 @@
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
-                                            
+
                                             <h:outputLabel value="Staff ID"/>
                                             <h:outputLabel value="#{staffController.current.id}"/>
                                             <h:outputLabel value="Person ID"/>
                                             <h:outputLabel value="#{staffController.current.person.id}"/>
-                                            
+
                                             <h:outputLabel value="Title"/>
                                             <p:selectOneMenu value="#{staffController.current.person.title}"  >
                                                 <f:selectItem itemLabel="Select Title" />
@@ -113,10 +119,10 @@
                                             <p:outputLabel value="Date Joined "/>
                                             <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MM yyyy" >
                                             </p:calendar>
-                                               <p:outputLabel value="Date Resigned "/>
+                                            <p:outputLabel value="Date Resigned "/>
                                             <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
                                             </p:calendar>
-                                                  <p:outputLabel value="Date Retired "/>
+                                            <p:outputLabel value="Date Retired "/>
                                             <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                             <h:outputText value="Speciality" />
@@ -259,10 +265,10 @@
                                             <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}"  />
-<!--                                            <p:outputLabel value="Epf Bank Branch"/>                                           
-                                            <autocomplete:completeBank_Branch value="#{staffController.current.epfBankBranch}"/>                                           
-                                            <h:outputText  value="Epf Account No" ></h:outputText>
-                                            <p:inputText autocomplete="off"  value="#{staffController.current.epfAccountNo}"  />-->
+                                            <!--                                            <p:outputLabel value="Epf Bank Branch"/>                                           
+                                                                                        <autocomplete:completeBank_Branch value="#{staffController.current.epfBankBranch}"/>                                           
+                                                                                        <h:outputText  value="Epf Account No" ></h:outputText>
+                                                                                        <p:inputText autocomplete="off"  value="#{staffController.current.epfAccountNo}"  />-->
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Working Time">
