@@ -326,7 +326,7 @@ public class StaffController implements Serializable {
         System.out.println(sql);
         System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
-
+        selectedStaffes=staffWithCode;
     }
     
     

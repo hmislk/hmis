@@ -734,7 +734,8 @@ public class HumanResourceBean {
         return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
     }
-
+    
+    
     public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select l "
                 + " from StaffLeaveSystem l"
@@ -745,6 +746,25 @@ public class HumanResourceBean {
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+
+
+    public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff,  Date fromDate, Date toDate) {
+        String sql = "select l "
+                + " from StaffLeaveSystem l"
+                + " where l.retired=false "
+                + " and l.staff=:stf "
+//                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+//        hm.put("ltp", leaveType.getLeaveTypes());
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
@@ -798,7 +818,7 @@ public class HumanResourceBean {
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :dtp "
-                + " and ss.autoLeave=true "
+//                + " and ss.autoLeave=true "
                 + " and (ss.considerForLateIn=true "
                 + " or ss.considerForEarlyOut=true) "
                 + " order by ss.shiftDate ";
