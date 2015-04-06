@@ -119,15 +119,15 @@ public class ShiftTableController implements Serializable {
                     boolean flag = false;
                     StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
 
-                    if (fetchStaffShift.getRoster() != ss.getRoster()) {
+                    if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
                         flag = true;
                     }
 
-                    if (fetchStaffShift.getStaff() != ss.getStaff()) {
+                    if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
                         flag = true;
                     }
 
-                    if (fetchStaffShift.getShift() != ss.getShift()) {
+                    if (!fetchStaffShift.getShift().equals(ss.getShift())) {
                         flag = true;
                     }
 

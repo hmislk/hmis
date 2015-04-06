@@ -66,17 +66,23 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Shift id">                                  
-                                    <p:outputLabel value="#{ss.shift.id}" ></p:outputLabel>
+                                <p:column headerText="Staff Shift id">                                  
+                                    <p:outputLabel value="#{ss.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Form id">                                  
                                     <p:outputLabel value="#{ss.leaveForm.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Late In">                                  
-                                    <p:outputLabel value="#{ss.lateInVarified}" rendered="#{ss.lateInVarified>(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel>
+                                    <p:outputLabel value="#{ss.lateInVarified}" rendered="#{ss.lateInVarified>=(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="Late In Ref Shift id">                                  
+                                     <p:outputLabel value="#{ss.referenceStaffShiftLateIn.id}" ></p:outputLabel>
                                 </p:column>
                                  <p:column headerText="Early Out">                                  
-                                    <p:outputLabel value="#{ss.earlyOutVarified}"  rendered="#{ss.earlyOutVarified>(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                    <p:outputLabel value="#{ss.earlyOutVarified}"  rendered="#{ss.earlyOutVarified>=(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
+                                </p:column>
+                                 <p:column headerText="Early OutRef Shift id">                                  
+                                     <p:outputLabel value="#{ss.referenceStaffShiftEarlyOut.id}" ></p:outputLabel>
                                 </p:column>
                                  <p:column headerText="Auto">                                  
                                     <p:outputLabel value="#{ss.considerForLateIn}" ></p:outputLabel>
@@ -306,15 +312,19 @@
                             <p:dataTable id="tb6" value="#{hrReportController.staffLeaveSystem}" var="ss">
                                 <f:facet name="header" >
                                     <h:panelGrid columns="4" style="border-style: hidden!important">
-                                        <h:outputLabel value="No Pay System "/>                                      
+                                        <h:outputLabel value="Late Attendance Leave"/>                                      
                                     </h:panelGrid>
                                 </f:facet> 
+                                   <p:column headerText="id" >
+                                    <p:outputLabel value="#{ss.id}"></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Leave Date" >
                                     <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="id" >
-                                    <p:outputLabel value="#{ss.id}"></p:outputLabel>
+                                 <p:column headerText="Leave Type" >
+                                     <p:outputLabel value="#{ss.leaveType}"></p:outputLabel>
                                 </p:column>
+                             
                                 <p:column headerText="Leave Qty" >
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
