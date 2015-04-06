@@ -45,12 +45,19 @@
 
                         </h:panelGrid>
                         <p:panel>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentStocks()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process" action="#{storeReportsStock.fillDepartmentStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
+                            <p:commandButton value="Excel" ajax="false" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                             fontName="Courier New" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Process Without Stock Zero" action="#{storeReportsStock.fillDepartmentStocksWithOutStockZero()}" ></p:commandButton>
+                            <p:commandButton value="Excel Without Stock Zero" ajax="false">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock_with_out_zero" 
                                              facetBackground="#008000" facetFontSize="15" 
                                              facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
                                              fontName="Courier New" />

@@ -94,7 +94,17 @@
                                 <p:commandButton value="(2) Employee Detail " 
                                                  action="hr_report_employee_detail" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(3) Employee Detail Zone Code" 
+                                                 action="hr_report_employee_detail_zone_code" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                
+                                <p:commandButton value="(4) Employee EPF Detail" 
+                                                 action="hr_report_epf_detail" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                
                             </h:panelGrid>
 
                         </p:panel>
@@ -173,7 +183,7 @@
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-                            <p:commandButton value="(4) Leave Report Extra " 
+                            <p:commandButton value="(4) Late Leave" 
                                              action="hr_report_leave_system" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />

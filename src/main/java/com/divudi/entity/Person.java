@@ -57,6 +57,9 @@ public class Person implements Serializable {
     @Column(name = "SNAME")
     String nameWithInitials;
     String phone;
+    String initials;
+    String surName;
+    String zoneCode;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
@@ -202,6 +205,32 @@ public class Person implements Serializable {
     public void setName(String name) {
         this.name = name.toUpperCase();
     }
+
+    public String getInitials() {
+        return initials;
+    }
+
+    public void setInitials(String initials) {
+        this.initials = initials;
+    }
+
+    public String getSurName() {
+        return surName;
+    }
+
+    public void setSurName(String surName) {
+        this.surName = surName;
+    }
+
+    public String getZoneCode() {
+        return zoneCode;
+    }
+
+    public void setZoneCode(String zoneCode) {
+        this.zoneCode = zoneCode;
+    }
+    
+    
 
     public boolean isRetired() {
         return retired;

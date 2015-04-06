@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Shift Histoy" />
+                            <h:outputLabel value="Shift Amendments" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -27,7 +27,7 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                             <h:outputLabel value="Institution : "/>
+                            <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
@@ -47,66 +47,125 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShiftHistorys}" var="ss" >
-                                      <f:facet name="header">
-                                          <h:outputLabel value="Staff Shift Histoy"  style="font-size: 20px " />
+                            <p:dataTable id="tb1" value="#{hrReportController.staffShiftHistorys}" var="ss"
+                                         rows="20"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,20,50"
+                                         >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift Amendments"  style="font-size: 20px " />
                                 </f:facet>
-                                
-                                <p:column headerText="Changed At">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Changed At"/>
-                                </f:facet>
-                                <p:outputLabel value="#{ss.createdAt}" ></p:outputLabel>
-                                    
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column rowspan="2" headerText="Changed at" sortBy="#{ss.createdAt}"/>
+                                        <p:column rowspan="2" 
+                                                  headerText="Changed by" 
+                                                  sortBy="#{ss.creater.webUserPerson.name}"
+                                                  filterBy="#{ss.creater.webUserPerson.name}" 
+                                                  filterMatchMode="contains"
+                                                  />
+                                        <p:column colspan="4" headerText="Changed from" />
+                                        <p:column colspan="4" headerText="Changed to" />
+                                    </p:row>
+                                    <p:row>
+                                        <p:column  headerText="Code" 
+                                                   sortBy="#{ss.staff.code}"
+                                                   filterBy="#{ss.staff.code}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Name" 
+                                                   sortBy="#{ss.staff.person.nameWithTitle}"
+                                                   filterBy="#{ss.staff.person.nameWithTitle}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Roster" 
+                                                   sortBy="#{ss.roster.name}"
+                                                   filterBy="#{ss.roster.name}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Shift" 
+                                                   sortBy="#{ss.shift.name}"
+                                                   filterBy="#{ss.shift.name}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Code" 
+                                                   sortBy="#{ss.staffShift.staff.code}"
+                                                   filterBy="#{ss.staffShift.staff.code}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Name" 
+                                                   sortBy="#{ss.staffShift.staff.person.nameWithInitials}"
+                                                   filterBy="#{ss.staffShift.staff.person.nameWithInitials}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Roster" 
+                                                   sortBy="#{ss.staffShift.roster.name}"
+                                                   filterBy="#{ss.staffShift.roster.name}" 
+                                                   filterMatchMode="contains"/>
+                                        <p:column  headerText="Shift" 
+                                                   sortBy="#{ss.staffShift.shift.name}"
+                                                   filterBy="#{ss.staffShift.shift.name}" 
+                                                   filterMatchMode="contains"/>
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:column headerText="Changed At" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Changed At"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yy- hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>     
-                                 <p:column headerText="Changed by">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Changed by"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.creater.webUserPerson.name}" ></p:outputLabel>
-                                   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Changed by"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}" ></p:outputLabel>
                                 </p:column>     
-                                <p:column headerText="From Emp Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="From Emp Name"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
-                                   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.code}" ></p:outputLabel>
+                                </p:column>   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+                                </p:column>  
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Roster"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.roster.name}" ></p:outputLabel>
+                                </p:column>   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Shift"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
+                                </p:column>   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffShift.staff.code}" ></p:outputLabel>
+                                </p:column>   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffShift.staff.person.nameWithInitials}" ></p:outputLabel>
                                 </p:column>                                                           
-                                <p:column headerText="From Roster Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="From Roster Name"/>
-                                </f:facet>
-                                <p:outputLabel value="#{ss.roster.name}" ></p:outputLabel>
-                                    
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Roster"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffShift.roster.name}" ></p:outputLabel>
                                 </p:column>   
-                                <p:column headerText="From Shift Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="From Shift Name"/>
-                                </f:facet>
-                                <p:outputLabel value="      #{ss.shift.name}" ></p:outputLabel>
-                               
-                                </p:column>   
-                                <p:column headerText="Current Emp Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Current Emp Name"/>
-                                </f:facet>
-                                <p:outputLabel value="  #{ss.staffShift.staff.person.nameWithInitials}" ></p:outputLabel>
-                                  
-                                </p:column>                                                           
-                                <p:column headerText="Current Roster Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Current Roster Name"/>
-                                </f:facet>
-                                <p:outputLabel value="     #{ss.staffShift.roster.name}" ></p:outputLabel>
-                                
-                                </p:column>   
-                                <p:column headerText="Current Shift Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Current Shift Name"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staffShift.shift.name}" ></p:outputLabel>
-                                   
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Shift"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staffShift.shift.name}" ></p:outputLabel>
                                 </p:column>   
                             </p:dataTable>
                         </p:panel>
