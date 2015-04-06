@@ -15,6 +15,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.DepartmentPayment;
+import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String3Value2;
@@ -31,7 +32,9 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -466,8 +469,6 @@ public class BookKeepingSummery implements Serializable {
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
     }
-    
-    
 
 //    public void createOPdListDayEndTable() {
 //        System.err.println("createOPdCategoryTable");
@@ -1089,58 +1090,62 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+
+
     public void createInwardFee() {
         Map hm = new HashMap();
         String sql;
-        bookKeepingSummeryRows=new ArrayList<>();
+        bookKeepingSummeryRows = new ArrayList<>();
 
-        sql = " select distinct(bf.billItem.item),sum(bf.feeValue),count(bf.billItem.item) from BillFee bf "
+        sql = " select distinct(bf.billItem.item),sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and bf.bill.billType= :bTp "
                 + " and bf.fee.feeType=:ftp "
-                + " and bf.bill.institution=:ins "
-                + " and bf.bill.department=:dep ";
-        
+                + " and bf.bill.institution=:ins ";
+        //+ " and bf.bill.department=:dep ";
+
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("bTp", BillType.InwardBill);
         hm.put("ftp", FeeType.Chemical);
         hm.put("ins", institution);
-        hm.put("dep", getSessionController().getDepartment());
-        
-        List<Object[]> obj=getBillFeeFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
-        
-        for(Object[] ob:obj){
-            bookKeepingSummeryRow bkr=new bookKeepingSummeryRow();
-            if (ob[0]!=null) {
-                String item=ob[0].toString();
-                bkr.setItemName(item);                
+        //hm.put("dep", getSessionController().getDepartment());
+
+        List<Object[]> obj = getBillFeeFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+        System.out.println("obl" + obj);
+
+        for (Object[] ob : obj) {
+
+            bookKeepingSummeryRow bkr = new bookKeepingSummeryRow();
+            if (ob[0] != null) {
+                System.out.println("obl" + ob[0]);
+                Item item = (Item) ob[0];
+                System.out.println("item" + item);
+                bkr.setItemName(item.getName());
             }
-            
-            if(ob[1]!=null){
-                double feeTotal=(double)ob[1];
-                bkr.setTotal(feeTotal);
+
+            if (ob[1] != null) {
+                System.out.println("obl" + ob[1]);
+                double feeTotal = (double) ob[1];
+                System.out.println("feevalue" + feeTotal);
+                bkr.setReagentFee(feeTotal);
             }
-            
-            if(ob[2]!=null){
-                long count=(long)ob[2];
-                bkr.setCatCount(count);                
-            }          
-            
-            if(bkr.getCatCount()>0){
+
+            if (ob[2] != null) {
+                System.out.println("obl" + ob[2]);
+                long count = (long) ob[2];
+                System.out.println("count" + count);
+                bkr.setCatCount(count);
+            }
+
+            if (bkr.getCatCount() > 0) {
                 bookKeepingSummeryRows.add(bkr);
-                
-            }   
-            
-            
-            
-            
-                       
+
+            }
+
         }
-        
-        
-        
 
     }
 
@@ -3184,6 +3189,7 @@ public class BookKeepingSummery implements Serializable {
         double total;
         double subTotal;
         BillClassType billClassType;
+        List<String1Value3> bills;
 
         int serialNo;
 
@@ -3273,6 +3279,14 @@ public class BookKeepingSummery implements Serializable {
 
         public void setTotal(double total) {
             this.total = total;
+        }
+
+        public List<String1Value3> getBills() {
+            return bills;
+        }
+
+        public void setBills(List<String1Value3> bills) {
+            this.bills = bills;
         }
 
         public double getSubTotal() {
