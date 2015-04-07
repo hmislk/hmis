@@ -156,7 +156,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         currentStaff = null;
         totalDue = 0.0;
         totalPaying = 0.0;
-        printPreview = false;
+        //printPreview = false;
         paymentMethod = null;
         speciality = null;
         serviceSessions = null;
