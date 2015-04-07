@@ -1117,8 +1117,8 @@ public class BookKeepingSummery implements Serializable {
                 + " and bf.bill.refunded=false "
                 + " and bf.bill.billType= :bTp "
                 + " and bf.fee.feeType=:ftp "
-                + " and bf.bill.institution=:ins ";
-        //+ " and bf.bill.department=:dep ";
+                + " and bf.bill.institution=:ins "
+                + " and bf.bill.department=:dep ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
@@ -1126,7 +1126,7 @@ public class BookKeepingSummery implements Serializable {
         hm.put("ftp", FeeType.Chemical);
         hm.put("class", BillClassType.BilledBill);
         hm.put("ins", institution);
-        //hm.put("dep", getSessionController().getDepartment());
+        hm.put("dep", getSessionController().getDepartment());
 
         List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1155,8 +1155,8 @@ public class BookKeepingSummery implements Serializable {
                     + " and bf.bill.refunded=false "
                     + " and bf.bill.billType= :bTp "
                     + " and bf.fee.feeType=:ftp "
-                    + " and bf.bill.institution=:ins ";
-            //+ " and bf.bill.department=:dep ";
+                    + " and bf.bill.institution=:ins "
+                    + " and bf.bill.department=:dep ";
 
             hm.put("fd", fromDate);
             hm.put("td", toDate);
@@ -1165,7 +1165,7 @@ public class BookKeepingSummery implements Serializable {
             hm.put("class", BillClassType.BilledBill);
             hm.put("ins", institution);
             hm.put("itm", item);
-            //hm.put("dep", getSessionController().getDepartment());
+            hm.put("dep", getSessionController().getDepartment());
 
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
