@@ -729,7 +729,11 @@ public class PharmacySaleController1 implements Serializable {
             UtilityController.addErrorMessage("Quentity?");
             return;
         }
-
+        if (getQty() == 0.0) {
+            errorMessage = "Quentity Zero?";
+            UtilityController.addErrorMessage("Quentity Zero?");
+            return;
+        }
         if (getQty() > getStock().getStock()) {
             errorMessage = "No sufficient stocks.";
             UtilityController.addErrorMessage("No Sufficient Stocks?");

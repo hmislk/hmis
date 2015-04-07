@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Shift">
+            <p:panel header="Extra Shift Day Off /PH">
                 <h:panelGrid columns="2">
                     <p:panel >
                         <h:panelGrid columns="2">                           
@@ -60,7 +60,9 @@
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                            <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
 
+                            <p:watermark for="recomment" value="Delete Comment"/>
                         </h:panelGrid>
                     </p:panel>
                     <p:panel header="Search Forms">

@@ -84,7 +84,9 @@
                                          action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Added Date" 
                                          action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
-
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>
                     </p:panelGrid>                    
 
                 </p:panel>   
@@ -99,9 +101,9 @@
                                 </p:column>
                                 <p:column headerText="Department">                                    
                                 </p:column>
-                                <p:column headerText="Parent Categoy">                                    
+                                <p:column headerText="Bill Time">                                    
                                 </p:column>
-                                 <p:column headerText="Categoy">                                    
+                                <p:column headerText="Categoy">                                    
                                 </p:column>
                                 <p:column headerText="Name">                                    
                                 </p:column>
@@ -134,11 +136,13 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.item.department.name}"/>
                             </p:column>    
-                            <p:column headerText="Parent Categoy" >
+                            <p:column headerText="Bill Time" >
                                 <f:facet name="header">
-                                    <p:outputLabel value="Parent Categoy" />
+                                    <p:outputLabel value="Bill Time" />
                                 </f:facet>
-                                <h:outputLabel value="#{i.billItem.item.category.parentCategory.name}"/>
+                                <h:outputLabel value="#{i.billItem.billTime}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
                             </p:column>   
                             <p:column headerText="Categoy" >
                                 <f:facet name="header">
@@ -169,17 +173,17 @@
 
                         </p:subTable>
                         <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total" colspan="7" />
-                                     <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{mdInwardReportController.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                            <p:row>
+                                <p:column footerText="Total" colspan="7" />
+                                <p:column style="text-align: right;" >
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{mdInwardReportController.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
 
                     </p:dataTable>
                 </p:panel>

@@ -79,6 +79,15 @@ public class StaffChangeController implements Serializable {
         }
     }
 
+    public void findBasic() {
+        Date date= new Date();
+        StaffPaysheetComponent tmp = getHumanResourceBean().getBasic(getStaff(), date);
+
+        if (tmp != null) {
+            getStaff().setBasic(tmp.getStaffPaySheetComponentValue());
+        }
+    }
+    
     public void update() {
         if (getFromDate() == null) {
             UtilityController.addErrorMessage("Select Active Date");
