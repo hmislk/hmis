@@ -31,6 +31,7 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -1090,14 +1091,27 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    @EJB
+    ItemFacade itemfacade;
+    
+    double totalRegentFee;
 
+    public double getTotalRegentFee() {
+        return totalRegentFee;
+    }
 
-    public void createInwardFee() {
+    public void setTotalRegentFee(double totalRegentFee) {
+        this.totalRegentFee = totalRegentFee;
+    }
+    
+    
+
+    public List<Item> getItems() {
         Map hm = new HashMap();
         String sql;
         bookKeepingSummeryRows = new ArrayList<>();
 
-        sql = " select distinct(bf.billItem.item),sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
+        sql = " select distinct(bf.billItem.item) from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and bf.bill.billType= :bTp "
@@ -1112,30 +1126,59 @@ public class BookKeepingSummery implements Serializable {
         hm.put("ins", institution);
         //hm.put("dep", getSessionController().getDepartment());
 
-        List<Object[]> obj = getBillFeeFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+        List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
-        System.out.println("obl" + obj);
+        for (Item it : itm) {
+            System.out.println("item" + it.getName());
+        }
 
-        for (Object[] ob : obj) {
+        return itm;
+
+    }
+
+    public void createInwardFee() {
+        Map hm = new HashMap();
+        String sql;
+        bookKeepingSummeryRows = new ArrayList<>();
+        totalRegentFee=0;
+
+        for (Item item : getItems()) {
+
+            sql = " select sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
+                    + " where bf.retired=false "
+                    + " and bf.bill.createdAt between :fd and :td "
+                    + " and bf.billItem.item=:itm "
+                    + " and bf.bill.billType= :bTp "
+                    + " and bf.fee.feeType=:ftp "
+                    + " and bf.bill.institution=:ins ";
+            //+ " and bf.bill.department=:dep ";
+
+            hm.put("fd", fromDate);
+            hm.put("td", toDate);
+            hm.put("bTp", BillType.InwardBill);
+            hm.put("ftp", FeeType.Chemical);
+            hm.put("ins", institution);
+            hm.put("itm", item);
+            //hm.put("dep", getSessionController().getDepartment());
+
+            Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
             bookKeepingSummeryRow bkr = new bookKeepingSummeryRow();
-            if (ob[0] != null) {
-                System.out.println("obl" + ob[0]);
-                Item item = (Item) ob[0];
-                System.out.println("item" + item);
-                bkr.setItemName(item.getName());
-            }
 
-            if (ob[1] != null) {
-                System.out.println("obl" + ob[1]);
-                double feeTotal = (double) ob[1];
+            System.out.println("item" + item);
+            bkr.setItemName(item.getName());
+
+            if (obj[0] != null) {
+                System.out.println("ob[1]" + obj[0]);
+                double feeTotal = (double) obj[0];
                 System.out.println("feevalue" + feeTotal);
                 bkr.setReagentFee(feeTotal);
+                totalRegentFee+=feeTotal;
             }
 
-            if (ob[2] != null) {
-                System.out.println("obl" + ob[2]);
-                long count = (long) ob[2];
+            if (obj[1] != null) {
+                System.out.println("ob[1]" + obj[1]);
+                long count = (long) obj[1];
                 System.out.println("count" + count);
                 bkr.setCatCount(count);
             }
