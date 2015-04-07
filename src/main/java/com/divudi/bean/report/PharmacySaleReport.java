@@ -2494,7 +2494,7 @@ public class PharmacySaleReport implements Serializable {
         double regentTot = 0.0;
         
         
-        double regentFee;
+        //double regentFee;
 
         while (nowDate.before(getToDate())) {
 
@@ -2533,7 +2533,7 @@ public class PharmacySaleReport implements Serializable {
         
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
-        billedSummery.setRefundedTotal(regentTot);
+        billedSummery.setRefundedTotal(regentTot);       
 
     }
 
