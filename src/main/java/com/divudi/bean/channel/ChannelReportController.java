@@ -10,8 +10,11 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
+import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ChannelDoctor;
+import com.divudi.data.dataStructure.WebUserBillsTotal;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
@@ -31,6 +34,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.WebUserFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -899,7 +903,7 @@ public class ChannelReportController implements Serializable {
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     List<Department> deps;
     List<DepartmentBill> depBills;
 
@@ -910,7 +914,7 @@ public class ChannelReportController implements Serializable {
             DepartmentBill db = new DepartmentBill();
             db.setBillDepartment(d);
             db.setBills(getDepartmentBills(d));
-            if (db.getBills() != null) {
+            if (db.getBills() != null && !db.getBills().isEmpty()) {
                 depBills.add(db);
 
             }
@@ -930,6 +934,7 @@ public class ChannelReportController implements Serializable {
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
+
         HashMap hm = new HashMap();
         String sql = " select b from Bill b "
                 + " where b.billType in :bt "
@@ -944,35 +949,108 @@ public class ChannelReportController implements Serializable {
         hm.put("tDate", getToDate());
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
-    
-    List<Bill> summeryBilledBills;
-    List<Bill> summeryCancelBills;
-    List<Bill> summeryRefundBills;
-    
-    double billedBillTotal;
-    double canceledBillTotal;
-    double refundBillTotal;
+    BillsTotals billedBillList;
+    BillsTotals canceledBillList;
+    BillsTotals refundBillList;
 
-    public void channelCashierBillClassList() {
+    public void createChannelCashierBillList() {
 
-        summeryBilledBills = new ArrayList<>();
-        summeryCancelBills = new ArrayList<>();
-        summeryRefundBills = new ArrayList<>();
-        
-        summeryBilledBills = createUserBills(new BilledBill(), getWebUser(), getDepartment());
-        summeryCancelBills = createUserBills(new CancelledBill(), getWebUser(), getDepartment());
-        summeryRefundBills = createUserBills(new RefundBill(), getWebUser(), getDepartment());
-        
-        billedBillTotal = calTotal(new BilledBill(), getWebUser(), getDepartment());
-        canceledBillTotal = calTotal(new CancelledBill(), getWebUser(), getDepartment());
-        refundBillTotal = calTotal(new RefundBill(), getWebUser(), getDepartment());
+        getBilledBillList().setBills(createUserBills(new BilledBill(), getWebUser(), getDepartment()));
+        getCanceledBillList().setBills(createUserBills(new CancelledBill(), getWebUser(), getDepartment()));
+        getRefundBillList().setBills(createUserBills(new RefundBill(), getWebUser(), getDepartment()));
+
+        getBilledBillList().setAgent(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getCanceledBillList().setAgent(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getRefundBillList().setAgent(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+
+        getBilledBillList().setCash(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getCanceledBillList().setCash(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getRefundBillList().setCash(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+
+        getBilledBillList().setCard(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getCanceledBillList().setCard(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getRefundBillList().setCard(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+
+        getBilledBillList().setSlip(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getCanceledBillList().setSlip(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getRefundBillList().setSlip(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+
+        getBilledBillList().setCheque(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getCanceledBillList().setCheque(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getRefundBillList().setCheque(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+
+        createSummary();
     }
-    
+
+    private List<String1Value1> channelSummary;
+
+    public void createSummary() {
+        List<BillsTotals> list2 = new ArrayList<>();
+        list2.add(billedBillList);
+        list2.add(canceledBillList);
+        list2.add(refundBillList);
+
+        double agent = 0.0;
+        double slip = 0;
+        double creditCard = 0.0;
+        double cheque = 0.0;
+        double cash = 0.0;
+        for (BillsTotals bt : list2) {
+            if (bt != null) {
+                agent += bt.getAgent();
+                slip += bt.getSlip();
+                creditCard += bt.getCard();
+                cheque += bt.getCheque();
+                cash += bt.getCash();
+            }
+        }
+
+        channelSummary = new ArrayList<>();
+        String1Value1 tmp1 = new String1Value1();
+        tmp1.setString("Final Agent Total");
+        tmp1.setValue(agent);
+        channelSummary.add(tmp1);
+
+        String1Value1 tmp2 = new String1Value1();
+        tmp2.setString("Final Slip Total");
+        tmp2.setValue(slip);
+        channelSummary.add(tmp2);
+
+        String1Value1 tmp3 = new String1Value1();
+        tmp3.setString("Final Cash Total");
+        tmp3.setValue(cash);
+        channelSummary.add(tmp3);
+
+        String1Value1 tmp4 = new String1Value1();
+        tmp4.setString("Final Card Total");
+        tmp4.setValue(creditCard);
+        channelSummary.add(tmp4);
+
+        String1Value1 tmp5 = new String1Value1();
+        tmp5.setString("Final Cheque Total");
+        tmp5.setValue(cheque);
+        channelSummary.add(tmp5);
+
+        String1Value1 tmp6 = new String1Value1();
+        tmp6.setString("Final Summary Total");
+        tmp6.setValue(slip + cheque + agent + cash + creditCard);
+        channelSummary.add(tmp6);
+
+    }
+
+    public List<String1Value1> getChannelSummary() {
+        return channelSummary;
+    }
+
+    public void setChannelSummary(List<String1Value1> channelSummary) {
+        this.channelSummary = channelSummary;
+    }
+
     public List<Bill> createUserBills(Bill billClass, WebUser webUser, Department department) {
-        
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        
+
         String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
                 + " and b.retired=false "
                 + " and b.billType in :bt "
@@ -1001,19 +1079,17 @@ public class ChannelReportController implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calTotal(Bill billClass, WebUser wUser, Department department) {
-        
+
+    public double calTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        
-        PaymentMethod[] paymentMethods = {PaymentMethod.Agent, PaymentMethod.Card, PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
-        List<PaymentMethod> pms = Arrays.asList(paymentMethods);
-        
+
         String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
-                + " type(b)=:bill and b.retired=false  "
+                + " type(b)=:bill "
+                + " and b.retired=false  "
                 + " and b.billType in :bt "
-                + " and (b.paymentMethod in pm)"
+                + " and b.paymentMethod=:pm"
                 + " and b.institution=:ins"
                 + " and b.createdAt between :fromDate and :toDate";
         Map temMap = new HashMap();
@@ -1031,7 +1107,7 @@ public class ChannelReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("bt", bts);
-        temMap.put("pm", pms);
+        temMap.put("pm", paymentMethod);
 
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bill", billClass.getClass());
@@ -1042,55 +1118,257 @@ public class ChannelReportController implements Serializable {
 
     }
 
-    public List<Bill> getSummeryBilledBills() {
-        return summeryBilledBills;
+    double finalCashTot;
+    double finalAgentTot;
+    double finalCardTot;
+    double finalChequeTot;
+    double finalSlipTot;
+    List<WebUserBillsTotal> webUserBillsTotals;
+
+    public void calCashierData() {
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        finalCashTot = finalChequeTot = finalCardTot = finalAgentTot = finalSlipTot = 0;
+        webUserBillsTotals = new ArrayList<>();
+        for (WebUser webUser : getCashiers()) {
+            WebUserBillsTotal tmp = new WebUserBillsTotal();
+            tmp.setWebUser(webUser);
+            List<BillsTotals> billls = new ArrayList<>();
+
+            double uCard = 0;
+            double uCash = 0;
+            double uCheque = 0;
+            double uAgent = 0;
+            double uSlip = 0;
+            for (BillType btp : bts) {
+                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+
+                if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getAgent() != 0 || newB.getSlip() != 0) {
+                    billls.add(newB);
+                }
+
+                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+
+                if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getAgent() != 0 || newC.getSlip() != 0) {
+                    billls.add(newC);
+                }
+
+                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+
+                if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getAgent() != 0 || newR.getSlip() != 0) {
+                    billls.add(newR);
+                }
+
+                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                uAgent += (newB.getAgent() + newC.getAgent() + newR.getAgent());
+                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+            }
+
+            BillsTotals newSum = new BillsTotals();
+            newSum.setName("Total ");
+            newSum.setBold(true);
+            newSum.setCard(uCard);
+            newSum.setCash(uCash);
+            newSum.setCheque(uCheque);
+            newSum.setAgent(uAgent);
+            newSum.setSlip(uSlip);
+
+            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getAgent()!= 0 || newSum.getSlip() != 0) {
+                billls.add(newSum);
+            }
+
+            tmp.setBillsTotals(billls);
+            webUserBillsTotals.add(tmp);
+
+        }
+
     }
 
-    public void setSummeryBilledBills(List<Bill> summeryBilledBills) {
-        this.summeryBilledBills = summeryBilledBills;
+    private BillsTotals createRow(BillType billType, String suffix, Bill bill, WebUser webUser) {
+        BillsTotals newB = new BillsTotals();
+        newB.setName(billType.getLabel() + " " + suffix);
+        newB.setCard(calTotalValueOwn(webUser, bill, PaymentMethod.Card, billType));
+        finalCardTot += newB.getCard();
+        newB.setCash(calTotalValueOwn(webUser, bill, PaymentMethod.Cash, billType));
+        finalCashTot += newB.getCash();
+        newB.setCheque(calTotalValueOwn(webUser, bill, PaymentMethod.Cheque, billType));
+        finalChequeTot += newB.getCheque();
+        newB.setAgent(calTotalValueOwn(webUser, bill, PaymentMethod.Agent, billType));
+        finalAgentTot += newB.getAgent();
+        newB.setSlip(calTotalValueOwn(webUser, bill, PaymentMethod.Slip, billType));
+        finalSlipTot += newB.getSlip();
+
+        return newB;
+
     }
 
-    public List<Bill> getSummeryCancelBills() {
-        return summeryCancelBills;
+    List<WebUser> cashiers;
+    @EJB
+    WebUserFacade webUserFacade;
+
+    public List<WebUser> getCashiers() {
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select us from "
+                + " Bill b "
+                + " join b.creater us "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
+                + " and b.billType in :btp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " group by us "
+                + " having sum(b.netTotal)!=0 ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", bts);
+        temMap.put("ins", sessionController.getInstitution());
+        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        if (cashiers == null) {
+            cashiers = new ArrayList<>();
+        }
+
+        return cashiers;
     }
 
-    public void setSummeryCancelBills(List<Bill> summeryCancelBills) {
-        this.summeryCancelBills = summeryCancelBills;
-    }
+    private double calTotalValueOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
 
-    public List<Bill> getSummeryRefundBills() {
-        return summeryRefundBills;
-    }
+        String sql;
+        Map temMap = new HashMap();
 
-    public void setSummeryRefundBills(List<Bill> summeryRefundBills) {
-        this.summeryRefundBills = summeryRefundBills;
-    }
+        sql = "select sum(b.netTotal) from Bill b where type(b)=:bill and b.creater=:cret and "
+                + " b.paymentMethod= :payMethod  and b.institution=:ins"
+                + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate ";
 
-    public double getBilledBillTotal() {
-        return billedBillTotal;
-    }
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTp", billType);
+        temMap.put("payMethod", pM);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("ins", getSessionController().getInstitution());
 
-    public void setBilledBillTotal(double billedBillTotal) {
-        this.billedBillTotal = billedBillTotal;
-    }
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-    public double getCanceledBillTotal() {
-        return canceledBillTotal;
-    }
-
-    public void setCanceledBillTotal(double canceledBillTotal) {
-        this.canceledBillTotal = canceledBillTotal;
-    }
-
-    public double getRefundBillTotal() {
-        return refundBillTotal;
-    }
-
-    public void setRefundBillTotal(double refundBillTotal) {
-        this.refundBillTotal = refundBillTotal;
     }
     
-    
+    public void calCashierDataTotalOnly() {
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
+        finalCashTot = finalChequeTot = finalCardTot = finalAgentTot = finalSlipTot = 0;
+        webUserBillsTotals = new ArrayList<>();
+        for (WebUser webUser : getCashiers()) {
+            WebUserBillsTotal tmp = new WebUserBillsTotal();
+            tmp.setWebUser(webUser);
+            List<BillsTotals> billls = new ArrayList<>();
+
+            double uCard = 0;
+            double uCash = 0;
+            double uCheque = 0;
+            double uAgent = 0;
+            double uSlip = 0;
+            for (BillType btp : bts) {
+                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+
+                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                uAgent += (newB.getAgent()+ newC.getAgent() + newR.getAgent());
+                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+            }
+
+            BillsTotals newSum = new BillsTotals();
+            newSum.setName("Total ");
+            newSum.setBold(true);
+            newSum.setCard(uCard);
+            newSum.setCash(uCash);
+            newSum.setCheque(uCheque);
+            newSum.setAgent(uAgent);
+            newSum.setSlip(uSlip);
+
+            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getAgent()!= 0 || newSum.getSlip() != 0) {
+                billls.add(newSum);
+            }
+
+            tmp.setBillsTotals(billls);
+            webUserBillsTotals.add(tmp);
+
+        }
+
+    }
+
+    public double getFinalCashTot() {
+        return finalCashTot;
+    }
+
+    public void setFinalCashTot(double finalCashTot) {
+        this.finalCashTot = finalCashTot;
+    }
+
+    public double getFinalAgentTot() {
+        return finalAgentTot;
+    }
+
+    public void setFinalAgentTot(double finalAgentTot) {
+        this.finalAgentTot = finalAgentTot;
+    }
+
+    public double getFinalCardTot() {
+        return finalCardTot;
+    }
+
+    public void setFinalCardTot(double finalCardTot) {
+        this.finalCardTot = finalCardTot;
+    }
+
+    public double getFinalChequeTot() {
+        return finalChequeTot;
+    }
+
+    public void setFinalChequeTot(double finalChequeTot) {
+        this.finalChequeTot = finalChequeTot;
+    }
+
+    public double getFinalSlipTot() {
+        return finalSlipTot;
+    }
+
+    public void setFinalSlipTot(double finalSlipTot) {
+        this.finalSlipTot = finalSlipTot;
+    }
+
+    public List<WebUserBillsTotal> getWebUserBillsTotals() {
+        return webUserBillsTotals;
+    }
+
+    public void setWebUserBillsTotals(List<WebUserBillsTotal> webUserBillsTotals) {
+        this.webUserBillsTotals = webUserBillsTotals;
+    }
+
+    public WebUserFacade getWebUserFacade() {
+        return webUserFacade;
+    }
+
+    public void setWebUserFacade(WebUserFacade webUserFacade) {
+        this.webUserFacade = webUserFacade;
+    }
+
+    public void setCashiers(List<WebUser> cashiers) {
+        this.cashiers = cashiers;
+    }
 
     public List<Department> getDeps() {
         return deps;
@@ -1107,7 +1385,7 @@ public class ChannelReportController implements Serializable {
     public void setDepBills(List<DepartmentBill> depBills) {
         this.depBills = depBills;
     }
-    
+
     List<Bill> channelBills;
 
     public void channelBillList() {
@@ -1657,6 +1935,39 @@ public class ChannelReportController implements Serializable {
 
     public void setTaxTotal(double taxTotal) {
         this.taxTotal = taxTotal;
+    }
+
+    public BillsTotals getBilledBillList() {
+        if (billedBillList == null) {
+            billedBillList = new BillsTotals();
+        }
+        return billedBillList;
+    }
+
+    public void setBilledBillList(BillsTotals billedBillList) {
+        this.billedBillList = billedBillList;
+    }
+
+    public BillsTotals getCanceledBillList() {
+        if (canceledBillList == null) {
+            canceledBillList = new BillsTotals();
+        }
+        return canceledBillList;
+    }
+
+    public void setCanceledBillList(BillsTotals canceledBillList) {
+        this.canceledBillList = canceledBillList;
+    }
+
+    public BillsTotals getRefundBillList() {
+        if (refundBillList == null) {
+            refundBillList = new BillsTotals();
+        }
+        return refundBillList;
+    }
+
+    public void setRefundBillList(BillsTotals refundBillList) {
+        this.refundBillList = refundBillList;
     }
 
     public List<ChannelDoctor> getChannelDoctors() {
