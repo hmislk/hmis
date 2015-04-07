@@ -1093,7 +1093,7 @@ public class BookKeepingSummery implements Serializable {
 
     @EJB
     ItemFacade itemfacade;
-    
+
     double totalRegentFee;
 
     public double getTotalRegentFee() {
@@ -1103,8 +1103,6 @@ public class BookKeepingSummery implements Serializable {
     public void setTotalRegentFee(double totalRegentFee) {
         this.totalRegentFee = totalRegentFee;
     }
-    
-    
 
     public List<Item> getItems() {
         Map hm = new HashMap();
@@ -1114,17 +1112,21 @@ public class BookKeepingSummery implements Serializable {
         sql = " select distinct(bf.billItem.item) from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.createdAt between :fd and :td "
+                + " and bf.bill.billClassType=:class "
+                + " and bf.bill.cancelled=false "
+                + " and bf.bill.refunded=false "
                 + " and bf.bill.billType= :bTp "
                 + " and bf.fee.feeType=:ftp "
-                + " and bf.bill.institution=:ins ";
-        //+ " and bf.bill.department=:dep ";
+                + " and bf.bill.institution=:ins "
+                + " and bf.bill.department=:dep ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("bTp", BillType.InwardBill);
         hm.put("ftp", FeeType.Chemical);
+        hm.put("class", BillClassType.BilledBill);
         hm.put("ins", institution);
-        //hm.put("dep", getSessionController().getDepartment());
+        hm.put("dep", getSessionController().getDepartment());
 
         List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1140,7 +1142,7 @@ public class BookKeepingSummery implements Serializable {
         Map hm = new HashMap();
         String sql;
         bookKeepingSummeryRows = new ArrayList<>();
-        totalRegentFee=0;
+        totalRegentFee = 0;
 
         for (Item item : getItems()) {
 
@@ -1148,18 +1150,22 @@ public class BookKeepingSummery implements Serializable {
                     + " where bf.retired=false "
                     + " and bf.bill.createdAt between :fd and :td "
                     + " and bf.billItem.item=:itm "
+                    + " and bf.bill.billClassType=:class "
+                    + " and bf.bill.cancelled=false "
+                    + " and bf.bill.refunded=false "
                     + " and bf.bill.billType= :bTp "
                     + " and bf.fee.feeType=:ftp "
-                    + " and bf.bill.institution=:ins ";
-            //+ " and bf.bill.department=:dep ";
+                    + " and bf.bill.institution=:ins "
+                    + " and bf.bill.department=:dep ";
 
             hm.put("fd", fromDate);
             hm.put("td", toDate);
             hm.put("bTp", BillType.InwardBill);
             hm.put("ftp", FeeType.Chemical);
+            hm.put("class", BillClassType.BilledBill);
             hm.put("ins", institution);
             hm.put("itm", item);
-            //hm.put("dep", getSessionController().getDepartment());
+            hm.put("dep", getSessionController().getDepartment());
 
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1173,7 +1179,7 @@ public class BookKeepingSummery implements Serializable {
                 double feeTotal = (double) obj[0];
                 System.out.println("feevalue" + feeTotal);
                 bkr.setReagentFee(feeTotal);
-                totalRegentFee+=feeTotal;
+                totalRegentFee += feeTotal;
             }
 
             if (obj[1] != null) {
