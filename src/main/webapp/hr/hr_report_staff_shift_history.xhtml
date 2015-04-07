@@ -47,6 +47,9 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
+
+
+
                             <p:dataTable id="tb1" value="#{hrReportController.staffShiftHistorys}" var="ss"
                                          rows="20"
                                          paginator="true"
@@ -168,6 +171,10 @@
                                     <p:outputLabel value=" #{ss.staffShift.shift.name}" ></p:outputLabel>
                                 </p:column>   
                             </p:dataTable>
+
+
+
+                        
                         </p:panel>
 
 
