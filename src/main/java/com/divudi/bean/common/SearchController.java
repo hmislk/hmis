@@ -2876,6 +2876,53 @@ public class SearchController implements Serializable {
 
         //   searchBillItems = new LazyBillItem(tmp);
     }
+    
+    
+    public void createBillItemTableByKeywordAll() {
+
+        String sql;
+        Map m = new HashMap();
+        m.put("toDate", toDate);
+        m.put("fromDate", fromDate);
+        m.put("bType", BillType.OpdBill);
+        m.put("ins", getSessionController().getInstitution());
+
+        sql = "select bi from BillItem bi where bi.bill.institution=:ins "
+                + " and bi.bill.billType=:bType "
+                + " and bi.createdAt between :fromDate and :toDate ";
+
+        if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().equals("")) {
+            sql += " and  (upper(bi.bill.patient.person.name) like :patientName )";
+            m.put("patientName", "%" + searchKeyword.getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(bi.bill.patient.person.phone) like :patientPhone )";
+            m.put("patientPhone", "%" + searchKeyword.getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().equals("")) {
+            sql += " and  (upper(bi.bill.insId) like :billNo )";
+            m.put("billNo", "%" + searchKeyword.getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getItemName() != null && !searchKeyword.getItemName().trim().equals("")) {
+            sql += " and  (upper(bi.item.name) like :itemName )";
+            m.put("itemName", "%" + searchKeyword.getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getToInstitution() != null && !searchKeyword.getToInstitution().trim().equals("")) {
+            sql += " and  (upper(bi.bill.toInstitution.name) like :toIns )";
+            m.put("toIns", "%" + searchKeyword.getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bi.id desc  ";
+        //System.err.println("Sql " + sql);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        //   searchBillItems = new LazyBillItem(tmp);
+    }
 
     public void createPatientInvestigationsTable() {
 

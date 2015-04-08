@@ -21,6 +21,7 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
+                                <p:commandButton id="btnSearchAll" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{sessionController}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
