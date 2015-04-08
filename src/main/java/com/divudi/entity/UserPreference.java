@@ -52,6 +52,7 @@ public class UserPreference implements Serializable {
     boolean tranferNetTotalbyRetailRate;
     boolean allowtoChangePaymentMethodDuringPayment;
     boolean opdPosBillWithoutLogo;
+    boolean channelWithOutReferenceNumber;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -292,12 +293,15 @@ public class UserPreference implements Serializable {
     public void setLogoName(String logoName) {
         this.logoName = logoName;
     }
-    
-    
-    
-    
-    
 
+    public boolean isChannelWithOutReferenceNumber() {
+        return channelWithOutReferenceNumber;
+    }
+
+    public void setChannelWithOutReferenceNumber(boolean channelWithOutReferenceNumber) {
+        this.channelWithOutReferenceNumber = channelWithOutReferenceNumber;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

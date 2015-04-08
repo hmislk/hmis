@@ -10,11 +10,8 @@
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form>
-
-
                     <p:panel header="Staff Stock Report by Batch" >
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="Staff" >
@@ -26,19 +23,22 @@
                                 <p:printer target="gpBillPreview" >
                                 </p:printer>
                             </p:commandButton>
-                            
                             <p:commandButton value="Excel" ajax="false">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
                                              facetBackground="#008000" facetFontSize="15" 
                                              facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            
                         </h:panelGrid>
-
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl"
-                                         rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                                         rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
+                                         value="#{reportsStock.stocks}" var="i"  
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         >
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock"/>
                                     <h:outputLabel value="#{staff.person.name}"/>  

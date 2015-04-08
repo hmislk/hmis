@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+                    <p:panel header="Employe List" >
+                        <p:panel>
+                            <h:panelGrid columns="2" >  
+                                <h:outputLabel value="Institution"/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Staff Category : "/>
+                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Specility : "/>
+                                <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
+                                <h:outputLabel value="Staff Designation : "/>
+                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                <h:outputLabel value="Staff Roster : "/>
+                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="3">
+                                <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+                                <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                    <p:printer target="reportPrint"  />
+                                </p:commandButton>
+
+                                <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                    <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                                </p:commandButton> 
+                            </h:panelGrid>
+
+                        </p:panel>
+                        <p:panel header="Employee List" id="reportPrint">
+
+
+                            <p:dataTable value="#{hrReportController.staffs}" 
+                                         var="s" 
+                                         id="tbl2" 
+                                         rowIndexVar="i"
+                                         rowKey="#{s.id}"
+
+                                         >
+
+                                <p:column headerText="Zone Code" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Zone Code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.zoneCode}"/>
+                                </p:column>
+                                
+                                <p:column headerText="Empolyee Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Empolyee Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.id}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.codeInterger}" headerText="Member Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Member Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.codeInterger}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.person.nic}" headerText="Nic Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Nic Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.nic}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.person.nameWithInitials}" headerText="Full Name">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Full Name" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.nameWithInitials}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.person.initials}" headerText="Initials">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Initials" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.initials}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.person.surName}" headerText="Surname">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Surname" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.person.surName}" />
+                                </p:column>
+                                
+                                <p:column filterBy="#{s.employeeStatus.label}" headerText="Status">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Status" />
+                                    </f:facet>
+                                       <p:outputLabel value="#{s.employeeStatus.label}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -35,6 +35,7 @@
                             <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
                             <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                             <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
+                            <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
                             </p:commandButton>

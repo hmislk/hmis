@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Over Time " />
+                            <h:outputLabel value="EPF ETF" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -50,7 +50,10 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-
+                            <h:outputLabel value="Blocked"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
+                            <h:outputLabel value="Hold"/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
 
                         </h:panelGrid>
 

@@ -7,18 +7,16 @@
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <body>
 
+
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-
-                <p:panelGrid columns="2" >
-
-
-
-                </p:panelGrid>
-
+                <h:form >
+                    <p:panelGrid columns="2" >
+                        <h:commandLink action="reports.xhtml" value="Customer Report Search" ></h:commandLink>
+                        <h:commandLink action="channelling.xhtml" value="Channel Search"></h:commandLink>
+                    </p:panelGrid>
+                </h:form>
             </ui:define>
-
         </ui:composition>
 
 

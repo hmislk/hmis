@@ -111,6 +111,12 @@
                                 <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                 </h:outputLabel>
                             </p:column>
+                            
+                            <p:column headerText="Discharged At" >
+                                <h:outputLabel value="#{bf.bill.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
 
                             <p:column headerText="BilledAt" >
                                 <f:facet name="header">

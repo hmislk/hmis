@@ -512,6 +512,30 @@ a:hover {
     vertical-align: top;
 }
 
+
+.singleLine
+{
+    text-wrap:none!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important ;
+    word-wrap: break-word;
+}
+
+.fourEqualColumns{
+    width: 25%!important;
+}
+
+.firstOfTitleAndThreeColumns{
+    width: 55%!important;
+    font-weight: bolder!important; 
+}
+
+.othersOfTitleAndThreeColumns{
+    width: 15%!important;
+    font-weight: lighter!important;
+}
+
 .linkButton
 {
     margin: 2px;
@@ -520,6 +544,7 @@ a:hover {
     border-radius: 5px;
     text-transform: uppercase;
     font-size: 12px;
+    text-align: left!important;
 }
 
 .grid1 {

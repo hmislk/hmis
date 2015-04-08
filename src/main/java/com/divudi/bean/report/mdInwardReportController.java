@@ -1936,13 +1936,13 @@ public class mdInwardReportController implements Serializable {
 
     }
     
-    public double calBillHosTotals(Bill b) {
-        String sql;
-
-        sql = "select sum(bi.fee.fee) FROM BillFee bi "
-                + " where bi.bill.id=" + b.getId();
-
-        return getBillFeeFacade().findAggregateDbl(sql);
+    public double calBillHosTotals(List<BillFee>bfs) {
+        double total=0.0;
+        for (BillFee bf : bfs) {
+            total+=bf.getFee().getFee();
+        }
+        System.out.println("total = " + total);
+        return total;
 
     }
     
@@ -1996,13 +1996,27 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public List<BillFee> bilfees(Bill b) {
+    public List<BillFee> bilfees(Bill b, boolean dis, boolean add, boolean bill) {
         String sql;
+        Map m=new HashMap();
+        sql = "select bi FROM BillFee bi where "
+                + " bi.bill.id=" + b.getId();
 
-        sql = "select bi FROM BillFee bi "
-                + " where bi.bill.id=" + b.getId();
+        if (bill) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+        if (dis) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
 
-        return getBillFeeFacade().findBySQL(sql);
+        if (add) {
+            sql += " and bi.billItem.billTime between :fromDate and :toDate ";
+        }
+        
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        
+        return getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2016,9 +2030,11 @@ public class mdInwardReportController implements Serializable {
             BillWithBillFees bf = new BillWithBillFees();
 
             bf.setBill(b);
-            bf.setBillFees(bilfees(b));
-            bf.setHosTotal(calBillHosTotals(b));
-            billWithBillFeeses.add(bf);
+            bf.setBillFees(bilfees(b, dis, add, bill));
+            bf.setHosTotal(calBillHosTotals(bf.getBillFees()));
+            if (bf.getHosTotal()>0) {
+                billWithBillFeeses.add(bf);
+            }
         }
         
         total=calHosTotals(dis, add, bill);

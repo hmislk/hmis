@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
@@ -21,6 +22,7 @@ import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
@@ -172,12 +174,16 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     }
 
-    public List<StaffShift> fetchStaffShiftLateIn(StaffShift staffShift, double from, double to) {
+    public List<StaffShift> fetchStaffShiftLateIn(StaffShift staffShift, double from, double to, int count) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.considerForLateIn=false "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
+                + " and ss.dayType=:dtp "
+                + " and type(ss)!=:cls"
+                + " and ss.considerForLateIn!=true "
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf "
@@ -185,16 +191,16 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
         hm.put("date", staffShift.getShiftDate());
+        hm.put("dtp", DayType.Normal);
+        hm.put("cls", StaffShiftExtra.class);
 
-        sql += " and ss.lateInVarified!=0";
-
-        sql += " and ss.lateInVarified> :frmTime  "
-                + " and ss.lateInVarified< :toTime "
+//        sql += " and ss.lateInVarified!=0";
+        sql += " and ss.lateInVarified between  :frmTime and :toTime "
                 + " order by ss.shiftDate ";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQL(sql, hm);
+        return staffShiftFacade.findBySQLWithoutCache(sql, hm, TemporalType.DATE, count);
     }
 
     public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from) {
@@ -217,12 +223,16 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return staffShiftFacade.findBySQL(sql, hm);
     }
 
-    public List<StaffShift> fetchStaffShiftEarlyOut(StaffShift staffShift, double from, double to) {
+    public List<StaffShift> fetchStaffShiftEarlyOut(StaffShift staffShift, double from, double to, int count) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.considerForEarlyOut=false "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null"
+                + " and ss.dayType=:dtp "
+                + " and type(ss)!=:cls"
+                + " and ss.considerForEarlyOut!=true "
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf "
@@ -230,14 +240,16 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
         hm.put("date", staffShift.getShiftDate());
+        hm.put("dtp", DayType.Normal);
+        hm.put("cls", StaffShiftExtra.class);
 
         sql += " and ss.earlyOutVarified!=0";
-        sql += " and ss.earlyOutVarified> :frmTime  "
-                + " and ss.earlyOutVarified< :toTime";
+        sql += " and ss.earlyOutVarified between  :frmTime and  :toTime "
+                + " order by ss.shiftDate ";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQL(sql, hm);
+        return staffShiftFacade.findBySQLWithoutCache(sql, hm, TemporalType.DATE, count);
     }
 
     public FinalVariables getFinalVariables() {
