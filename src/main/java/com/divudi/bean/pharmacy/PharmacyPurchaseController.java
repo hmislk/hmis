@@ -388,6 +388,23 @@ public class PharmacyPurchaseController implements Serializable {
 //    }
 
     private List<BillItem> billItems;
+    
+    public void addItemWithLastRate() {
+        if (getCurrentBillItem().getItem() == null) {
+            UtilityController.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        getBillItems().add(getCurrentBillItem());
+
+        calTotal();
+
+        currentBillItem = null;
+    }
 
     public void addItem() {
 

@@ -965,19 +965,19 @@ public class BhtSummeryController implements Serializable {
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
-
         return disTot;
+
     }
 
     private double updatePatientLinenCharge(PatientRoom patientRoom, double discountPercent) {
-
+           
         double value = patientRoom.getCalculatedLinenCharge();
         double dis = (value * discountPercent) / 100;
         patientRoom.setDiscountLinenCharge(dis);
         //    patientRoom.setAjdustedLinenCharge(value);
         getPatientRoomFacade().edit(patientRoom);
-
-        return dis;
+           return dis;
+         
     }
 
     private double updatePatientNursingCharge(InwardChargeType inwardChargeType) {
@@ -1031,7 +1031,7 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().create(patientRoom);
         }
 
-        createTables();
+       createTables();
     }
 
     public void updatePrintingPatientRoom(PatientRoom patientRoom) {
