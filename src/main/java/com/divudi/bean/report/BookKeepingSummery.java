@@ -31,6 +31,7 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -87,6 +88,7 @@ public class BookKeepingSummery implements Serializable {
     List<DepartmentPayment> departmentProfessionalPayments;
     List<DepartmentPayment> channellingProfessionalPayments;
     List<String1Value2> inwardProfessionalPayments;
+    bookKeepingSummeryRow bksr=new bookKeepingSummeryRow();
     //Value
     double opdHospitalTotal;
     double opdStaffTotal;
@@ -187,6 +189,16 @@ public class BookKeepingSummery implements Serializable {
         }
         return departmentProfessionalPayments;
     }
+
+    public bookKeepingSummeryRow getBksr() {
+        return bksr;
+    }
+
+    public void setBksr(bookKeepingSummeryRow bksr) {
+        this.bksr = bksr;
+    }
+    
+    
 
     public void setDepartmentPayments(List<DepartmentPayment> departmentPayments) {
         this.departmentProfessionalPayments = departmentPayments;
@@ -1090,52 +1102,100 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    @EJB
+    ItemFacade itemfacade;
 
+    double totalRegentFee;
 
-    public void createInwardFee() {
+    public double getTotalRegentFee() {
+        return totalRegentFee;
+    }
+
+    public void setTotalRegentFee(double totalRegentFee) {
+        this.totalRegentFee = totalRegentFee;
+    }
+
+    public List<Item> getItems() {
         Map hm = new HashMap();
         String sql;
         bookKeepingSummeryRows = new ArrayList<>();
 
-        sql = " select distinct(bf.billItem.item),sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
+        sql = " select distinct(bf.billItem.item) from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.createdAt between :fd and :td "
+                + " and bf.bill.billClassType=:class "
+                + " and bf.bill.cancelled=false "
+                + " and bf.bill.refunded=false "
                 + " and bf.bill.billType= :bTp "
                 + " and bf.fee.feeType=:ftp "
-                + " and bf.bill.institution=:ins ";
-        //+ " and bf.bill.department=:dep ";
+                + " and bf.bill.institution=:ins "
+                + " and bf.bill.department=:dep ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("bTp", BillType.InwardBill);
         hm.put("ftp", FeeType.Chemical);
+        hm.put("class", BillClassType.BilledBill);
         hm.put("ins", institution);
-        //hm.put("dep", getSessionController().getDepartment());
+        hm.put("dep", getSessionController().getDepartment());
 
-        List<Object[]> obj = getBillFeeFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+        List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
-        System.out.println("obl" + obj);
+        for (Item it : itm) {
+            System.out.println("item" + it.getName());
+        }
 
-        for (Object[] ob : obj) {
+        return itm;
+
+    }
+
+    public void createInwardFee() {
+        Map hm = new HashMap();
+        String sql;
+        bookKeepingSummeryRows = new ArrayList<>();
+        totalRegentFee = 0;
+
+        for (Item item : getItems()) {
+
+            sql = " select sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
+                    + " where bf.retired=false "
+                    + " and bf.bill.createdAt between :fd and :td "
+                    + " and bf.billItem.item=:itm "
+                    + " and bf.bill.billClassType=:class "
+                    + " and bf.bill.cancelled=false "
+                    + " and bf.bill.refunded=false "
+                    + " and bf.bill.billType= :bTp "
+                    + " and bf.fee.feeType=:ftp "
+                    + " and bf.bill.institution=:ins "
+                    + " and bf.bill.department=:dep ";
+
+            hm.put("fd", fromDate);
+            hm.put("td", toDate);
+            hm.put("bTp", BillType.InwardBill);
+            hm.put("ftp", FeeType.Chemical);
+            hm.put("class", BillClassType.BilledBill);
+            hm.put("ins", institution);
+            hm.put("itm", item);
+            hm.put("dep", getSessionController().getDepartment());
+
+            Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
             bookKeepingSummeryRow bkr = new bookKeepingSummeryRow();
-            if (ob[0] != null) {
-                System.out.println("obl" + ob[0]);
-                Item item = (Item) ob[0];
-                System.out.println("item" + item);
-                bkr.setItemName(item.getName());
-            }
 
-            if (ob[1] != null) {
-                System.out.println("obl" + ob[1]);
-                double feeTotal = (double) ob[1];
+            System.out.println("item" + item);
+            bkr.setItemName(item.getName());
+
+            if (obj[0] != null) {
+                System.out.println("ob[1]" + obj[0]);
+                double feeTotal = (double) obj[0];
                 System.out.println("feevalue" + feeTotal);
                 bkr.setReagentFee(feeTotal);
+                totalRegentFee += feeTotal;
             }
 
-            if (ob[2] != null) {
-                System.out.println("obl" + ob[2]);
-                long count = (long) ob[2];
+            if (obj[1] != null) {
+                System.out.println("ob[1]" + obj[1]);
+                long count = (long) obj[1];
                 System.out.println("count" + count);
                 bkr.setCatCount(count);
             }
@@ -1904,6 +1964,94 @@ public class BookKeepingSummery implements Serializable {
         n++;
 
         bookKeepingSummeryRows.addAll(t);
+    }
+    
+    private double calBillFee(Date date, FeeType fTy, BillType bty) {
+
+        String sql;
+
+        sql = "select sum(f.feeGrossValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType = :billType "
+                + " and f.bill.createdAt between :fd and :td "
+                + " and f.bill.toInstitution=:ins "
+                + " and f.fee.feeType=:ft";
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("billType", bty);        
+        m.put("ins", institution);
+        m.put("ft", fTy);
+        //    m.put("ins", getSessionController().getInstitution());        
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    
+    public void createLabSummeryInward() {
+        bksr=new bookKeepingSummeryRow();
+        
+        bksr.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
+        
+        
+        //double regentFee;
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
+
+            double proTotCash = calBillFee(nowDate, FeeType.Staff, BillType.InwardBill);
+
+            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, BillType.InwardBill);
+            
+//            //inward bills
+//            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
+//            //double 
+
+            newRow.setValue1(hospitalFeeCash);
+            newRow.setValue2(regentFeeCash);
+            newRow.setValue3(proTotCash);            
+
+            hospitalFeeTot += hospitalFeeCash;
+            profeTotal += proTotCash;
+            regentTot += regentFeeCash;
+
+            bksr.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+        
+        bksr.setHosFee(hospitalFeeTot);
+        bksr.setProFee(profeTotal);
+        bksr.setReagentFee(regentTot);       
+
     }
 
     public void createOPdListWithCreditPaid() {

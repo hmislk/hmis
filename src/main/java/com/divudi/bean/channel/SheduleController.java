@@ -311,16 +311,16 @@ public class SheduleController implements Serializable {
     }
 
     private boolean checkError() {
-        if (getCurrent().getStartingTime() == null) {
+        if (current.getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
             return true;
         }
-        if (getCurrent().getName()== null) {
+        if (current.getName() == null || current.getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please Select Session Name");
             return true;
         }
 
-        if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
+        if (current.getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
             UtilityController.addErrorMessage("Set Weekday or Date");
             return true;
         }
@@ -396,6 +396,7 @@ public class SheduleController implements Serializable {
 
     public void saveSelected() {
         System.err.println("1 " + getItemFees().size());
+        System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
         }

@@ -1162,7 +1162,7 @@ public class BhtSummeryController implements Serializable {
         updatePaymentBillList();
         //For update Printing room
         setCurrent(getBillFacade().findByField("id", getCurrent().getId().toString(), false));
-        
+
         System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
         System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
         System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
@@ -1405,7 +1405,6 @@ public class BhtSummeryController implements Serializable {
 //                return "";
 //            }
 //        }
-
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
                 UtilityController.addErrorMessage("Payment method is Credit So Please Select Credit Company");
@@ -1718,17 +1717,25 @@ public class BhtSummeryController implements Serializable {
 
         double linen = p.getCurrentLinenCharge();
         Date dischargedAt = p.getDischargedAt();
-
+        System.out.println("dischargedAt = " + dischargedAt);
+        System.out.println("linen = " + linen);
         if (dischargedAt == null) {
             dischargedAt = new Date();
         }
 
         double extra = p.getAddedLinenCharge();
-
+        System.out.println("extra = " + extra);
         if (getCommonFunctions().checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
-            p.setCalculatedLinenCharge(linen + extra);
+            if (p.getAdmittedAt().equals(dischargedAt)) {
+                p.setCalculatedLinenCharge(0 + extra);
+                System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+            } else {
+                p.setCalculatedLinenCharge(linen + extra);
+                System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+            }
         } else {
             p.setCalculatedLinenCharge((linen * getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
+            System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
         }
     }
 
@@ -1789,14 +1796,20 @@ public class BhtSummeryController implements Serializable {
         }
 
         double roomCharge = p.getCurrentRoomCharge();
+        System.out.println("roomCharge = " + roomCharge);
         double calculated = getCharge(p, roomCharge) + p.getAddedRoomCharge();
+        System.out.println("calculated = " + calculated);
 
         p.setCalculatedRoomCharge(calculated);
     }
 
     private double getCharge(PatientRoom patientRoom, double value) {
+        System.out.println("value = " + value);
+        System.out.println("patientRoom = " + patientRoom);
         TimedItemFee timedFee = patientRoom.getRoomFacilityCharge().getTimedItemFee();
+        System.out.println("timedFee = " + timedFee);
         Date dischargeAt = patientRoom.getDischargedAt();
+        System.out.println("dischargeAt = " + dischargeAt);
 
         if (dischargeAt == null) {
             dischargeAt = new Date();
@@ -1807,8 +1820,10 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
+            System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         } else {
+            System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         }
 
