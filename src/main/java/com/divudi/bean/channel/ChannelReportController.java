@@ -1386,8 +1386,10 @@ public class ChannelReportController implements Serializable {
         for (FeeType feeType : fts) {
             FeetypeFee ftf = new FeetypeFee();
             ftf.setFeeType(feeType);
-            ftf.setBillFees(getBillFeeWithFeeTypes(new BilledBill(), feeType));
-            if (ftf.getBillFees() != null && !ftf.getBillFees().isEmpty()) {
+            ftf.setBilledBillFees(getBillFeeWithFeeTypes(new BilledBill(), feeType));
+            ftf.setCanceledBillFees(getBillFeeWithFeeTypes(new CancelledBill(), feeType));
+            ftf.setRefunBillFees(getBillFeeWithFeeTypes(new RefundBill(), feeType));
+            if (ftf.getBilledBillFees()!= null && !ftf.getBilledBillFees().isEmpty() || ftf.getCanceledBillFees()!= null && !ftf.getCanceledBillFees().isEmpty() || ftf.getRefunBillFees()!= null && !ftf.getRefunBillFees().isEmpty()) {
                 feetypeFees.add(ftf);
             }
         }
@@ -2724,15 +2726,33 @@ public class ChannelReportController implements Serializable {
 
     public class FeetypeFee {
 
-        List<BillFee> billFees;
+        List<BillFee> billedBillFees;
+        List<BillFee> canceledBillFees;
+        List<BillFee> refunBillFees;
         FeeType feeType;
 
-        public List<BillFee> getBillFees() {
-            return billFees;
+        public List<BillFee> getBilledBillFees() {
+            return billedBillFees;
         }
 
-        public void setBillFees(List<BillFee> billFees) {
-            this.billFees = billFees;
+        public void setBilledBillFees(List<BillFee> billedBillFees) {
+            this.billedBillFees = billedBillFees;
+        }
+
+        public List<BillFee> getCanceledBillFees() {
+            return canceledBillFees;
+        }
+
+        public void setCanceledBillFees(List<BillFee> canceledBillFees) {
+            this.canceledBillFees = canceledBillFees;
+        }
+
+        public List<BillFee> getRefunBillFees() {
+            return refunBillFees;
+        }
+
+        public void setRefunBillFees(List<BillFee> refunBillFees) {
+            this.refunBillFees = refunBillFees;
         }
 
         public FeeType getFeeType() {
