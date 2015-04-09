@@ -43,13 +43,31 @@
 
                     </f:facet>
                 </p:panel>
+                <p:panel id="PnlAdd" rendered="#{sessionController.institutionPreference.pharmayPurchaseWithLastRate eq true}">
+                    <p:autoComplete id="exItem" value="#{pharmacyPurchaseController.currentBillItem.item}"
+                                    forceSelection="true"
+                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        <p:column headerText="Item" >
+                            <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code" >
+                            <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Pack Size" >
+                            <p:outputLabel value=" X #{vt.dblValue}" 
+                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                        </p:column>
+                    </p:autoComplete>
+                    <p:commandButton value="Process" action="#{pharmacyPurchaseController.addItemWithLastRate}" process="PnlAdd" update="itemList PnlAdd tot focusItem :#{p:component('total')}"/>
+                   
+                </p:panel>
 
 
                 <p:commandButton id="nullButton" value="No Action" action="#" style="display: none;" ></p:commandButton>
 
                 <p:defaultCommand  target="btnAdd" />  
 
-                <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;">
+                <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;" rendered="#{sessionController.institutionPreference.pharmayPurchaseWithLastRate eq false}">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
                     <p:panelGrid id="itemSelectgrid1" columns="8">                       
                         <h:outputLabel value="Select Item"/>
@@ -113,11 +131,14 @@
 
                 </h:panelGrid>
 
-                <p:dataTable styleClass="noBorder" rowIndexVar="i" var="ph" value="#{pharmacyPurchaseController.billItems}" id="itemList">  
+                <p:dataTable styleClass="noBorder" rowIndexVar="i" var="ph" 
+                             value="#{pharmacyPurchaseController.billItems}" 
+                             
+                             id="itemList">  
                     <f:facet name="header">  
                         Ordered Item 
                     </f:facet>
-                    
+
                     <p:column headerText="No" style="width:30%">  
 
                         <h:outputLabel id="no" value="#{i+1}">
@@ -215,8 +236,8 @@
                         </p:panelGrid>
                     </p:panelGrid>
                 </p:panel>
-            
-            
+
+
                 <h:panelGroup rendered="#{not empty pharmacyItemExcelManager.itemNamesFailedToImport}" >
                     <p:dataTable value="#{pharmacyItemExcelManager.itemNamesFailedToImport}" 
                                  var="f">
@@ -225,8 +246,8 @@
                         </p:column>
                     </p:dataTable>
                 </h:panelGroup>
-            
-            
+
+
             </p:panel>
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">

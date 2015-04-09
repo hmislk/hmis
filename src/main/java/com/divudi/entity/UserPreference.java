@@ -53,6 +53,7 @@ public class UserPreference implements Serializable {
     boolean allowtoChangePaymentMethodDuringPayment;
     boolean opdPosBillWithoutLogo;
     boolean channelWithOutReferenceNumber;
+    boolean pharmayPurchaseWithLastRate;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -97,6 +98,15 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillPrabodha(boolean pharmacyBillPrabodha) {
         this.pharmacyBillPrabodha = pharmacyBillPrabodha;
     }
+
+    public boolean isPharmayPurchaseWithLastRate() {
+        return pharmayPurchaseWithLastRate;
+    }
+
+    public void setPharmayPurchaseWithLastRate(boolean pharmayPurchaseWithLastRate) {
+        this.pharmayPurchaseWithLastRate = pharmayPurchaseWithLastRate;
+    }
+    
     
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
