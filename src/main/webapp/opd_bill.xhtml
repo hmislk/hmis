@@ -216,7 +216,7 @@
                                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                         </h:outputLabel>
                                                     </p:column>
-
+                      ////////////////////////////////////////
                                                     <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
                                                             render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
                                                             listener="#{billController.calTotals()}" />
