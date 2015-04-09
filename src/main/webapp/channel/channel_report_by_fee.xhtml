@@ -38,12 +38,13 @@
                 </h:panelGrid>
 
                 <p:panel id="billFeeData">
-                    
+
                     <p:spacer width="30px"></p:spacer>
 
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Billed Bill List"></p:outputLabel>
+                            <p:outputLabel value="Total    #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -150,6 +151,7 @@
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Canceled Bill List"></p:outputLabel>
+                            <p:outputLabel value="Total    #{channelReportController.canceledBillTotl}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -256,6 +258,7 @@
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Refund Bill List"></p:outputLabel>
+                            <p:outputLabel value="Total    #{channelReportController.refundBillTotal}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
