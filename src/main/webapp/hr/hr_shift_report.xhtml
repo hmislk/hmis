@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel>
+            <p:panel header="Entered Shift Report">
 
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{shiftController.createShiftListReport()}"/>
@@ -22,7 +22,7 @@
                         </p:commandButton>
                     </h:panelGrid>
               
-                <p:panel id="datatable">
+                <p:panel id="datatable" header="Entered Shift">
                     <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">                       
 
                         <p:column headerText="Roster Name">

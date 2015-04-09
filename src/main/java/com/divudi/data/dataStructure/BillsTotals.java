@@ -22,6 +22,7 @@ public class BillsTotals {
     private double expense;
     private double grnNetTotalWithExpenses;
     private double slip;
+    private double agent;
     private boolean bold;
     //private BillType billType;
 
@@ -35,7 +36,7 @@ public class BillsTotals {
     }
 
     private void calTot() {
-        cash = credit = card = cheque = slip = 0.0;
+        cash = credit = card = cheque = slip = agent = 0.0;
         for (Bill b : bills) {
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 setCash(getCash() + b.getNetTotal());
@@ -47,6 +48,8 @@ public class BillsTotals {
                 setCheque(getCheque() + b.getNetTotal());
             } else if (b.getPaymentMethod() == PaymentMethod.Slip) {
                 setSlip(getSlip() + b.getNetTotal());
+            } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
+                setSlip(getAgent() + b.getNetTotal());
             }
 
         }
@@ -136,6 +139,14 @@ public class BillsTotals {
 
     public void setGrnNetTotalWithExpenses(double grnNetTotalWithExpenses) {
         this.grnNetTotalWithExpenses = grnNetTotalWithExpenses;
+    }
+
+    public double getAgent() {
+        return agent;
+    }
+
+    public void setAgent(double agent) {
+        this.agent = agent;
     }
 
    

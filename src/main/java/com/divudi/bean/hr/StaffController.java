@@ -288,7 +288,7 @@ public class StaffController implements Serializable {
                 + " and ss.employeeStatus!=:sts";
 
         sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
-        hm.put("to", ssDate );
+        hm.put("to", ssDate);
 
         hm.put("sts", EmployeeStatus.Temporary);
 
@@ -326,11 +326,10 @@ public class StaffController implements Serializable {
         System.out.println(sql);
         System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
-
+        selectedStaffes=staffWithCode;
     }
-    
-    
-     public void createActiveStaffTable() {
+
+    public void createActiveStaffTable() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -342,7 +341,6 @@ public class StaffController implements Serializable {
 
 //        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
 //        hm.put("to", ssDate );
-
         hm.put("sts", EmployeeStatus.Temporary);
 
         if (getReportKeyWord().getStaff() != null) {
@@ -381,7 +379,6 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
 
     }
-    
 
     public void createTable() {
         HashMap hm = new HashMap();
@@ -789,13 +786,17 @@ public class StaffController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            if (current.getId() == null) {
+                UtilityController.addSuccessMessage("Nothing To Delete");
+            } else {
+
+                current.setRetired(true);
+                current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                current.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(current);
+                UtilityController.addSuccessMessage("DeleteSuccessfull");
+            }
         } else {
             UtilityController.addSuccessMessage("NothingToDelete");
         }

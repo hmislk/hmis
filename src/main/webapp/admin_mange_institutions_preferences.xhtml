@@ -63,6 +63,9 @@
                                 <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.channelWithOutReferenceNumber}"/>
                                 
+                                 <h:outputLabel value="Pharmacy Purchase With Last Rate"></h:outputLabel>
+                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.pharmayPurchaseWithLastRate}"/>
+                                
                                 <h:outputLabel value="Logo Name"></h:outputLabel>
                                 <h:inputText id="imgName" value="#{sessionController.institutionPreference.logoName}"/>
                                 <p:watermark for="imgName" value="Eg- /abc.jpg" />

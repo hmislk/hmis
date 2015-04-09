@@ -47,6 +47,7 @@ public class ReportKeyWord {
     Double from;
     Double to;
     Sex sex;
+    EmployeeStatus employeeStatus;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -222,5 +223,14 @@ public class ReportKeyWord {
     public void setReplacingStaff(Staff replacingStaff) {
         this.replacingStaff = replacingStaff;
     }
+
+    public EmployeeStatus getEmployeeStatus() {
+        return employeeStatus;
+    }
+
+    public void setEmployeeStatus(EmployeeStatus employeeStatus) {
+        this.employeeStatus = employeeStatus;
+    }
+    
 
 }
