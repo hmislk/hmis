@@ -1461,6 +1461,11 @@ public class ChannelReportController implements Serializable {
             ftf.setBilledBillFees(getBillFeeWithFeeTypes(new BilledBill(), feeType));
             ftf.setCanceledBillFees(getBillFeeWithFeeTypes(new CancelledBill(), feeType));
             ftf.setRefunBillFees(getBillFeeWithFeeTypes(new RefundBill(), feeType));
+            
+            ftf.setBilledBillFeeTypeTotal(calFeeTypeTotal(ftf.getBilledBillFees()));
+            ftf.setCanceledBillFeeTypeTotal(calFeeTypeTotal(ftf.getCanceledBillFees()));
+            ftf.setRefundBillFeeTypeTotal(calFeeTypeTotal(ftf.getRefunBillFees()));
+            
             if (ftf.getBilledBillFees() != null && !ftf.getBilledBillFees().isEmpty() || ftf.getCanceledBillFees() != null && !ftf.getCanceledBillFees().isEmpty() || ftf.getRefunBillFees() != null && !ftf.getRefunBillFees().isEmpty()) {
                 feetypeFees.add(ftf);
             }
@@ -1473,6 +1478,15 @@ public class ChannelReportController implements Serializable {
         billedBillTotal = calFeeTotal(new BilledBill());
         canceledBillTotl = calFeeTotal(new CancelledBill());
         refundBillTotal = calFeeTotal(new RefundBill());
+    }
+    
+    public double calFeeTypeTotal(List<BillFee> billFees){
+        
+       double feeTypeTotal = 0.0;
+        for (BillFee bf : billFees) {
+            feeTypeTotal += bf.getFee().getFee();
+        }
+       return feeTypeTotal;
     }
 
     public List<BillFee> getBillFeeWithFeeTypes(Bill bill, FeeType feeType) {
@@ -2811,6 +2825,9 @@ public class ChannelReportController implements Serializable {
         List<BillFee> canceledBillFees;
         List<BillFee> refunBillFees;
         FeeType feeType;
+        double billedBillFeeTypeTotal;
+        double canceledBillFeeTypeTotal;
+        double refundBillFeeTypeTotal;
 
         public List<BillFee> getBilledBillFees() {
             return billedBillFees;
@@ -2843,6 +2860,32 @@ public class ChannelReportController implements Serializable {
         public void setFeeType(FeeType feeType) {
             this.feeType = feeType;
         }
+
+        public double getBilledBillFeeTypeTotal() {
+            return billedBillFeeTypeTotal;
+        }
+
+        public void setBilledBillFeeTypeTotal(double billedBillFeeTypeTotal) {
+            this.billedBillFeeTypeTotal = billedBillFeeTypeTotal;
+        }
+
+        public double getCanceledBillFeeTypeTotal() {
+            return canceledBillFeeTypeTotal;
+        }
+
+        public void setCanceledBillFeeTypeTotal(double canceledBillFeeTypeTotal) {
+            this.canceledBillFeeTypeTotal = canceledBillFeeTypeTotal;
+        }
+
+        public double getRefundBillFeeTypeTotal() {
+            return refundBillFeeTypeTotal;
+        }
+
+        public void setRefundBillFeeTypeTotal(double refundBillFeeTypeTotal) {
+            this.refundBillFeeTypeTotal = refundBillFeeTypeTotal;
+        }
+        
+        
 
     }
 
