@@ -99,6 +99,13 @@ public class mdInwardReportController implements Serializable {
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
+    
+    //reporting purpuse
+    boolean showCreatedDate=false;
+    boolean showServiceDate=false;
+    boolean showDischargeDate=false;
+    boolean showDepartment=false;
+    boolean showCategory=false;
 
     public PaymentMethod[] getPaymentMethods() {
 
@@ -1860,6 +1867,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -2114,6 +2123,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -2187,6 +2198,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -2700,6 +2713,46 @@ public class mdInwardReportController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public boolean isShowCreatedDate() {
+        return showCreatedDate;
+    }
+
+    public void setShowCreatedDate(boolean showCreatedDate) {
+        this.showCreatedDate = showCreatedDate;
+    }
+
+    public boolean isShowServiceDate() {
+        return showServiceDate;
+    }
+
+    public void setShowServiceDate(boolean showServiceDate) {
+        this.showServiceDate = showServiceDate;
+    }
+
+    public boolean isShowDischargeDate() {
+        return showDischargeDate;
+    }
+
+    public void setShowDischargeDate(boolean showDischargeDate) {
+        this.showDischargeDate = showDischargeDate;
+    }
+
+    public boolean isShowDepartment() {
+        return showDepartment;
+    }
+
+    public void setShowDepartment(boolean showDepartment) {
+        this.showDepartment = showDepartment;
+    }
+
+    public boolean isShowCategory() {
+        return showCategory;
+    }
+
+    public void setShowCategory(boolean showCategory) {
+        this.showCategory = showCategory;
     }
 
     //619
