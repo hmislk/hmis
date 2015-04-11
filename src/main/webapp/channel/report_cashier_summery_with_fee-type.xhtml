@@ -23,14 +23,14 @@
 
                             <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
 
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.getUsersWithFeeType}" style="float: right;"/>
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton actionListener="#{channelReportController.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
 
@@ -51,6 +51,10 @@
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{channelReportController.webUser}" ></p:autoComplete>
+                            <p:outputLabel value="Fee Type"></p:outputLabel>
+                            <p:selectOneMenu  id="cmbPs" value="#{channelReportController.feeType}">  
+                                <f:selectItems value="#{enumController.feeTypes}"/>                                                               
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
@@ -71,64 +75,74 @@
 
                         </h:panelGrid>
 
-                        <p:dataTable id="sum3" value="#{channelReportController.channelSummary}"  var="i" >
-                            <f:facet name="header">
-                                <h:outputLabel value="Channel Cashier Summary"/>
+                        <p:dataTable value="#{channelReportController.listBilledBillFees}" var="b" id="tbl" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Bill List" />
                             </f:facet>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Appoinment Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
                             <p:column>
-                                <h:outputLabel value="#{i.string}"/>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Bill Number" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.insId}" />
                             </p:column>
-                            <p:column style="font-weight: bold;text-align:right;" >
-                                <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
                             </p:column>
-                        </p:dataTable>  
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Appointment Number" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.singleBillSession.serialNo}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Bill Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.billType}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Payment Method" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.bill.paymentMethod}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Status" >
+                                <p:outputLabel rendered="#{b.bill.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>
+                                <p:outputLabel rendered="#{b.bill.billType eq 'ChannelAgent'}" value="Agent" style="color: green;"/>
+                                <p:outputLabel rendered="#{b.bill.billType eq 'ChannelStaff'}" value="Staff" style="color: green;"/>
+                                <p:outputLabel rendered="#{b.bill.billType eq 'ChannelCash'}" value="Paid"/>
+                            </p:column>
+                            <p:column headerText="C/R" >
+                                <p:outputLabel value="Cancelled" rendered="#{b.bill.cancelled==true}"/>
+                                <p:outputLabel value="Refunded" rendered="#{b.bill.refunded==true}"/>                        
+                            </p:column>  
 
-
-                        <p:spacer height="30"/>
-
-
-                        <h:panelGrid columns="1">
-                            <h:outputLabel value="Cashier : #{commonReport.webUser.webUserPerson.name}"/>
-                            <br/>
-                            <h:outputLabel value="............................"/>
-                        </h:panelGrid>
+                        </p:dataTable>
                     </p:panel>
-
-                    <div style="page-break-after: always;">
-                        <br/>
-                    </div>
-
-                    <p:panel>
-                        <f:facet name="header"> 
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
-                            <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
-                            <h:outputLabel value="  Cashier Summary Report"/>
-                        </f:facet>
-                        <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
-                            <h:outputLabel value="From Date " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Date" />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-
-                            <h:outputLabel value="From Time " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Time " />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGrid>
-
-                    </p:panel>
-
                 </p:panel>
+
             </h:form>
         </h:panelGroup>
     </ui:define>
