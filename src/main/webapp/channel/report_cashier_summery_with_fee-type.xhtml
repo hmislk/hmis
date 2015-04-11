@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"           
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="#{channelReportController.webUser.institution.name}"/> <br/>
+
+                            <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
+
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+
+                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
+
+
+                        </f:facet>
+
+
+                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                            forceSelection="true"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{channelReportController.webUser}" ></p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+
+                            <h:panelGroup >
+
+                                <h:outputLabel value="From" />
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="To" />
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+
+                            </h:panelGroup >
+
+                        </h:panelGrid>
+
+                        <p:dataTable id="sum3" value="#{channelReportController.channelSummary}"  var="i" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Channel Cashier Summary"/>
+                            </f:facet>
+                            <p:column>
+                                <h:outputLabel value="#{i.string}"/>
+                            </p:column>
+                            <p:column style="font-weight: bold;text-align:right;" >
+                                <h:outputLabel value="#{i.value}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>  
+
+
+                        <p:spacer height="30"/>
+
+
+                        <h:panelGrid columns="1">
+                            <h:outputLabel value="Cashier : #{commonReport.webUser.webUserPerson.name}"/>
+                            <br/>
+                            <h:outputLabel value="............................"/>
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <div style="page-break-after: always;">
+                        <br/>
+                    </div>
+
+                    <p:panel>
+                        <f:facet name="header"> 
+                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
+                            <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="  Cashier Summary Report"/>
+                        </f:facet>
+                        <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
+                            <h:outputLabel value="From Date " />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="To Date" />
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+
+                            <h:outputLabel value="From Time " />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="HH:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="To Time " />
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+                    </p:panel>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
