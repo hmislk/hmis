@@ -46,6 +46,7 @@
                         <p:subTable value="#{db.bills}" var="b"  rendered="#{db.bills.size()>0}">
                             <f:facet name="header">
                                 <p:outputLabel value="Billed Department - #{db.billDepartment.name}"></p:outputLabel>
+                                <p:outputLabel value="Total - #{db.departmentBillTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel   value="#{b.insId}"/>
