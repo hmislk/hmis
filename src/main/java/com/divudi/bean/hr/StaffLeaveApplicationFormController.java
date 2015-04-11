@@ -71,6 +71,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     StaffLeave staffLeave;
     List<StaffLeave> staffLeaves;
+    
+    boolean withOutretRierd;
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
@@ -532,6 +534,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
         sql = " select l from LeaveForm l "
                 + " where "
                 + " l.createdAt between :fd and :td ";
+        
+        if (withOutretRierd) {
+            sql+=" and l.retired=false ";
+        }else{
+            sql+=" and l.retired=true ";
+        }
 
         if (staff != null) {
             sql += " and l.staff=:st ";
@@ -694,6 +702,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         sql = " select l from LeaveForm l where "
                 + " l.approvedAt between :fd and :td ";
+        
+        if (withOutretRierd) {
+            sql+=" and l.retired=false ";
+        }else{
+            sql+=" and l.retired=true ";
+        }
 
         if (staff != null) {
             sql += " and l.staff=:st ";
@@ -754,6 +768,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 + " ((l.fromDate between :fd and :td)"
                 + " or(l.toDate between :fd and :td)) "
                 + " and type(l)!=:class";
+        
+        if (withOutretRierd) {
+            sql+=" and l.retired=false ";
+        }else{
+            sql+=" and l.retired=true ";
+        }
 
         m.put("class", LeaveFormSystem.class);
 
@@ -945,5 +965,13 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void setStaffLeaves(List<StaffLeave> staffLeaves) {
         this.staffLeaves = staffLeaves;
+    }
+
+    public boolean isWithOutretRierd() {
+        return withOutretRierd;
+    }
+
+    public void setWithOutretRierd(boolean withOutretRierd) {
+        this.withOutretRierd = withOutretRierd;
     }
 }

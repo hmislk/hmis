@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Working Shift Sheet">
+            <p:panel header="Form Working Shift Sheet">
                 <h:panelGrid columns="2">
 
                     <p:panel header="Search Forms">
@@ -42,9 +42,9 @@
                                     <f:selectItems  value="#{enumController.timeses}" ></f:selectItems>                    
                                 </p:selectOneMenu> 
 
-                                <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchByCreatedDate()}" />                           
-                                <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchByShiftDate()}" />                           
-                                <p:commandButton ajax="false" value="Search By Approve Date" action="#{staffAdditionalFormController.searchByApproveDate()}" />                           
+                                <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />                           
+                                <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />                           
+                                <p:commandButton ajax="false" value="Search By Approve Date" action="#{staffAdditionalFormController.searchFormByApprovedDate()}" />                           
                             </h:panelGrid>
                             <h:panelGrid columns="2" rendered="false">
                                 <h:outputLabel value="Day Type"/>

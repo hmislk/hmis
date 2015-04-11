@@ -2771,7 +2771,7 @@ public class SearchController implements Serializable {
     public void createProfessionalPaymentTableInwardAll() {
         billItems = null;
         HashMap temMap = new HashMap();
-        temMap.put("bclass", BilledBill.class);
+//        temMap.put("bclass", BilledBill.class);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("bType", BillType.PaymentBill);
@@ -2780,8 +2780,8 @@ public class SearchController implements Serializable {
         String sql = "Select b FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.bill.cancelled=false "
-                + " and type(b.bill)=:bclass"
+//                + " and b.bill.cancelled=false "
+//                + " and type(b.bill)=:bclass"
                 + " and (b.referenceBill.billType=:refType "
                 + " or b.referenceBill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -2920,7 +2920,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
+        
         //   searchBillItems = new LazyBillItem(tmp);
     }
 
@@ -3889,7 +3889,7 @@ public class SearchController implements Serializable {
         }
         
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(bi.item) like :item )";
+            sql += " and  (upper(bi.item.name) like :item )";
             temMap.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
