@@ -107,8 +107,18 @@ public class InvestigationItemValidatorController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
+            
             InvestigationItemValidatorController controller = (InvestigationItemValidatorController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "investigationValidatorController");
+            
+            if(controller==null){
+                return null;
+            }
+            
+            if(controller.investigationItemValidatorFacade.find(getKey(value))==null){
+                return null;
+            }
+            
             return controller.investigationItemValidatorFacade.find(getKey(value));
         }
 

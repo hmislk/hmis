@@ -37,6 +37,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -1520,6 +1521,58 @@ public class ChannelReportController implements Serializable {
 
         return billFeeList;
     }
+    
+    FeeType feeType; 
+    List<BillFee> listBilledBillFees;
+    List<BillFee> listCanceledBillFees;
+    List<BillFee> listRefundBillFees;
+   
+    public void getUsersWithFeeType(){
+        if(getFeeType() == null){
+            JsfUtil.addErrorMessage("Please Insert Fee Type");
+        }else{
+            listBilledBillFees = getBillFeeWithFeeTypes(new BilledBill(), getFeeType());
+            listCanceledBillFees = getBillFeeWithFeeTypes(new CancelledBill(), getFeeType());
+            listRefundBillFees = getBillFeeWithFeeTypes(new RefundBill(), getFeeType());
+        }
+        
+    }
+
+    public List<BillFee> getListBilledBillFees() {
+        return listBilledBillFees;
+    }
+
+    public void setListBilledBillFees(List<BillFee> listBilledBillFees) {
+        this.listBilledBillFees = listBilledBillFees;
+    }
+
+    public List<BillFee> getListCanceledBillFees() {
+        return listCanceledBillFees;
+    }
+
+    public void setListCanceledBillFees(List<BillFee> listCanceledBillFees) {
+        this.listCanceledBillFees = listCanceledBillFees;
+    }
+
+    public List<BillFee> getListRefundBillFees() {
+        return listRefundBillFees;
+    }
+
+    public void setListRefundBillFees(List<BillFee> listRefundBillFees) {
+        this.listRefundBillFees = listRefundBillFees;
+    }
+    
+    
+
+    public FeeType getFeeType() {
+        return feeType;
+    }
+
+    public void setFeeType(FeeType feeType) {
+        this.feeType = feeType;
+    }
+    
+    
 
     public List<FeetypeFee> getFeetypeFees() {
         return feetypeFees;

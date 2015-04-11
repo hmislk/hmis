@@ -71,7 +71,7 @@ public class ShiftTableController implements Serializable {
 
         return false;
     }
-    
+
     @Inject
     PhDateController phDateController;
 
@@ -118,18 +118,23 @@ public class ShiftTableController implements Serializable {
                 if (ss.getId() != null) {
                     boolean flag = false;
                     StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
-
-                    if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
-                        flag = true;
+                    if (fetchStaffShift.getRoster() != null && ss.getRoster()!=null) {
+                        if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
+                            flag = true;
+                        }
                     }
 
-                    if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
-                        flag = true;
+                    if (fetchStaffShift.getStaff() != null && ss.getStaff()!=null) {
+                        if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
+                            flag = true;
+                        }
                     }
-
-                    if (!fetchStaffShift.getShift().equals(ss.getShift())) {
+                    if(fetchStaffShift.getShift()!=null && ss.getShift()!=null){
+                       if (!fetchStaffShift.getShift().equals(ss.getShift())) {
                         flag = true;
+                    } 
                     }
+                    
 
                     if (flag) {
                         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
