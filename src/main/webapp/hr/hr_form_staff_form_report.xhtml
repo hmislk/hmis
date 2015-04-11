@@ -44,7 +44,7 @@
 
                                 <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />                           
                                 <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />                           
-                                <p:commandButton ajax="false" value="Search By Approve Date" action="#{staffAdditionalFormController.searchFormByApprovedDate()}" />                           
+
                             </h:panelGrid>
                             <h:panelGrid columns="2" rendered="false">
                                 <h:outputLabel value="Day Type"/>
@@ -60,7 +60,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:dataTable id="gpBillPreview" value="#{staffAdditionalFormController.additionalForms}" 
+                        <p:dataTable id="gpBillPreview" value="#{staffAdditionalFormController.hrForms}" 
                                      var="add"  >
 
                             <f:facet name="header">
@@ -95,6 +95,9 @@
                                 <p:outputLabel value="#{add.createdAt}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Class">
+                                <h:outputLabel value="#{add}"/>
                             </p:column>
 
                             <p:column headerText="Roster">
@@ -216,6 +219,23 @@
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
 
+                            <p:column headerText="ID">
+                                <f:facet name="header">
+                                    <h:outputLabel value="ID"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Retired">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                                <p:selectBooleanCheckbox value="#{add.retired}" />
+                            </p:column>
+
+                            <p:column>
+                                <p:commandButton ajax="false" value="Update"
+                                                 action="#{staffAdditionalFormController.update(add)}"/>
+                            </p:column>
 
 
                         </p:dataTable>

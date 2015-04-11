@@ -1069,7 +1069,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         if (ss.getLeaveType() != null) {
-            return false;
+            if (ss.getLeaveType().isFullDayLeave()) {
+                return false;
+            }
+
+            if (!ss.getLeaveType().isFullDayLeave()) {
+                List<StaffLeave> staffLeave = getHumanResourceBean().fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+                if (staffLeave.size() > 1) {
+                    return false;
+                }
+            }
         }
 //        if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave() && !ss.getShift().isHalfShift()) {
 //            return false;

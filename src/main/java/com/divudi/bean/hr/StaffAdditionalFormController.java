@@ -254,8 +254,9 @@ public class StaffAdditionalFormController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select a from AdditionalForm a where "
-                + " a.createdAt between :fd and :td ";
+        sql = " select a from AdditionalForm a where"
+                + " a.retired=false "
+                + " and a.createdAt between :fd and :td ";
 //                + " and a.times=:tm ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -277,8 +278,10 @@ public class StaffAdditionalFormController implements Serializable {
 
         sql = " select a from HrForm a where "
                 + " a.createdAt between :fd and :td"
-                + " and (a.staffShift.startRecord.recordTimeStamp is null or"
-                + " a.staffShift.endRecord.recordTimeStamp is null ) ";
+                + " and ( a.staffShift.startRecord is null "
+                + " or  a.staffShift.endRecord is null "
+                + " or a.staffShift.startRecord.recordTimeStamp is null "
+                + " or a.staffShift.endRecord.recordTimeStamp is null ) ";
 //                + " and a.times=:tm ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -291,25 +294,25 @@ public class StaffAdditionalFormController implements Serializable {
 //        calMinitsAditional(additionalForms);
     }
 
-    public void searchFormByApprovedDate() {
-        String sql = "";
-        Map m = new HashMap();
-
-        sql = " select a from HrForm a where "
-                + " a.approvedDate between :fd and :td"
-                + " and (a.staffShift.startRecord.recordTimeStamp is null or"
-                + " a.staffShift.endRecord.recordTimeStamp is null ) ";
-//                + " and a.times=:tm ";
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-//        m.put("tm", Times.All);
-        sql += createKeyWord(m);
-
-        System.err.println("SQL " + sql);
-        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-//        calMinitsAditional(additionalForms);
-    }
+//    public void searchFormByApprovedDate() {
+//        String sql = "";
+//        Map m = new HashMap();
+//
+//        sql = " select a from HrForm a where "
+//                + " a.approvedDate between :fd and :td"
+//                + " and (a.staffShift.startRecord.recordTimeStamp is null or"
+//                + " a.staffShift.endRecord.recordTimeStamp is null ) ";
+////                + " and a.times=:tm ";
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+////        m.put("tm", Times.All);
+//        sql += createKeyWord(m);
+//
+//        System.err.println("SQL " + sql);
+//        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+////        calMinitsAditional(additionalForms);
+//    }
 
     public void searchFormByShiftDate() {
         String sql = "";
@@ -344,7 +347,8 @@ public class StaffAdditionalFormController implements Serializable {
         Map m = new HashMap();
 
         sql = " select a from AdditionalForm a where "
-                + " a.staffShift.shiftDate between :fd and :td ";
+                   + " a.retired=false "
+                + " and a.staffShift.shiftDate between :fd and :td ";
 //                + " and a.times=:tm ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -362,7 +366,8 @@ public class StaffAdditionalFormController implements Serializable {
         Map m = new HashMap();
 
         sql = " select a from AdditionalForm a where "
-                + " a.approvedDate between :fd and :td ";
+                   + " a.retired=false "
+                + " and a.approvedDate between :fd and :td ";
 //                + " and a.times=:tm ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -431,6 +436,10 @@ public class StaffAdditionalFormController implements Serializable {
             }
         }
 
+    }
+    
+    public void update(HrForm hrForm){
+        hrFormFacade.edit(hrForm);
     }
 
     public void createAmmendmentTableApprovedDate() {
@@ -644,7 +653,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " and c.shiftDate =:dt "
                 + " and c.staff=:stf ";
 
-        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.Poya, DayType.MurchantileHoliday}));
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.Poya,DayType.PublicHoliday, DayType.MurchantileHoliday}));
         hm.put("cl", StaffShiftExtra.class);
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());

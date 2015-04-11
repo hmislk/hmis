@@ -67,6 +67,20 @@
                                 <h:outputLabel value="Additional Working Shift Sheet"/>
                             </f:facet>
 
+                            <p:column headerText="Form ID" sortBy="#{add.id}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Form id"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Retired" sortBy="#{add.id}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.retired}" ></p:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Form Number" sortBy="#{add.code}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Form Number"/>
@@ -161,7 +175,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additionl OT Before Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/ 60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -170,7 +184,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additional OT After Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified / 60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified/60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -179,7 +193,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="PH/DAY OFF"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified / 60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified/60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -216,7 +230,17 @@
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Retired">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                                <p:selectBooleanCheckbox value="#{add.retired}" />
+                            </p:column>
 
+                            <p:column>
+                                <p:commandButton ajax="false" value="Update"
+                                                 action="#{staffAdditionalFormController.update(add)}"/>
+                            </p:column>
 
                         </p:dataTable>
                     </p:panel>

@@ -538,7 +538,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (withOutretRierd) {
             sql+=" and l.retired=false ";
         }else{
-            sql+=" and l.retired=true ";
+//            sql+=" and l.retired=true ";
         }
 
         if (staff != null) {
@@ -706,7 +706,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (withOutretRierd) {
             sql+=" and l.retired=false ";
         }else{
-            sql+=" and l.retired=true ";
+//            sql+=" and l.retired=true ";
         }
 
         if (staff != null) {
@@ -772,7 +772,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (withOutretRierd) {
             sql+=" and l.retired=false ";
         }else{
-            sql+=" and l.retired=true ";
+//            sql+=" and l.retired=true ";
         }
 
         m.put("class", LeaveFormSystem.class);

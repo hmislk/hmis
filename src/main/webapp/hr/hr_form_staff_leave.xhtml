@@ -84,7 +84,7 @@
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                           
+
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
@@ -96,7 +96,7 @@
                                                  action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
                                 <p:inputText id="recomment" value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"/>
                                 <p:watermark for="recomment" value="Comment"/>
-                                
+
                             </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 
@@ -119,7 +119,10 @@
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu> 
                                 <h:outputLabel value="Leave Approved Person"/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>            
+                                <h:outputLabel value="With Out Cancel"/>
+                                <p:selectBooleanCheckbox value="#{staffLeaveApplicationFormController.withOutretRierd}"
+                                                         itemLabel="With Out Cancel"/>
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                                 <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                                 <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
@@ -135,7 +138,10 @@
                                 </p:column>
                                 <p:column headerText="id">
                                     <p:outputLabel value="#{l.id}" ></p:outputLabel>
-                                </p:column>
+                                </p:column>                               
+                                   <p:column headerText="code">
+                                    <p:outputLabel value="#{l.code}" ></p:outputLabel>
+                                </p:column>                               
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
@@ -160,9 +166,9 @@
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
                                 </p:column>
-                                  <p:column headerText="Created AT">
-                                      <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
-                                    
+                                <p:column headerText="Created AT">
+                                    <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
+
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
