@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Time">
+            <p:panel header="Extra Time">
                 <h:panelGrid columns="2">
                     <p:panel >
                         <h:panelGrid columns="2">
@@ -22,10 +22,11 @@
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         navigator="true"
                                         pattern="yyyy MM dd">
-                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
+                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" 
+                                        listener="#{staffAdditionalFormController.onDateSelect}"/>
                             </p:calendar> 
                             <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"
+                            <p:selectOneMenu id="staffShift" value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"
                                              var="t" >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
@@ -33,7 +34,12 @@
                                 <p:column style="width:10%" headerText="Name">
                                     <h:outputText value="#{t.shift.name}" />
                                 </p:column>
-
+                                <h:outputLabel value="Time Type"/>
+                                <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
+                                    <f:selectItem itemLabel="Select Time Type"/>
+                                    <f:selectItems value="#{enumController.timeses}" />
+                                    <f:ajax event="change" execute="@this staffShift" render="fromDate toDate"/>
+                                </p:selectOneMenu>
                                 <p:column headerText="Start">
                                     <h:outputText value="#{t.shiftStartTime}" >
                                         <f:convertDateTime pattern="yyyy MM dd HH:mm:ss"/>
@@ -46,7 +52,14 @@
                                 </p:column>
 
                             </p:selectOneMenu>
-                            <h:outputLabel value="From Time"/>
+                            <h:outputLabel value="Time Type"/>
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
+                                <f:selectItem itemLabel="Select Time Type"/>
+                                <f:selectItems value="#{enumController.timeses}" />
+                                <f:ajax event="change" execute="@this staffShift" render="fromDate toDate" 
+                                        listener="#{staffAdditionalFormController.timeSelectListener}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="From Time"/>                          
                             <ez:enterDateTime id="fromDate" 
                                               idValue="from"
                                               timeEnterListener="#{staffAdditionalFormController.timeEnterListenerFrom()}"
@@ -61,16 +74,12 @@
                                               timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                              
                                               date="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
                                               systemTimeStamp="#{staffAdditionalFormController.toSystemTimeStamp}"/>
-                            
-                          
+
+
 
                             <h:outputLabel value="Approved Staff"/>
                             <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>
-                            <h:outputLabel value="Time Type"/>
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
-                                <f:selectItem itemLabel="Select Time Type"/>
-                                <f:selectItems value="#{enumController.timeses}" />
-                            </p:selectOneMenu>
+
                             <h:outputLabel/>
                             <!--                            <h:outputLabel value="Approved Date"/>
                                                         <p:calendar id="approvedDate" 

@@ -75,6 +75,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
     WebUser webUser;
+    
+    
+    String billNo;
+    String phoneNo;
 
     public void updateUserPreferences() {
         if (institutionPreference != null) {
@@ -681,6 +685,24 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return userPrivilages;
     }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+    
+    
 
     public void setPrivilegeses(List<Privileges> privilegeses) {
         this.privilegeses = privilegeses;

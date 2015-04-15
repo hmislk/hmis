@@ -13,6 +13,21 @@
 
 
     }
+    
+    .fiveinchbill{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+/*        border: 1px solid!important;*/
+        font-size: 130%;
+        text-transform: capitalize!important;
+    }
 
     .posbillBreak{
         position: relative!important;  
@@ -70,6 +85,9 @@
         font-size: 12px!important;
         font-family:Arial, Helvetica, sans-serif!important;
     }
+    .channelNumber{
+        font-size: 50px!important;
+    }
 
 }
 
@@ -104,6 +122,21 @@
         font-size: 11px!important; 
         page-break-after:always!important;
 
+    }
+    
+    .fiveinchbill{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+        text-transform: capitalize!important;
     }
 
     .posbillBreak{

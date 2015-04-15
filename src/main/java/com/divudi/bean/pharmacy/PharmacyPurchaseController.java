@@ -121,6 +121,14 @@ public class PharmacyPurchaseController implements Serializable {
         rows = lsts;
     }
 
+    public void calculatePurchaseRateAndWholesaleRateFromRetailRate(){
+        if(currentBillItem==null || currentBillItem.getPharmaceuticalBillItem()==null || currentBillItem.getPharmaceuticalBillItem().getRetailRate()==0){
+            return;
+        }
+        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
+        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate()* 1.08);
+    }
+    
     public List<PharmacyStockRow> getRows() {
         return rows;
     }
@@ -388,6 +396,23 @@ public class PharmacyPurchaseController implements Serializable {
 //    }
 
     private List<BillItem> billItems;
+    
+    public void addItemWithLastRate() {
+        if (getCurrentBillItem().getItem() == null) {
+            UtilityController.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        getBillItems().add(getCurrentBillItem());
+
+        calTotal();
+
+        currentBillItem = null;
+    }
 
     public void addItem() {
 
@@ -498,6 +523,7 @@ public class PharmacyPurchaseController implements Serializable {
         if (bill == null) {
             bill = new BilledBill();
             bill.setBillType(BillType.PharmacyPurchaseBill);
+            bill.setReferenceInstitution(getSessionController().getInstitution());
         }
         return bill;
     }

@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -12,7 +13,7 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                         
-                            <h:panelGrid columns="8" >
+                            <h:panelGrid columns="9" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -20,10 +21,14 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
-                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tblBills" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton>
                                
+
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel value="Inward Bill No"/>
                                 <h:outputLabel value="Payment Bill No"/>
                                 <h:outputLabel value="Bht No"/>
@@ -31,7 +36,8 @@
                                 <h:outputLabel value="Speciality"/> 
                                 <h:outputLabel value="Staff Name"/>      
                                 <h:outputLabel value="Service Name"/>  
-                                <h:outputLabel value="Charges"/>                              
+                                <h:outputLabel value="Charges"/> 
+                                <h:outputLabel/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
@@ -44,7 +50,6 @@
                             </h:panelGrid>
                         </f:facet>
 
-                        <p:defaultCommand target="btnSearch" />
 
                         <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi"  >
                             <f:facet name="header">
@@ -64,7 +69,14 @@
                             </p:column>
                             <p:column headerText="Bht No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                            </p:column>  
+                            </p:column>
+
+                            <p:column headerText="Discharged At" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Specility" >
                                 <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>
                             </p:column>    
@@ -103,7 +115,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                           
+
 
                         </p:dataTable>
 

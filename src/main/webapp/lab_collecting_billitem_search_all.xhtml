@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header" >
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingBillItemTable()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createCollectingBillItemTableAll()}" onclick="onSubmitButton();" />
+                                <p:spacer height="30"/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/> <h:outputLabel/>
+
+                                <h:outputLabel value="Bill No"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <h:outputLabel value="Patient Phone"/>
+                                <h:outputLabel value="Total"/>
+                                <h:outputLabel value="Item"/>
+                                <h:outputLabel value="Net Total"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                                <h:outputLabel/>
+                            </h:panelGrid>
+
+                            
+
+                        </f:facet>
+
+                        <p:dataTable 
+                            id="tblBills" 
+                            value="#{searchController.billItems}" 
+                            var="bi"  
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            >
+                            <p:column headerText="Bill No" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bi.bill.insId}">
+                                    <h:outputLabel  ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Item Name" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bi.item.name}">
+                                    <h:outputLabel  ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Billing Centre" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bi.bill.institution.name}">
+                                    <h:outputLabel  ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Billed For" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bi.bill.toInstitution.name} - #{bi.bill.toDepartment.name}">
+                                    <h:outputLabel  ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Bill Date" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.billDate}" >
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Bill Time" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.billTime}" >
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Client" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Client Phone No" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.patient.person.phone}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Billed By" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Gross Value" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.total}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Discount" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.discount}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Net Value" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel value="#{bi.bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Cancelled User" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel rendered="#{bi.bill.cancelled}" value="#{bi.bill.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Cancelled Date and Time" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel rendered="#{bi.bill.cancelled}" value="#{bi.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Refunded By" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel rendered="#{bi.bill.refunded}" value="#{bi.bill.refundedBill.creater.webUserPerson.name}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Refunded Date and Time" >
+                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                    <h:outputLabel rendered="#{bi.bill.refunded}" value="#{bi.bill.refundedBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Comments" >
+                                <h:outputLabel rendered="#{bi.bill.refundedBill ne null}" value="#{bi.bill.refundedBill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bi.bill.cancelledBill ne null}" value="#{bi.bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

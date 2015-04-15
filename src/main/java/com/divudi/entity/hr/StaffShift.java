@@ -6,6 +6,7 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -577,6 +579,8 @@ public class StaffShift implements Serializable {
         }
 
     }
+    
+   
 
     public void calExtraTimeWithStartOrEndRecord() {
         if (getStartRecord() == null || getEndRecord() == null) {
@@ -649,7 +653,8 @@ public class StaffShift implements Serializable {
             DayType dayType = getShift().getDayType();
 
             if (dayType == DayType.DayOff
-                    || dayType == DayType.SleepingDay) {
+                    || dayType == DayType.SleepingDay
+                    || dayType==DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
                 Calendar toCalendar = Calendar.getInstance();

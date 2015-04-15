@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Shift">
+            <p:panel header="Extra Shift Normal">
                 <h:panelGrid columns="2">
                     <p:panel >
                         <h:panelGrid columns="2">                           
@@ -23,15 +23,7 @@
                                         navigator="true"
                                         pattern="yyyy MM dd HH:mm:ss">
                                 <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
-                            </p:calendar>  
-                            <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
-                            <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
-                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
-                                <f:selectItem itemLabel="Select Staff Shift"/>
-                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
-                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                            </p:selectOneMenu>
+                            </p:calendar> 
                             <h:outputLabel value="From Time"/>
                            <ez:enterDateTime id="fromDate" 
                                               idValue="from"
@@ -61,7 +53,9 @@
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                            <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
 
+                            <p:watermark for="recomment" value="Delete Comment"/>
                         </h:panelGrid>
                     </p:panel>
                     <p:panel header="Search Forms">

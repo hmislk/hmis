@@ -111,6 +111,7 @@
                                     <p:menuitem  ajax="false"  action="/lab_bill_collecting_centre" value="Collecting Centre / Inward Billing" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/inward/inward_bill_service" value="Add Inward Services" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabAddInwardServices') or true}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_collecting_bill_search_all" value="Collecting Centre Bill Search" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/lab_collecting_billitem_search_all" value="Collecting Centre Bill Item Search" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false" action="/lab_sample"  actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                                     <p:menuitem  ajax="false" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
@@ -121,7 +122,7 @@
 
                                 </p:submenu>
                                 <p:submenu label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
-                                    <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
+                                    <p:submenu label="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
                                                      value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier"  
@@ -150,6 +151,39 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                     </p:submenu>
 
+                                    <p:submenu label="Wholesale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"> 
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale"  
+                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier"  
+                                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill"  
+                                                     value="Search Sale Bill"
+                                                     actionListener="#{searchController.makeListNull}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"   ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_pre_bill"  
+                                                     value="Search Sale Bill to Pay"
+                                                     actionListener="#{searchController.makeListNull}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"   ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill_item"  
+                                                     value="Search Sale Bill Items" actionListener="#{searchController.makeListNull}" 
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"  ></p:menuitem>     
+                                        <p:menuitem  ajax="false" 
+                                                     action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                        <p:menuitem  ajax="false" 
+                                                     action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                        <p:menuitem ajax="false" 
+                                                    action="/pharmacy/pharmacy_search_return_bill_pre" 
+                                                    actionListener="#{searchController.makeListNull}"  
+                                                    value="Search Return Bill (Item)" 
+                                                    rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                    </p:submenu>
 
 
                                     <p:submenu label="BHT Bills" >
@@ -395,13 +429,7 @@
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
                                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard" rendered="false"/>
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
-                                    <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
-                                        <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_search" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
 
-                                    </p:submenu>  
                                     <p:submenu label="Channel Books">
                                         <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"/>
                                         <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"/>
@@ -488,7 +516,9 @@
                                         <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form"  />
                                         <p:submenu label="Additional">
                                             <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}"  />    
-                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift" actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}"  />    
+
                                         </p:submenu>                                       
                                     </p:submenu>
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 
@@ -596,7 +626,6 @@
                                     <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
 
                                 </p:submenu>
-
                             </p:menubar>
 
                         </h:panelGroup>
@@ -1175,7 +1204,7 @@
 
                 <p:panel rendered ="#{!sessionController.logged}" style="min-height: 500px; padding: 50px;" styleClass="nonPrintBlock">
                     <ui:insert name="login"   >
-                        <p:panel header="Please login" id="loginbox" style="margin-left: 20%;margin-right: 20%; text-align: center; ">
+                        <p:panel header="Please login" id="loginbox" style="margin:auto; width: 700px; text-align: center; ">
                             <h:panelGrid columns="2" >
                                 <h:panelGroup >
                                     <h:graphicImage  library="image" name="lock.png" />
@@ -1218,7 +1247,7 @@
                 <div style="bottom: 0px; left: 10px; opacity: 0.4; z-index: 0; min-height: 25px;"></div>
 
                 <p:panel styleClass="nonPrintBlock" 
-                         style="position: fixed; bottom: 0px; left: 10px; opacity: 0.4; z-index: 0;"
+                         style="bottom: 0px; left: 10px; "
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>
@@ -1233,8 +1262,8 @@
 
             </h:panelGrid>
 
-            <div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.4;" class="nonPrintBlock" >
-                <p:clock pattern="hh:mm:ss a - dd MMMM yyyy" mode="server"  />  
+            <div style="position: fixed; bottom: 10px; right: 10px; width: 300px;" class="nonPrintBlock" >
+                <p:clock pattern="hh:mm a - dd MMM yyyy" mode="server"  />  
             </div>
 
         </p:panel>

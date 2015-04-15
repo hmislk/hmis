@@ -52,6 +52,9 @@ public class UserPreference implements Serializable {
     boolean tranferNetTotalbyRetailRate;
     boolean allowtoChangePaymentMethodDuringPayment;
     boolean opdPosBillWithoutLogo;
+    boolean channelWithOutReferenceNumber;
+    boolean pharmayPurchaseWithLastRate;
+    String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -59,6 +62,9 @@ public class UserPreference implements Serializable {
     ApplicationInstitution applicationInstitution;
 
     public ApplicationInstitution getApplicationInstitution() {
+        if(applicationInstitution==null){
+            applicationInstitution = ApplicationInstitution.Ruhuna;
+        }
         return applicationInstitution;
     }
 
@@ -92,6 +98,15 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillPrabodha(boolean pharmacyBillPrabodha) {
         this.pharmacyBillPrabodha = pharmacyBillPrabodha;
     }
+
+    public boolean isPharmayPurchaseWithLastRate() {
+        return pharmayPurchaseWithLastRate;
+    }
+
+    public void setPharmayPurchaseWithLastRate(boolean pharmayPurchaseWithLastRate) {
+        this.pharmayPurchaseWithLastRate = pharmayPurchaseWithLastRate;
+    }
+    
     
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
@@ -277,12 +292,26 @@ public class UserPreference implements Serializable {
     public void setTranferNetTotalbyRetailRate(boolean tranferNetTotalbyRetailRate) {
         this.tranferNetTotalbyRetailRate = tranferNetTotalbyRetailRate;
     }
-    
-    
-    
-    
-    
 
+    public String getLogoName() {
+        if (logoName == null || "".equals(logoName)) {
+            logoName = null;
+        }
+        return logoName;
+    }
+
+    public void setLogoName(String logoName) {
+        this.logoName = logoName;
+    }
+
+    public boolean isChannelWithOutReferenceNumber() {
+        return channelWithOutReferenceNumber;
+    }
+
+    public void setChannelWithOutReferenceNumber(boolean channelWithOutReferenceNumber) {
+        this.channelWithOutReferenceNumber = channelWithOutReferenceNumber;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

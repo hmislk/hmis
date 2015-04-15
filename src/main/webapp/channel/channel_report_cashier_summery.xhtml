@@ -31,23 +31,26 @@
 
                         <h:panelGrid columns="24" styleClass="noPrintButton" style="width: 60%">
                             <h:outputLabel  value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" styleClass="noPrintButton" >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" styleClass="noPrintButton" >
                             </p:calendar>
 
                             <p:autoComplete style="width: 400px;"
                                             forceSelection="true" 
                                             value="#{channelReportController.webUser}" id="scStaff"
-                                            completeMethod="#{staffController.completeStaff}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >                                            
+                                            completeMethod="#{webUserController.completeUser}" var="mys" 
+                                            itemLabel="#{mys.webUserPerson.name}" itemValue="#{mys}"
+                                            converter="webUs" styleClass="noPrintButton"  >                                            
                             </p:autoComplete>
 
                             <p:commandButton id="btnProcess" ajax="false" value="Process" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{channelReportController.createChannelCashierSummeryTable()}" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
                             <p:defaultCommand target="btnProcess"/>
 
                         </h:panelGrid>

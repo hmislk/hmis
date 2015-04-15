@@ -46,17 +46,25 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Month End Employee Working Time + Over Time Report-By Minute" />
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.fromDate} - #{hrReportController.toDate}"/>
                                 </f:facet>
+                                <p:column headerText="Code">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Code" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.staff.codeInterger}" />
+                                </p:column>
                                 <p:column headerText="Staff">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Staff" />
                                     </f:facet>
                                     <h:outputLabel value="#{ss.staff.person.name}" />
                                 </p:column>
-                                <p:column headerText="Sun">
+                                <p:column headerText="Sun" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Sun" />
                                     </f:facet>
@@ -64,7 +72,7 @@
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>                                    
                                 </p:column>
-                                <p:column headerText="Mon">
+                                <p:column headerText="Mon" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Mon" />
                                     </f:facet>
@@ -72,7 +80,7 @@
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Tue">
+                                <p:column headerText="Tue" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Tue" />
                                     </f:facet>
@@ -96,7 +104,7 @@
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Fri">
+                                <p:column headerText="Fri" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Fri" />
                                     </f:facet>
@@ -136,7 +144,7 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Extra Duty Time">
+                                <p:column headerText="Extra Duty Time" rendered="false">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Extra Duty Time" />
                                     </f:facet>
@@ -145,7 +153,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Extra Duty Value">
+                                <p:column headerText="Extra Duty Value" rendered="false">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Extra Duty Value" />
                                     </f:facet>

@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Additional Working Shift Sheet">
+                <h:panelGrid columns="2">
+
+                    <p:panel header="Search Forms">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar value="#{staffAdditionalFormController.fromDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="forDateS" value="#{staffAdditionalFormController.toDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="Staff : "/>
+                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
+                            <h:outputLabel value="Approved Person"/>
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
+                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
+                            <h:panelGroup>
+                                <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
+                                <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDate()}" />
+                            </h:panelGroup>
+                        </h:panelGrid>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <p:dataTable id="gpBillPreview" value="#{staffAdditionalFormController.aditionalWithTimes}" 
+                                     var="add" 
+                                     rowStyleClass="#{add.af.retired eq true ? 'redText':''}" >
+
+                            <f:facet name="header">
+                                <h:outputLabel value="Additional Working Shift Sheet"/>
+                            </f:facet>
+
+                            <p:column headerText="Form Number" sortBy="#{add.af.code}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Form Number"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.code}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Code" sortBy="#{add.af.staff.codeInterger}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Code"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staff.codeInterger}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Staff">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Created At" sortBy="#{add.af.createdAt}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Created At"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.createdAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Roster">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Roster"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staff.roster.name}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Shift Start">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift Start"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staffShift.startRecord.recordTimeStamp}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Shift End">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift End"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staffShift.endRecord.recordTimeStamp}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Time">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staffShift.workedTimeVarified}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="From">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Additional From From"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.fromTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="To">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Additional Form To"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.toTime}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Additionl OT Before Shift">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Additionl OT Before Shift"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staffShift.extraTimeFromStartRecordVarified / 60}" >
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Additional OT After Shift">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Additional OT After Shift"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.staffShift.extraTimeFromEndRecordVarified / 60}" >
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            
+                            
+                            <p:column headerText="Miniuts">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Miniuts"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.time}" >
+                                    <f:convertNumber parent="###" />
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Aproved By">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Aproved By"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Comment">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.comments}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Creater">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Creater"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.af.creater.webUserPerson.nameWithTitle}" >   <br></br> </p:outputLabel>
+
+                                <p:outputLabel value="Deleted By  #{add.af.retirer.webUserPerson.nameWithTitle}" rendered="#{add.af.retired}" style="color: blue;"></p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>

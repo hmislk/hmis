@@ -43,14 +43,23 @@
                                     <h:outputLabel value="Date : "><p:clock pattern="dd MM yy hh:mm:ss a" /></h:outputLabel>
                                 </f:facet> 
                                 
-                                <p:column headerText="Item">
+                                <p:column headerText="Item"
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code" style="text-align: center;">
+                                <p:column headerText="Code" style="text-align: center;"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>

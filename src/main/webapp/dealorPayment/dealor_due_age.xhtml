@@ -12,7 +12,7 @@
                 <h:form>            
                     <p:commandButton value="Process Pharmacy Due Age" action="#{dealorDueController.fillPharmacyDueAge()}" ajax="false"  />
                     <p:commandButton value="Process Store Due Age" action="#{dealorDueController.fillStoreDueAge()}" ajax="false"  />
-                    <p:commandButton value="Process All Due Age" action="#{dealorDueController.fillPharmacyStoreDueAge()}" ajax="false"  />
+                    <p:commandButton value="Process All Due Age" id="btnSearch" action="#{dealorDueController.fillPharmacyStoreDueAge()}" ajax="false"  />
                     <p:defaultCommand target="btnSearch"/>
 
                     <p:dataTable id="lst" value="#{dealorDueController.dealorCreditAge}" var="i" filteredValue="#{dealorDueController.filteredList}">                       

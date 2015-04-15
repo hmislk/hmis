@@ -54,6 +54,13 @@
                                 <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
                                  
                                 </p:column>
+                                  <p:column headerText="Form Num">
+                                     <f:facet name="header">
+                                    <h:outputLabel value="Form Num"/>
+                                </f:facet>
+                                      <p:outputLabel value="  #{ss.additionalForm.code}" ></p:outputLabel>
+                                  
+                                </p:column>
                                 <p:column headerText="Emp Name">
                                      <f:facet name="header">
                                     <h:outputLabel value="Emp Name"/>
@@ -64,8 +71,9 @@
                                 <p:column headerText="Department Name">
                                      <f:facet name="header">
                                     <h:outputLabel value="Department Name"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.department.name}" ></p:outputLabel>
+                                </f:facet>                                
+                                <p:outputLabel value=" #{ss.staff.workingDepartment.name}" ></p:outputLabel>
+                                <p:outputLabel value=" #{ss.staff.workingDepartment.institution.name}" ></p:outputLabel>
                                    
                                 </p:column>
                                 <p:column headerText="Staff Category" rendered="false">
@@ -142,7 +150,7 @@
                                     <h:outputLabel value="Basic per Sec"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor">
@@ -150,7 +158,7 @@
                                     <h:outputLabel value="Multiplying Factor"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
@@ -158,7 +166,7 @@
                                     <h:outputLabel value="Extra Duty Value"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>

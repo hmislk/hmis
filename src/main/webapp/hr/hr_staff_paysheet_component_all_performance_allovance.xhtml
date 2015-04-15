@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                 xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -18,16 +18,10 @@
                     <p:panel header="Detail" >
 
                         <h:panelGrid columns="2"  >
-                         <h:outputLabel value="Component"/>
-                            <p:selectOneMenu id="comp" value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
-                                <f:selectItem itemLabel="Select Paysheet Component"/>
-                                <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
-                                               var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
-                                <f:ajax event="change" execute="@this" 
-                                        render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
-                            </p:selectOneMenu>
-                            
-                          
+                            <h:outputLabel value="Component"/>
+                            <h:outputLabel value="#{staffPaySheetComponentAllPerformanceAllowanceController.paysheetComponent.name}"/>
+
+
                             <h:outputLabel value="From"/>                            
                             <p:calendar value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}" pattern="dd MM yyyy">
                                 <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
@@ -53,7 +47,7 @@
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{staffController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
-                            <hr:department value="#{staffController.reportKeyWord.institution}"/>
+                            <hr:institution value="#{staffController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Designation : "/>
@@ -117,7 +111,7 @@
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllPerformanceAllowanceController.paysheetComponent.name}" style="text-transform:uppercase;" />
                         <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllPerformanceAllowanceController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
-                      
+
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
@@ -128,105 +122,105 @@
                         <h:outputLabel value="Department : "/>
                         <hr:department value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.department}"/>
                         <h:outputLabel value="Institution : "/>
-                        <hr:department value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.institution}"/>
+                        <hr:institution value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.institution}"/>
                         <h:outputLabel value="Staff Category : "/>
                         <hr:completeStaffCategory value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.staffCategory}"/>
                         <h:outputLabel value="Designation : "/>
                         <hr:completeDesignation value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
                         <hr:completeRoster value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.roster}"/>  
-                        
-                         
+
+
                     </h:panelGrid>
-                    
+
                     <h:panelGrid columns="3">
-                        
-                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb3" fileName="hr_staff_paysheet_component_all_performance_allovance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="perallpanel" ></p:printer>
                         </p:commandButton>
-                          <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllPerformanceAllowanceController.createStaffPaysheetComponent}" />
-                        
+                        <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllPerformanceAllowanceController.createStaffPaysheetComponent}" />
+
                     </h:panelGrid>
                     <p:panel id="perallpanel">
-                    <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" id="tb3"
-                                  var="i" scrollHeight="350"  editable="true"
-                                  rowStyleClass="#{i.exist eq true ? 'exist':null}"
-                                  scrollable="true"  selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
-                                  rowKey="#{i.id}"  >
+                        <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" id="tb3"
+                                      var="i" scrollHeight="350"  editable="true"
+                                      rowStyleClass="#{i.exist eq true ? 'exist':null}"
+                                      scrollable="true"  selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
+                                      rowKey="#{i.id}"  >
 
-                        <p:column  selectionMode="multiple" >                            
-                        </p:column>
+                            <p:column  selectionMode="multiple" >                            
+                            </p:column>
 
-                        <p:column headerText="From" >
-                            <h:outputLabel value="#{i.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="To" >
-                            <h:outputLabel value="#{i.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-                        </p:column>
+                            <p:column headerText="From" >
+                                <h:outputLabel value="#{i.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="To" >
+                                <h:outputLabel value="#{i.toDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
 
-                        <p:column headerText="Staff Code" >
-                            <h:outputLabel value="#{i.staff.code}"/>
-                        </p:column>
+                            <p:column headerText="Staff Code" >
+                                <h:outputLabel value="#{i.staff.code}"/>
+                            </p:column>
 
-                        <p:column headerText="Staff" >
-                            <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
-                        </p:column>
+                            <p:column headerText="Staff" >
+                                <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                            </p:column>
 
-                        <p:column headerText="Grade" >
-                            <h:outputLabel value="#{i.staff.grade.name}"/>                           
-                        </p:column>
+                            <p:column headerText="Grade" >
+                                <h:outputLabel value="#{i.staff.grade.name}"/>                           
+                            </p:column>
 
-                        <p:column headerText="Category">
-                            <h:outputLabel value="#{i.staff.staffCategory.name}"/>
-                        </p:column>
+                            <p:column headerText="Category">
+                                <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                            </p:column>
 
-                        <p:column headerText="Designtion">
-                            <h:outputLabel value="#{i.staff.designation.name}"/>
-                        </p:column>
+                            <p:column headerText="Designtion">
+                                <h:outputLabel value="#{i.staff.designation.name}"/>
+                            </p:column>
 
-                        <p:column headerText="Institution">
-                            <h:outputLabel value="#{i.staff.workingDepartment.institution.name}"/>
-                        </p:column>
-                        <p:column headerText="Department">
-                            <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
-                        </p:column>
-                        <p:column headerText="Roster">
-                            <h:outputLabel value="#{i.staff.roster.name}"/>
-                        </p:column>
-                        <p:column headerText="Value" >
-                            <p:cellEditor>  
-                                <f:facet name="output">
-                                    <h:outputLabel value="#{i.staffPaySheetComponentValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{i.staffPaySheetComponentValue}"/>
-                                </f:facet>
-                            </p:cellEditor>
+                            <p:column headerText="Institution">
+                                <h:outputLabel value="#{i.staff.workingDepartment.institution.name}"/>
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputLabel value="#{i.staff.roster.name}"/>
+                            </p:column>
+                            <p:column headerText="Value" >
+                                <p:cellEditor>  
+                                    <f:facet name="output">
+                                        <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:inputText autocomplete="off" value="#{i.staffPaySheetComponentValue}"/>
+                                    </f:facet>
+                                </p:cellEditor>
 
-                        </p:column>
+                            </p:column>
 
-                        <p:column style="width:6%">  
-                            <p:rowEditor />  
-                        </p:column>  
+                            <p:column style="width:6%">  
+                                <p:rowEditor />  
+                            </p:column>  
 
-                        <p:column style="width:6%">  
-                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllPerformanceAllowanceController.remove}" onclick="onSubmitButton();">
-                                <f:setPropertyActionListener target="#{staffPaySheetComponentAllPerformanceAllowanceController.current}" value="#{i}" />
-                            </p:commandButton>
-                        </p:column>  
+                            <p:column style="width:6%">  
+                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllPerformanceAllowanceController.remove}" onclick="onSubmitButton();">
+                                    <f:setPropertyActionListener target="#{staffPaySheetComponentAllPerformanceAllowanceController.current}" value="#{i}" />
+                                </p:commandButton>
+                            </p:column>  
 
 
-                    </p:dataTable>
-                </p:panel>
+                        </p:dataTable>
+                    </p:panel>
                 </p:panel>
             </h:form>
 

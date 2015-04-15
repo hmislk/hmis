@@ -31,10 +31,14 @@
                                 <f:selectItem itemLabel="Select Day Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
                             </p:selectOneMenu> 
+                            <h:outputLabel value="With Out Cancel"/>
+                            <p:selectBooleanCheckbox value="#{staffLeaveApplicationFormController.withOutretRierd}"
+                                                     itemLabel="With Out Cancel"/>
                             <h:outputLabel value="Leave Approved Person"/>
                             <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
                             <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                             <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
+                            <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
                             </p:commandButton>
@@ -43,102 +47,115 @@
                             </p:commandButton>
                         </p:panelGrid>
                     </p:panel>
-                    <p:panel>
-                        <p:dataTable id="gpBillPreview" value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
-                                     rowStyleClass="#{l.retired eq true ? 'redText':''}"
-                                     >
-                            
+                    <p:dataTable id="gpBillPreview" value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
+                                 rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                                 >
+
+                        <f:facet name="header">
+                            <h:outputLabel value="Leave Application Form Report " style="font-size: 20px"/>
+
+
+                        </f:facet>
+                        <p:column headerText="Form Number" sortBy="#{l.code}">
                             <f:facet name="header">
-                                <h:outputLabel value="Leave Application Form Report " style="font-size: 20px"/>
-                  
-                       
-                    </f:facet>
-                            <p:column headerText="Staff">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
+                                <h:outputLabel value="Form Number"/>
+                            </f:facet>
+                            <p:outputLabel value="#{l.code}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Staff" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Staff"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Code">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Code"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staff.code}" ></p:outputLabel>
-                            </p:column>
-                            
-                            <p:column headerText="From">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="From"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.fromDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="To">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="To"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.toDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                        <p:column headerText="Code" sortBy="#{l.staff.codeInterger}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Code"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.staff.codeInterger}" ></p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Leave Type">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Leave Type"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>                                    
-                            </p:column>
+                        <p:column headerText="Created At" sortBy="#{l.createdAt}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Created At"/>
+                            </f:facet>
+                            <p:outputLabel value="#{l.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Shift Name">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Shift Name"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.staffShift.shift.name}" ></p:outputLabel>
-                            </p:column>
+                        <p:column headerText="From">
+                            <f:facet name="header">
+                                <h:outputLabel value="From"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.fromDate}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="To">
+                            <f:facet name="header">
+                                <h:outputLabel value="To"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.toDate}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Request Date">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Request Date"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.requestedDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                        <p:column headerText="Leave Type">
+                            <f:facet name="header">
+                                <h:outputLabel value="Leave Type"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>                                    
+                        </p:column>
 
-                            <p:column headerText="Aproved By">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Aproved By"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
+                        <p:column headerText="Shift Name">
+                            <f:facet name="header">
+                                <h:outputLabel value="Shift Name"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.staffShift.shift.name}" ></p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Leave Approved Date">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Leave Approved Date"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.approvedAt}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                </p:outputLabel>
-                            </p:column>
+                        <p:column headerText="Request Date">
+                            <f:facet name="header">
+                                <h:outputLabel value="Request Date"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.requestedDate}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
 
-                            <p:column headerText="Comment">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Comment"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.comments}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Creater">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Creater"  />
-                                </f:facet>
-                                <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" > <br/></p:outputLabel>
-                            
-                                <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
+                        <p:column headerText="Aproved By">
+                            <f:facet name="header">
+                                <h:outputLabel value="Aproved By"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Leave Approved Date">
+                            <f:facet name="header">
+                                <h:outputLabel value="Leave Approved Date"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.approvedAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Comment">
+                            <f:facet name="header">
+                                <h:outputLabel value="Comment"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.comments}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Creater">
+                            <f:facet name="header">
+                                <h:outputLabel value="Creater"  />
+                            </f:facet>
+                            <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" > <br/></p:outputLabel>
+
+                            <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
+                        </p:column>
+                    </p:dataTable>
                 </p:panel>
 
             </p:panel>

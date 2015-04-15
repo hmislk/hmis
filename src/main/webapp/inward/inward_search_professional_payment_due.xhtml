@@ -29,6 +29,7 @@
                                 <p:spacer height="30"/>
                                 <h:outputLabel/><h:outputLabel/> 
                                 <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="BHT No"/>
                                 <h:outputLabel value="Patient Name"/>
@@ -109,6 +110,12 @@
                                     <h:outputLabel value="Bht No"  />
                                 </f:facet>
                                 <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
+                                </h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Discharged At" >
+                                <h:outputLabel value="#{bf.bill.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 

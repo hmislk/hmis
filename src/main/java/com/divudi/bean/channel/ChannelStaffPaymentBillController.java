@@ -156,7 +156,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         currentStaff = null;
         totalDue = 0.0;
         totalPaying = 0.0;
-        printPreview = false;
+        //printPreview = false;
         paymentMethod = null;
         speciality = null;
         serviceSessions = null;
@@ -426,13 +426,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         BilledBill tmp = new BilledBill();
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
-        tmp.setBillType(BillType.ChannelProPayment);
+        tmp.setBillType(BillType.PaymentBill);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);

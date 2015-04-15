@@ -75,72 +75,76 @@
                         <p:watermark for="acIx" value="Item"/>
                         <p:watermark for="dept" value="Department"/>
                         <p:watermark for="ins" value="Institution"/>
-                       
-                        
+
+
                         <p:panelGrid columns="2">
-                        <p:commandButton ajax="false" value="Process by Added Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
-                   
+                            <p:commandButton ajax="false" value="Process by Added Date" 
+                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" value="Process by Discharge Date" 
+                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                                <p:printer target="reportPrint"/>
+                            </p:commandButton>
                         </p:panelGrid>
                     </h:panelGrid>
 
                 </p:panel>   
 
-                <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
-                    <p:column headerText="No">
-                        <h:outputLabel value="#{i+1}"/>
-                    </p:column>
-                    <p:column headerText="Institution" >
-                        <h:outputLabel value="#{iwf.item.institution.name}"/>
-                    </p:column>
-                    <p:column headerText="Department" >
-                        <h:outputLabel value="#{iwf.item.department.name}"/>
-                    </p:column>    
-                    <p:column headerText="Parent Categoy" >
-                        <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
-                    </p:column>   
-                    <p:column headerText="Categoy" >
-                        <h:outputLabel value="#{iwf.item.category.name}"/>
-                    </p:column>   
-                    <p:column headerText="Name" >
-                        <h:outputLabel value="#{iwf.item.name}"/>
-                    </p:column>
-                    <p:column headerText="Count">
-                        <h:outputLabel value="#{iwf.count}"/>
-                    </p:column>
-                    <p:column style="text-align: right;" headerText="Hospital Fee">
-                        <h:outputLabel value="#{iwf.hospitalFee}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
+                <p:panel id="reportPrint">
+                    <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
+                        <p:column headerText="No">
+                            <h:outputLabel value="#{i+1}"/>
+                        </p:column>
+                        <p:column headerText="Institution" >
+                            <h:outputLabel value="#{iwf.item.institution.name}"/>
+                        </p:column>
+                        <p:column headerText="Department" >
+                            <h:outputLabel value="#{iwf.item.department.name}"/>
+                        </p:column>    
+                        <p:column headerText="Parent Categoy" >
+                            <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
+                        </p:column>   
+                        <p:column headerText="Categoy" >
+                            <h:outputLabel value="#{iwf.item.category.name}"/>
+                        </p:column>   
+                        <p:column headerText="Name" >
+                            <h:outputLabel value="#{iwf.item.name}"/>
+                        </p:column>
+                        <p:column headerText="Count">
+                            <h:outputLabel value="#{iwf.count}"/>
+                        </p:column>
+                        <p:column style="text-align: right;" headerText="Hospital Fee">
+                            <h:outputLabel value="#{iwf.hospitalFee}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column style="text-align: right;" headerText="Professional Fee">
-                        <h:outputLabel value="#{iwf.proFee}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column style="text-align: right;" headerText="Professional Fee">
+                            <h:outputLabel value="#{iwf.proFee}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column style="text-align: right;" headerText="Total">
-                        <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column style="text-align: right;" headerText="Total">
+                            <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>                 
-                </p:dataTable>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>                 
+                    </p:dataTable>
+                </p:panel>
             </p:panel>
 
         </h:form>

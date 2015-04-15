@@ -94,7 +94,17 @@
                                 <p:commandButton value="(2) Employee Detail " 
                                                  action="hr_report_employee_detail" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(3) Employee Detail Zone Code" 
+                                                 action="hr_report_employee_detail_zone_code" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                
+                                <p:commandButton value="(4) Employee EPF Detail" 
+                                                 action="hr_report_epf_detail" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                
                             </h:panelGrid>
 
                         </p:panel>
@@ -173,7 +183,7 @@
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-                            <p:commandButton value="(4) Leave Report Extra " 
+                            <p:commandButton value="(4) Late Leave" 
                                              action="hr_report_leave_system" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
@@ -181,7 +191,7 @@
                         </p:panel>
 
                         <p:panel header="(8) Working Time">                           
-                            <p:commandButton value="(1) Worked Time Time" 
+                            <p:commandButton value="(1) Worked Time" 
                                              action="hr_report_staff_shift_detail" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
@@ -205,12 +215,20 @@
                         </p:panel>
 
                         <p:panel header="(10) Form">
-                            <p:commandButton value="Additional Form Report" 
+                            <p:commandButton value="(1)Additional Form Report" 
+                                             action="hr_form_staff_additional_report_1" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(2)Leave Form Report" 
+                                             action="hr_form_staff_leave_report" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(3)Additional Form Report Varification" 
                                              action="hr_form_staff_additional_report" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-                            <p:commandButton value="Leave Form Report" 
-                                             action="hr_form_staff_leave_report" 
+                             <p:commandButton value="(4)Form Report That Not Comes To Analysed" 
+                                             action="hr_form_staff_form_report" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
                         </p:panel>

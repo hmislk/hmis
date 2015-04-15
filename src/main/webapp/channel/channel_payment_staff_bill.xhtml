@@ -38,7 +38,7 @@
                                         <p:watermark value="Staff" for="scStaff"/>
 
                                         <p:commandButton ajax="false" value="Process"  action="#{channelStaffPaymentBillController.calculateDueFees}"/>
-                                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController}"/>
+                                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>
                                     </h:panelGrid>
 
 
@@ -120,16 +120,15 @@
                         </p:panel>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{channelStaffPaymentBillController.printPreview}">
+                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
 
 
                         <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}" />
+                        <p:commandButton ajax="false" styleClass="noPrintButton" value="Clear" action="#{channelStaffPaymentBillController.makenull()}" />
 
-                                         <bi:staffBill id="gpBillPreview" controller="#{channelStaffPaymentBillController}" 
-                                      bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                        <bi:staffBill  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>
 
 

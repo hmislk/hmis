@@ -11,6 +11,8 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Category;
+import com.divudi.entity.Item;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -20,6 +22,8 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillNumberFacade;
+import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
@@ -27,10 +31,13 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -68,38 +75,86 @@ public class DataAdministrationController {
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     SessionController sessionController;
+    @EJB
+    ItemFacade itemFacade;
+    
+    @EJB
+    CategoryFacade categoryFacade;
+    
+    public void removeUnsedPharmaceuticalCategories() {
+        Map m = new HashMap();
+        String sql;
+        
+        sql = "SELECT c FROM PharmaceuticalItemCategory c ";
+      
 
-    
-    
-    
+        Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+
+        sql = "SELECT i.category "
+                + " FROM Item i "
+                + " GROUP BY i.category";
+        
+        System.out.println("sql = " + sql);
+        m = new HashMap();
+        
+        Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+
+        System.out.println("Used Cats " + usedCats.size());
+        System.out.println("All Cats after removing " + allCats.size());
+        allCats.removeAll(usedCats);
+        System.out.println("All Cats after removing " + allCats.size());
+        
+        
+        for(Category c:allCats){
+            System.out.println("c = " + c);
+            System.out.println("c.getName() = " + c.getName());
+            c.setRetired(true);
+            c.setRetiredAt(new Date());
+            c.setRetireComments("Bulk1");
+            categoryFacade.edit(c);
+        }
+    }
+
     public void addBillFeesToProfessionalCancelBills() {
-        List<Bill> bs ;
+        List<Bill> bs;
         String s;
         Map m = new HashMap();
-        
-        s="select b from Bill b where type(b) =:bct and b.billType=:bt and b.cancelledBill is not null order by b.id desc";
-        
+        String newLine = System.getProperty("line.separator");
+
+        s = "select b from Bill b where type(b) =:bct and b.billType=:bt and b.cancelledBill is not null order by b.id desc";
+
         m.put("bct", BilledBill.class);
         m.put("bt", BillType.PaymentBill);
-        
-        bs=billFacade.findBySQL(s, m);
-        for(Bill b:bs){
-            System.out.println("b = " + b);
-            Bill cb=b.getCancelledBill();
-            int n=0;
-            for(BillItem bi:cb.getBillItems()){
-                System.out.println("bi = " + bi);
-                System.out.println("b.getBillItems().get(n).getPaidForBillFee() = " + b.getBillItems().get(n).getPaidForBillFee());
+
+        bs = billFacade.findBySQL(s, m);
+        int i =1;
+        for (Bill b : bs) {
+            Bill cb = b.getCancelledBill();
+            int n = 0;
+            for (BillItem bi : cb.getBillItems()) {
                 bi.setPaidForBillFee(b.getBillItems().get(n).getPaidForBillFee());
-                System.out.println("bi.getPaidForBillFee() = " + bi.getPaidForBillFee());
                 n++;
                 billItemFacade.edit(bi);
             }
+            System.out.println(newLine);
+            System.out.println("Error number " + i + newLine);
+
+            System.out.println("Bill Details " + newLine);
+            System.out.println("\tIns Number = " + b.getInsId() + newLine);
+            System.out.println("\tDep Number = " + b.getDeptId() + newLine);
+            System.out.println("\tBill Date = " + b.getCreatedAt() + newLine);
+            System.out.println("\tValue = " + b.getNetTotal() + newLine);
+
+            System.out.println("Cancelled Bill Details " +  newLine);
+            System.out.println("\tIns Number = " + cb.getInsId() + newLine);
+            System.out.println("\tDep Number = " + cb.getDeptId() + newLine);
+            System.out.println("\tBill Date = " + cb.getCreatedAt() + newLine);
+            System.out.println("\tValue = " + cb.getNetTotal() + newLine);
+
+            i++;
         }
     }
-    
-    
-    
+
     public void restBillNumber() {
         String sql = "Select b from BillNumber b where b.retired=false";
         List<BillNumber> list = billNumberFacade.findBySQL(sql);
@@ -154,14 +209,14 @@ public class DataAdministrationController {
                 System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
                 bi.setRate((double) fetchPharmacyuticalBillitem(bi));
-                System.out.println("Rate"+ fetchPharmacyuticalBillitem(bi));
-                System.out.println("getRate"+bi.getRate());
+                System.out.println("Rate" + fetchPharmacyuticalBillitem(bi));
+                System.out.println("getRate" + bi.getRate());
                 bi.setNetRate((double) fetchPharmacyuticalBillitem(bi));
 
                 //                bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
 //                bi.setNetRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-                System.out.println("rate"+bi.getNetRate());
-                System.out.println("Net rate"+bi.getNetValue());
+                System.out.println("rate" + bi.getNetRate());
+                System.out.println("Net rate" + bi.getNetValue());
                 bi.setNetValue(bi.getNetRate() * bi.getQty());
                 bi.setGrossValue(bi.getNetValue());
 

@@ -12,8 +12,7 @@
 
         <h:form>
 
-            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">     
-
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
@@ -245,6 +244,7 @@
                             <div >
                                 <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                    <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
                             <div >
@@ -299,7 +299,7 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="rePrint">
+                        <p:tab title="Reprint" id="rePrint" >
 
                             <p:commandButton value="Print" ajax="false" action="#">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
@@ -309,6 +309,7 @@
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                         <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                     </h:panelGroup>
                                 </div>
@@ -446,7 +447,12 @@
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
                                             <div >
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                                    <div style="page-break-after: always;">
                                                     <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </div>
+                                                    <div style="page-break-after: always;">
+                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </div>
                                                 </h:panelGroup>
                                             </div>
                                             <div >
@@ -650,6 +656,8 @@
                         </p:tab>
                     </p:tabView>
                 </p:panel>
+                <p:spacer width="100px"></p:spacer>
+                <h:panelGroup></h:panelGroup>
 
 
             </h:panelGrid>
