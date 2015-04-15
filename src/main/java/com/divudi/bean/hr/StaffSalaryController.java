@@ -916,6 +916,7 @@ public class StaffSalaryController implements Serializable {
 
             //Set Extra Duty Value
             double extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Normal);
+            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);
             getCurrent().setExtraDutyNormalMinute(extraTimeMinute);
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);
             getCurrent().setExtraDutyMerchantileMinute(extraTimeMinute);

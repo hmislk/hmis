@@ -968,6 +968,11 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 net = billed - (cancelled + refunded);
                 opdCount+=net;
                 temp.setOpdCount(net);
+                System.out.println("temp.getInvestigation().getName() = " + temp.getInvestigation().getName());
+                System.out.println("billed = " + billed);
+                System.out.println("cancelled = " + cancelled);
+                System.out.println("refunded = " + refunded);
+                System.out.println("temp.getOpdCount() = " + temp.getOpdCount());
 
                 billed = getItemCount(new BilledBill(), ix, BillType.LabBill);
                 cancelled = getItemCount(new CancelledBill(), ix, BillType.LabBill);
@@ -975,7 +980,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 net = billed - (cancelled + refunded);
                 ccCount+=net;
                 temp.setCcCount(net);
-
+                
                 billed = getItemCount(new BilledBill(), ix, BillType.InwardBill);
                 cancelled = getItemCount(new CancelledBill(), ix, BillType.InwardBill);
                 refunded = getItemCount(new RefundBill(), ix, BillType.InwardBill);

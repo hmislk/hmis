@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Working Shift Sheet">
+            <p:panel header="Form Working Shift Sheet">
                 <h:panelGrid columns="2">
 
                     <p:panel header="Search Forms">
@@ -42,9 +42,9 @@
                                     <f:selectItems  value="#{enumController.timeses}" ></f:selectItems>                    
                                 </p:selectOneMenu> 
 
-                                <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchByCreatedDate()}" />                           
-                                <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchByShiftDate()}" />                           
-                                <p:commandButton ajax="false" value="Search By Approve Date" action="#{staffAdditionalFormController.searchByApproveDate()}" />                           
+                                <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />                           
+                                <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />                           
+
                             </h:panelGrid>
                             <h:panelGrid columns="2" rendered="false">
                                 <h:outputLabel value="Day Type"/>
@@ -60,26 +60,12 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:dataTable id="gpBillPreview" value="#{staffAdditionalFormController.additionalForms}" 
+                        <p:dataTable id="gpBillPreview" value="#{staffAdditionalFormController.hrForms}" 
                                      var="add"  >
 
                             <f:facet name="header">
                                 <h:outputLabel value="Additional Working Shift Sheet"/>
                             </f:facet>
-
-                            <p:column headerText="Form ID" sortBy="#{add.id}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Form id"/>
-                                </f:facet>
-                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Retired" sortBy="#{add.id}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Retired"/>
-                                </f:facet>
-                                <p:outputLabel value="#{add.retired}" ></p:outputLabel>
-                            </p:column>
 
                             <p:column headerText="Form Number" sortBy="#{add.code}">
                                 <f:facet name="header">
@@ -109,6 +95,9 @@
                                 <p:outputLabel value="#{add.createdAt}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Class">
+                                <h:outputLabel value="#{add}"/>
                             </p:column>
 
                             <p:column headerText="Roster">
@@ -175,7 +164,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additionl OT Before Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/ 60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -184,7 +173,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additional OT After Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified / 60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -193,7 +182,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="PH/DAY OFF"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified / 60}" >
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -230,6 +219,12 @@
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
 
+                            <p:column headerText="ID">
+                                <f:facet name="header">
+                                    <h:outputLabel value="ID"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
+                            </p:column>
                             <p:column headerText="Retired">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retired"/>
@@ -241,6 +236,7 @@
                                 <p:commandButton ajax="false" value="Update"
                                                  action="#{staffAdditionalFormController.update(add)}"/>
                             </p:column>
+
 
                         </p:dataTable>
                     </p:panel>

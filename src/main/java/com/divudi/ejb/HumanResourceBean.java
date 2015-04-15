@@ -734,8 +734,7 @@ public class HumanResourceBean {
         return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
     }
-    
-    
+
     public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select l "
                 + " from StaffLeaveSystem l"
@@ -753,14 +752,12 @@ public class HumanResourceBean {
 
     }
 
-
-
-    public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff,  Date fromDate, Date toDate) {
+    public List<StaffLeave> fetchStaffLeaveSystemList(Staff staff, Date fromDate, Date toDate) {
         String sql = "select l "
                 + " from StaffLeaveSystem l"
                 + " where l.retired=false "
                 + " and l.staff=:stf "
-//                + " and l.leaveType in  :ltp "
+                //                + " and l.leaveType in  :ltp "
                 + " and l.leaveDate between  :fd and :td ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
@@ -818,7 +815,7 @@ public class HumanResourceBean {
                 + " and ss.staff=:s "
                 + " and ss.shiftDate between :fd and :td "
                 + " and ss.dayType not in :dtp "
-//                + " and ss.autoLeave=true "
+                //                + " and ss.autoLeave=true "
                 + " and (ss.considerForLateIn=true "
                 + " or ss.considerForEarlyOut=true) "
                 + " order by ss.shiftDate ";
@@ -1748,6 +1745,23 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
+    
+     public List<StaffLeave> fetchStaffLeave(Staff staff, Date date) {
+
+        String sql = "Select s From StaffLeave s"
+                + " where s.retired=false "
+                //                + " and s.form.retired=false "
+                //                + " and s.retired=false "
+                + " and s.staff=:st"
+                + " and s.leaveDate=:date";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("date", date);
+//        hm.put("to", toDate);
+
+        return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
+    }
+
 
     public boolean isHoliday(Date d) {
         String sql = "Select d From PhDate d "
@@ -2589,6 +2603,9 @@ public class HumanResourceBean {
         double dbl = 0;
         for (StaffShift ss : list) {
             dbl += roundOff(ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()) * roundOff(ss.getMultiplyingFactorOverTime()) * roundOff(ss.getOverTimeValuePerSecond());
+            if (dayType == DayType.Extra) {
+                dbl += roundOff(ss.getExtraTimeCompleteRecordVarified()) * roundOff(ss.getMultiplyingFactorOverTime()) * roundOff(ss.getOverTimeValuePerSecond());
+            }
         }
 
         return dbl;

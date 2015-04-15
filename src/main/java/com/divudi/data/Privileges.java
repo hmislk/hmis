@@ -276,6 +276,9 @@ public enum Privileges {
     //Cashier
     AllCashierSummery,
     
+    //Administration
+    SearchAll,
+    
     
    
     
