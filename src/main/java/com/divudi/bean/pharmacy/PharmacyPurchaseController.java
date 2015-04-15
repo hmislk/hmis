@@ -121,6 +121,14 @@ public class PharmacyPurchaseController implements Serializable {
         rows = lsts;
     }
 
+    public void calculatePurchaseRateAndWholesaleRateFromRetailRate(){
+        if(currentBillItem==null || currentBillItem.getPharmaceuticalBillItem()==null || currentBillItem.getPharmaceuticalBillItem().getRetailRate()==0){
+            return;
+        }
+        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
+        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate()* 1.08);
+    }
+    
     public List<PharmacyStockRow> getRows() {
         return rows;
     }
@@ -515,6 +523,7 @@ public class PharmacyPurchaseController implements Serializable {
         if (bill == null) {
             bill = new BilledBill();
             bill.setBillType(BillType.PharmacyPurchaseBill);
+            bill.setReferenceInstitution(getSessionController().getInstitution());
         }
         return bill;
     }

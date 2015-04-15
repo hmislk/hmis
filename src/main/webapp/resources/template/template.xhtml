@@ -122,7 +122,7 @@
 
                                 </p:submenu>
                                 <p:submenu label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
-                                    <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
+                                    <p:submenu label="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
                                                      value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier"  
@@ -151,6 +151,39 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                     </p:submenu>
 
+                                    <p:submenu label="Wholesale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"> 
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale"  
+                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier"  
+                                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill"  
+                                                     value="Search Sale Bill"
+                                                     actionListener="#{searchController.makeListNull}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"   ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_pre_bill"  
+                                                     value="Search Sale Bill to Pay"
+                                                     actionListener="#{searchController.makeListNull}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"   ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill_item"  
+                                                     value="Search Sale Bill Items" actionListener="#{searchController.makeListNull}" 
+                                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"  ></p:menuitem>     
+                                        <p:menuitem  ajax="false" 
+                                                     action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                        <p:menuitem  ajax="false" 
+                                                     action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                        <p:menuitem ajax="false" 
+                                                    action="/pharmacy/pharmacy_search_return_bill_pre" 
+                                                    actionListener="#{searchController.makeListNull}"  
+                                                    value="Search Return Bill (Item)" 
+                                                    rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" 
+                                                     actionListener="#{searchController.makeListNull}"   
+                                                     value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                    </p:submenu>
 
 
                                     <p:submenu label="BHT Bills" >
