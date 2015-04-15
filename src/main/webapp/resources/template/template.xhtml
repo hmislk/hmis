@@ -396,7 +396,7 @@
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
                                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard" rendered="false"/>
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
-                                     
+
                                     <p:submenu label="Channel Books">
                                         <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"/>
                                         <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"/>
@@ -485,7 +485,7 @@
                                             <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}"  />    
                                             <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}"  />    
                                             <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}"  />    
-                                            
+
                                         </p:submenu>                                       
                                     </p:submenu>
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 
@@ -1171,7 +1171,7 @@
 
                 <p:panel rendered ="#{!sessionController.logged}" style="min-height: 500px; padding: 50px;" styleClass="nonPrintBlock">
                     <ui:insert name="login"   >
-                        <p:panel header="Please login" id="loginbox" style="margin-left: 20%;margin-right: 20%; text-align: center; ">
+                        <p:panel header="Please login" id="loginbox" style="margin:auto; width: 700px; text-align: center; ">
                             <h:panelGrid columns="2" >
                                 <h:panelGroup >
                                     <h:graphicImage  library="image" name="lock.png" />
@@ -1214,7 +1214,7 @@
                 <div style="bottom: 0px; left: 10px; opacity: 0.4; z-index: 0; min-height: 25px;"></div>
 
                 <p:panel styleClass="nonPrintBlock" 
-                         style="position: fixed; bottom: 0px; left: 10px; opacity: 0.4; z-index: 0;"
+                         style="bottom: 0px; left: 10px; "
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>
@@ -1229,8 +1229,8 @@
 
             </h:panelGrid>
 
-            <div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.4;" class="nonPrintBlock" >
-                <p:clock pattern="hh:mm:ss a - dd MMMM yyyy" mode="server"  />  
+            <div style="position: fixed; bottom: 10px; right: 10px; width: 300px;" class="nonPrintBlock" >
+                <p:clock pattern="hh:mm a - dd MMM yyyy" mode="server"  />  
             </div>
 
         </p:panel>
