@@ -21,7 +21,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="#{channelReportController.webUser.institution.name}"/> <br/>
 
-                            <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
 
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.getUsersWithFeeType}" style="float: right;"/>
                             <p:defaultCommand target="btnRefresh"/>

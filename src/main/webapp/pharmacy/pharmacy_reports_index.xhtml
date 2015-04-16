@@ -26,7 +26,7 @@
                                             <p:commandButton value="Staff Stocks" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                             <p:commandButton value="Suppliers' Stock" action="pharmacy_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
                                             <p:commandButton value="Category Stock" action="pharmacy_report_category_stock_by_batch" ajax="false" ></p:commandButton>
-                                            <p:commandButton value="Category Summery" action="pharmacy_report_category_stock_by_category" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Category Summary" action="pharmacy_report_category_stock_by_category" ajax="false" ></p:commandButton>
                                             <p:commandButton value="All Suppliers' Stock" action="pharmacy_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
                                             <p:commandButton value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
                                             <p:commandButton value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" ></p:commandButton>                            
@@ -72,7 +72,7 @@
                                     <p:panel header="Item Reports" >
                                         <p:panelGrid columns="1" styleClass="alignTop">
                                             <p:commandButton value="Items List" action="/pharmacy/list_amps" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
-                                            <p:commandButton value="Items Summery" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton value="Items Summary" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>                            
                                         </p:panelGrid>
                                     </p:panel>
                                 </td>

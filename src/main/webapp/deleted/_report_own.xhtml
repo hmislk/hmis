@@ -18,7 +18,7 @@
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Accountant Cash Summery"/>
+                                <p:outputLabel value="Accountant Cash Summary"/>
                             </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_cash_department"/> 
                             <p:commandButton styleClass="linkButton" ajax="false" value="By Department(Summerize)" action="report_cash_department_summery" actionListener="#{cashSummeryController.makeNull}"/> 
@@ -31,7 +31,7 @@
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Accountant Cash Summery(Witout Professional)"/>
+                                <p:outputLabel value="Accountant Cash Summary(Witout Professional)"/>
                             </f:facet>
 
                             <p:commandButton styleClass="linkButton" ajax="false" value="By Category Export Excel" action="report_cash_category_without_pro_excel"/> 
@@ -42,7 +42,7 @@
                         
                          <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Book Keeping Summery(Witout Professional)"/>
+                                <p:outputLabel value="Book Keeping Summary(Witout Professional)"/>
                             </f:facet>
 
                             <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
@@ -65,11 +65,11 @@
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Summery By Service"/>
+                                <p:outputLabel value="Summary By Service"/>
                             </f:facet>
                             <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summery By Service" action="report_opd_service_summery" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summery By Service Category" action="report_opd_service_summery_by_category" /> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category" action="report_opd_service_summery_by_category" /> 
 
                             </h:panelGrid>
 
