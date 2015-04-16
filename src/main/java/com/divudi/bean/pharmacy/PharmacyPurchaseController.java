@@ -240,8 +240,6 @@ public class PharmacyPurchaseController implements Serializable {
 
         wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty()+ tmp.getPharmaceuticalBillItem().getFreeQty());
         tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
-//        System.out.println("wsRate = " + wsRate);
-        
         calTotal();
     }
 
