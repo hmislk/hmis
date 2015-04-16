@@ -76,6 +76,7 @@ public class PharmacyPurchaseController implements Serializable {
     //  private List<PharmacyItemData> pharmacyItemDatas;
 
     double saleRate;
+    double wsRate;
     AmpController ampController;
 
     Institution institution;
@@ -237,6 +238,10 @@ public class PharmacyPurchaseController implements Serializable {
             }
         }
 
+        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty()+ tmp.getPharmaceuticalBillItem().getFreeQty());
+        tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
+//        System.out.println("wsRate = " + wsRate);
+        
         calTotal();
     }
 
@@ -296,8 +301,16 @@ public class PharmacyPurchaseController implements Serializable {
         }
         double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
         saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
-
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
+        
+        temp = 108;
+        wsRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+//        System.out.println("wsRate = " + wsRate);
+        wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
+//        System.out.println("wsRate = " + wsRate);
+        getCurrentBillItem().getPharmaceuticalBillItem().setWholesaleRate(wsRate);
+        
+        
 
     }
 
