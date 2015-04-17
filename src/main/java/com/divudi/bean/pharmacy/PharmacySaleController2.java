@@ -1181,6 +1181,18 @@ public class PharmacySaleController2 implements Serializable {
         if (getPreBill().getBillItems().isEmpty()) {
             return;
         }
+        
+        if (!getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+                System.out.println("bi.getQty() = " + bi.getQty());
+                if (bi.getQty()<=0.0) {
+                    System.out.println("bi.getQty() = " + bi.getQty());
+                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                    return;
+                }
+            }
+        }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
