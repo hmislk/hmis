@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -37,16 +38,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.ItemFacade;
-import java.util.Collection;
 import java.util.Collections;
-import org.eclipse.persistence.internal.core.helper.CoreClassConstants;
 
 /**
  *
@@ -84,7 +81,8 @@ public class ReportsStock implements Serializable {
      */
     @Inject
     DealerController dealerController;
-
+    @Inject
+    SessionController sessionController;
     /**
      * EJBs
      */
@@ -460,15 +458,21 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d and s.itemBatch.dateOfExpire between :fd and :td order by s.itemBatch.dateOfExpire";
+        sql = "select s "
+                + " from Stock s "
+                + " where s.stock > :st "
+                + " and s.department=:d "
+                + " and s.itemBatch.dateOfExpire "
+                + " between :fd and :td "
+                + " order by s.itemBatch.dateOfExpire";
         m.put("d", department);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+        m.put("st", 0.0);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
-//            ts.getItemBatch().getDateOfExpire()
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
@@ -592,8 +596,16 @@ public class ReportsStock implements Serializable {
         m = new HashMap();
         m.put("ins", institution);
         m.put("dep", department);
-        sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.id in "
-                + "(select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)";
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " and s.itemBatch.item.id in "
+                + "(select item.id "
+                + " from ItemsDistributors id join id.item as item "
+                + " where id.retired=false "
+                + " and id.institution=:ins)";
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -617,7 +629,13 @@ public class ReportsStock implements Serializable {
         m = new HashMap();
         m.put("cat", category);
         m.put("dep", department);
-        sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.category=:cat order by s.itemBatch.item.name";
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " and s.itemBatch.item.category=:cat "
+                + " order by s.itemBatch.item.name";
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -707,6 +725,9 @@ public class ReportsStock implements Serializable {
      * @return
      */
     public Department getDepartment() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
         return department;
     }
 
@@ -966,6 +987,14 @@ public class ReportsStock implements Serializable {
 
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
     }
 
 }
