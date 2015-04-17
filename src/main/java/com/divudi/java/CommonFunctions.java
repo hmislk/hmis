@@ -24,7 +24,7 @@ public class CommonFunctions {
         Double m = Math.pow(10, decimalPlaces);
         Double n = m * numberToRound ;
         Long l=Math.round(n);
-        return 1/m;
+        return l/m;
     }
     
     public static double round(double numberToRound){
