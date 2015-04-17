@@ -624,7 +624,7 @@ public class PharmacyWholeSaleController implements Serializable {
             return;
         }
         getBillItem();
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate());
         System.err.println("Rate " + bi.getRate());
         bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  ////System.err.println("Discount "+bi.getDiscount());
@@ -705,7 +705,7 @@ public class PharmacyWholeSaleController implements Serializable {
 
         //Rates
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
+        billItem.setGrossValue(getStock().getItemBatch().getWholesaleRate() * qty);
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
@@ -1391,7 +1391,7 @@ public class PharmacyWholeSaleController implements Serializable {
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
+        billItem.setGrossValue(getStock().getItemBatch().getWholesaleRate() * qty);
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
@@ -1403,7 +1403,7 @@ public class PharmacyWholeSaleController implements Serializable {
         }
         //System.out.println("bi.getQty() = " + bi.getQty());
         //System.out.println("bi.getRate() = " + bi.getRate());
-        bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
+        bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         //System.out.println("bi.getNetValue() = " + bi.getNetValue());
@@ -1428,7 +1428,7 @@ public class PharmacyWholeSaleController implements Serializable {
             return;
         }
 //        getBillItem();
-        billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
         //pharmaceutical Bill Item
@@ -1500,7 +1500,7 @@ public class PharmacyWholeSaleController implements Serializable {
 
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
 
-        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
+        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate();
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
