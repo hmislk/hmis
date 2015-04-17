@@ -62,7 +62,7 @@
                         value="Process" 
                         action="#{pharmacyPurchaseController.addItemWithLastRate}" 
                         process="PnlAdd" update="itemList PnlAdd tot focusItem :#{p:component('total')}"/>
-                   
+
                 </p:panel>
 
 
@@ -107,19 +107,28 @@
                             </p:column>
 
                         </p:autoComplete>
-                        <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{pharmacyPurchaseController.currentBillItem.tmpQty}" style="width:100%" />  
+                        <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" 
+                                     value="#{pharmacyPurchaseController.currentBillItem.tmpQty}" 
+                                     style="width:100%" >
+                            <f:ajax event="keyup" execute="@this" ></f:ajax>
+                        </p:inputText>
                         <p:inputText autocomplete="off" id="txtFreeQty"  styleClass="numericTxt" 
-                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
+                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
+                                     style="width:100%" >
+                            <f:ajax event="keyup" execute="@this acItem txtQty txtFreeQty" render="tmpRetail tmpWholesale" 
+                                    listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                        </p:inputText>
                         <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail tmpWholesale" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                            <f:ajax event="keyup" execute="@this acItem txtQty txtFreeQty" render="tmpRetail tmpWholesale" 
+                                    listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
                         </p:inputText>
-                        
+
                         <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </p:inputText>  
-                        
+
                         <p:inputText autocomplete="off" id="tmpWholesale"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.wholesaleRate}"  >
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -127,7 +136,8 @@
 
                         <p:calendar navigator="true"
                                     id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
-                            <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
+                            <f:ajax event="dateSelect" execute="@this" render="tmp" 
+                                    listener="#{pharmacyPurchaseController.setBatch()}"/>
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                      id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
@@ -141,7 +151,7 @@
 
                 <p:dataTable styleClass="noBorder" rowIndexVar="i" var="ph" 
                              value="#{pharmacyPurchaseController.billItems}" 
-                             
+
                              id="itemList">  
                     <f:facet name="header">  
                         Ordered Item 
@@ -189,13 +199,13 @@
                         <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
                     </p:column>  
 
-                     <p:column headerText="WS. Rate" style="width:24%">                   
-                         <h:inputText autocomplete="off" id="wholeSaleRate" value="#{ph.pharmaceuticalBillItem.wholesaleRate}"  label="Price">
-                        </h:inputText>
+                    <p:column headerText="WS. Rate" style="width:24%">                   
+                        <p:outputLabel  id="wholeSaleRate" value="#{ph.pharmaceuticalBillItem.wholesaleRate}"  >
+                        </p:outputLabel>
                         <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
                     </p:column>  
 
-                    
+
                     <p:column headerText="Value" style="width:20%;font-weight: bold;">  
                         <h:outputText id="total" value=" #{ph.pharmaceuticalBillItem.purchaseRate*ph.pharmaceuticalBillItem.qty}" />  
 
@@ -273,7 +283,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel id="gpBillPreview">
-                    <pharmacy:purhcase bill="#{pharmacyPurchaseController.bill}"/>
+                    <pharmacy:purhcase_ws bill="#{pharmacyPurchaseController.bill}"/>
                 </p:panel>
             </p:panel>
         </h:form>
