@@ -130,7 +130,7 @@ public class BillBhtController implements Serializable {
     private boolean printPreview;
     private List<Bill> bills;
     Date date;
-    
+
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -312,8 +312,8 @@ public class BillBhtController implements Serializable {
             System.err.println("1");
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
-           b.setBillItems(list);
-           billFacade.edit(b);
+            b.setBillItems(list);
+            billFacade.edit(b);
             //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
             //System.err.println("5");
@@ -497,6 +497,19 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             UtilityController.addErrorMessage("Please set To Department to This item");
             return true;
+        }
+
+        if (!getSessionController().getInstitutionPreference().isInwardAddServiceBillTimeCheck()) {
+            if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
+                if (getCurrentBillItem().getBillTime() == null) {
+                    UtilityController.addErrorMessage("Please set Time To This Investigation");
+                    return true;
+                }
+                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
+                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
+                    return true;
+                }
+            }
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
