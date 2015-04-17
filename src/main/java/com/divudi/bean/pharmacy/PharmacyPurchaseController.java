@@ -122,14 +122,14 @@ public class PharmacyPurchaseController implements Serializable {
         rows = lsts;
     }
 
-    public void calculatePurchaseRateAndWholesaleRateFromRetailRate(){
-        if(currentBillItem==null || currentBillItem.getPharmaceuticalBillItem()==null || currentBillItem.getPharmaceuticalBillItem().getRetailRate()==0){
+    public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
+        if (currentBillItem == null || currentBillItem.getPharmaceuticalBillItem() == null || currentBillItem.getPharmaceuticalBillItem().getRetailRate() == 0) {
             return;
         }
         currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
-        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate()* 1.08);
+        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * 1.08);
     }
-    
+
     public List<PharmacyStockRow> getRows() {
         return rows;
     }
@@ -238,10 +238,10 @@ public class PharmacyPurchaseController implements Serializable {
             }
         }
 
-        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty()+ tmp.getPharmaceuticalBillItem().getFreeQty());
+    
+        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
+        wsRate = CommonFunctions.round(wsRate);
         tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
-//        System.out.println("wsRate = " + wsRate);
-        
         calTotal();
     }
 
@@ -302,28 +302,27 @@ public class PharmacyPurchaseController implements Serializable {
         double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
         saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
-        
+
         temp = 108;
         wsRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
-//        System.out.println("wsRate = " + wsRate);
-        wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
-//        System.out.println("wsRate = " + wsRate);
+        if (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() != 0) {
+            wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
+        }
+        wsRate= CommonFunctions.round(wsRate);
         getCurrentBillItem().getPharmaceuticalBillItem().setWholesaleRate(wsRate);
-        
-        
 
     }
 
     public void calNetTotal() {
-        double grossTotal=0.0;
+        double grossTotal = 0.0;
         if (getBill().getDiscount() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount();
-            System.out.println("gross"+grossTotal);
-            System.out.println("net1"+getBill().getNetTotal());
+            System.out.println("gross" + grossTotal);
+            System.out.println("net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-             System.out.println("net2"+getBill().getNetTotal());
+            System.out.println("net2" + getBill().getNetTotal());
         }
-        
+
     }
 
     public void settle() {
@@ -409,7 +408,7 @@ public class PharmacyPurchaseController implements Serializable {
 //    }
 
     private List<BillItem> billItems;
-    
+
     public void addItemWithLastRate() {
         if (getCurrentBillItem().getItem() == null) {
             UtilityController.addErrorMessage("Please select and item from the list");

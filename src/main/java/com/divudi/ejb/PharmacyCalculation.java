@@ -479,14 +479,15 @@ public class PharmacyCalculation implements Serializable {
 
         double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
         double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
-
-        //System.err.println("Puchase :  " + purchase);
-        //System.err.println("Puchase :  " + retail);
+        double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
+        System.err.println("Puchase :  " + purchase);
+        System.err.println("Puchase :  " + retail);
+        System.out.println("wholesale = " + wholesale);
         itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
         itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
         itemBatch.setPurcahseRate(purchase);
         itemBatch.setRetailsaleRate(retail);
-
+        itemBatch.setWholesaleRate(wholesale);
         HashMap hash = new HashMap();
         String sql;
 
@@ -507,7 +508,10 @@ public class PharmacyCalculation implements Serializable {
 //            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
             itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
             itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
-            return i.get(0);
+            ItemBatch ib = i.get(0);
+            ib.setWholesaleRate(wholesale);
+            getItemBatchFacade().edit(ib);
+            return ib;
         } else {
             //System.err.println("Create");
             itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
