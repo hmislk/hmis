@@ -396,7 +396,7 @@ public class PharmacyAdjustmentController implements Serializable {
         ph.setRetailRate(itemBatch.getRetailsaleRate());
         ph.setWholesaleRate(itemBatch.getWholesaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setRate(rsr);
+        tbi.setRate(wsr);
         //pharmaceutical Bill Item
         ph.setStock(stock);
         //Rates
