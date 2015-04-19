@@ -1263,7 +1263,15 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (checkDepartment(getBill().getReferenceBill())) {
+//            if (checkDepartment(getBill().getReferenceBill())) {
+//                return;
+//            } before
+            
+            System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
+            System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
+            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
+            
+            if (checkDepartment(getBill())) {
                 return;
             }
 
