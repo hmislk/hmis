@@ -171,8 +171,8 @@ public class DealerController implements Serializable {
     
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType =:tp"
+        String sql = "SELECT i FROM Institution i "
+                + " where i.retired=false and i.institutionType =:tp"
                 + " order by i.name";
         HashMap hm = new HashMap();
         hm.put("tp", InstitutionType.Dealer);

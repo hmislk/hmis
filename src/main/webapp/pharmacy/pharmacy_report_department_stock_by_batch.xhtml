@@ -45,7 +45,6 @@
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
-                                         rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
                                          value="#{reportsStock.stocks}" var="i" 
                                          rows="20"
                                          paginator="true"
