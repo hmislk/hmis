@@ -61,7 +61,7 @@
                                     <p:commandButton ajax="false" value="Error Detection" action="pharmacy_error_checking" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Error Detection By Date" action="pharmacy_error_checking_date" ></p:commandButton>                                   
                                     <p:commandButton ajax="false" value="Error Detection Repport" action="pharmacy_report_department_error" ></p:commandButton>                                   
-
+                                    <p:commandButton value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
 
 
 
@@ -74,39 +74,24 @@
                                         <p:commandButton ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" />
                                         <p:commandButton ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                     </h:panelGroup>
-                                   
+
 
                                 </h:panelGrid>
 
                             </p:panel>
-                            
+
                             <p:panel header="Issue To Unit">
                                 <h:panelGrid columns="1">
-                                     <p:commandButton ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
+                                    <p:commandButton ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
                                                      action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
-                                     <p:commandButton ajax="false" value="2) Correction of Issue To Unit (Reset Gross Net Value )" 
+                                    <p:commandButton ajax="false" value="2) Correction of Issue To Unit (Reset Gross Net Value )" 
                                                      action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
-                                           <p:commandButton ajax="false" value="3) Correction of Issue To Unit (Reset Gross Net Value To Old only Cost Issue )" 
+                                    <p:commandButton ajax="false" value="3) Correction of Issue To Unit (Reset Gross Net Value To Old only Cost Issue )" 
                                                      action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
-                                       
+
                                 </h:panelGrid>
                             </p:panel>
 
-                            <p:panel header="Set up" >
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton ajax="false" value="Check Item Differences with other Database" action="pharmacy_item_mismatch_report" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Import from Excel" action="pharmacy_item_import" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Import from Excel With Stock" action="/pharmacy/pharmacy_item_import_with_stock" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Import from Excel With Stock with barcode" action="/pharmacy/pharmacy_item_import_by_barcode" ></p:commandButton>
-                                     <p:commandButton ajax="false" value="Import from Excel With Stock with name" action="/pharmacy/pharmacy_item_import_stocks_by_name" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Purchase Openning Stock" action="/pharmacy/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Fix Categories from Excel" action="pharmacy_importer_category" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Fix Barcodes" action="pharmacy_item_import_barcode" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Error Correction" action="pharmacy_error_correction" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Transfer Request All" action="pharmacy_transfer_request_all" ></p:commandButton>
-                                    
-                                </h:panelGrid>
-                            </p:panel>
 
                             <p:panel header="Major Stock Adjustment"> 
                                 <p:commandButton ajax="false" value="1)Stock Variant Report (Before)" 
@@ -119,10 +104,27 @@
                                                  action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                                 <p:commandButton ajax="false" value="Update Bulk Discount Allowed" 
                                                  action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                           <p:commandButton ajax="false" value="Stock Item List" 
+                                <p:commandButton ajax="false" value="Stock Item List" 
                                                  action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                             </p:panel>
-                            
+
+                            <p:panel header="Set up" style="min-width: 300px;" >
+                                <h:panelGrid columns="1" >
+                                    <p:commandLink ajax="false" value="01. Check Item Differences with other Database" action="pharmacy_item_mismatch_report" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="02. Import from Excel" action="pharmacy_item_import" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="03. Import from Excel With Stock" action="/pharmacy/pharmacy_item_import_with_stock" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="04. Import from Excel With Stock with barcode" action="/pharmacy/pharmacy_item_import_by_barcode" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="05. Import from Excel With Stock with name" action="/pharmacy/pharmacy_item_import_stocks_by_name" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="06. Purchase Openning Stock" action="/pharmacy/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="07. Purchase Openning Stock For Wholesale" action="/pharmacy_wholesale/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="08. Fix Categories from Excel" action="pharmacy_importer_category" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="09. Fix Barcodes" action="pharmacy_item_import_barcode" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="10. Error Correction" action="pharmacy_error_correction" ></p:commandLink>
+                                    <p:commandLink ajax="false" value="11. Transfer Request All" action="pharmacy_transfer_request_all" ></p:commandLink>
+
+                                </h:panelGrid>
+                            </p:panel>
+
                         </h:panelGrid>
 
                     </p:panel>

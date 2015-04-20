@@ -100,7 +100,7 @@ public class EnumController implements Serializable {
     }
 
     public DayType[] getDayTypeForShift() {
-        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.PublicHoliday};
+        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.Poya};
 
         return dayTypes;
     }

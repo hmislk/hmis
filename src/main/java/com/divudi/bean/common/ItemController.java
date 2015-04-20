@@ -44,6 +44,8 @@ import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.facade.util.JsfUtil;
+import java.util.Date;
 
 /**
  *
@@ -197,8 +199,8 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
-     public List<Item> completeAmpItemAll(String query) {
+
+    public List<Item> completeAmpItemAll(String query) {
 
         String sql;
         HashMap tmpMap = new HashMap();
@@ -220,7 +222,6 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-
 
     public List<Item> completeStoreItem(String query) {
         String sql;
@@ -247,7 +248,7 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
+
     public List<Item> completeStoreInventryItem(String query) {
         String sql;
         HashMap tmpMap = new HashMap();
@@ -272,7 +273,7 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
+
     public List<Item> completeStoreItemOnly(String query) {
         String sql;
         HashMap tmpMap = new HashMap();
@@ -451,7 +452,7 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Item> completeTheatreItems(String query) {
         List<Item> suggestions;
         HashMap m = new HashMap();
@@ -462,10 +463,10 @@ public class ItemController implements Serializable {
             sql = "select c from Item c "
                     + " where c.retired=false "
                     + " and type(c)=:the "
-//                    + " and type(c)!=:pac "
-//                    + " and (type(c)=:ser "
-//                    + " or type(c)=:inv "
-//                    + " or type(c)=:the)  "
+                    //                    + " and type(c)!=:pac "
+                    //                    + " and (type(c)=:ser "
+                    //                    + " or type(c)=:inv "
+                    //                    + " or type(c)=:the)  "
                     + " and upper(c.name) like :q"
                     + " order by c.name";
 //            m.put("pac", Packege.class);
@@ -718,6 +719,14 @@ public class ItemController implements Serializable {
         return items;
     }
 
+    public List<Item> getItems(Category category) {
+        String temSql;
+        HashMap h = new HashMap();
+        temSql = "SELECT i FROM Item i where i.category=:cat and i.retired=false order by i.name";
+        h.put("cat", category);
+        return getFacade().findBySQL(temSql, h);
+    }
+
     /**
      *
      * Set all Items to null
@@ -731,18 +740,20 @@ public class ItemController implements Serializable {
      *
      */
     public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
-        } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
-        }
+        saveSelected(getCurrent());
+        JsfUtil.addSuccessMessage("Saved");
         recreateModel();
         getItems();
+    }
+
+    public void saveSelected(Item item) {
+        if (item.getId() != null && item.getId() > 0) {
+            getFacade().edit(item);
+        } else {
+            item.setCreatedAt(new Date());
+            item.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(item);
+        }
     }
 
     /**

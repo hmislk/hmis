@@ -17,10 +17,10 @@
 <!--                                <p:commandButton value="(1) All Staff Salary Detail" 
                                                  action="/hr/hr_report_all_staff_salary" 
                                                  styleClass="linkButton" ajax="false"  /> -->
-                                <p:commandButton value="(2) All Staff Salary Summery" 
+                                <p:commandButton value="(2) All Staff Salary Summary" 
                                                  action="/hr/hr_report_staff_salary" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(2.1) All Staff Salary Summery(By Department)" 
+                                <p:commandButton value="(2.1) All Staff Salary Summary(By Department)" 
                                                  action="/hr/hr_report_staff_salary_by_department" 
                                                  styleClass="linkButton" ajax="false" /> 
                                 <p:commandButton value="(3) Staff Payroll" 
@@ -146,7 +146,7 @@
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
                         </p:panel>
-                        <p:panel header="(6) Summery">
+                        <p:panel header="(6) Summary">
                             <p:commandButton value="(1) Head Count " 
                                              action="hr_report_head_count" 
                                              actionListener="#{hrReportController.makeNull()}" 
@@ -164,7 +164,7 @@
                                              action="hr_report_month_end_work_time_no_pay" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                            <p:commandButton value="(5) Month End Employee Summery " 
+                            <p:commandButton value="(5) Month End Employee Summary " 
                                              action="hr_report_month_end_staff_shift_data" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
@@ -175,7 +175,7 @@
                                              action="hr_report_leave" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                            <p:commandButton value="(2) Leave Report Summery " 
+                            <p:commandButton value="(2) Leave Report Summary " 
                                              action="hr_report_leave_summery" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
@@ -215,12 +215,20 @@
                         </p:panel>
 
                         <p:panel header="(10) Form">
-                            <p:commandButton value="Additional Form Report" 
+                            <p:commandButton value="(1)Additional Form Report" 
+                                             action="hr_form_staff_additional_report_1" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(2)Leave Form Report" 
+                                             action="hr_form_staff_leave_report" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(3)Additional Form Report Varification" 
                                              action="hr_form_staff_additional_report" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-                            <p:commandButton value="Leave Form Report" 
-                                             action="hr_form_staff_leave_report" 
+                             <p:commandButton value="(4)Form Report That Not Comes To Analysed" 
+                                             action="hr_form_staff_form_report" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
                         </p:panel>

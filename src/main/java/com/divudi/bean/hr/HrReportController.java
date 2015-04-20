@@ -1859,9 +1859,9 @@ public class HrReportController implements Serializable {
         if (fullShifts && halfShift) {
 
         } else if (fullShifts) {
-            sql += " and ss.shift.halfShift = true ";
-        } else if (halfShift) {
             sql += " and ss.shift.halfShift = false ";
+        } else if (halfShift) {
+            sql += " and ss.shift.halfShift = true ";
         }
 
         if (getReportKeyWord().getStaff() != null) {

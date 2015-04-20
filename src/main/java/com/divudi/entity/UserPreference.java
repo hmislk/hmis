@@ -54,6 +54,7 @@ public class UserPreference implements Serializable {
     boolean opdPosBillWithoutLogo;
     boolean channelWithOutReferenceNumber;
     boolean pharmayPurchaseWithLastRate;
+    boolean inwardAddServiceBillTimeCheck;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -310,6 +311,14 @@ public class UserPreference implements Serializable {
 
     public void setChannelWithOutReferenceNumber(boolean channelWithOutReferenceNumber) {
         this.channelWithOutReferenceNumber = channelWithOutReferenceNumber;
+    }
+
+    public boolean isInwardAddServiceBillTimeCheck() {
+        return inwardAddServiceBillTimeCheck;
+    }
+
+    public void setInwardAddServiceBillTimeCheck(boolean inwardAddServiceBillTimeCheck) {
+        this.inwardAddServiceBillTimeCheck = inwardAddServiceBillTimeCheck;
     }
     
     @Override

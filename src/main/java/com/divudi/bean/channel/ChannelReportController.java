@@ -37,6 +37,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -1461,6 +1462,11 @@ public class ChannelReportController implements Serializable {
             ftf.setBilledBillFees(getBillFeeWithFeeTypes(new BilledBill(), feeType));
             ftf.setCanceledBillFees(getBillFeeWithFeeTypes(new CancelledBill(), feeType));
             ftf.setRefunBillFees(getBillFeeWithFeeTypes(new RefundBill(), feeType));
+            
+            ftf.setBilledBillFeeTypeTotal(calFeeTypeTotal(ftf.getBilledBillFees()));
+            ftf.setCanceledBillFeeTypeTotal(calFeeTypeTotal(ftf.getCanceledBillFees()));
+            ftf.setRefundBillFeeTypeTotal(calFeeTypeTotal(ftf.getRefunBillFees()));
+            
             if (ftf.getBilledBillFees() != null && !ftf.getBilledBillFees().isEmpty() || ftf.getCanceledBillFees() != null && !ftf.getCanceledBillFees().isEmpty() || ftf.getRefunBillFees() != null && !ftf.getRefunBillFees().isEmpty()) {
                 feetypeFees.add(ftf);
             }
@@ -1473,6 +1479,15 @@ public class ChannelReportController implements Serializable {
         billedBillTotal = calFeeTotal(new BilledBill());
         canceledBillTotl = calFeeTotal(new CancelledBill());
         refundBillTotal = calFeeTotal(new RefundBill());
+    }
+    
+    public double calFeeTypeTotal(List<BillFee> billFees){
+        
+       double feeTypeTotal = 0.0;
+        for (BillFee bf : billFees) {
+            feeTypeTotal += bf.getFee().getFee();
+        }
+       return feeTypeTotal;
     }
 
     public List<BillFee> getBillFeeWithFeeTypes(Bill bill, FeeType feeType) {
@@ -1506,6 +1521,58 @@ public class ChannelReportController implements Serializable {
 
         return billFeeList;
     }
+    
+    FeeType feeType; 
+    List<BillFee> listBilledBillFees;
+    List<BillFee> listCanceledBillFees;
+    List<BillFee> listRefundBillFees;
+   
+    public void getUsersWithFeeType(){
+        if(getFeeType() == null){
+            JsfUtil.addErrorMessage("Please Insert Fee Type");
+        }else{
+            listBilledBillFees = getBillFeeWithFeeTypes(new BilledBill(), getFeeType());
+            listCanceledBillFees = getBillFeeWithFeeTypes(new CancelledBill(), getFeeType());
+            listRefundBillFees = getBillFeeWithFeeTypes(new RefundBill(), getFeeType());
+        }
+        
+    }
+
+    public List<BillFee> getListBilledBillFees() {
+        return listBilledBillFees;
+    }
+
+    public void setListBilledBillFees(List<BillFee> listBilledBillFees) {
+        this.listBilledBillFees = listBilledBillFees;
+    }
+
+    public List<BillFee> getListCanceledBillFees() {
+        return listCanceledBillFees;
+    }
+
+    public void setListCanceledBillFees(List<BillFee> listCanceledBillFees) {
+        this.listCanceledBillFees = listCanceledBillFees;
+    }
+
+    public List<BillFee> getListRefundBillFees() {
+        return listRefundBillFees;
+    }
+
+    public void setListRefundBillFees(List<BillFee> listRefundBillFees) {
+        this.listRefundBillFees = listRefundBillFees;
+    }
+    
+    
+
+    public FeeType getFeeType() {
+        return feeType;
+    }
+
+    public void setFeeType(FeeType feeType) {
+        this.feeType = feeType;
+    }
+    
+    
 
     public List<FeetypeFee> getFeetypeFees() {
         return feetypeFees;
@@ -2811,6 +2878,9 @@ public class ChannelReportController implements Serializable {
         List<BillFee> canceledBillFees;
         List<BillFee> refunBillFees;
         FeeType feeType;
+        double billedBillFeeTypeTotal;
+        double canceledBillFeeTypeTotal;
+        double refundBillFeeTypeTotal;
 
         public List<BillFee> getBilledBillFees() {
             return billedBillFees;
@@ -2843,6 +2913,32 @@ public class ChannelReportController implements Serializable {
         public void setFeeType(FeeType feeType) {
             this.feeType = feeType;
         }
+
+        public double getBilledBillFeeTypeTotal() {
+            return billedBillFeeTypeTotal;
+        }
+
+        public void setBilledBillFeeTypeTotal(double billedBillFeeTypeTotal) {
+            this.billedBillFeeTypeTotal = billedBillFeeTypeTotal;
+        }
+
+        public double getCanceledBillFeeTypeTotal() {
+            return canceledBillFeeTypeTotal;
+        }
+
+        public void setCanceledBillFeeTypeTotal(double canceledBillFeeTypeTotal) {
+            this.canceledBillFeeTypeTotal = canceledBillFeeTypeTotal;
+        }
+
+        public double getRefundBillFeeTypeTotal() {
+            return refundBillFeeTypeTotal;
+        }
+
+        public void setRefundBillFeeTypeTotal(double refundBillFeeTypeTotal) {
+            this.refundBillFeeTypeTotal = refundBillFeeTypeTotal;
+        }
+        
+        
 
     }
 
