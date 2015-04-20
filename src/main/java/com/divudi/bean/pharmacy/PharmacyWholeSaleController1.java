@@ -78,15 +78,14 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController1 implements Serializable {
+public class PharmacyWholeSaleController1 implements Serializable {
 
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacySaleController1() {
+    public PharmacyWholeSaleController1() {
     }
-    @Inject
-    UserStockController userStockController;
+
     @Inject
     PaymentSchemeController PaymentSchemeController;
 
@@ -165,11 +164,8 @@ public class PharmacySaleController1 implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     
-    
-    
-
-    public String pharmacyRetailSale() {
-        return "/pharmacy/pharmacy_bill_retail_sale_1";
+    public String pharmacyWholeRetailSale() {
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_1";
     }
 
     public void searchPatientListener() {
@@ -275,6 +271,9 @@ public class PharmacySaleController1 implements Serializable {
         hm.put("itm", bItem);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
+
+    @Inject
+    UserStockController userStockController;
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
@@ -491,6 +490,10 @@ public class PharmacySaleController1 implements Serializable {
         billPreview = false;
     }
 
+    public String pharmacyWholeSale() {
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
+    }
+
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;
@@ -625,7 +628,7 @@ public class PharmacySaleController1 implements Serializable {
             return;
         }
         getBillItem();
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate());
         System.err.println("Rate " + bi.getRate());
         bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  ////System.err.println("Discount "+bi.getDiscount());
@@ -706,7 +709,7 @@ public class PharmacySaleController1 implements Serializable {
 
         //Rates
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
+        billItem.setGrossValue(getStock().getItemBatch().getWholesaleRate() * qty);
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
@@ -832,7 +835,7 @@ public class PharmacySaleController1 implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-
+        System.out.println("2.discount = " + discount);
         //   netTot = netTot + getPreBill().getServiceCharge();
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
@@ -1005,6 +1008,7 @@ public class PharmacySaleController1 implements Serializable {
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
@@ -1052,7 +1056,7 @@ public class PharmacySaleController1 implements Serializable {
             double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
             //Deduct Stock
-            boolean returnFlag = pharmacyBean.deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
+            boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
 
             if (!returnFlag) {
@@ -1174,25 +1178,20 @@ public class PharmacySaleController1 implements Serializable {
     public void settleBillWithPay() {
         editingQty = null;
 
+        if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
+            if (getPaymentScheme() == null) {
+                UtilityController.addErrorMessage("Please select Payment Scheme");
+                return;
+            }
+        }
+
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Scheme");
+            UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
 
         if (getPreBill().getBillItems().isEmpty()) {
             return;
-        }
-        
-        if (!getPreBill().getBillItems().isEmpty()) {
-            for (BillItem bi : getPreBill().getBillItems()) {
-                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
-                System.out.println("bi.getQty() = " + bi.getQty());
-                if (bi.getQty()<=0.0) {
-                    System.out.println("bi.getQty() = " + bi.getQty());
-                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
-                    return;
-                }
-            }
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
@@ -1200,7 +1199,7 @@ public class PharmacySaleController1 implements Serializable {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return;
             }
-            if (toStaff != null && toInstitution != null) {
+            if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return;
             }
@@ -1345,7 +1344,7 @@ public class PharmacySaleController1 implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getGrossValue());
         }
-
+        System.out.println("1.discount = " + discount);
         netTot = netTot + getPreBill().getServiceCharge();
 
         getPreBill().setNetTotal(netTot);
@@ -1396,7 +1395,7 @@ public class PharmacySaleController1 implements Serializable {
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
+        billItem.setGrossValue(getStock().getItemBatch().getWholesaleRate() * qty);
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
@@ -1408,9 +1407,9 @@ public class PharmacySaleController1 implements Serializable {
         }
         //System.out.println("bi.getQty() = " + bi.getQty());
         //System.out.println("bi.getRate() = " + bi.getRate());
-        bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
+        bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
-//        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
+        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         //System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
@@ -1433,7 +1432,7 @@ public class PharmacySaleController1 implements Serializable {
             return;
         }
 //        getBillItem();
-        billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
         //pharmaceutical Bill Item
@@ -1471,6 +1470,8 @@ public class PharmacySaleController1 implements Serializable {
 
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    MembershipSchemeController membershipSchemeController;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
@@ -1479,9 +1480,6 @@ public class PharmacySaleController1 implements Serializable {
     public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
         this.priceMatrixController = priceMatrixController;
     }
-
-    @Inject
-    MembershipSchemeController membershipSchemeController;
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
@@ -1506,7 +1504,7 @@ public class PharmacySaleController1 implements Serializable {
 
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
 
-        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
+        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate();
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
@@ -1654,6 +1652,14 @@ public class PharmacySaleController1 implements Serializable {
 
     public void setStockFacade(StockFacade stockFacade) {
         this.stockFacade = stockFacade;
+    }
+
+    public PharmacyBean getPharmacyBean() {
+        return pharmacyBean;
+    }
+
+    public void setPharmacyBean(PharmacyBean pharmacyBean) {
+        this.pharmacyBean = pharmacyBean;
     }
 
     public Patient getNewPatient() {
