@@ -8,13 +8,13 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Manage Shift" >
-                <h:panelGrid id ="gpVeda" columns="4" >
+            <p:panel header="Manage Shifts" >
+                <h:panelGrid id ="gpVeda" columns="4" styleClass="alignTop" >
 
                     <h:panelGrid id="gpSelect" columns="1"  >
                         <h:panelGrid columns="2">
                             <h:outputText  value="Roster" ></h:outputText>
-                            <p:selectOneMenu id='roster' value="#{shiftController.currentRoster}">
+                            <p:selectOneMenu id='roster' value="#{shiftController.currentRoster}" >
                                 <f:selectItem itemLabel="Select Roster"/>
                                 <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 <f:ajax event="change" execute="@this" render="gpSelectText gpDetail" listener="#{shiftController.createShiftList()}" />
@@ -22,7 +22,7 @@
                         </h:panelGrid>
                         <p:panel >
                             <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;">
+                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;max-height: 400px;">
                                     <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <p:ajax update="gpDetail" process="@this" >
                                     </p:ajax>
@@ -50,8 +50,8 @@
                                 <f:selectItems value="#{enumController.dayTypeForShift}"/>
                                 <f:ajax execute="@this roster" render="start" event="change"/>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Shift Order"/>
-                            <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}"/>
+                            <h:outputLabel value="Shift Order" rendered="false"/>
+                            <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}" rendered="false"/>
                             <p:outputLabel value="Starting Time"/>
                             <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
                             </p:calendar>  

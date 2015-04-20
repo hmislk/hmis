@@ -845,6 +845,22 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Override
     public int compareTo(Item o) {
+        if(o==null){
+            return 0;
+        }
+        
+        if(o.getName()==null){
+            return 0;
+        }
+        
+        if(this==null){
+            return 0;
+        }
+        
+        if(this.getName()==null){
+            return 0;
+        }
+        
         return this.name.compareTo(o.name);
     }
 

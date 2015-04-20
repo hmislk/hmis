@@ -15,6 +15,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillEntryFacade;
@@ -23,6 +24,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
@@ -77,35 +79,53 @@ public class DataAdministrationController {
     SessionController sessionController;
     @EJB
     ItemFacade itemFacade;
-    
+
     @EJB
     CategoryFacade categoryFacade;
-    
+    @EJB
+    ItemBatchFacade itemBatchFacade;
+
+    public void addWholesalePrices() {
+        List<ItemBatch> ibs = itemBatchFacade.findAll();
+        for (ItemBatch ib : ibs) {
+            if (ib.getItem() != null) {
+                System.out.println("ib.getItem().getName() = " + ib.getItem().getName());
+            }
+            if (ib.getWholesaleRate() == 0) {
+                System.out.println("ib.getPurcahseRate = " + ib.getPurcahseRate());
+                System.out.println("ib.getWholesaleRate() = " + ib.getWholesaleRate());
+                ib.setWholesaleRate((ib.getPurcahseRate() / 115) * 108);
+                itemBatchFacade.edit(ib);
+                System.out.println("ib.getWholesaleRate() = " + ib.getWholesaleRate());
+            }else{
+                System.out.println("no change");
+            }
+        }
+    }
+
     public void removeUnsedPharmaceuticalCategories() {
         Map m = new HashMap();
         String sql;
-        
+
         sql = "SELECT c FROM PharmaceuticalItemCategory c ";
-      
 
         Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
 
         sql = "SELECT i.category "
                 + " FROM Item i "
                 + " GROUP BY i.category";
-        
+
         System.out.println("sql = " + sql);
         m = new HashMap();
-        
+
         Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
 
         System.out.println("Used Cats " + usedCats.size());
         System.out.println("All Cats after removing " + allCats.size());
         allCats.removeAll(usedCats);
         System.out.println("All Cats after removing " + allCats.size());
-        
-        
-        for(Category c:allCats){
+
+        for (Category c : allCats) {
             System.out.println("c = " + c);
             System.out.println("c.getName() = " + c.getName());
             c.setRetired(true);
@@ -127,7 +147,7 @@ public class DataAdministrationController {
         m.put("bt", BillType.PaymentBill);
 
         bs = billFacade.findBySQL(s, m);
-        int i =1;
+        int i = 1;
         for (Bill b : bs) {
             Bill cb = b.getCancelledBill();
             int n = 0;
@@ -145,7 +165,7 @@ public class DataAdministrationController {
             System.out.println("\tBill Date = " + b.getCreatedAt() + newLine);
             System.out.println("\tValue = " + b.getNetTotal() + newLine);
 
-            System.out.println("Cancelled Bill Details " +  newLine);
+            System.out.println("Cancelled Bill Details " + newLine);
             System.out.println("\tIns Number = " + cb.getInsId() + newLine);
             System.out.println("\tDep Number = " + cb.getDeptId() + newLine);
             System.out.println("\tBill Date = " + cb.getCreatedAt() + newLine);

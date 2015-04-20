@@ -30,6 +30,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -338,6 +339,10 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     private void saveRsrAdjustmentBillItems() {
+        if (stock == null) {
+            JsfUtil.addErrorMessage("Please select a stock");
+            return;
+        }
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
@@ -352,6 +357,51 @@ public class PharmacyAdjustmentController implements Serializable {
         //Rates
         //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
+        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
+        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
+        tbi.setPharmaceuticalBillItem(ph);
+
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
+
+        ph.setBillItem(tbi);
+        getPharmaceuticalBillItemFacade().edit(ph);
+//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+    }
+
+    private void saveWsrAdjustmentBillItems() {
+        if (stock == null) {
+            JsfUtil.addErrorMessage("Please select a stock");
+            return;
+        }
+        billItem = null;
+        BillItem tbi = getBillItem();
+        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
+        ph.setBillItem(null);
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
+        ph.setWholesaleRate(itemBatch.getWholesaleRate());
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setRate(wsr);
+        //pharmaceutical Bill Item
+        ph.setStock(stock);
+        //Rates
+        //Values
+        tbi.setGrossValue(getStock().getItemBatch().getWholesaleRate() * getStock().getStock());
         tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
         tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
         tbi.setInwardChargeType(InwardChargeType.Medicine);
@@ -481,6 +531,15 @@ public class PharmacyAdjustmentController implements Serializable {
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
 //        clearBillItem();
+        printPreview = true;
+    }
+
+    public void adjustWholesaleRate() {
+        saveDeptAdjustmentBill();
+        saveWsrAdjustmentBillItems();
+        getStock().getItemBatch().setWholesaleRate(wsr);
+        getItemBatchFacade().edit(getStock().getItemBatch());
+        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
         printPreview = true;
     }
 

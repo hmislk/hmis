@@ -13,7 +13,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Department Stock Report by Item" >
+                    <p:panel header="Stock Report by Item" >
 
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="Department" ></h:outputLabel>
@@ -35,21 +35,23 @@
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
                                          value="#{reportsStock.pharmacyStockRows}" var="i"  
-
                                          rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
-                                         rows="50"
+                                         rows="20"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Department Stock by Item - #{reportsStock.department.name}"/>                                     
+                                    <h:outputLabel value="Stock Report by Item - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 
 
-                                <p:column width="40px;" headerText="No" sortBy="#{ii}">
+                                <p:column width="20px;" headerText="No" sortBy="#{ii}"
+                                          style="width: 20px;">
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
 
-                                <p:column headerText="Code" width="50px;" sortBy="#{i.code}" filterBy="#{i.code}"
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.code}" filterBy="#{i.code}"
+                                          styleClass="averageNumericColumn"
                                           filterMatchMode="startsWith">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
@@ -57,7 +59,8 @@
                                     <h:outputLabel value="#{i.code}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item" width="300px;" sortBy="#{i.name}" filterBy="#{i.name}"
+                                <p:column headerText="Item" 
+                                          sortBy="#{i.name}" filterBy="#{i.name}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
@@ -65,7 +68,9 @@
                                     <h:outputLabel value="#{i.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Quantity" style="text-align: right;" sortBy="#{i.qty}">
+                                <p:column headerText="Quantity" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.qty}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>                                     
                                     </f:facet>
@@ -75,7 +80,9 @@
                                 </p:column>
 
 
-                                <p:column headerText="Purchase Value" style="text-align: right;" sortBy="#{i.purchaseValue}">
+                                <p:column headerText="Purchase Value" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.purchaseValue}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>                                     
                                     </f:facet>
@@ -85,9 +92,11 @@
                                 </p:column>
 
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;" sortBy="#{i.saleValue}">
+                                <p:column headerText="Retail Sale Value" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.saleValue}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Retail Sale Value"/>                                     
+                                        <h:outputLabel value="Sale Value"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.saleValue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

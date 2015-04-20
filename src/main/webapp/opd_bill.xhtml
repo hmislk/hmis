@@ -242,7 +242,7 @@
                                 <h:panelGroup id="panelIx" >
 
 
-                                    <p:panel id='pIxAdd' header="Items Requests" style="min-height: 350px;"  >
+                                    <p:panel id='pIxAdd' header="Items / Services" style="min-height: 350px;"  >
                                         <p:focus  context="acIx"/>
                                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
                                                         value="#{billController.currentBillItem.item}" 
@@ -563,17 +563,18 @@
                 <h:panelGroup rendered="#{billController.printPreview}" >
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
-
                             <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:commandButton value="Print" 
+                                                 process="@this" 
+                                                 update="@all" 
+                                                 type="button"  
+                                                 ajax="false">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
-
                                 <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
@@ -635,10 +636,10 @@
                                 </div>
                             </h:panelGroup>
                         </h:panelGrid>
-                        
-                        
-                        
-                        
+
+
+
+
                         <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
@@ -660,7 +661,7 @@
                                 </div>                                
                             </h:panelGroup>
                         </h:panelGrid>
-                        
+
                     </h:panelGroup>
 
                 </h:panelGroup>

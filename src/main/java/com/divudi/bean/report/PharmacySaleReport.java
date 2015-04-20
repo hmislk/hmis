@@ -33,9 +33,11 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -45,6 +47,7 @@ import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -176,13 +179,18 @@ public class PharmacySaleReport implements Serializable {
     public Category getCategory() {
         return category;
     }
-    
+
     List<Item> nonMovingItems;
-    
+
     @EJB
     StockFacade stockFacade;
     @EJB
-    ItemFacade itemFacade;        
+    ItemFacade itemFacade;
+    @EJB
+    AmpFacade ampFacade;
+
+    List<Amp> amps;
+    List<Item> items;
     Department departmentMoving;
 
     public List<Item> getNonMovingItems() {
@@ -192,28 +200,27 @@ public class PharmacySaleReport implements Serializable {
     public void setNonMovingItems(List<Item> nonMovingItems) {
         this.nonMovingItems = nonMovingItems;
     }
-    
-    public void fillNonMoving(){
+
+    public void fillNonMoving() {
         Map allItems;
         List<Item> movedItems;
         Stock s = new Stock();
-        
-        
+
 //        s.getDepartment();
 //        s.getItemBatch().getItem();
 //        s.getItemBatch().getItem();
         HashMap m = new HashMap();
         m.put("dpt", getDepartmentMoving());
         String j;
-        
-        j="select s.itemBatch.item "
+
+        j = "select s.itemBatch.item "
                 + " from Stock s "
                 + " where s.stock > 0 "
                 + " and s.department=:dpt "
                 + " group by s.itemBatch.item "
                 + " order by s.itemBatch.item.name";
-        
-        nonMovingItems=itemFacade.findBySQL(j, m);
+
+        nonMovingItems = itemFacade.findBySQL(j, m);
         System.out.println("nonMovingItems = " + nonMovingItems);
     }
 
@@ -233,6 +240,8 @@ public class PharmacySaleReport implements Serializable {
         grantCreditTotal = 0;
         billedSummery = null;
         billedPaymentSummery = null;
+        items = null;
+        amps=null;
 
     }
 
@@ -700,7 +709,7 @@ public class PharmacySaleReport implements Serializable {
         return saleValue;
 
     }
-    
+
     private double calBillFee(Date date, FeeType fTy, BillType bty) {
 
         String sql;
@@ -722,7 +731,7 @@ public class PharmacySaleReport implements Serializable {
         Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
-        m.put("billType", bty);        
+        m.put("billType", bty);
         m.put("ins", institution);
         m.put("ft", fTy);
         //    m.put("ins", getSessionController().getInstitution());        
@@ -2449,14 +2458,13 @@ public class PharmacySaleReport implements Serializable {
             double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
 
             regentFee = regentFeeCash + regentFeeCredit;
-            
+
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
 //            //double 
-
             newRow.setValue1(hospitalFee);
             newRow.setValue2(regentFee);
-            newRow.setValue3(proTot);            
+            newRow.setValue3(proTot);
 
             hospitalFeeTot += hospitalFee;
             profeTotal += proTot;
@@ -2479,7 +2487,7 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(regentTot);
 
     }
-    
+
     public void createLabSummeryInward() {
         billedSummery = new PharmacySummery();
 
@@ -2492,10 +2500,8 @@ public class PharmacySaleReport implements Serializable {
         double hospitalFeeTot = 0.0;
         double profeTotal = 0.0;
         double regentTot = 0.0;
-        
-        
-        double regentFee;
 
+        //double regentFee;
         while (nowDate.before(getToDate())) {
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
@@ -2509,14 +2515,13 @@ public class PharmacySaleReport implements Serializable {
             double proTotCash = calBillFee(nowDate, FeeType.Staff, BillType.InwardBill);
 
             double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, BillType.InwardBill);
-            
+
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
 //            //double 
-
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
-            newRow.setValue3(proTotCash);            
+            newRow.setValue3(proTotCash);
 
             hospitalFeeTot += hospitalFeeCash;
             profeTotal += proTotCash;
@@ -2530,7 +2535,7 @@ public class PharmacySaleReport implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
@@ -2548,8 +2553,6 @@ public class PharmacySaleReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
-        
 
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
@@ -2573,8 +2576,6 @@ public class PharmacySaleReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
-        
 
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
@@ -3499,7 +3500,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyIssueBHT() {
-        itemWithDepBHTIssues=new ArrayList<>();
+        itemWithDepBHTIssues = new ArrayList<>();
         ItemWithDepBHTIssue depBHTIssue = null;
         totalBHTIssue = 0.0;
         for (ItemBatch i : fetchPharmacyItemBatchs(new PreBill())) {
@@ -3534,7 +3535,7 @@ public class PharmacySaleReport implements Serializable {
                 }
             }
             if (s1v3s != null) {
-                depBHTIssue=new ItemWithDepBHTIssue();
+                depBHTIssue = new ItemWithDepBHTIssue();
                 depBHTIssue.setItemString(i.getItem().getName());
                 depBHTIssue.setItemRate(i.getRetailsaleRate());
                 depBHTIssue.setList(s1v3s);
@@ -4233,6 +4234,115 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public void createItemListWithOutItemDistributer() {
+        List<Amp> allAmps = getAllPharmacyItems();
+        System.out.println("allAmps = " + allAmps.size());
+        List<Amp> ampsWithDealor = getAllDealorItems();
+        System.out.println("ampsWithOutDealor = " + ampsWithDealor.size());
+        allAmps.removeAll(ampsWithDealor);
+        System.out.println("After remove allAmps = " + allAmps.size());
+        amps = new ArrayList<>();
+        amps.addAll(allAmps);
+        System.out.println("amps = " + amps.size());
+    }
+
+    public void createItemListOneItemHasGreterThanOneDistributor() {
+        List<Object[]> objs = getAllDealorItemsWithCount();
+        System.out.println("objs = " + objs);
+        System.out.println("objs = " + objs.size());
+        amps = new ArrayList<>();
+        for (Object[] obj : objs) {
+            System.out.println("obj = " + obj);
+            if (obj != null) {
+                Amp item = (Amp) obj[0];
+                System.out.println("item = " + item.getName());
+                long count = (long) obj[1];
+                System.out.println("count = " + count);
+                if (count > 1) {
+                    System.out.println("****Add****");
+                    amps.add(item);
+                }
+            }
+        }
+        System.out.println("items = " + amps.size());
+
+    }
+
+    public void createItemListOneItemHasGreterThanOneDistributorOther() {
+        List<Amp> ampsWithDealor = getAllDealorItems();
+        System.out.println("ampsWithDealor = " + ampsWithDealor.size());
+
+        items = new ArrayList<>();
+        for (Item i : ampsWithDealor) {
+            System.err.println("in");
+            System.out.println("item = " + i.getName());
+            List<Amp> allAmps=getAmpItems(i);
+            System.out.println("amps = " + allAmps.size());
+            int count = 0;
+            if (allAmps!=null) {
+                count = allAmps.size();
+            }
+            System.out.println("count = " + count);
+            if (count > 1) {
+                System.out.println("****Add****");
+                items.add(i);
+            }
+            System.err.println("out");
+        }
+        System.out.println("items = " + items.size());
+
+    }
+
+    public List<Amp> getAllPharmacyItems() {
+        String sql;
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Store);
+        m.put("dep2", DepartmentType.Inventry);
+        sql = "select c from Amp c "
+                + " where c.retired=false "
+                + " and (c.departmentType is null "
+                + " or c.departmentType!=:dep "
+                + " or c.departmentType!=:dep2 )"
+                + " order by c.name ";
+
+        return ampFacade.findBySQL(sql, m);
+    }
+
+    public List<Amp> getAllDealorItems() {
+        String sql;
+
+        sql = "SELECT distinct(i.item) FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " order by i.item.name ";
+
+        return ampFacade.findBySQL(sql);
+    }
+
+    public List<Object[]> getAllDealorItemsWithCount() {
+        String sql;
+
+        sql = "SELECT distinct(i.item),count(i.item) FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " order by i.item.name ";
+
+        return ampFacade.findAggregates(sql);
+    }
+
+    public List<Amp> getAmpItems(Item a) {
+        String sql;
+        Map m = new HashMap();
+       
+        sql = "SELECT i.item FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " and i.item=:a ";
+
+        m.put("a", a);
+        return ampFacade.findBySQL(sql, m);
+    }
+
     /**
      * Creates a new instance of PharmacySaleReport
      */
@@ -4890,7 +5000,6 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-   
     public List<Bill> getLabBhtIssueBilledBills() {
         return labBhtIssueBilledBills;
     }
@@ -5062,8 +5171,7 @@ public class PharmacySaleReport implements Serializable {
         public void setTransferOutQty(double transferOutQty) {
             this.transferOutQty = transferOutQty;
         }
-        
-        
+
     }
 
     public Department getDepartmentMoving() {
@@ -5072,6 +5180,28 @@ public class PharmacySaleReport implements Serializable {
 
     public void setDepartmentMoving(Department departmentMoving) {
         this.departmentMoving = departmentMoving;
+    }
+
+    public List<Amp> getAmps() {
+        if (amps==null) {
+            amps=new ArrayList<>();
+        }
+        return amps;
+    }
+
+    public void setAmps(List<Amp> amps) {
+        this.amps = amps;
+    }
+
+    public List<Item> getItems() {
+        if (items==null) {
+            items=new ArrayList<>();
+        }
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
 }

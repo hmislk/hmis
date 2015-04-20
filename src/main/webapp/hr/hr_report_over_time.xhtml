@@ -150,7 +150,7 @@
                                     <h:outputLabel value="Basic per Sec"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor">
@@ -158,7 +158,7 @@
                                     <h:outputLabel value="Multiplying Factor"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
@@ -166,7 +166,7 @@
                                     <h:outputLabel value="Extra Duty Value"/>
                                 </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
-                                        <f:convertNumber pattern="0.0000" />
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>

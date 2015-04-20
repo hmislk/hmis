@@ -916,6 +916,7 @@ public class StaffSalaryController implements Serializable {
 
             //Set Extra Duty Value
             double extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Normal);
+            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);
             getCurrent().setExtraDutyNormalMinute(extraTimeMinute);
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);
             getCurrent().setExtraDutyMerchantileMinute(extraTimeMinute);
@@ -1021,17 +1022,31 @@ public class StaffSalaryController implements Serializable {
         UtilityController.addSuccessMessage("Record Succesfully Deleted");
     }
 
-    public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime, double toTime, double shiftCount) {
+    public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime, double toTime, Double shiftCount) {
 
-        List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(stfCurrent, fromTime, toTime);
-        LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
-
-        if (staffShiftEarlyIn != null) {
-            for (StaffShift stf : staffShiftEarlyIn) {
-                staffShiftLateInTenMinuteLinked.add(stf);
-            }
+        if (!(stfCurrent.getLateInVarified() >= fromTime
+                && stfCurrent.getLateInVarified() <= toTime)) {
+            return;
         }
 
+        System.err.println("Late In 10 " + stfCurrent);
+        List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(stfCurrent, fromTime, toTime, shiftCount.intValue());
+
+        if (staffShiftEarlyIn == null) {
+            return;
+        }
+
+        if (staffShiftEarlyIn.size() != 2) {
+            return;
+        }
+
+        LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
+
+        for (StaffShift stf : staffShiftEarlyIn) {
+            staffShiftLateInTenMinuteLinked.add(stf);
+        }
+
+        System.err.println("Late in Shift Reference Count " + staffShiftLateInTenMinuteLinked.size());
         if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
             stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
             stfCurrent.setConsiderForLateIn(true);
@@ -1047,7 +1062,9 @@ public class StaffSalaryController implements Serializable {
             }
 
             LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
+
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
+
             staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
         }
@@ -1058,47 +1075,60 @@ public class StaffSalaryController implements Serializable {
     public List<StaffShift> fetchStaffShiftForResetLateAndEarly(StaffShift stfCurrent) {
         String sql = " Select s from  StaffShift s "
                 + " where s.retired=false "
-                + " and s.referenceStaffShiftEarlyOut=:stf "
-                + " and s.considerForEarlyOut=true";
+                + " and s.referenceStaffShiftEarlyOut=:stf ";
+//                + " and s.considerForEarlyOut=true";
         HashMap hm = new HashMap();
         hm.put("stf", stfCurrent);
-
+        List<StaffShift> listReturn = new ArrayList<>();
         List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm);
+
+        if (list != null) {
+            listReturn.addAll(list);
+        }
 
         sql = " Select s from  StaffShift s "
                 + " where s.retired=false "
-                + " and s.referenceStaffShiftLateIn=:stf "
-                + " and s.considerForLateIn=true";
+                + " and s.referenceStaffShiftLateIn=:stf ";
+//                + " and s.considerForLateIn=true";
         hm = new HashMap();
         hm.put("stf", stfCurrent);
 
-        List<StaffShift> list2 = staffShiftFacade.findBySQL(sql, hm);
-
-        if (list != null && list2 != null) {
-            list.addAll(list2);
-
-        }
+        list = staffShiftFacade.findBySQL(sql, hm);
 
         if (list != null) {
-            return list;
+            listReturn.addAll(list);
         }
 
-        return list2;
+        return listReturn;
     }
 
     @Inject
     StaffLeaveFromLateAndEarlyController staffLeaveFromLateAndEarlyController;
 
-    public void calStaffLeaveFromEarlyOut(StaffShift stfCurrent, double fromTime, double toTime, double shiftCount) {
-        List<StaffShift> staffShiftEarlyOut = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(stfCurrent, fromTime, toTime);
-        LinkedList<StaffShift> staffShiftEarlyOutThirtyMinuteLinked = new LinkedList<>();
-
-        if (staffShiftEarlyOut != null) {
-            for (StaffShift stf : staffShiftEarlyOut) {
-                staffShiftEarlyOutThirtyMinuteLinked.add(stf);
-            }
+    public void calStaffLeaveFromEarlyOut(StaffShift stfCurrent, double fromTime, double toTime, Double shiftCount) {
+        if (!(stfCurrent.getEarlyOutVarified() >= fromTime
+                && stfCurrent.getEarlyOutVarified() <= toTime)) {
+            return;
         }
 
+        System.err.println("Early Out 10 " + stfCurrent);
+        List<StaffShift> staffShiftEarlyOut = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(stfCurrent, fromTime, toTime, shiftCount.intValue());
+
+        if (staffShiftEarlyOut == null) {
+            return;
+        }
+
+        if (staffShiftEarlyOut.size() != 2) {
+            return;
+        }
+
+        LinkedList<StaffShift> staffShiftEarlyOutThirtyMinuteLinked = new LinkedList<>();
+
+        for (StaffShift stf : staffShiftEarlyOut) {
+            staffShiftEarlyOutThirtyMinuteLinked.add(stf);
+        }
+
+        System.err.println("Early Out Referecne SHift Count  " + staffShiftEarlyOutThirtyMinuteLinked.size());
         if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
             stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
             stfCurrent.setConsiderForEarlyOut(true);
@@ -1109,6 +1139,7 @@ public class StaffSalaryController implements Serializable {
                 earlyOut.setReferenceStaffShiftEarlyOut(stfCurrent);
                 earlyOut.setConsiderForEarlyOut(true);
                 staffShiftFacade.edit(earlyOut);
+//                staffShiftFacade.flush();
             }
 
             LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
@@ -1121,7 +1152,7 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void calStaffLeaveFromEarlyOut(StaffShift stfCurrent, double fromTime) {
-
+        System.err.println("Early Out Half " + stfCurrent);
 //        if (stfCurrent.getEarlyOutLogged() >= fromTime) {
 //        System.err.println("Early Out  Shift ID " + stfCurrent.getId());
         stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
@@ -1142,32 +1173,36 @@ public class StaffSalaryController implements Serializable {
     StaffLeaveFacade staffLeaveFacade;
 
     public void calStaffAutoLeaveReset(StaffShift stfCurrent) {
-
+        System.err.println("Resetting Shift " + stfCurrent);
         LeaveFormSystem hr = staffLeaveFromLateAndEarlyController.fetchLeaveForm(stfCurrent, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
         if (hr == null) {
-            System.out.println("HR Null");
             return;
         }
+
         hr.setRetired(true);
         hr.setRetiredAt(new Date());
         hr.setRetirer(sessionController.getLoggedUser());
         leaveFormFacade.edit(hr);
 
         StaffLeaveSystem staffLeaveSystem = staffLeaveFromLateAndEarlyController.fetchStaffLeaves(stfCurrent, hr);
-        if (staffLeaveSystem != null) {
-            staffLeaveSystem.setRetired(true);
-            staffLeaveSystem.setRetiredAt(new Date());
-            staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
-            staffLeaveFacade.edit(staffLeaveSystem);
 
-            stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
-            stfCurrent.calLeaveTime();
-            stfCurrent.setLeaveType(null);
-            stfCurrent.setAutoLeave(false);
-            stfCurrent.setConsiderForLateIn(false);
-            stfCurrent.setConsiderForEarlyOut(false);
-            staffShiftFacade.edit(stfCurrent);
+        if (staffLeaveSystem == null) {
+            return;
         }
+
+        staffLeaveSystem.setRetired(true);
+        staffLeaveSystem.setRetiredAt(new Date());
+        staffLeaveSystem.setRetirer(sessionController.getLoggedUser());
+        staffLeaveFacade.edit(staffLeaveSystem);
+
+        stfCurrent.resetLeaveData(staffLeaveSystem.getLeaveType());
+        stfCurrent.calLeaveTime();
+        stfCurrent.setLeaveType(null);
+        stfCurrent.setAutoLeave(false);
+        stfCurrent.setConsiderForLateIn(false);
+        stfCurrent.setConsiderForEarlyOut(false);
+        staffShiftFacade.edit(stfCurrent);
+
         List<StaffShift> list = fetchStaffShiftForResetLateAndEarly(stfCurrent);
 
         if (list == null) {
@@ -1185,7 +1220,7 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {
-
+        System.err.println("Late In Half " + stfCurrent);
         stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
 //        System.err.println("Late In  Shift ID " + stfCurrent.getId());
         stfCurrent.setConsiderForLateIn(true);
@@ -1206,6 +1241,7 @@ public class StaffSalaryController implements Serializable {
             return;
         }
 
+        System.err.println("Rest Count " + staffShifts.size());
         for (StaffShift ss : staffShifts) {
             // Calculate Late in for 1 1\2 h 
 
@@ -1222,6 +1258,7 @@ public class StaffSalaryController implements Serializable {
             return;
         }
 
+        System.err.println("StaffShifts for Auto Leave Half " + staffShifts.size());
         for (StaffShift ss : staffShifts) {
             //Automatic No Pay Diduction
             double fromMinute = 90 * 60;
@@ -1248,13 +1285,13 @@ public class StaffSalaryController implements Serializable {
         }
 
         staffShifts = humanResourceBean.fetchStaffShiftForAutoLeave(staff, fromDate, toDate);
-
+        System.err.println("StaffShifts for Auto Leave Ten " + staffShifts.size());
         for (StaffShift ss : staffShifts) {
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()
                     && ss.getLateInVarified() > 0) {
 //                System.err.println("******Automatic Late In Leave (Out) " + ss.getStaff().getCodeInterger());
-                calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 2);
+                calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 2.0);
 
             }
 
@@ -1262,7 +1299,7 @@ public class StaffSalaryController implements Serializable {
                     && !ss.isConsiderForEarlyOut()
                     && ss.getEarlyInVarified() > 0) {
 //                System.err.println("******Automatic Early Out Leave (Out) " + ss.getStaff().getCodeInterger());
-                calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 2);
+                calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 2.0);
 
             }
 
@@ -1377,8 +1414,8 @@ public class StaffSalaryController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-         if (getReportKeyWord().getInstitution()!= null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getDepartment());
         }
