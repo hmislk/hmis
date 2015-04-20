@@ -7,7 +7,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
-
     <head>
     </head>
 
@@ -23,7 +22,7 @@
 
 
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" styleClass="nonPrintBlock">
-                        <p:growl id="messages" showDetail="true"/> 
+                        
                         <p:panel  >
                             <f:facet  name="header" >
                                 <h:panelGroup id="facetPanelIx" >
