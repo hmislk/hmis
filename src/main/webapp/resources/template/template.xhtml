@@ -253,6 +253,7 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate"  value="Sale Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_whole_sale_rate"  value="Wholesale Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_expiry_date"  value="Expiry Date" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item"  value="Search Adjustment Bills"  ></p:menuitem>
                                     </p:submenu>
@@ -1257,10 +1258,16 @@
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>
+                        <h:outputLabel value=" || " ></h:outputLabel>
+                        <h:outputLabel value="User" ></h:outputLabel>
                         <h:outputLabel value=" - " ></h:outputLabel>
                         <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputLabel>
+                        <h:outputLabel value=" || " ></h:outputLabel>
+                        <h:outputLabel value=" Department " ></h:outputLabel>
                         <h:outputLabel value="- " ></h:outputLabel>
                         <h:outputLabel value="#{sessionController.loggedUser.department.name} " ></h:outputLabel>
+                        <h:outputLabel value=" || " ></h:outputLabel>
+                        <h:outputLabel value=" Institution " ></h:outputLabel>
                         <h:outputLabel value=" - " ></h:outputLabel>
                         <h:outputLabel value="#{sessionController.loggedUser.institution.name}" ></h:outputLabel>
                     </h:form>
@@ -1268,7 +1275,7 @@
 
             </h:panelGrid>
 
-            <div style="position: fixed; bottom: 10px; right: 10px; width: 300px;" class="nonPrintBlock" >
+            <div style="position: absolute; top: 50px; right: 0px; width: 300px;" class="nonPrintBlock" >
                 <p:clock pattern="hh:mm a - dd MMM yyyy" mode="server"  />  
             </div>
 

@@ -92,7 +92,6 @@ ul, ol {
 }
 
 a {
-    text-decoration: none;
     color: #107710;
 }
 
@@ -890,3 +889,13 @@ table.standardTable td {
     border-color: #999999;
 }
 
+.averageNumericColumn{
+    text-align: right;
+    width: 80px;
+    padding-right: 5px;
+}
+
+.averateNumericText{
+    text-align: right;
+    width: 70px;
+}

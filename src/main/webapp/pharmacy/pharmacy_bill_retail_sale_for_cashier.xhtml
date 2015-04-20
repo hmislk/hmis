@@ -76,7 +76,7 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiary">
+                                                <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
                                                                    style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
