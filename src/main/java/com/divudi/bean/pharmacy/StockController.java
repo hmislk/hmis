@@ -12,6 +12,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.data.DepartmentType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.facade.StockFacade;
 import com.divudi.entity.pharmacy.Stock;
@@ -102,6 +103,18 @@ public class StockController implements Serializable {
             a = new ArrayList<>();
         }
         return a;
+    }
+    
+    public Double departmentItemStock(Department dept, Item item){
+        String sql;
+        Map m = new HashMap();
+        m.put("dept", dept);
+        m.put("item", item);
+        sql = "select sum(c.stock) "
+                + " from Stock c where "
+                + " c.department=:dept "
+                + " and c.itemBatch.item=:item";
+        return getFacade().findDoubleByJpql(sql, m);
     }
 
     public void prepareAdd() {
