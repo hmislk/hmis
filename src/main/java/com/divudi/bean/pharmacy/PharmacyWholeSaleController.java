@@ -1199,7 +1199,7 @@ public class PharmacyWholeSaleController implements Serializable {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return;
             }
-            if (toStaff == null && toInstitution == null) {
+            if (toStaff != null && toInstitution != null) {
                 UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return;
             }

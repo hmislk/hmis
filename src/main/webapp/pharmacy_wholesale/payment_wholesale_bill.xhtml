@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+     xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
+                        <p:panel header="Staff Payments" >
+                            <h:panelGrid columns="1" >
+                                <h:panelGrid columns="2" >
+
+                                    <h:outputLabel  value="Select Speciality" ></h:outputLabel>
+                                    <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{staffPaymentBillController.speciality}" id="acSpeciality"
+                                                    completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="specilityCon"   >
+                                        <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff tblFee" listener="#{staffPaymentBillController.calculateDueFees}" />
+                                    </p:autoComplete>
+
+                                    <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
+                                    <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{staffPaymentBillController.currentStaff}" id="scStaff"
+                                                     completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                     converter="stfcon"   >
+                                        <f:ajax event="itemSelect" execute="scStaff" render="tblFee pTotals" listener="#{staffPaymentBillController.calculateDueFees}" />
+                                    </p:autoComplete>
+
+
+                                    <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{staffPaymentBillController.paymentMethod}" >                                      
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                    </p:selectOneMenu>
+
+                                    <!--                                    <p:commandButton ajax="false" value="Process" >
+                                                                        </p:commandButton>-->
+
+                                </h:panelGrid>
+
+
+                                <p:dataTable   id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
+                                               selection="#{staffPaymentBillController.payingBillFees}"
+                                               var="bf" rowKey="#{bf.id}" >
+
+                                    <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+
+                                    <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+
+                                    <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+
+                                    <p:column selectionMode="multiple" >
+
+                                    </p:column>
+
+                                    <p:column headerText="Bill Id">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill Id"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Date">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill Date"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+
+                                    <p:column headerText="Patient">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
+                                    </p:column>
+
+                                    <p:column headerText="Test" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Test"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.billItem.item.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Charge" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Charge"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.feeValue}" />
+                                    </p:column>
+
+                                </p:dataTable>
+
+
+
+                                <p:panel id="pTotals"  >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Payment Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="2" >
+                                        <h:outputLabel value="Total Due" ></h:outputLabel>
+                                        <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paying This time" ></h:outputLabel>
+                                        <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying }" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>  
+                                    </h:panelGrid>
+                                </p:panel>
+                                <h:panelGroup >
+                                    <p:commandButton id="btnPay" ajax="false" value="Pay" action="#{staffPaymentBillController.settleBill()}" >
+                                        <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                        <pe:exporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnPay"/>
+
+                                </h:panelGroup>
+                            </h:panelGrid>
+
+                        </p:panel>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup  rendered="#{staffPaymentBillController.printPreview}">
+                        <p:commandButton id="btnNewPayment" ajax="false" value="New Payment" action="payment_staff_bill" actionListener="#{staffPaymentBillController.newPayment}"/>
+
+                        <bi:staffBill_1 controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                    </h:panelGroup>
+
+                </h:form>
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
