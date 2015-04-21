@@ -153,6 +153,19 @@ public class AmpController implements Serializable {
 
         items = getFacade().findBySQL(sql, m);
     }
+    public void createItemListPharmacy() {
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Store);
+        m.put("dep2", DepartmentType.Inventry);
+        String sql = "select c from Amp c "
+                + " where c.retired=false "
+                + " and (c.departmentType is null "
+                + " or c.departmentType!=:dep "
+                + " or c.departmentType!=:dep2 )"
+                + " order by c.name ";
+
+        items = getFacade().findBySQL(sql, m);
+    }
 
    
     public void onTabChange(TabChangeEvent event) {
