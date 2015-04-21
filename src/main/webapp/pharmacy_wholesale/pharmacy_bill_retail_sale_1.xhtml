@@ -22,20 +22,20 @@
                 <h:form id="bill" >
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />
-                    
+
                     <p:panel>
-                        <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController.pharmacyWholeRetailSale()}" />
-                        <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeRetailSale()}" />
+                        <p:commandButton  value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController.pharmacyWholeRetailSale()}" />
+                        <p:commandButton disabled="true" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeRetailSale()}" />
                         <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeRetailSale()}" />
                         <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
                     </p:panel>
 
-                    <p:panel rendered="#{!pharmacyWholeSaleController.billPreview}"  >
+                    <p:panel rendered="#{!pharmacyWholeSaleController1.billPreview}"  >
                         <h:panelGroup id="panelError" >
                             <h:panelGroup  
-                                rendered="#{pharmacyWholeSaleController.errorMessage ne null}"
+                                rendered="#{pharmacyWholeSaleController1.errorMessage ne null}"
                                 style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
-                                <p:outputLabel value="#{pharmacyWholeSaleController.errorMessage}" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyWholeSaleController1.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
                         <h:panelGrid id="sale" columns="2" class="alignTop" >
@@ -54,15 +54,15 @@
 
 
                                             <p:autoComplete accesskey="i"    id="acStock" 
-                                                            value="#{pharmacyWholeSaleController.stock}" 
+                                                            value="#{pharmacyWholeSaleController1.stock}" 
                                                             converter="stockCon" 
-                                                            completeMethod="#{pharmacyWholeSaleController.completeAvailableStocksFromNameOrGeneric}" 
+                                                            completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
                                                 <p:column headerText="Id">
                                                     <h:outputLabel value="#{i.itemBatch.item.id}"  style="width: 50px!important;"></h:outputLabel>
                                                 </p:column>
-                                                
+
                                                 <p:column headerText="Item">
                                                     <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
                                                 </p:column>
@@ -89,7 +89,7 @@
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:ajax event="focus" process="acStock :#{p:component('cmbPs')} :#{p:component('cmbPs2')}"  ></p:ajax>
-                                                <p:ajax event="itemSelect"   listener="#{pharmacyWholeSaleController.handleSelect}"  update="txtQty txtRate focusQty :#{p:component('lstReplaceableBatch')}" ></p:ajax>
+                                                <p:ajax event="itemSelect"   listener="#{pharmacyWholeSaleController1.handleSelect}"  update="txtQty txtRate focusQty :#{p:component('lstReplaceableBatch')}" ></p:ajax>
                                                 <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
                                             </p:autoComplete>
 
@@ -98,26 +98,26 @@
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
-                                            <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacyWholeSaleController.intQty}" style="width: 50px!important;"   >
-                                                <p:ajax event="keyup"  listener="#{pharmacyWholeSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacyWholeSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
+                                            <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacyWholeSaleController1.intQty}" style="width: 50px!important;"   >
+                                                <p:ajax event="keyup"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacyWholeSaleController.addBillItemNew()}" 
+                                                          action="#{pharmacyWholeSaleController1.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>
-                                            <p:outputLabel id="txtRate" value="#{pharmacyWholeSaleController.billItem.netRate}" >
+                                            <p:outputLabel id="txtRate" value="#{pharmacyWholeSaleController1.billItem.netRate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Value" ></p:outputLabel>
-                                            <p:outputLabel id="txtVal" value="#{pharmacyWholeSaleController.billItem.netValue}" >
+                                            <p:outputLabel id="txtVal" value="#{pharmacyWholeSaleController1.billItem.netValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGrid>
@@ -128,11 +128,11 @@
 
 
                                     <p:panel header="Bill Items" id="pBis">
-                                        <p:dataTable id="tblBillItem" value="#{pharmacyWholeSaleController.preBill.billItems}"
+                                        <p:dataTable id="tblBillItem" value="#{pharmacyWholeSaleController1.preBill.billItems}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 
-                                            <p:ajax event="rowEdit" listener="#{pharmacyWholeSaleController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
-                                            <p:ajax event="rowEditCancel" listener="#{pharmacyWholeSaleController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" /> 
+                                            <p:ajax event="rowEdit" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:component('pBillDetails')}" /> 
 
 
                                             <p:column headerText="Item">
@@ -175,7 +175,7 @@
 
                                             </p:column>
                                             <p:column headerText="Remove">
-                                                <p:commandButton value="Remove" action="#{pharmacyWholeSaleController.removeBillItem(bi)}" ajax="false" >
+                                                <p:commandButton value="Remove" action="#{pharmacyWholeSaleController1.removeBillItem(bi)}" ajax="false" >
 
                                                 </p:commandButton>
                                             </p:column>
@@ -221,14 +221,14 @@
                                         </h:panelGroup>
 
                                         <p:dataTable id="lstReplaceableBatch" 
-                                                     selection="#{pharmacyWholeSaleController.replacableStock}"
-                                                     value="#{pharmacyWholeSaleController.replaceableStocks}" 
+                                                     selection="#{pharmacyWholeSaleController1.replacableStock}"
+                                                     value="#{pharmacyWholeSaleController1.replaceableStocks}" 
                                                      var="ri" 
                                                      selectionMode="single"
                                                      rowKey="#{ri.id}"
                                                      emptyMessage="System can not detect suitable replacements.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController.makeStockAsBillItemStock()}" ></p:ajax>
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
                                             <p:column headerText="Item">
                                                 #{ri.itemBatch.item.name}
                                             </p:column>
@@ -260,14 +260,14 @@
                                         </p:dataTable>
 
                                         <p:dataTable id="lstSelectItems" 
-                                                     selection="#{pharmacyWholeSaleController.selectedAvailableAmp}"
-                                                     value="#{pharmacyWholeSaleController.itemsWithoutStocks}" 
+                                                     selection="#{pharmacyWholeSaleController1.selectedAvailableAmp}"
+                                                     value="#{pharmacyWholeSaleController1.itemsWithoutStocks}" 
                                                      var="si" 
                                                      selectionMode="single"
                                                      rowKey="#{si.id}"
                                                      emptyMessage="No items with that name without stocks.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController.selectReplaceableStocksNew()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController.selectReplaceableStocksNew()}" ></p:ajax>
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
                                             <p:column headerText="Generic">
                                                 #{si.vmp.name}
                                             </p:column>
@@ -292,48 +292,48 @@
                                     <h:panelGrid columns="20"  >
 
                                         <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                                        <p:selectOneMenu   id="pay" value="#{pharmacyWholeSaleController.paymentMethod}">    
+                                        <p:selectOneMenu   id="pay" value="#{pharmacyWholeSaleController1.paymentMethod}">    
                                             <f:selectItems value="#{enumController.paymentMethods}"/>
                                             <p:ajax process="@this cmbPs cmbPs2" 
                                                     update="pBillDetails creditCard cheque slip tvPt" 
                                                     event="change"  
-                                                    listener="#{pharmacyWholeSaleController.changeListener()}"/>
+                                                    listener="#{pharmacyWholeSaleController1.changeListener()}"/>
                                         </p:selectOneMenu>
 
-                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacyWholeSaleController.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq false}">   
+                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacyWholeSaleController1.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq false}">   
                                             <f:selectItem itemLabel="Payment Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
                                                     event="change"  
-                                                    listener="#{pharmacyWholeSaleController.changeListener()}"/>
+                                                    listener="#{pharmacyWholeSaleController1.changeListener()}"/>
                                         </p:selectOneMenu>
 
-                                        <p:selectOneMenu   id="cmbPs2" value="#{pharmacyWholeSaleController.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq true}">   
+                                        <p:selectOneMenu   id="cmbPs2" value="#{pharmacyWholeSaleController1.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq true}">   
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
                                                     event="change"  
-                                                    listener="#{pharmacyWholeSaleController.changeListener()}"/>
+                                                    listener="#{pharmacyWholeSaleController1.changeListener()}"/>
                                         </p:selectOneMenu>
 
 
 
-                                        <h:panelGroup id="creditCard" style="display: #{pharmacyWholeSaleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                            <pa:creditCard paymentMethodData="#{pharmacyWholeSaleController.paymentMethodData}"/>
+                                        <h:panelGroup id="creditCard" style="display: #{pharmacyWholeSaleController1.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{pharmacyWholeSaleController1.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="cheque" style="display: #{pharmacyWholeSaleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <pa:cheque paymentMethodData="#{pharmacyWholeSaleController.paymentMethodData}"/>
+                                        <h:panelGroup id="cheque" style="display: #{pharmacyWholeSaleController1.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{pharmacyWholeSaleController1.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="slip" style="display: #{pharmacyWholeSaleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <pa:slip paymentMethodData="#{pharmacyWholeSaleController.paymentMethodData}"/>
+                                        <h:panelGroup id="slip" style="display: #{pharmacyWholeSaleController1.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{pharmacyWholeSaleController1.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                         action="#{pharmacyWholeSaleController.settleBillWithPay}" >
+                                                         action="#{pharmacyWholeSaleController1.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -342,7 +342,7 @@
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                          ajax="false" action="pharmacy_bill_retail_sale"
                                                          onclick="onSubmitButton();"
-                                                         actionListener="#{pharmacyWholeSaleController.resetAll()}"  ></p:commandButton>
+                                                         actionListener="#{pharmacyWholeSaleController1.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -352,14 +352,14 @@
 
                                 <p:panelGrid columns="2">
                                     <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacyWholeSaleController.preBill.referredBy}" 
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacyWholeSaleController1.preBill.referredBy}" 
                                                     completeMethod="#{doctorController.completeDoctor}" 
                                                     var="ix" itemLabel="#{ix.person.name}" 
                                                     itemValue="#{ix}" size="30"  
                                                     >
                                     </p:autoComplete>
                                     <p:outputLabel value="Comments" ></p:outputLabel>
-                                    <p:inputTextarea value="#{pharmacyWholeSaleController.comment}" id="comment"/>
+                                    <p:inputTextarea value="#{pharmacyWholeSaleController1.comment}" id="comment"/>
 
 
 
@@ -370,24 +370,24 @@
                                 <p:panel header="Bill Details" id="pBillDetails"  >
                                     <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel id="total" value="#{pharmacyWholeSaleController.preBill.total}" >
+                                        <h:outputLabel id="total" value="#{pharmacyWholeSaleController1.preBill.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel id="dis" value="#{pharmacyWholeSaleController.preBill.discount}" >
+                                        <h:outputLabel id="dis" value="#{pharmacyWholeSaleController1.preBill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel id="netTotal" value="#{pharmacyWholeSaleController.preBill.netTotal}" >
+                                        <h:outputLabel id="netTotal" value="#{pharmacyWholeSaleController1.preBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel  value="Tendered" ></h:outputLabel>
-                                        <p:inputText autocomplete="off" accesskey="t" id="paid" value="#{pharmacyWholeSaleController.cashPaid}" >
+                                        <p:inputText autocomplete="off" accesskey="t" id="paid" value="#{pharmacyWholeSaleController1.cashPaid}" >
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
                                         </p:inputText>
                                         <h:outputLabel  value="Balance" ></h:outputLabel>
-                                        <h:outputLabel id="balance" value="#{pharmacyWholeSaleController.balance}" >
+                                        <h:outputLabel id="balance" value="#{pharmacyWholeSaleController1.balance}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:panelGrid>
@@ -398,13 +398,13 @@
 
 
 
-                                    <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacyWholeSaleController.patientSearchTab}" >
+                                    <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacyWholeSaleController1.patientSearchTab}" >
                                         <p:ajax event="tabChange"  process="@this"
                                                 update=":#{p:component('cmbPs')} :#{p:component('cmbPs2')} :#{p:component('pBillDetails')}"
-                                                listener="#{pharmacyWholeSaleController.onTabChange}" />
+                                                listener="#{pharmacyWholeSaleController1.onTabChange}" />
 
                                         <p:tab id="tabNewPt" title="New Patient"  >
-                                            <bil:newPatient controller="#{pharmacyWholeSaleController}"/>
+                                            <bil:newPatient controller="#{pharmacyWholeSaleController1}"/>
                                         </p:tab>
 
                                         <p:tab id="tabSearchPt" title="Search Patient" >
@@ -413,20 +413,20 @@
                                             <p:autoComplete
                                                 widgetVar="aPt" 
                                                 id="acPt" forceSelection="true" 
-                                                value="#{pharmacyWholeSaleController.searchedPatient}" 
+                                                value="#{pharmacyWholeSaleController1.searchedPatient}" 
                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                 var="apt" itemLabel="#{apt.person.name}" 
                                                 itemValue="#{apt}" size="30"  
                                                 style="width: 400px;"
-                                                disabled="#{pharmacyWholeSaleController.fromOpdEncounter}">
+                                                disabled="#{pharmacyWholeSaleController1.fromOpdEncounter}">
                                                 <p:ajax event="itemSelect" process="@this" update=":#{p:component('cmbPs')} :#{p:component('cmbPs2')} :#{p:component('pBillDetails')} panSearch"
-                                                        listener="#{pharmacyWholeSaleController.searchPatientListener}"/>
+                                                        listener="#{pharmacyWholeSaleController1.searchPatientListener}"/>
                                             </p:autoComplete>  
                                             <h:panelGroup id="panSearch">
-                                                <pat:searchPatientDetail patient="#{pharmacyWholeSaleController.searchedPatient}"  />
+                                                <pat:searchPatientDetail patient="#{pharmacyWholeSaleController1.searchedPatient}"  />
                                             </h:panelGroup>
                                             <div style="padding: 2px; margin: 2px; border: 1px solid;">
-                                                <p:outputLabel value="#{pharmacyWholeSaleController.opdEncounterComments}" ></p:outputLabel>
+                                                <p:outputLabel value="#{pharmacyWholeSaleController1.opdEncounterComments}" ></p:outputLabel>
                                             </div>
                                         </p:tab>
 
@@ -436,16 +436,16 @@
                                                 <p:autoComplete  style="width: 400px;" 
 
                                                                  forceSelection="true" 
-                                                                 value="#{pharmacyWholeSaleController.toInstitution}" 
+                                                                 value="#{pharmacyWholeSaleController1.toInstitution}" 
                                                                  id="scCreditCompany"
                                                                  completeMethod="#{institutionController.completeCreditCompany}" 
                                                                  var="myi" itemLabel="#{myi.name}" 
                                                                  itemValue="#{myi}"
                                                                  converter="institutionConverter" 
-                                                                 disabled="#{pharmacyWholeSaleController.paymentMethod ne 'Credit' }">
+                                                                 disabled="#{pharmacyWholeSaleController1.paymentMethod ne 'Credit' }">
 
                                                     <p:ajax process="scCreditCompany" update=":#{p:component('pBillDetails')}" 
-                                                            event="itemSelect"  listener="#{pharmacyWholeSaleController.paymentSchemeChanged}" />
+                                                            event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>
                                                 <p:watermark for="scCreditCompany" value="Type at least 3 charactors of Company" ></p:watermark>
@@ -453,14 +453,14 @@
                                                 <p:outputLabel value="Staff Member" ></p:outputLabel>
                                                 <p:autoComplete  style="width: 400px;" 
                                                                  forceSelection="true" 
-                                                                 value="#{pharmacyWholeSaleController.toStaff}" 
+                                                                 value="#{pharmacyWholeSaleController1.toStaff}" 
                                                                  id="scStaff"
                                                                  completeMethod="#{staffController.completeStaff}" 
                                                                  var="mys" 
                                                                  itemLabel="#{mys.person.nameWithTitle}" 
                                                                  itemValue="#{mys}"
                                                                  converter="stfcon" 
-                                                                 disabled="#{pharmacyWholeSaleController.paymentMethod ne 'Credit' }">
+                                                                 disabled="#{pharmacyWholeSaleController1.paymentMethod ne 'Credit' }">
                                                     <p:column headerText="Name" >
                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
                                                     </p:column>
@@ -476,7 +476,7 @@
                                                     </p:column>
 
                                                     <p:ajax process="scStaff" update=":#{p:component('pBillDetails')}" 
-                                                            event="itemSelect"  listener="#{pharmacyWholeSaleController.paymentSchemeChanged}" />
+                                                            event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>
                                                 <p:watermark for="scStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
@@ -504,7 +504,7 @@
                 <h:form>
 
 
-                    <p:panel  rendered="#{pharmacyWholeSaleController.billPreview}" >
+                    <p:panel  rendered="#{pharmacyWholeSaleController1.billPreview}" >
 
 
 
@@ -520,8 +520,8 @@
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                              ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
-                                             actionListener="#{pharmacyWholeSaleController.resetAll()}" ></p:commandButton>
-                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController.pharmacyWholeSale()}" />
+                                             actionListener="#{pharmacyWholeSaleController1.resetAll()}" ></p:commandButton>
+                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeSale()}" />
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" > 
@@ -530,7 +530,7 @@
 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill>
+                                        <phi:saleBill bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
 
@@ -540,7 +540,7 @@
 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_prabodha>
+                                        <phi:saleBill_prabodha bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
 
@@ -550,7 +550,7 @@
 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
 
