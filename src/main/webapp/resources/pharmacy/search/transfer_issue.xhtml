@@ -12,12 +12,14 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="5">         
+        <h:panelGrid columns="6">         
             <h:outputLabel value="Req No"/>
+            <h:outputLabel value="Issue No"/>
             <h:outputLabel value="Dealor Name"/>
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
+            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromDepartment}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
@@ -37,6 +39,11 @@
             <p:column headerText="Issue No">                        
                 <h:outputLabel value="#{bill.deptId}"/>                          
             </p:column>
+            
+            <p:column headerText="Req No">                        
+                <h:outputLabel value="#{bill.referenceBill.deptId}"/>                          
+            </p:column>
+            
             <p:column headerText="From Department">                       
                 <h:outputLabel value="#{bill.fromDepartment.name}"/>                          
             </p:column>  
