@@ -10,6 +10,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
@@ -62,6 +63,8 @@ public class SearchController implements Serializable {
     Date toDate;
     private int maxResult = 50;
     private BillType billType;
+    private PaymentMethod paymentMethod;
+    
     ////////////
     private List<Bill> bills;
     private List<Bill> selectedBills;
@@ -259,6 +262,14 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public class billsWithbill {
@@ -557,6 +568,10 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  (upper(b.total) like :total )";
             m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        if(getPaymentMethod()!=null){
+            sql +=" and b.paymentMethod=:pay ";
+            m.put("pay", paymentMethod);
         }
 
         sql += " order by b.createdAt desc  ";
@@ -5098,6 +5113,7 @@ public class SearchController implements Serializable {
         this.billType = billType;
     }
 
+    
     public TransferController getTransferController() {
         return transferController;
     }
