@@ -18,6 +18,15 @@ public class PharmacySummery {
     private Double billedTotal = 0.0;
     private Double cancelledTotal = 0.0;
     private Double refundedTotal = 0.0;
+    private Long count;
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
 
     public List<String1Value3> getBills() {
         return bills;

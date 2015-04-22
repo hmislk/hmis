@@ -40,15 +40,19 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class LabReportSearchByInstitutionController implements Serializable {
+public class InstitutionLabSumeryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    
     String txtSearch;
+    
     Date fromDate;
     Date toDate;
+    
     @EJB
     CommonFunctions commonFunctions;
+    
     List<Bill> labBills;
     List<Bill> billedBills;
     List<Bill> billBills;
@@ -86,6 +90,12 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     List<PatientInvestigation> searchedPatientInvestigations;
 
+    
+    
+    public void createDailyFeeTypeSummery(){
+        
+    }
+    
     public List<PatientInvestigation> getSearchedPatientInvestigations() {
         return searchedPatientInvestigations;
     }
@@ -1204,7 +1214,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1217,7 +1227,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1320,7 +1330,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
     /**
      * Creates a new instance of LabReportSearchController
      */
-    public LabReportSearchByInstitutionController() {
+    public InstitutionLabSumeryController() {
     }
 
     public Department getDepartment() {
