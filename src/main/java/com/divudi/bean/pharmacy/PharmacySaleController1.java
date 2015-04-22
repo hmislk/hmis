@@ -164,6 +164,9 @@ public class PharmacySaleController1 implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    
+    
+    
 
     public String pharmacyRetailSale() {
         return "/pharmacy/pharmacy_bill_retail_sale_1";
@@ -1178,6 +1181,18 @@ public class PharmacySaleController1 implements Serializable {
 
         if (getPreBill().getBillItems().isEmpty()) {
             return;
+        }
+        
+        if (!getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+                System.out.println("bi.getQty() = " + bi.getQty());
+                if (bi.getQty()<=0.0) {
+                    System.out.println("bi.getQty() = " + bi.getQty());
+                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                    return;
+                }
+            }
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {

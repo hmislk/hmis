@@ -163,6 +163,9 @@ public class PharmacySaleController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    
+    
+    
 
     public void searchPatientListener() {
         System.err.println("1");
@@ -487,7 +490,7 @@ public class PharmacySaleController implements Serializable {
     }
 
     public String pharmacyRetailSale() {
-        return "/pharmacy/pharmacy_bill_retail_sale";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -1142,6 +1145,18 @@ public class PharmacySaleController implements Serializable {
         if (getPreBill().getBillItems().isEmpty()) {
             return;
         }
+        
+        if (!getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+                System.out.println("bi.getQty() = " + bi.getQty());
+                if (bi.getQty()<=0.0) {
+                    System.out.println("bi.getQty() = " + bi.getQty());
+                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                    return;
+                }
+            }
+        }
 
 //        if (checkAllBillItem()) {
 //            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
@@ -1188,6 +1203,18 @@ public class PharmacySaleController implements Serializable {
 
         if (getPreBill().getBillItems().isEmpty()) {
             return;
+        }
+        
+        if (!getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+                System.out.println("bi.getQty() = " + bi.getQty());
+                if (bi.getQty()<=0.0) {
+                    System.out.println("bi.getQty() = " + bi.getQty());
+                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                    return;
+                }
+            }
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {

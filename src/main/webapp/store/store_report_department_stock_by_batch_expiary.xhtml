@@ -15,7 +15,7 @@
                 <h:form>
 
 
-                    <p:panel header="Department Stock Report by Batch Expiary" >
+                    <p:panel header="Department Stock Report by Batch Expiry" >
 
                         <h:panelGrid columns="11" >
                             <h:outputLabel value="Department" ></h:outputLabel>
@@ -30,9 +30,9 @@
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{storeReportsStock.toDate}" pattern="dd MM yyyy" ></p:calendar>
 
-                            <p:commandButton ajax="false" value="Three Months Expiary" actionListener="#{storeReportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Six Months Expiary" actionListener="#{storeReportsStock.fillSixMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="One Year Expiary" actionListener="#{storeReportsStock.fillOneYearExpiary()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Three Months Expiry" actionListener="#{storeReportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Six Months Expiry" actionListener="#{storeReportsStock.fillSixMonthsExpiary()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="One Year Expiry" actionListener="#{storeReportsStock.fillOneYearExpiary()}" ></p:commandButton>
                             
                         </h:panelGrid>
                         
@@ -80,7 +80,7 @@
                                     </h:outputLabel>                                 
                                 </p:column>
                                 
-                                <p:column headerText="Expiary">
+                                <p:column headerText="Expiry">
                                      <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>

@@ -23,23 +23,10 @@
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
                 </div>
-                <!--                <div >
-                                    <h:outputLabel value="Tel : "/>
-                                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
-                                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
-                                </div>
-                                <div >
-                                    <h:outputLabel value="Fax : "/>
-                                    <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
-                                </div>
-                                <div >
-                                    <h:outputLabel value="Email : "/>
-                                    <h:outputLabel value="#{cc.attrs.bill.creater.department.email}"/>                                                 
-                                </div>-->
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="DIRECT PURCHASE (GRN)"   />                           
+                <h:outputLabel value="PURCHASE BILL"   />                           
             </div>
 
 
@@ -63,7 +50,7 @@
 
                     <h:outputLabel value="Supplier"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-                    
+
                     <h:outputLabel value="Purchase Time"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                         <f:convertDateTime pattern="dd MM yyyy"/>

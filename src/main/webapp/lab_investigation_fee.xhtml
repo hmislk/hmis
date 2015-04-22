@@ -89,31 +89,38 @@
                                         #{bi.staff.person.nameWithTitle}
                                     </p:column>
                                     <p:column headerText="Institution">
-                                        #{bi.institution.name}
+                                        
+                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" >                                            
+                                            <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                                        </h:selectOneListbox>
                                     </p:column>
                                     <p:column headerText="Department">
-                                        #{bi.department.name}
+                                        
+                                        <h:selectOneListbox id="cmbDep" size="1" value="#{bi.department.name}" >                                            
+                                            <f:selectItems value="#{itemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                        </h:selectOneListbox>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Id">
                                         <p:outputLabel value="#{bi.id}"/>                                        
                                     </p:column>
-                                    
+
                                     <p:column headerText="Local Fee">
                                         <p:inputText value="#{bi.fee}"/>                                        
                                     </p:column>
                                     <p:column headerText="Foreign Fee">
                                         <p:inputText value="#{bi.ffee}"/>                                        
                                     </p:column>
-                                    
+
                                     <p:column headerText="Edited Date">
                                         #{bi.editedAt}
                                     </p:column>
-                                    
+
                                     <p:column headerText="Edited Person">
                                         #{bi.editer.webUserPerson.nameWithTitle}
                                     </p:column>
-                                    
+
                                     <p:column headerText="Update">
                                         <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}"/>
                                     </p:column>

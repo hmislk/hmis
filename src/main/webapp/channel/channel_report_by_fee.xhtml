@@ -44,7 +44,7 @@
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Billed Bill List"></p:outputLabel>
-                            <p:outputLabel value="Total    #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
+                            <p:outputLabel value="Billed Bill Total - #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -64,7 +64,8 @@
                         </p:columnGroup>
                         <p:subTable value="#{ftf.billedBillFees}" var="bf"  rendered="#{ftf.billedBillFees.size()>0}">
                             <f:facet name="header">
-                                <p:outputLabel value="Fee Type - #{ftf.feeType}"></p:outputLabel>
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.billedBillFeeTypeTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:column headerText="Booking ID" >                                
                                 <h:outputLabel   value="#{bf.bill.bookingId}"/>
@@ -151,7 +152,7 @@
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Canceled Bill List"></p:outputLabel>
-                            <p:outputLabel value="Total    #{channelReportController.canceledBillTotl}" style="float: right"></p:outputLabel>
+                            <p:outputLabel value="Canceled Bill Total - #{channelReportController.canceledBillTotl}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -171,7 +172,8 @@
                         </p:columnGroup>
                         <p:subTable value="#{ftf.canceledBillFees}" var="bf"  rendered="#{ftf.canceledBillFees.size()>0}">
                             <f:facet name="header">
-                                <p:outputLabel value="Fee Type - #{ftf.feeType}"></p:outputLabel>
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.canceledBillFeeTypeTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:column headerText="Booking ID" >                                
                                 <h:outputLabel   value="#{bf.bill.bookingId}"/>
@@ -258,7 +260,7 @@
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
                             <p:outputLabel value="Refund Bill List"></p:outputLabel>
-                            <p:outputLabel value="Total    #{channelReportController.refundBillTotal}" style="float: right"></p:outputLabel>
+                            <p:outputLabel value="Refund Bill Total - #{channelReportController.refundBillTotal}" style="float: right"></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -278,7 +280,8 @@
                         </p:columnGroup>
                         <p:subTable value="#{ftf.refunBillFees}" var="bf"  rendered="#{ftf.refunBillFees.size()>0}">
                             <f:facet name="header">
-                                <p:outputLabel value="Fee Type - #{ftf.feeType}"></p:outputLabel>
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.refundBillFeeTypeTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:column headerText="Booking ID" >                                
                                 <h:outputLabel   value="#{bf.bill.bookingId}"/>

@@ -18,7 +18,7 @@
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
-            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.requestNo}" />
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
@@ -28,13 +28,15 @@
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE ORDER REQUEST"/>
             </f:facet>
-
+            
             <p:column headerText="Req No" >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.deptId}">
+                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.insId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
-            </p:column> 
+            </p:column>
+
+            
             <p:column headerText="Requested From"  >
                 <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.department.name}">
                     <h:outputLabel  ></h:outputLabel>

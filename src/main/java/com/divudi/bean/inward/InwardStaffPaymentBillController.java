@@ -210,7 +210,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void fillDocPayingBillByCreatedDate() {
         fillDocPayingBill(false);
-        fillDocPayingBillCancel(true);
+        fillDocPayingBillCancel(false);
     }
 
     public void fillDocPayingBillByDischargeDate() {
