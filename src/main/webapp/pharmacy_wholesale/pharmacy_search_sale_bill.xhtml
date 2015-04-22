@@ -37,6 +37,7 @@
                                 <p:selectOneMenu value="#{searchController.paymentMethod}">
                                     <f:selectItem itemLabel="Select Payment Method"/>
                                     <f:selectItems value="#{enumController.paymentMethods}" />
+                                    <f:ajax  event="change" execute="@this"  listener="#{searchController.makeNull}"/>
                                 </p:selectOneMenu>
                             </h:panelGrid>
 
@@ -59,7 +60,7 @@
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                 action="pharmacy_reprint_bill_sale">
+                                                 action="/pharmacy/pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>
@@ -82,7 +83,8 @@
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
 
-                                <br/>                                
+                                <br/>
+                                                                
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Return at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
@@ -161,7 +163,8 @@
                                                    value="#{bill.referenceBill.refundedBill.creater.webUserPerson.name}" >
 
                                     </h:outputLabel>
-                                </h:panelGroup>                               
+                                </h:panelGroup>
+                              
                             </p:column>                      
 
                             <p:column headerText="Client" >
