@@ -12,28 +12,28 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
+                    <h:panelGroup rendered="#{!PaymentPharmacyWholeSaleBillController.printPreview}" styleClass="alignTop" >
                         <p:panel header="Staff Payments" >
                             <h:panelGrid columns="1" >
                                 <h:panelGrid columns="2" >
 
                                     <h:outputLabel  value="Select Speciality" ></h:outputLabel>
-                                    <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{staffPaymentBillController.speciality}" id="acSpeciality"
+                                    <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{PaymentPharmacyWholeSaleBillController.speciality}" id="acSpeciality"
                                                     completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                     converter="specilityCon"   >
-                                        <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff tblFee" listener="#{staffPaymentBillController.calculateDueFees}" />
+                                        <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff tblFee" listener="#{PaymentPharmacyWholeSaleBillController.calculateDueFees}" />
                                     </p:autoComplete>
 
                                     <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
-                                    <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{staffPaymentBillController.currentStaff}" id="scStaff"
-                                                     completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                    <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{PaymentPharmacyWholeSaleBillController.currentStaff}" id="scStaff"
+                                                     completeMethod="#{PaymentPharmacyWholeSaleBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                      converter="stfcon"   >
-                                        <f:ajax event="itemSelect" execute="scStaff" render="tblFee pTotals" listener="#{staffPaymentBillController.calculateDueFees}" />
+                                        <f:ajax event="itemSelect" execute="scStaff" render="tblFee pTotals" listener="#{PaymentPharmacyWholeSaleBillController.calculateDueFees}" />
                                     </p:autoComplete>
 
 
                                     <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{staffPaymentBillController.paymentMethod}" >                                      
+                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{PaymentPharmacyWholeSaleBillController.paymentMethod}" >                                      
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                     </p:selectOneMenu>
 
@@ -43,17 +43,17 @@
                                 </h:panelGrid>
 
 
-                                <p:dataTable   id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
-                                               selection="#{staffPaymentBillController.payingBillFees}"
+                                <p:dataTable   id="tblFee" value="#{PaymentPharmacyWholeSaleBillController.dueBillFees}"
+                                               selection="#{PaymentPharmacyWholeSaleBillController.payingBillFees}"
                                                var="bf" rowKey="#{bf.id}" >
 
-                                    <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                    <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{PaymentPharmacyWholeSaleBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
 
-                                    <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                    <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{PaymentPharmacyWholeSaleBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
 
-                                    <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                    <f:ajax  event="toggleSelect" execute="tblFee" listener="#{PaymentPharmacyWholeSaleBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
 
                                     <p:column selectionMode="multiple" >
@@ -110,17 +110,17 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="Total Due" ></h:outputLabel>
-                                        <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
+                                        <h:outputLabel id="lblDue" value="#{PaymentPharmacyWholeSaleBillController.totalDue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Paying This time" ></h:outputLabel>
-                                        <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying }" >
+                                        <h:outputLabel id="lblPay"  value="#{PaymentPharmacyWholeSaleBillController.totalPaying }" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
                                     </h:panelGrid>
                                 </p:panel>
                                 <h:panelGroup >
-                                    <p:commandButton id="btnPay" ajax="false" value="Pay" action="#{staffPaymentBillController.settleBill()}" >
+                                    <p:commandButton id="btnPay" ajax="false" value="Pay" action="#{PaymentPharmacyWholeSaleBillController.settleBill()}" >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
@@ -135,10 +135,10 @@
                     </h:panelGroup>
 
 
-                    <h:panelGroup  rendered="#{staffPaymentBillController.printPreview}">
-                        <p:commandButton id="btnNewPayment" ajax="false" value="New Payment" action="payment_staff_bill" actionListener="#{staffPaymentBillController.newPayment}"/>
+                    <h:panelGroup  rendered="#{PaymentPharmacyWholeSaleBillController.printPreview}">
+                        <p:commandButton id="btnNewPayment" ajax="false" value="New Payment" action="payment_staff_bill" actionListener="#{PaymentPharmacyWholeSaleBillController.newPayment}"/>
 
-                        <bi:staffBill_1 controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                        <bi:staffBill_1 controller="#{PaymentPharmacyWholeSaleBillController}" bill="#{PaymentPharmacyWholeSaleBillController.current}" dup="false"/>
                     </h:panelGroup>
 
                 </h:form>
