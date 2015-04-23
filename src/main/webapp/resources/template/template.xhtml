@@ -74,7 +74,7 @@
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_occupancy" value="Room Occupancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_vacant" value="Room Vacany" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_change" value="Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange') or true}" ></p:menuitem>   
-                                        <p:menuitem  ajax="false"  action="/inward/inward_room_change_guardian" value="Gurdian Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange') or true}" ></p:menuitem>   
+                                        <p:menuitem  ajax="false"  action="/inward/inward_room_change_guardian" value="Guardian Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange') or true}" ></p:menuitem>   
                                     </p:submenu>  
                                     <p:submenu label="Services &amp; Items" rendered="#{webUserController.hasPrivilege('InwardServicesAndItems') or true}">
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_service" value="Add Services" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') or true}" ></p:menuitem>                                            
@@ -501,6 +501,11 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all" value="By Credit Company"  />
                                             </p:submenu>     
                                         </p:submenu>
+                                        <p:submenu label="Pharmacy">
+                                            <p:menuitem ajax="false"  action="/pharmacy_search_bill_to_pay.xhtml" value="Search Pharmacy Credit Bills"  />
+                                            <p:menuitem ajax="false" value="Pharmacy Credit paid Bills" action="/pharmacy_search_bill_full_paid" ></p:menuitem>
+                                            <p:menuitem ajax="false" value="Pharmacy Credit paid Bills with OPD Bill" action="/pharmacy_search_bill_full_paid_bills" ></p:menuitem>
+                                        </p:submenu>
                                         <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
@@ -682,7 +687,7 @@
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_occupancy" value="Room Occupancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_vacant" value="Room Vacancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_room_change" value="Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange') or true}" ></p:menuitem>   
-                                        <p:menuitem  ajax="false"  action="/inward/inward_room_change_guardian" value="Gurdian Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange') or true}" ></p:menuitem>   
+                                        <p:menuitem  ajax="false"  action="/inward/inward_room_change_guardian" value="Guardian Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange') or true}" ></p:menuitem>   
                                     </p:submenu>  
                                     <p:submenu label="Services &amp; Items" rendered="#{webUserController.hasPrivilege('InwardServicesAndItems') or true}">
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_service" value="Add Services" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') or true}" ></p:menuitem>                                            

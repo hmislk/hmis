@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCreditBillsWithOPDBill()}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCreditBillsWithPharmacyBill()}"/>
                             </h:panelGrid>
                         </f:facet>
 
@@ -38,10 +38,9 @@
                             <p:subTable value="#{wb.caBills}" var="bill" rendered="#{wb.caBills.size()>0}">
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill No - #{wb.b.deptId}"></p:outputLabel>
-                                    <p:outputLabel value="Balance - #{wb.b.balance}" rendered="#{wb.b.balance>0}" style="color: red; float: right;" />
-                                    <p:outputLabel value="Balance - #{wb.b.balance}" rendered="#{wb.b.balance eq 0}" style="color: green; float: right;" />
-                                    <p:outputLabel value="Bill Total - #{wb.b.total}" style="float: right; padding-right: 50%;"></p:outputLabel>
-                                    <p:outputLabel value="Frist Paid - #{wb.b.cashPaid} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" style="float: right;"></p:outputLabel>
+                                    <p:outputLabel value="Balance - #{wb.b.netTotal-wb.b.paidAmount}" rendered="#{(wb.b.netTotal-wb.b.paidAmount)>0}" style="color: red; float: right;" />
+                                    <p:outputLabel value="Balance - #{wb.b.netTotal-wb.b.paidAmount}" rendered="#{(wb.b.netTotal-wb.b.paidAmount) eq 0}" style="color: green; float: right;" />
+                                    <p:outputLabel value="Bill Total - #{wb.b.netTotal}" style="float: right; padding-right: 50%;"></p:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Bill No" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>
