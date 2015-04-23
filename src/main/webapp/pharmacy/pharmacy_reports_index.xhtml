@@ -32,18 +32,18 @@
                                 <p:panel header="Item Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton value="Items List" action="/pharmacy/list_amps" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
-                                        <p:commandButton value="Items Summary" action="pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>           
+                                        <p:commandButton value="Items Summary" action="/pharmacy/pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>           
                                         <p:commandButton value="Items With Out Distributor" action="/pharmacy/pharmacy_report_list_amps_with_out_distributor" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
-                                        <p:commandButton value="List Items One Item Has More Than One Distributor" action="/pharmacy/pharmacy_report_list_grater_than_one_distributor" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
+                                        <p:commandButton value="Items With Multiple Distributor" action="/pharmacy/pharmacy_report_list_grater_than_one_distributor" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
                                     </p:panelGrid>
                                 </p:panel>
-                                
+
                                 <p:panel header="Reports for ordering" style="width: 400px;margin:auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton value="Reorder Analysis" action="/pharmacy/ordering_data" ajax="false" ></p:commandButton> 
                                     </p:panelGrid>
                                 </p:panel>
-                                
+
                             </h:panelGrid>
 
                             <h:panelGrid columns="1" >
@@ -66,7 +66,7 @@
                             </h:panelGrid>
 
                             <h:panelGrid columns="1" >
-                                
+
                                 <p:panel header="Purchase Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch" ajax="false" ></p:commandButton> 
@@ -78,7 +78,7 @@
                                         <p:commandButton value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill" ajax="false" ></p:commandButton>                            
                                     </p:panelGrid>
                                 </p:panel>
-                                
+
                                 <p:panel header="Transfer Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
@@ -89,7 +89,13 @@
                                         <p:commandButton value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                     </p:panelGrid>
                                 </p:panel>
-                                
+
+                                <p:panel header="Transaction Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <p:panelGrid columns="1" styleClass="alignTop">
+                                        <p:commandButton value="All Transaction View" action="/pharmacy/pharmacy_item_transactions" ajax="false" ></p:commandButton>                            
+                                    </p:panelGrid>
+                                </p:panel>
+
                             </h:panelGrid>
                         </h:panelGrid>
                     </p:panel>
