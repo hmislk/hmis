@@ -27,7 +27,8 @@
 
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createLabReportByDateWithCashAndCredit}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{pharmacySaleReport.createLabReportByDate}" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton ajax="false" value="Excel" 
+                                     styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
