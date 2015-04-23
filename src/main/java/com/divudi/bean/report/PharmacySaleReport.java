@@ -710,8 +710,8 @@ public class PharmacySaleReport implements Serializable {
             sql += " and f.bill.toInstitution=:ins ";
         }
         if (department != null) {
-            m.put("ins", department);
-            sql += " and f.bill.toDepartment=:ins ";
+            m.put("dep", department);
+            sql += " and f.bill.toDepartment=:dep ";
         }
 
         //    m.put("ins", getSessionController().getInstitution());
