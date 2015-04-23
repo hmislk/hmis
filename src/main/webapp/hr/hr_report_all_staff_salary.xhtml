@@ -44,7 +44,17 @@
             </p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
-            <p:commandLink style="padding: .3em 1em;" styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" ajax="false" value="Download as Excel" download="#{salaryCycleController.current}.xls" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
+<!--            <p:commandLink style="padding: .3em 1em;" 
+                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" ajax="false" value="Download as Excel" 
+                           download="#{salaryCycleController.current}.xls" 
+                           onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
+            -->
+            
+             <a download="#{salaryCycleController.current}.xls" href="#" 
+                onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
+                           style="padding: .3em 1em;  background: #D7D0C0; " 
+                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Download as Excel</a>
+
             
             <p:panel id="print">
                 <table id="tbl" border="1">

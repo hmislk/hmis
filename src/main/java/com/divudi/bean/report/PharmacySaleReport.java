@@ -704,7 +704,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("pm", pm);
         m.put("billType", BillType.OpdBill);
         m.put("ft", fTy);
-        
+
         if (institution != null) {
             m.put("ins", institution);
             sql += " and f.bill.toInstitution=:ins ";
@@ -2431,26 +2431,21 @@ public class PharmacySaleReport implements Serializable {
     }
 
     //pasan
-    public void createLabReportByDateWithCashAndCredit() {
+    public void createFeeSummery(BillType[] btps) {
         billedSummery = new PharmacySummery();
-
         billedSummery.setBills(new ArrayList<String1Value3>());
-
         Date nowDate = getFromDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
-
         double hospitalFeeTot = 0.0;
         double profeTotal = 0.0;
         double regentTot = 0.0;
         long countTotal = 0l;
-
         double hospitalFee;
         double proTot;
         double regentFee;
         long count;
-        BillType[] bts = new BillType[]{BillType.OpdBill, BillType.LabBill};
-
+        
         while (nowDate.before(getToDate())) {
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
@@ -2459,23 +2454,26 @@ public class PharmacySaleReport implements Serializable {
             String1Value3 newRow = new String1Value3();
             newRow.setString(formattedDate);
 
-            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Cash);
-            double hospitalFeeCredit = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Credit);
+//            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Cash);
+//            double hospitalFeeCredit = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Credit);
+//
+//            hospitalFee = hospitalFeeCash + hospitalFeeCredit;
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution);
 
-            hospitalFee = hospitalFeeCash + hospitalFeeCredit;
+//            double proTotCash = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Cash);
+//            double proTotCredit = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Credit);
+//
+//            proTot = proTotCash + proTotCredit;
+            proTot = calBillFee(nowDate, FeeType.Staff);
 
-            double proTotCash = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Cash);
-            double proTotCredit = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Credit);
-
-            proTot = proTotCash + proTotCredit;
-
-            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Cash);
-            double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
-
-            regentFee = regentFeeCash + regentFeeCredit;
+//            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Cash);
+//            double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
+//
+//            regentFee = regentFeeCash + regentFeeCredit;
+            regentFee = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
 
             count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
-                    commonFunctions.getEndOfDay(nowDate), null, institution, department, bts);
+                    commonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
             newRow.setValue1(hospitalFee);
@@ -2504,6 +2502,16 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(regentTot);
         billedSummery.setCount(countTotal);
 
+    }
+
+    public void createDailyOpdFeeSummery() {
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        createFeeSummery(btps);
+    }
+    
+    public void createDailyInwardFeeSummery() {
+        BillType[] btps = new BillType[]{BillType.InwardBill};
+        createFeeSummery(btps);
     }
 
     public void createLabSummeryInward() {

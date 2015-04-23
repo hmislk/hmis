@@ -401,7 +401,6 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
     }
     
     public void createTablePharmacyCreditToPayBills() {
