@@ -53,6 +53,8 @@ public class UserPreference implements Serializable {
     boolean allowtoChangePaymentMethodDuringPayment;
     boolean opdPosBillWithoutLogo;
     boolean channelWithOutReferenceNumber;
+    boolean pharmayPurchaseWithLastRate;
+    boolean inwardAddServiceBillTimeCheck;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -97,6 +99,15 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillPrabodha(boolean pharmacyBillPrabodha) {
         this.pharmacyBillPrabodha = pharmacyBillPrabodha;
     }
+
+    public boolean isPharmayPurchaseWithLastRate() {
+        return pharmayPurchaseWithLastRate;
+    }
+
+    public void setPharmayPurchaseWithLastRate(boolean pharmayPurchaseWithLastRate) {
+        this.pharmayPurchaseWithLastRate = pharmayPurchaseWithLastRate;
+    }
+    
     
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
@@ -300,6 +311,14 @@ public class UserPreference implements Serializable {
 
     public void setChannelWithOutReferenceNumber(boolean channelWithOutReferenceNumber) {
         this.channelWithOutReferenceNumber = channelWithOutReferenceNumber;
+    }
+
+    public boolean isInwardAddServiceBillTimeCheck() {
+        return inwardAddServiceBillTimeCheck;
+    }
+
+    public void setInwardAddServiceBillTimeCheck(boolean inwardAddServiceBillTimeCheck) {
+        this.inwardAddServiceBillTimeCheck = inwardAddServiceBillTimeCheck;
     }
     
     @Override

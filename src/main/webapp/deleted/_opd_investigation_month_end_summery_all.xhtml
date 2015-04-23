@@ -15,9 +15,9 @@
         <h:panelGroup rendered="true" >
             <h:form>
 
-                <p:panel id="panelPrint" header="Investigation Month End Summery"/>
+                <p:panel id="panelPrint" header="Investigation Month End Summary"/>
                     <f:facet name="header" >
-                        <h:outputLabel value="Investigation Month End Summery"/>
+                        <h:outputLabel value="Investigation Month End Summary"/>
 
                         <p:commandButton ajax="false"  value="Refresh"  styleClass="noPrintButton" style="float: right;" />
 
@@ -26,7 +26,7 @@
                         </p:commandButton>
 
                         <p:commandButton value="Excel" ajax="false" style="float: right;">
-                            <pe:exporter type="xlsx" fileName="Investigation Month End Summery" facetBackground="#AAFFBB"   datasetPadding="4"
+                            <pe:exporter type="xlsx" fileName="Investigation Month End Summary" facetBackground="#AAFFBB"   datasetPadding="4"
                                          target="tbl"/>
                         </p:commandButton>
 
@@ -45,7 +45,7 @@
                     <p:dataTable id="tbl" value="#{investigationMonthSummeryController.items}" var="c" >
                         
                         <f:facet name="header">
-                            <h:outputLabel value="Investigation Month End Summery"/>
+                            <h:outputLabel value="Investigation Month End Summary"/>
                             
                         </f:facet>
                         

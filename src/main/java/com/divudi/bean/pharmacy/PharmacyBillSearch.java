@@ -705,7 +705,9 @@ public class PharmacyBillSearch implements Serializable {
                 UtilityController.addErrorMessage("Item for this bill already recieve");
                 return true;
             }
-            if (getBill().getDepartment()!=getSessionController().getLoggedUser().getDepartment()) {
+            if (!getBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+                System.out.println("getBill().getDepartment()"+getBill().getDepartment());
+                System.out.println("getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
                 UtilityController.addErrorMessage("You Can't Cancel This Transfer Using "+getSessionController().getLoggedUser().getDepartment().getName()
                         +" Department. Please Log "+getBill().getDepartment().getName()+" Deaprtment.");
                 return true;
@@ -1261,7 +1263,15 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (checkDepartment(getBill().getReferenceBill())) {
+//            if (checkDepartment(getBill().getReferenceBill())) {
+//                return;
+//            } before
+            
+            System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
+            System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
+            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
+            
+            if (checkDepartment(getBill())) {
                 return;
             }
 

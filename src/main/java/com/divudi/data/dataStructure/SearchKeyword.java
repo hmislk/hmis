@@ -83,7 +83,6 @@ public class SearchKeyword {
         if (netTotal != null && !netTotal.trim().equals("")) {
             return true;
         }
-
         return false;
 
     }

@@ -38,7 +38,7 @@
                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Expiary">
+                                    <p:column headerText="Expiry">
                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                             <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                         </h:outputLabel>
@@ -84,7 +84,7 @@
                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Expiary"/>
+                                <h:outputLabel value="Expiry"/>
                                 <h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                 </h:outputLabel>

@@ -765,6 +765,11 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
+        
+        if (getReportKeyWord().getEmployeeStatus() != null) {
+            sql += " and ss.staff.employeeStatus=:empStat ";
+            hm.put("empStat", getReportKeyWord().getEmployeeStatus());
+        }
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.workingDepartment=:dep ";
@@ -1218,6 +1223,7 @@ public class HrReportController implements Serializable {
 
     }
 
+    
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select  Staff");
@@ -1239,7 +1245,7 @@ public class HrReportController implements Serializable {
         System.err.println("Sh Extra Duty " + staffShiftExtraDuties);
         staffLeavesNoPay = humanResourceBean.fetchStaffLeaveAddedLeaveList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("User Leave " + staffLeavesNoPay);
-        staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+        staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("System Leave " + staffLeaveSystem);
 
         calculateWorkedTime();
@@ -1832,7 +1838,7 @@ public class HrReportController implements Serializable {
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
-    private long fetchWorkedDays(Staff staff, DayType dayType) {
+    private long fetchWorkedDays(Staff staff, DayType dayType, boolean fullShifts, boolean halfShift) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -1849,6 +1855,14 @@ public class HrReportController implements Serializable {
         hm.put("to", toDate);
         hm.put("stf", staff);
         hm.put("dtp", dayType);
+//2246740
+        if (fullShifts && halfShift) {
+
+        } else if (fullShifts) {
+            sql += " and ss.shift.halfShift = false ";
+        } else if (halfShift) {
+            sql += " and ss.shift.halfShift = true ";
+        }
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
@@ -1880,10 +1894,85 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
+//        StaffShift ss;
+
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
+    private double fetchWorkedDays(Staff staff, DayType dayType) {
+        long fs = fetchWorkedDays(staff, dayType, true, false);
+        System.out.println("fs = " + fs);
+        long hs = fetchWorkedDays(staff, dayType, false, true);
+        System.out.println("hs = " + hs);
+        
+        double fullAndHald = fs + (hs*.5);
+        System.out.println("fullAndHald = " + fullAndHald);
+        
+        return fullAndHald;
+    }
+    
+//    private long fetchWorkedDays(Staff staff, DayType dayType) {
+//        long fs = fetchWorkedDays(staff, dayType, true, false);
+//        long hs = fetchWorkedDays(staff, dayType, false, true);
+//        
+//        double fullAndHald = fs + (hs*.5);
+//        
+//        return fullAndHald;
+//        
+//        String sql = "";
+//
+//        HashMap hm = new HashMap();
+//        sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
+//                + " from StaffShift ss "
+//                + " where ss.retired=false"
+//                + " and ss.staff=:stf "
+//                + " and ss.dayType=:dtp"
+//                + " and ( ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                //                + " or (ss.leaveType is not null) ) "
+//                + " and ss.shiftDate between :frm  and :to ";
+//        hm.put("frm", fromDate);
+//        hm.put("to", toDate);
+//        hm.put("stf", staff);
+//        hm.put("dtp", dayType);
+//
+//        if (getReportKeyWord().getStaff() != null) {
+//            sql += " and ss.staff=:stf ";
+//            hm.put("stf", getReportKeyWord().getStaff());
+//        }
+//
+//        if (getReportKeyWord().getDepartment() != null) {
+//            sql += " and ss.staff.workingDepartment=:dep ";
+//            hm.put("dep", getReportKeyWord().getDepartment());
+//        }
+//
+//        if (getReportKeyWord().getInstitution() != null) {
+//            sql += " and ss.staff.workingDepartment.institution=:ins ";
+//            hm.put("ins", getReportKeyWord().getInstitution());
+//        }
+//
+//        if (getReportKeyWord().getStaffCategory() != null) {
+//            sql += " and ss.staff.staffCategory=:stfCat";
+//            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+//        }
+//
+//        if (getReportKeyWord().getDesignation() != null) {
+//            sql += " and ss.staff.designation=:des";
+//            hm.put("des", getReportKeyWord().getDesignation());
+//        }
+//
+//        if (getReportKeyWord().getRoster() != null) {
+//            sql += " and ss.roster=:rs ";
+//            hm.put("rs", getReportKeyWord().getRoster());
+//        }
+//
+//        StaffShift ss;
+//
+////        sql += " group by FUNC('Date',ss.shiftDate)";
+//        return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+//    }
+//
     private List<MonthEndRecord> monthEndRecords;
 
     public FinalVariables getFinalVariables() {

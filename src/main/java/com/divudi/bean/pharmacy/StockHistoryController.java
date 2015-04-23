@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.HistoryType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StockHistoryRecorder;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
@@ -144,7 +146,13 @@ public class StockHistoryController implements Serializable {
     public StockHistoryController() {
     }
 
+    @Inject
+    SessionController sessionController;
+    
     public Department getDepartment() {
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return department;
     }
 

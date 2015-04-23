@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.report.LabReportSearchByInstitutionController;
+import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -418,7 +418,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     @Inject
-    private LabReportSearchByInstitutionController labReportSearchByInstitutionController;
+    private InstitutionLabSumeryController labReportSearchByInstitutionController;
 
     public void markAsSampled() {
         if (current == null) {
@@ -737,11 +737,11 @@ public class PatientInvestigationController implements Serializable {
 
     }
 
-    public LabReportSearchByInstitutionController getLabReportSearchByInstitutionController() {
+    public InstitutionLabSumeryController getLabReportSearchByInstitutionController() {
         return labReportSearchByInstitutionController;
     }
 
-    public void setLabReportSearchByInstitutionController(LabReportSearchByInstitutionController labReportSearchByInstitutionController) {
+    public void setLabReportSearchByInstitutionController(InstitutionLabSumeryController labReportSearchByInstitutionController) {
         this.labReportSearchByInstitutionController = labReportSearchByInstitutionController;
     }
 

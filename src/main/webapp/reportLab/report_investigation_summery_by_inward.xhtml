@@ -15,7 +15,7 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Reagent Summery - All Bills"  styleClass="noPrintButton" />
+                    <h:outputLabel value="Reagent Summary - All Bills"  styleClass="noPrintButton" />
 
 
                     <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
@@ -40,7 +40,7 @@
                     </h:panelGrid>
                     <h:panelGroup style="float: right">
                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createOPdLabListWithProDayEndTablebyInward()}"/>
+                                         action="#{bookKeepingSummery.createInwardFee()}"/>
 
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
@@ -73,6 +73,9 @@
                     <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{bookKeepingSummery.totalRegentFee}"/>
+                    </f:facet>
                     <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
 
                 </p:column>

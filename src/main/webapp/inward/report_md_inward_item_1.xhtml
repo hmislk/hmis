@@ -76,35 +76,56 @@
                         <p:watermark for="acIx" value="Item"/>
                         <p:watermark for="dept" value="Department"/>
                         <p:watermark for="ins" value="Institution"/>
-                        </h:panelGrid>
-                        <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Process by Added Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" style="float: right;" onclick="onSubmitButton();" />
+                    </h:panelGrid>
+                    <p:panelGrid columns="5">
+                        <p:selectBooleanCheckbox value="#{mdInwardReportController.showCreatedDate}" 
+                                                 itemLabel="Show Created Date"/>
+                        <p:selectBooleanCheckbox value="#{mdInwardReportController.showDischargeDate}" 
+                                                 itemLabel="Show Discharge Date"/>
+                        <p:selectBooleanCheckbox value="#{mdInwardReportController.showServiceDate}" 
+                                                 itemLabel="Show Service Date"/>
+                        <p:selectBooleanCheckbox value="#{mdInwardReportController.showDepartment}" 
+                                                 itemLabel="Show Department"/>
+                        <p:selectBooleanCheckbox value="#{mdInwardReportController.showCategory}" 
+                                                 itemLabel="Show Category"/>
+                    </p:panelGrid>
+                    <p:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Process by Bill Created Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process by Discharge Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process by Added Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" style="float: right;" onclick="onSubmitButton();" />
 
-                            <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="item_report_added_date"  />
-                            </p:commandButton>
-                            <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
-                            </p:commandButton>
-                            <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate2}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                                <p:printer target="reportPrint"/>
-                            </p:commandButton> 
-                        </p:panelGrid>                    
+                        <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_added_date"  />
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate2}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton> 
+                    </p:panelGrid>                    
 
                 </p:panel>   
 
-                <p:panel id="reportPrint">
-                    <p:dataTable id="tbl" value="#{mdInwardReportController.billfees}"  var="i" rowIndexVar="j">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable id="tbl" value="#{mdInwardReportController.billfees}" var="i" rowIndexVar="j">
                         <f:facet name="header">
-                            <h:outputLabel value="Item Report"/>
+                            <h:outputLabel value="Inward Service Details - " />
+                            <h:outputLabel value="From Date - " />
+                            <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="  To Date - " />
+                            <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value=" - Institution - #{mdInwardReportController.institution.name}" rendered="#{mdInwardReportController.institution ne null}"/>
                         </f:facet>
                         <p:column headerText="No">
                             <f:facet name="header">
@@ -112,37 +133,55 @@
                             </f:facet>
                             <h:outputLabel value="#{j+1}"/>
                         </p:column>
-                        <p:column headerText="BHT No" >
+                        <p:column headerText="BHT No" sortBy="#{i.billItem.bill.patientEncounter.bhtNo}" >
                             <f:facet name="header">
                                 <p:outputLabel value="BHT No" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.bill.patientEncounter.bhtNo}"/>
                         </p:column>
-                        <p:column headerText="Institution" >
+                        <p:column headerText="Institution" sortBy="#{i.billItem.item.institution.name}" rendered="#{mdInwardReportController.institution eq null}">
                             <f:facet name="header">
                                 <p:outputLabel value="Institution" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.item.institution.name}"/>
                         </p:column>
-                        <p:column headerText="Department" >
+                        <p:column headerText="Department" sortBy="#{i.billItem.item.department.name}" rendered="#{mdInwardReportController.showDepartment eq true}">
                             <f:facet name="header">
                                 <p:outputLabel value="Department" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.item.department.name}"/>
                         </p:column>    
-                        <p:column headerText="Parent Categoy" >
+                        <p:column headerText="Created Date" sortBy="#{i.bill.createdAt}" rendered="#{mdInwardReportController.showCreatedDate eq true}">
                             <f:facet name="header">
-                                <p:outputLabel value="Parent Categoy" />
+                                <p:outputLabel value="Created Date" />
                             </f:facet>
-                            <h:outputLabel value="#{i.billItem.item.category.parentCategory.name}"/>
+                            <h:outputLabel value="#{i.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                            </h:outputLabel>
                         </p:column>   
-                        <p:column headerText="Categoy" >
+                        <p:column headerText="Service Date" sortBy="#{i.billItem.billTime}" rendered="#{mdInwardReportController.showServiceDate eq true}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.billItem.billTime}">
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Discharge Date" sortBy="#{i.bill.patientEncounter.dateOfDischarge}" rendered="#{mdInwardReportController.showDischargeDate eq true}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.bill.patientEncounter.dateOfDischarge}">
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Categoy" sortBy="#{i.billItem.item.category.name}" rendered="#{mdInwardReportController.showCategory eq true}">
                             <f:facet name="header">
                                 <p:outputLabel value="Categoy" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.item.category.name}"/>
                         </p:column>   
-                        <p:column headerText="Name" >
+                        <p:column headerText="Name" sortBy="#{i.billItem.item.name}" >
                             <f:facet name="header">
                                 <p:outputLabel value="Name" />
                             </f:facet>
@@ -154,15 +193,15 @@
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.descreption}"/>
                         </p:column>
-                        <p:column headerText="Hospital Fee">
+                        <p:column headerText="Hospital Fee" >
                             <f:facet name="header">
                                 <p:outputLabel value="Hospital Fee" />
                             </f:facet>
-                            <h:outputLabel value="#{i.fee.fee}" style="text-align: right;">
+                            <h:outputLabel value="#{i.fee.fee}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{mdInwardReportController.total}">
+                                <h:outputLabel value="#{mdInwardReportController.total}" style="float: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>

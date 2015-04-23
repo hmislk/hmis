@@ -15,11 +15,11 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel >
+                    <p:panel  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Leave Report" />
+                            <h:outputLabel value="Leave Report Detail By Staff" />
                         </f:facet>
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="From : " />
                             <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="To : " />
@@ -35,259 +35,397 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+
+
                         <p:panel id="gpBillPreview">                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffLeavesAnnual}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.staffLeavesAnnual}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Annual "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.annualEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.annualUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.annualEntitle - hrReportController.annualUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff No"/>
-                                </f:facet>
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff No"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Name"/>
-                                </f:facet>
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Name"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Crated Date"/>
-                                </f:facet>
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Leave Date"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Leave Date"/>
-                                </f:facet>
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Leave Qty"/>
-                                </f:facet>
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Leave Qty"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Created at"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Comments"/>
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/>
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb2" value="#{hrReportController.staffLeavesCashual}" var="ss">
+                            <p:dataTable id="tb2" value="#{hrReportController.staffLeavesCashual}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Casual "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.casualEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.casualUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.casualEntitle - hrReportController.casualUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
-                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
+                                    <p:outputLabel value="#{ss.staff.code}" rendered="#{hrReportController.reportKeyWord.staff eq null}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{hrReportController.reportKeyWord.staff eq null}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;">
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb3" value="#{hrReportController.staffLeavesNoPay}" var="ss">
+                            <p:dataTable id="tb3" value="#{hrReportController.staffLeavesNoPay}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="No Pay "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.nopayEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.nopayUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.nopayEntitle - hrReportController.nopayUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                              
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb4" value="#{hrReportController.staffLeavesDutyLeave}" var="ss">
+                            <p:dataTable id="tb4" value="#{hrReportController.staffLeavesDutyLeave}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Duty Leave "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.dutyLeaveEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.dutyLeaveUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.dutyLeaveEntitle - hrReportController.dutyLeaveUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                               
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb5" value="#{hrReportController.staffLeavesLieu}" var="ss">
+                            <p:dataTable id="tb5" value="#{hrReportController.staffLeavesLieu}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Lieu Leave "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.lieuEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.lieuUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.lieuEntitle - hrReportController.lieuUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                               
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb6" value="#{hrReportController.staffLeavesMedical}" var="ss">
+                            <p:dataTable id="tb6" value="#{hrReportController.staffLeavesMedical}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Medical Leave "/>
                                         <h:outputLabel value="Entitle - #{hrReportController.medicalEntitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.medicalUtilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.medicalEntitle - hrReportController.medicalUtilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                               
+                                <p:column headerText="Leave Date"  style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb7" value="#{hrReportController.staffLeavesMaternity1st}" var="ss">
+                            <p:dataTable id="tb7" value="#{hrReportController.staffLeavesMaternity1st}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
-                                        <h:outputLabel value="Maternity ist Leave "/>
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
+                                        <h:outputLabel value="1&lt;sup&gt;st&lt;&#47;sup&gt; Maternity Leave" escape="false"/>
                                         <h:outputLabel value="Entitle - #{hrReportController.maternity1Entitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.maternity1Utilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.maternity1Entitle - hrReportController.maternity1Utilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
-                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
+                                    <p:outputLabel value="#{ss.staff.code}" rendered="#{hrReportController.reportKeyWord.staff eq null}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                               
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column> 
 
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
-                            <p:dataTable id="tb8" value="#{hrReportController.staffLeavesMaternity2nd}" var="ss">
+                            <p:dataTable id="tb8" value="#{hrReportController.staffLeavesMaternity2nd}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
-                                    <h:panelGrid columns="4" style="border-style: hidden!important">
-                                        <h:outputLabel value="Maternity 2nd Leave "/>
+                                    <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
+                                        <h:outputLabel value="2&lt;sup&gt;nd&lt;&#47;sup&gt; Maternity Leave" escape="false"/>
                                         <h:outputLabel value="Entitle - #{hrReportController.maternity2Entitle}"/>
                                         <h:outputLabel value="Utilized - #{hrReportController.maternity2Utilized}"/>
                                         <h:outputLabel value="Balance - #{hrReportController.maternity2Entitle - hrReportController.maternity2Utilized}"/>
                                     </h:panelGrid>
                                 </f:facet>
-                                <p:column headerText="Staff No">
+                                <p:column headerText="Staff No" style="width: 70px!important;max-width: 70px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                <p:column headerText="Crated Date" >
-                                    <p:outputLabel value="#{ss.createdAt}"></p:outputLabel>
+                                
+                                <p:column headerText="Leave Date" style="width: 110px;">
+                                    <p:outputLabel value="#{ss.leaveDate}">
+                                        <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
+                                <p:column headerText="Leave Qty"  style="width: 90px;">
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
                                 </p:column> 
+                                <p:column headerText="Created at" style="width: 130px;" >
+                                    <p:outputLabel value="#{ss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yy - hh:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column  headerText="Crated By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Crated By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.creater.webUserPerson.name}"></p:outputLabel>
+                                </p:column>  
+                                <p:column  headerText="Approved By" style="width: 170px!important;max-width: 170px;" styleClass="singleLine"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Approved By"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.form.approvedStaff.person.name}"></p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column>  

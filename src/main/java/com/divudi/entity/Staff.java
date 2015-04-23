@@ -125,7 +125,7 @@ public class Staff implements Serializable {
     private Institution epfBankBranch;
     private String epfAccountNo;
     private String accountNo;
-    String epfNo;
+    String epfNo;    
   
 
     String acNo;

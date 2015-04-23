@@ -134,12 +134,11 @@
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip" event="change" />
                             </p:selectOneMenu>
-
+                            
                             <h:outputLabel/>
                             <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
                                 <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
                             </p:selectBooleanCheckbox>
-
                             <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
@@ -195,7 +194,7 @@
                                                 completeMethod="#{areaController.completeArea}" 
                                                 var="npt" itemLabel="#{npt.name}" 
                                                 itemValue="#{npt}" size="30"  style="width: 40px;">
-                                </p:autoComplete>  
+                                </p:autoComplete>
                             </h:panelGrid>
                         </p:tab>
                         <p:tab  id="tabSearchPt" title="Search Pateint">
@@ -656,6 +655,8 @@
                         </p:tab>
                     </p:tabView>
                 </p:panel>
+                <p:spacer width="100px"></p:spacer>
+                <h:panelGroup></h:panelGroup>
 
 
             </h:panelGrid>

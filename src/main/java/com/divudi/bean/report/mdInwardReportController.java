@@ -99,6 +99,13 @@ public class mdInwardReportController implements Serializable {
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
+    
+    //reporting purpuse
+    boolean showCreatedDate=false;
+    boolean showServiceDate=false;
+    boolean showDischargeDate=false;
+    boolean showDepartment=false;
+    boolean showCategory=false;
 
     public PaymentMethod[] getPaymentMethods() {
 
@@ -1860,6 +1867,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -1932,20 +1941,22 @@ public class mdInwardReportController implements Serializable {
             m.put("p", getPaymentMethod());
         }
 
+        sql += " order by bi.bill.insId ";
+
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calBillHosTotals(Bill b) {
-        String sql;
 
-        sql = "select sum(bi.fee.fee) FROM BillFee bi "
-                + " where bi.bill.id=" + b.getId();
-
-        return getBillFeeFacade().findAggregateDbl(sql);
+    public double calBillHosTotals(List<BillFee> bfs) {
+        double total = 0.0;
+        for (BillFee bf : bfs) {
+            total += bf.getFee().getFee();
+        }
+        System.out.println("total = " + total);
+        return total;
 
     }
-    
+
     public double calHosTotals(boolean dis, boolean add, boolean bill) {
 
         String sql;
@@ -1959,7 +1970,7 @@ public class mdInwardReportController implements Serializable {
 
         sql = "select sum(bi.fee.fee) FROM BillFee bi"
                 + " where bi.bill.billType= :bTp ";
-        
+
         if (bill) {
             sql += " and bi.bill.createdAt between :fromDate and :toDate ";
         }
@@ -1996,13 +2007,29 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public List<BillFee> bilfees(Bill b) {
+    public List<BillFee> bilfees(Bill b, boolean dis, boolean add, boolean bill) {
         String sql;
+        Map m = new HashMap();
+        sql = "select bi FROM BillFee bi where "
+                + " bi.bill.id=" + b.getId();
 
-        sql = "select bi FROM BillFee bi "
-                + " where bi.bill.id=" + b.getId();
+        if (bill) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+        if (dis) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
 
-        return getBillFeeFacade().findBySQL(sql);
+        if (add) {
+            sql += " and bi.billItem.billTime between :fromDate and :toDate ";
+        }
+        
+        sql += " order by bi.id ";
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+
+        return getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2016,12 +2043,14 @@ public class mdInwardReportController implements Serializable {
             BillWithBillFees bf = new BillWithBillFees();
 
             bf.setBill(b);
-            bf.setBillFees(bilfees(b));
-            bf.setHosTotal(calBillHosTotals(b));
-            billWithBillFeeses.add(bf);
+            bf.setBillFees(bilfees(b, dis, add, bill));
+            bf.setHosTotal(calBillHosTotals(bf.getBillFees()));
+            if (bf.getHosTotal() > 0) {
+                billWithBillFeeses.add(bf);
+            }
         }
-        
-        total=calHosTotals(dis, add, bill);
+
+        total = calHosTotals(dis, add, bill);
     }
 
     public List<BillWithBillFees> getBillWithBillFeeses() {
@@ -2031,8 +2060,6 @@ public class mdInwardReportController implements Serializable {
     public void setBillWithBillFeeses(List<BillWithBillFees> billWithBillFeeses) {
         this.billWithBillFeeses = billWithBillFeeses;
     }
-    
-    
 
     //
     public void createItemWithFeeByAddedDate2() {
@@ -2096,6 +2123,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -2169,6 +2198,8 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
+        
+        sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
@@ -2682,6 +2713,46 @@ public class mdInwardReportController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public boolean isShowCreatedDate() {
+        return showCreatedDate;
+    }
+
+    public void setShowCreatedDate(boolean showCreatedDate) {
+        this.showCreatedDate = showCreatedDate;
+    }
+
+    public boolean isShowServiceDate() {
+        return showServiceDate;
+    }
+
+    public void setShowServiceDate(boolean showServiceDate) {
+        this.showServiceDate = showServiceDate;
+    }
+
+    public boolean isShowDischargeDate() {
+        return showDischargeDate;
+    }
+
+    public void setShowDischargeDate(boolean showDischargeDate) {
+        this.showDischargeDate = showDischargeDate;
+    }
+
+    public boolean isShowDepartment() {
+        return showDepartment;
+    }
+
+    public void setShowDepartment(boolean showDepartment) {
+        this.showDepartment = showDepartment;
+    }
+
+    public boolean isShowCategory() {
+        return showCategory;
+    }
+
+    public void setShowCategory(boolean showCategory) {
+        this.showCategory = showCategory;
     }
 
     //619
