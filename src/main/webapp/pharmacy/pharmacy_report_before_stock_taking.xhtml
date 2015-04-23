@@ -36,7 +36,13 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
+                                    value="#{reportsStock.stocks}" var="i"  
+                                    rows="20"
+                                    paginator="true"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="20, 50, 100" 
+                                    >
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{reportsStock.category.name}"/> <br/><br/>
