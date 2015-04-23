@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Credit Payment Bills "/>                          
+                            <h:outputLabel value="Pharmacy BILL TO PAY SEARCH "/>                          
                             <h:panelGrid columns="5" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
@@ -20,7 +20,18 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.reportSettledOPDBills()}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTablePharmacyCreditToPayBills()}"/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+
+                                <h:outputLabel value="Bill No"/>
+                                <h:outputLabel value="Staff Name"/>
+                                <h:outputLabel value="Credit Company Name"/>
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value=""/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.staffName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.institution}" />
+
                             </h:panelGrid>
 
 
@@ -34,12 +45,20 @@
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            
+                            <p:column headerText="View">
+                                <p:commandButton ajax="false" value="Pay" action="bill_payment_pharmacy" disabled="#{bill.cancelled or bill.refunded}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billController.opdBill}"/>
+                                </p:commandButton>
+                            </p:column>
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column>                            
-                            <p:column headerText="Billed for"  >                                
-                                <h:outputLabel value="#{bill.referenceBill.deptId}" />
+                            <p:column headerText="Credit Company"  >                                
+                                <h:outputLabel value="#{bill.toInstitution.name}" />
+                            </p:column>
+                            <p:column headerText="Credit Staff"  >                                
+                                <h:outputLabel value="#{bill.toStaff.person.name}" />
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
@@ -52,7 +71,12 @@
                                         <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
-                                
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
                             </p:column>  
                             <p:column headerText="Billed by" >
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
@@ -73,14 +97,27 @@
                                 <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
-                            <p:column headerText="Paid Value"  >
+                            <p:column headerText="Total Value"  >
 
-                                <h:outputLabel value="#{bill.total}" >
+                                <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,#00.00"/>
                                 </h:outputLabel>
 
                             </p:column>
-                                              
+                            <p:column headerText="To Pay Amount" >
+
+                                <h:outputLabel value="#{bill.netTotal-bill.paidAmount}" style="color: red;">
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Paid Value" >
+
+                                <h:outputLabel value="#{bill.paidAmount}" >
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>                         
                         </p:dataTable>
 
 

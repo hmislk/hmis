@@ -25,7 +25,7 @@ public enum InwardChargeType {
     IntensiveCareManagement("Intensive Care Management"),
     LarbourRoomCharges("Larbour Room Charges"),
     LinenCharges("Linen Charges"),//GOES WITH PATIENT ROOM
-    Laboratory("Laboratory"),
+    Laboratory("Laboratory Charges"),
     MealCharges("Meal Charges"),
     MedicalCareICU("Medical Care"),//Goes With Room
     MedicalServices("Medical Services"),
