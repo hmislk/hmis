@@ -15,6 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -77,6 +78,11 @@ public class Reorder implements Serializable {
     
     @ManyToOne
     Institution supplier;
+    
+    @Transient
+    Double transientStock;
+    @Transient
+    Double transientOrderingQty;
 
 
     public Item getItem() {
@@ -201,8 +207,22 @@ public class Reorder implements Serializable {
         this.supplier = supplier;
     }
 
-    
-    
+    public Double getTransientStock() {
+        return transientStock;
+    }
+
+    public void setTransientStock(Double transientStock) {
+        this.transientStock = transientStock;
+    }
+
+    public Double getTransientOrderingQty() {
+        return transientOrderingQty;
+    }
+
+    public void setTransientOrderingQty(Double transientOrderingQty) {
+        this.transientOrderingQty = transientOrderingQty;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;

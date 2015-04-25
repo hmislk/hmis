@@ -176,6 +176,7 @@ public class UserPrivilageController implements Serializable {
         ///////////////////////
         TreeNode node302 = new PrivilageNode("GRN", node3);
         TreeNode node3021 = new PrivilageNode("GRN", node302, Privileges.PharmacyGoodReceive);
+        TreeNode node3021a = new PrivilageNode("GRN For Wholesale", node302, Privileges.PharmacyGoodReceiveWh);
         TreeNode node3022 = new PrivilageNode("GRN Cancelling", node302, Privileges.PharmacyGoodReceiveCancel);
         TreeNode node3023 = new PrivilageNode("GRN Return", node302, Privileges.PharmacyGoodReceiveReturn);
         TreeNode node3024 = new PrivilageNode("GRN Edit", node302, Privileges.PharmacyGoodReceiveEdit);
@@ -187,11 +188,15 @@ public class UserPrivilageController implements Serializable {
         //////////////////
         TreeNode node304 = new PrivilageNode("Sale", node3);
         TreeNode node3041 = new PrivilageNode("Pharmacy Sale", node304, Privileges.PharmacySale);
+        TreeNode node3041a = new PrivilageNode("Pharmacy Wholesale", node304, Privileges.PharmacySaleWh);
         TreeNode node3042 = new PrivilageNode("Pharmacy Sale Cancel", node304, Privileges.PharmacySaleCancel);
+        TreeNode node3042a = new PrivilageNode("Pharmacy Wholesale Cancel", node304, Privileges.PharmacySaleCancelWh);
         TreeNode node3043 = new PrivilageNode("Pharmacy Sale Return", node304, Privileges.PharmacySaleReturn);
-        //////////////////
+        TreeNode node3043a = new PrivilageNode("Pharmacy Wholesale Return", node304, Privileges.PharmacySaleReturnWh);
+//////////////////
         TreeNode node305 = new PrivilageNode("Purchase", node3);
         TreeNode node3051 = new PrivilageNode("Purchase", node305, Privileges.PharmacyPurchase);
+        TreeNode node3051a = new PrivilageNode("Purchase Wholesale", node305, Privileges.PharmacyPurchaseWh);
         TreeNode node3052 = new PrivilageNode("Purchase Cancel", node305, Privileges.PharmacyPurchaseCancellation);
         TreeNode node3053 = new PrivilageNode("Purchase Return", node305, Privileges.PharmacyPurchaseReturn);
         TreeNode node3054 = new PrivilageNode("Pharmacy Return Without Traising", node305, Privileges.PharmacyReturnWithoutTraising);        

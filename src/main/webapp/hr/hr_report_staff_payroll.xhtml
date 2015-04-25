@@ -13,15 +13,15 @@
 
         <style>
 
-           
 
-           .zebra table {
+
+            .zebra table {
                 *border-collapse: collapse; /* IE7 and lower */
                 border-spacing: 0;
                 width: 100%;    
             }
-            
-             .bordered table {
+
+            .bordered table {
                 *border-collapse: collapse; /* IE7 and lower */
                 border-spacing: 0;
                 border:1px solid black;
@@ -180,8 +180,8 @@
 
             .zebra tfoot td:only-child{
                 -moz-border-radius: 0 0 6px 6px;
-                -webkit-border-radius: 0 0 6px 6px
-                    border-radius: 0 0 6px 6px
+                -webkit-border-radius: 0 0 6px 6px;
+                border-radius: 0 0 6px 6px;
             }
 
         </style>
@@ -369,8 +369,8 @@
                                 <h:outputLabel value="#{scc.transNetSalry}" >
                                     <f:convertNumber pattern="0.00" />
                                 </h:outputLabel>
-                                
-                               
+
+
                             </td>
                             <td style="text-align: right;;"><h:outputLabel value="#{scc.epfCompanyValue}" >
                                     <f:convertNumber pattern="0.00" />
@@ -452,7 +452,7 @@
                             </h:outputLabel>
                         </td>
                         <td style="text-align: right;;">
-                              
+
                             <h:outputLabel value="#{salaryCycleController.epfDeduct+salaryCycleController.transTotAll}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>
@@ -475,7 +475,7 @@
                             </h:outputLabel>
                         </td>
                         <td style="text-align: right;;">
-                            
+
                             <h:outputLabel value="#{(salaryCycleController.transTotDeduct-(salaryCycleController.noPayBasic+salaryCycleController.noPayValAll))+(salaryCycleController.epfDeduct+salaryCycleController.transTotAll)}" >
                                 <f:convertNumber pattern="0.00" />
                             </h:outputLabel>

@@ -153,6 +153,19 @@ public class AmpController implements Serializable {
 
         items = getFacade().findBySQL(sql, m);
     }
+    public void createItemListPharmacy() {
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Store);
+        m.put("dep2", DepartmentType.Inventry);
+        String sql = "select c from Amp c "
+                + " where c.retired=false "
+                + " and (c.departmentType is null "
+                + " or c.departmentType!=:dep "
+                + " or c.departmentType!=:dep2 )"
+                + " order by c.name ";
+
+        items = getFacade().findBySQL(sql, m);
+    }
 
    
     public void onTabChange(TabChangeEvent event) {
@@ -175,10 +188,9 @@ public class AmpController implements Serializable {
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
             a = getFacade().findBySQL("select c from Amp c where "
-                    + " c.retired=false and c.departmentType!=dep and "
-                    + "(upper(c.name) like :n or upper(c.code)  "
+                    + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
+                    + " and (upper(c.name) like :n or upper(c.code)  "
                     + "like :n or upper(c.barcode) like :n) order by c.name", m, 30);
-            //System.out.println("a size is " + a.size());
         }
 
         if (a == null) {

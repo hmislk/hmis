@@ -57,6 +57,15 @@
 
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.referenceBill}" />
+
+                                        <h:outputLabel value="Reference Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Reference Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
@@ -104,7 +113,22 @@
                                                 #{ix.institutionCode}
                                             </p:column>
                                         </p:autoComplete>
+                                        <h:outputLabel value="Department :" ></h:outputLabel>
+                                        <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
+                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                        value="#{billSearch.billSearch.department}" converter="dep"/>
 
+                                        <h:outputLabel value="From Institution :" ></h:outputLabel>
+                                        <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            <p:column>
+                                                #{ix.name}
+                                            </p:column>
+                                            <p:column>
+                                                #{ix.institutionCode}
+                                            </p:column>
+                                        </p:autoComplete>
                                         <h:outputLabel value="To Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.toInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"

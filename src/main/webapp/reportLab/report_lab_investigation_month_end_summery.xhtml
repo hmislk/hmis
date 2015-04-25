@@ -16,16 +16,16 @@
             <h:form>
 
 
-                <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Investigation Month End Summery">
+                <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Investigation Month End Summary">
                     <f:facet name="header" >
-                        <p:outputLabel value="Investigation Month End Summery" styleClass="noPrintButton"/>
+                        <p:outputLabel value="Investigation Month End Summary" styleClass="noPrintButton"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
                             <p:printer target="panelPrint" />
                         </p:commandButton>
 
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation Month End Summery From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
+                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation Month End Summary From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
                                          facetBackground="#008000" facetFontSize="15" 
                                          facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
@@ -48,7 +48,7 @@
 
                         <f:facet name="header">
 
-                            <h:outputLabel value="Investigation Month End Summery "/>
+                            <h:outputLabel value="Investigation Month End Summary "/>
                             <br/>
                             <h:panelGrid columns="4" >
                                 <h:outputLabel value="FROM : "/>

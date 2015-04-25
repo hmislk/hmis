@@ -39,6 +39,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -1027,6 +1028,19 @@ public class PharmacyController implements Serializable {
         return grns;
     }
 
+    public void fillDetails(){
+        createInstitutionSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
+        createInstitutionIssue();
+        createInstitutionTransferReceive();
+        createGrnTable();
+        createPoTable();
+        createDirectPurchaseTable();
+        createInstitutionIssue();
+    }
+    
     public void createTable() {
         createGrnTable();
         createPoTable();
@@ -1181,6 +1195,58 @@ public class PharmacyController implements Serializable {
         createInstitutionTransferIssue();
         createInstitutionIssue();
         createInstitutionTransferReceive();
+    }
+    
+    public double findPharmacyMovement(Department department, Item itm, BillType[] bts, Date fd, Date td) {
+        if (itm instanceof Ampp) {
+            itm = ((Ampp) pharmacyItem).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("itm", itm);
+        m.put("dep", department);
+        m.put("frm", fd);
+        m.put("to", td);
+        List<BillType> bts1 = Arrays.asList(bts);
+        m.put("bts", bts1);
+        sql = "select sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.department=:dep"
+                + " and i.item=:itm "
+                + " and i.bill.billType in :bts "
+                + " and i.createdAt between :frm and :to  ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+    
+    public Date findFirstPharmacyMovementDate(Department department, Item itm, BillType[] bts, Date fd, Date td) {
+        if (itm instanceof Ampp) {
+            itm = ((Ampp) pharmacyItem).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("itm", itm);
+        m.put("dep", department);
+        m.put("frm", fd);
+        m.put("to", td);
+        List<BillType> bts1 = Arrays.asList(bts);
+        m.put("bts", bts1);
+        sql = "select i "
+                + " from BillItem i "
+                + " where i.bill.department=:dep"
+                + " and i.item=:itm "
+                + " and i.bill.billType in :bts "
+                + " and i.bill.createdAt between :frm and :to  "
+                + " order by i.id";
+        BillItem d = getBillItemFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (d == null) {
+            return fd;
+        } else if (d.getBill()!=null && d.getBill().getCreatedAt()!=null) {
+            return d.getBill().getCreatedAt();
+        }else if (d.getCreatedAt()!=null){
+            return d.getCreatedAt();
+        }else{
+            return fd;
+        }
     }
 
     public BillItemFacade getBillItemFacade() {

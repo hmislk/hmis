@@ -83,7 +83,7 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiary">
+                                                <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
                                                                    style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
@@ -167,7 +167,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiary">
+                                            <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
@@ -246,7 +246,7 @@
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </p:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiary">
+                                            <p:column headerText="Expiry">
                                                 <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
                                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -532,33 +532,27 @@
                         <h:panelGroup   id="gpBillPreview" > 
 
                             <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
+                                <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>                            
 
                         </h:panelGroup>                     

@@ -51,7 +51,7 @@
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
                     <f:facet name="header">
-                        <p:outputLabel value="#{bookKeepingSummery.institution.name} Summery Report By Date" />
+                        <p:outputLabel value="#{bookKeepingSummery.institution.name} Summary Report By Date" />
                         <h:outputLabel value="From : "/>
                         <h:outputLabel value="#{bookKeepingSummery.fromDate}">
                             <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
@@ -96,7 +96,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Net Value" />
                         </f:facet>
-                        <h:outputLabel value="#{i.value1+i.value2+i.value3}">
+                        <h:outputLabel value="#{i.value1+i.value3}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
