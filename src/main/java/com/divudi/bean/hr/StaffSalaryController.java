@@ -469,7 +469,7 @@ public class StaffSalaryController implements Serializable {
     @EJB
     FinalVariables finalVariables;
 
-    public Long calculateOverTimeMinute() {
+  public Long calculateOverTimeMinute() {
         System.out.println("calculating over time in minutes");
         Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
         System.out.println("dateCount = " + dateCount);
@@ -528,7 +528,7 @@ public class StaffSalaryController implements Serializable {
 
         }
 
-//        System.err.println("OTSec " + overTimeSec);
+        System.err.println("OT Min " + (overTimeSec.longValue() / 60L));
         return (overTimeSec.longValue() / 60L);
     }
 

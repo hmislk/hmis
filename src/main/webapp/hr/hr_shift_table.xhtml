@@ -46,9 +46,12 @@
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print" ></p:printer>
                 </p:commandButton>
+                <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
+                    <p:printer target="print2" ></p:printer>
+                </p:commandButton>
             </h:panelGrid>
 
-            <p:panel>
+            <p:panel id="print2">
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">

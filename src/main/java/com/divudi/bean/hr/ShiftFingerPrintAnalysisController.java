@@ -1079,6 +1079,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     return false;
                 }
             }
+
+            if (ss.getShift().isHalfShift()) {
+                return false;
+            }
         }
 //        if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave() && !ss.getShift().isHalfShift()) {
 //            return false;
@@ -1092,44 +1096,60 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        }
         if (ss.getPreviousStaffShift() == null) {
             if (ss.getStartRecord() == null) {
-                message = date
-                        + " -> " + code
-                        + "  Has No Starting Record";
-                errorMessage.add(message);
+
+                System.out.println("ss.getLeaveType() = " + ss.getLeaveType());
+                System.out.println("ss.getShift().isHalfShift() = " + ss.getShift().isHalfShift());
+                
+                
+                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
+                    message = date
+                            + " -> " + code
+                            + "  Has No Starting Record";
+                    errorMessage.add(message);
 //                        System.err.println("SS " + ss.getId());
 //                    UtilityController.addErrorMessage(errorMessage);
-                shiftTable.getStaffShift().add(ss);
-                return true;
+                    shiftTable.getStaffShift().add(ss);
+                    return true;
+
+                }
+
             }
             if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                message = date
-                        + " -> " + code
-                        + " Some Starting Records Has No Time \r ";
-                errorMessage.add(message);
+                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
+                    message = date
+                            + " -> " + code
+                            + " Some Starting Records Has No Time \r ";
+                    errorMessage.add(message);
 //                    UtilityController.addErrorMessage(errorMessage);
-                shiftTable.getStaffShift().add(ss);
-                return true;
+                    shiftTable.getStaffShift().add(ss);
+                    return true;
+                }
+
             }
         }
 
         if (ss.getNextStaffShift() == null) {
             if (ss.getEndRecord() == null) {
-                message = date
-                        + " -> " + code
-                        + " Some End Records Has No Starting Record \r";
-                errorMessage.add(message);
-                shiftTable.getStaffShift().add(ss);
+                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
+                    message = date
+                            + " -> " + code
+                            + " Some End Records Has No Starting Record \r";
+                    errorMessage.add(message);
+                    shiftTable.getStaffShift().add(ss);
 //                    UtilityController.addErrorMessage(errorMessage);
-                return true;
+                    return true;
+                }
             }
             if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                message = date
-                        + " -> " + code
-                        + " Some End Records Has No Time \r ";
-                errorMessage.add(message);
-                shiftTable.getStaffShift().add(ss);
+                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
+                    message = date
+                            + " -> " + code
+                            + " Some End Records Has No Time \r ";
+                    errorMessage.add(message);
+                    shiftTable.getStaffShift().add(ss);
 //                    UtilityController.addErrorMessage(errorMessage);
-                return true;
+                    return true;
+                }
             }
         }
 

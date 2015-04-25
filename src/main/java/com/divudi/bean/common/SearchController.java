@@ -2364,8 +2364,12 @@ public class SearchController implements Serializable {
                 + " b.retired=false "
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
+                //Starting of newly added code 
+                + " and b.bill.refunded=false "
+                //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
-                + " and  b.bill.billDate between :fromDate and :toDate ";
+//                + " and  b.bill.billTime between :fromDate and :toDate ";
+                    + " and  b.bill.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(b.bill.patientEncounter.patient.person.name) like :patientName )";
@@ -2710,7 +2714,7 @@ public class SearchController implements Serializable {
         temMap.put("refType2", BillType.InwardProfessional);
         String sql = "Select b FROM BillItem b "
                 + " where b.retired=false "
-                + " and b.bill.cancelled=false "
+//                + " and b.bill.cancelled=false "
                 + " and type(b.bill)=:bclass"
                 + " and b.bill.billType=:bType "
                 + " and (b.referenceBill.billType=:refType "
