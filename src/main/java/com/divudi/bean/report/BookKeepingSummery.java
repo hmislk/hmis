@@ -3080,7 +3080,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2HosMonth();
-        createDoctorPaymentInward();
+        //createDoctorPaymentInward();
         /////////////////
         createDoctorPaymentInwardByCategoryAndSpeciality();
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());

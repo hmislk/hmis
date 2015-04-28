@@ -1047,6 +1047,8 @@ public class StaffAdditionalFormController implements Serializable {
             staffShiftExtra.setShift(shift);
         }
 //        }
+        
+        staffShiftExtra.setDayType(DayType.Extra);
         staffShiftExtra.setCreatedAt(new Date());
         staffShiftExtra.setCreater(sessionController.getLoggedUser());
         staffShiftExtra.setAdditionalForm(currentAdditionalForm);

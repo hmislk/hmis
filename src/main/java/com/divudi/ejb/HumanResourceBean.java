@@ -2628,8 +2628,19 @@ public class HumanResourceBean {
         double dbl = 0;
         for (StaffShift ss : list) {
             dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
+            System.out.println("if outside");
+                System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
+                System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
+                System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
+            
             if (dayType == DayType.Extra) {
                 dbl += roundOff(ss.getExtraTimeCompleteRecordVarified() * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
+                System.out.println("if inside");
+                System.out.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getExtraTimeCompleteRecordVarified());
+                
             }
         }
 
