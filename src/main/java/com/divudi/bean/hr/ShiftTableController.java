@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
 import com.divudi.ejb.CommonFunctions;
@@ -53,6 +54,7 @@ public class ShiftTableController implements Serializable {
     @Inject
     ShiftController shiftController;
     boolean all;
+    Staff staff;
 
     //FUNTIONS
     public void makeNull() {
@@ -118,23 +120,22 @@ public class ShiftTableController implements Serializable {
                 if (ss.getId() != null) {
                     boolean flag = false;
                     StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
-                    if (fetchStaffShift.getRoster() != null && ss.getRoster()!=null) {
+                    if (fetchStaffShift.getRoster() != null && ss.getRoster() != null) {
                         if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
                             flag = true;
                         }
                     }
 
-                    if (fetchStaffShift.getStaff() != null && ss.getStaff()!=null) {
+                    if (fetchStaffShift.getStaff() != null && ss.getStaff() != null) {
                         if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
                             flag = true;
                         }
                     }
-                    if(fetchStaffShift.getShift()!=null && ss.getShift()!=null){
-                       if (!fetchStaffShift.getShift().equals(ss.getShift())) {
-                        flag = true;
-                    } 
+                    if (fetchStaffShift.getShift() != null && ss.getShift() != null) {
+                        if (!fetchStaffShift.getShift().equals(ss.getShift())) {
+                            flag = true;
+                        }
                     }
-                    
 
                     if (flag) {
                         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
@@ -313,6 +314,72 @@ public class ShiftTableController implements Serializable {
         setDateRange(range + 1);
     }
 
+    public void fetchShiftTableByStaff() {
+        if (errorCheck()) {
+            return;
+        }
+        if (staff == null) {
+            UtilityController.addErrorMessage("Plaese Select Staff");
+            return;
+        }
+
+        shiftTables = new ArrayList<>();
+
+        Calendar nc = Calendar.getInstance();
+        nc.setTime(getFromDate());
+        Date nowDate = nc.getTime();
+
+        nc.setTime(getToDate());
+        nc.add(Calendar.DATE, 1);
+        Date tmpToDate = nc.getTime();
+
+        //CREATE FIRTS TABLE For Indexing Purpuse
+        ShiftTable netT;
+
+        while (tmpToDate.after(nowDate)) {
+            netT = new ShiftTable();
+            netT.setDate(nowDate);
+
+            Calendar calNowDate = Calendar.getInstance();
+            calNowDate.setTime(nowDate);
+
+            Calendar calFromDate = Calendar.getInstance();
+            calFromDate.setTime(getFromDate());
+
+            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
+                netT.setFlag(Boolean.TRUE);
+            } else {
+                netT.setFlag(Boolean.FALSE);
+            }
+
+//            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, roster);
+//
+//            for (StaffShift ss : staffShifts) {
+//                netT.getStaffShift().add(ss);
+//            }
+
+            List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
+            if (ss == null) {
+                UtilityController.addErrorMessage("No Staff Shift");
+                return;
+            } else {
+                netT.getStaffShift().addAll(ss);
+
+            }
+
+            shiftTables.add(netT);
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(nowDate);
+            c.add(Calendar.DATE, 1);
+            nowDate = c.getTime();
+
+        }
+
+        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        setDateRange(range + 1);
+    }
+
     public void selectRosterLstener() {
         makeTableNull();
         getShiftController().setCurrentRoster(roster);
@@ -442,6 +509,14 @@ public class ShiftTableController implements Serializable {
 
     public void setStaffShift(StaffShift staffShift) {
         this.staffShift = staffShift;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
 }
