@@ -9,7 +9,7 @@
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
 
                 <h:form>
@@ -29,9 +29,9 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by day" action="report_lab_by_date_summery.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee"/>
-                            
+
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Investigation Summaries with Credit" />
@@ -44,12 +44,18 @@
                                              value="Daily OPD Fee Summery" 
                                              action="report_lab_by_date_summery_cash_credit.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="Daily OPD Fee Summery with Counts" 
+                                             action="report_lab_by_date_summery_cash_credit_counts.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Daily Inward Fee Summery" 
+                                             action="daily_inward_fee_summery.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="Daily Inward Fee Summery with Counts" 
                                              action="daily_inward_fee_summery.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Summary" />
@@ -58,7 +64,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/> 
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Summary Inward" />
