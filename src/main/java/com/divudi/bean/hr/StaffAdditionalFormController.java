@@ -65,8 +65,8 @@ public class StaffAdditionalFormController implements Serializable {
     Staff staff;
     Staff approvedStaff;
     Date fromDate;
-    Date toDate;
-
+    Date toDate;    
+    
     public void timeSelectListener() {
         if (getCurrentAdditionalForm().getStaffShift() == null) {
             return;
@@ -1047,7 +1047,8 @@ public class StaffAdditionalFormController implements Serializable {
             staffShiftExtra.setShift(shift);
         }
 //        }
-
+        
+        staffShiftExtra.setDayType(DayType.Extra);
         staffShiftExtra.setCreatedAt(new Date());
         staffShiftExtra.setCreater(sessionController.getLoggedUser());
         staffShiftExtra.setAdditionalForm(currentAdditionalForm);
@@ -1326,4 +1327,6 @@ public class StaffAdditionalFormController implements Serializable {
     public void setAditionalWithTimes(List<AditionalWithTime> aditionalWithTimes) {
         this.aditionalWithTimes = aditionalWithTimes;
     }
+
+    
 }

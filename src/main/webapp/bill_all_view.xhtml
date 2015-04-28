@@ -27,8 +27,8 @@
                                         <h:outputLabel value="#{billSearch.billSearch.patient.person.nameWithTitle }" ></h:outputLabel>
                                         <h:outputLabel value="BHT No:" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.patientEncounter.bhtNo}" ></h:outputLabel>
-                                        <h:outputLabel value="Staff ​Name:" rendered="#{billSearch.billSearch.staff}"></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }" rendered="#{billSearch.billSearch.staff}"></h:outputLabel> 
+                                        <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }"></h:outputLabel> 
                                         <h:outputLabel value="Age" />
                                         <h:outputLabel value="#{billSearch.billSearch.patient.age}"  />
                                         <h:outputLabel value="Sex" >
@@ -48,6 +48,18 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        
+                                        <h:outputLabel value="Billed bill:" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.id}" />
+                                        
+                                        <h:outputLabel value="Billed bill No (Ins Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.insId}" />
+
+                                        <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" />
+                                        
+                                        <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.createdAt}" />
                                         
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
