@@ -3253,7 +3253,7 @@ public class BookKeepingSummery implements Serializable {
                 return "";
             } else {
                 DecimalFormat df = new DecimalFormat("#,##0.00");
-                return df.format(Math.abs(specialityValie));
+                return df.format(specialityValie);
             }
         }
 
