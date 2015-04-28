@@ -4,6 +4,7 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:f="http://java.sun.com/jsf/core">
 
 
@@ -15,47 +16,28 @@
                 <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
                 <h:outputLabel value="To Date"/>
                 <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
-                <h:outputLabel value="Roster"/>
-                <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
-                    <f:selectItem itemLabel="Select Roster"/>
-                    <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                    <f:ajax event="change" execute="@this" render="lst" 
-                            listener="#{shiftTableController.selectRosterLstener()}" />
-                </p:selectOneMenu>
-
-
+                <h:outputLabel value="Employee : "/>
+                <hr:completeStaff value="#{shiftTableController.staff}"/>
             </h:panelGrid>
 
-            <h:panelGrid columns="4">                
-                <p:commandButton ajax="false" value="Fill New"
-                                 actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.createShiftTable()}"
-                                 onclick="onSubmitButton();" />   
+            <h:panelGrid columns="6">                
                 <p:commandButton ajax="false" value="Fill Old Roster"
                                  actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.fetchShiftTable()}"
+                                 action="#{shiftTableController.fetchShiftTableByStaff()}"
                                  onclick="onSubmitButton();" />   
-                <p:commandButton ajax="false" value="Hide" 
-                                 action="#{shiftTableController.hide}" onclick="onSubmitButton();" />
-                <p:commandButton ajax="false" value="Visible" 
-                                 action="#{shiftTableController.visible}" onclick="onSubmitButton();" />
-                <p:commandButton ajax="false" value="Save"
-                                 action="#{shiftTableController.save}" onclick="onSubmitButton();"/>
-                <p:commandButton ajax="false" value="Clear" 
-                                 action="#{shiftTableController.makeNull()}" onclick="onSubmitButton();" />
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print" ></p:printer>
                 </p:commandButton>
                 <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
                     <p:printer target="print2" ></p:printer>
                 </p:commandButton>
-                <p:commandButton value="Go to Individual Roster Table" ajax="false" action="hr_shift_table_by_staff" actionListener="#{shiftTableController.makeNull()}"  >
+                <p:commandButton value="Go to Back" ajax="false" action="hr_shift_table" actionListener="#{shiftTableController.makeNull()}"  >
                 </p:commandButton>
             </h:panelGrid>
 
             <p:panel id="print2">
                 <f:facet name="header">
-                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value="Roster Of #{shiftTableController.staff.person.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -72,6 +54,9 @@
                         </p:column>
                         <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
                             <h:outputLabel value="#{sts.staff.code}"/>                           
+                        </p:column>
+                        <p:column headerText="Staff Roster" rendered="#{data.flag eq true}" >                        
+                            <h:outputLabel value="#{sts.roster.name}"/>                           
                         </p:column>
 
                         <p:column rendered="#{data.date ne null}">
@@ -137,7 +122,7 @@
 
             <p:panel id="print">
                 <f:facet name="header">
-                    <h:outputLabel value=" Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value=" Roster Of #{shiftTableController.staff.person.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
