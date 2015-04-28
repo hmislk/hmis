@@ -1300,4 +1300,20 @@ public class StaffShift implements Serializable {
         this.autoLeave = autoLeave;
     }
 
+    public List<StaffShift> getReferenceStaffShiftLateIns() {
+        return referenceStaffShiftLateIns;
+    }
+
+    public void setReferenceStaffShiftLateIns(List<StaffShift> referenceStaffShiftLateIns) {
+        this.referenceStaffShiftLateIns = referenceStaffShiftLateIns;
+    }
+
+    public List<StaffShift> getReferenceStaffShiftEarlyOuts() {
+        return referenceStaffShiftEarlyOuts;
+    }
+
+    public void setReferenceStaffShiftEarlyOuts(List<StaffShift> referenceStaffShiftEarlyOuts) {
+        this.referenceStaffShiftEarlyOuts = referenceStaffShiftEarlyOuts;
+    }
+
 }
