@@ -71,7 +71,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     StaffLeave staffLeave;
     List<StaffLeave> staffLeaves;
-    
+
     boolean withOutretRierd;
 
     public ReportKeyWord getReportKeyWord() {
@@ -242,9 +242,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
 
         return stf;
-        
-        //Need to Add toLogicTo Date  
 
+        //Need to Add toLogicTo Date  
     }
 
     public void calLeaveCount() {
@@ -278,11 +277,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         if (staffLeaveEntitle != null) {
             leaveEntitle = staffLeaveEntitle.getCount();
+            leaved = humanResourceBean.calStaffLeave(getCurrentLeaveForm().getStaff(), leaveTypeLocal,
+                    staffLeaveEntitle.getFromDate(),
+                    staffLeaveEntitle.getToDate());
         }
-
-        leaved = humanResourceBean.calStaffLeave(getCurrentLeaveForm().getStaff(), leaveTypeLocal,
-                getCommonFunctions().getFirstDayOfYear(new Date()),
-                getCommonFunctions().getLastDayOfYear(new Date()));
 
     }
 
@@ -534,10 +532,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
         sql = " select l from LeaveForm l "
                 + " where "
                 + " l.createdAt between :fd and :td ";
-        
+
         if (withOutretRierd) {
-            sql+=" and l.retired=false ";
-        }else{
+            sql += " and l.retired=false ";
+        } else {
 //            sql+=" and l.retired=true ";
         }
 
@@ -702,10 +700,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         sql = " select l from LeaveForm l where "
                 + " l.approvedAt between :fd and :td ";
-        
+
         if (withOutretRierd) {
-            sql+=" and l.retired=false ";
-        }else{
+            sql += " and l.retired=false ";
+        } else {
 //            sql+=" and l.retired=true ";
         }
 
@@ -730,7 +728,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createleaveTableByShiftDate() {
         String sql;
         Map m = new HashMap();
@@ -768,10 +766,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 + " ((l.fromDate between :fd and :td)"
                 + " or(l.toDate between :fd and :td)) "
                 + " and type(l)!=:class";
-        
+
         if (withOutretRierd) {
-            sql+=" and l.retired=false ";
-        }else{
+            sql += " and l.retired=false ";
+        } else {
 //            sql+=" and l.retired=true ";
         }
 
