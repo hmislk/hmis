@@ -2441,12 +2441,12 @@ public class PharmacySaleReport implements Serializable {
             String1Value3 newRow = new String1Value3();
             newRow.setString(formattedDate);
 
-            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution);
-            proTot = calBillFee(nowDate, FeeType.Staff);
-            regentFee = calBillFee(nowDate, FeeType.Chemical);
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution,btps);
+            proTot = calBillFee(nowDate, FeeType.Staff,btps);
+            regentFee = calBillFee(nowDate, FeeType.Chemical,btps);
 
             count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
-                    commonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
+                    CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
             newRow.setValue1(hospitalFee);
