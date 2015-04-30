@@ -7,15 +7,19 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import static com.divudi.data.BillClassType.CancelledBill;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionTypeFacade;
@@ -69,6 +73,12 @@ public class InwardReportController implements Serializable {
     List<PatientEncounter> patientEncounters;
 
     Bill bill;
+    List<BillItem> billedBill;
+    List<BillItem> cancelledBill;
+    List<BillItem> refundBill;
+    double totalBilledBill;
+    double totalCancelledBill;
+    double totalRefundBill;
     @Inject
     SessionController sessionController;
     List<BillItem> billItems;
@@ -77,22 +87,22 @@ public class InwardReportController implements Serializable {
     @EJB
     BillItemFacade billItemFacade;
     // for disscharge book
-    boolean dischargeDate=true;
-    boolean bhtNo=true;
-    boolean paymentMethord=true;
-    boolean creditCompany=true;
-    boolean person=true;
-    boolean guardian=true;
-    boolean room=true;
-    boolean refDoctor=true;
-    boolean AddmitDetails=true;
-    boolean billedBy=true;
-    boolean finalBillTotal=true;
-    boolean paidByPatient=true;
-    boolean creditPaidAmount=true;
-    boolean dueAmount=true;
-    boolean calculatedAmount=true;
-    boolean differentAmount=true;
+    boolean dischargeDate = true;
+    boolean bhtNo = true;
+    boolean paymentMethord = true;
+    boolean creditCompany = true;
+    boolean person = true;
+    boolean guardian = true;
+    boolean room = true;
+    boolean refDoctor = true;
+    boolean AddmitDetails = true;
+    boolean billedBy = true;
+    boolean finalBillTotal = true;
+    boolean paidByPatient = true;
+    boolean creditPaidAmount = true;
+    boolean dueAmount = true;
+    boolean calculatedAmount = true;
+    boolean differentAmount = true;
     // for disscharge book
 
     public List<PatientEncounter> getPatientEncounters() {
@@ -419,7 +429,7 @@ public class InwardReportController implements Serializable {
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
-//                + " and b.paymentFinalized=true "
+                //                + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td ";
 
         if (admissionType != null) {
@@ -739,6 +749,86 @@ public class InwardReportController implements Serializable {
         }
 
     }
+    
+    public void fillProfessionalPaymentDone(){
+        billedBill=createProfessionalPaymentTableInwardAll(new BilledBill());
+        cancelledBill=createProfessionalPaymentTableInwardAll(new CancelledBill());
+        refundBill=createProfessionalPaymentTableInwardAll(new RefundBill());
+        
+        totalBilledBill=calTotalCreateProfessionalPaymentTableInwardAll(new BilledBill());
+        totalCancelledBill=calTotalCreateProfessionalPaymentTableInwardAll(new CancelledBill());
+        totalCancelledBill=calTotalCreateProfessionalPaymentTableInwardAll(new RefundBill());
+    }
+
+    List<BillItem> createProfessionalPaymentTableInwardAll(Bill bill) {
+        billItems = null;
+        HashMap temMap = new HashMap();
+        temMap.put("bclass", bill.getClass());
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bType", BillType.PaymentBill);
+        temMap.put("refType", BillType.InwardBill);
+        temMap.put("refType2", BillType.InwardProfessional);
+        String sql = "Select b FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+//                + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:bclass"                
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (admissionType != null) {
+            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
+            temMap.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
+            temMap.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            temMap.put("cc", institution);
+        }
+
+        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    public double calTotalCreateProfessionalPaymentTableInwardAll(Bill bill) {
+        billItems = null;
+        HashMap temMap = new HashMap();
+        temMap.put("bclass", bill.getClass());
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bType", BillType.PaymentBill);
+        temMap.put("refType", BillType.InwardBill);
+        temMap.put("refType2", BillType.InwardProfessional);
+        String sql = "Select sum(b.netValue) FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+//                + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:bclass"
+                + " and (b.referenceBill.billType=:refType "
+                + " or b.referenceBill.billType=:refType2) "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (admissionType != null) {
+            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
+            temMap.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
+            temMap.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            temMap.put("cc", institution);
+        }
+
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public Institution getInstitution() {
         return institution;
@@ -786,6 +876,56 @@ public class InwardReportController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+
+    public List<BillItem> getBilledBill() {
+        return billedBill;
+    }
+
+    public void setBilledBill(List<BillItem> billedBill) {
+        this.billedBill = billedBill;
+    }
+
+    public List<BillItem> getCancelledBill() {
+        return cancelledBill;
+    }
+
+    public void setCancelledBill(List<BillItem> cancelledBill) {
+        this.cancelledBill = cancelledBill;
+    }
+
+    public List<BillItem> getRefundBill() {
+        return refundBill;
+    }
+
+    public void setRefundBill(List<BillItem> refundBill) {
+        this.refundBill = refundBill;
+    }
+
+    public double getTotalBilledBill() {
+        return totalBilledBill;
+    }
+
+    public void setTotalBilledBill(double totalBilledBill) {
+        this.totalBilledBill = totalBilledBill;
+    }
+
+    public double getTotalCancelledBill() {
+        return totalCancelledBill;
+    }
+
+    public void setTotalCancelledBill(double totalCancelledBill) {
+        this.totalCancelledBill = totalCancelledBill;
+    }
+
+    public double getTotalRefundBill() {
+        return totalRefundBill;
+    }
+
+    public void setTotalRefundBill(double totalRefundBill) {
+        this.totalRefundBill = totalRefundBill;
+    }
+    
+    
 
     public Date getToDate() {
         if (toDate == null) {
