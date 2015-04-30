@@ -848,6 +848,11 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
+      
+        System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
+        System.out.println("bill = " + bill);
+        System.out.println("bill.getInstitution() = " + bill.getInstitution());
+        
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
