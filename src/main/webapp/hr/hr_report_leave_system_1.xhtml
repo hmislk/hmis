@@ -28,7 +28,7 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                              <h:outputLabel value="Institution : "/>
+                            <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
@@ -51,7 +51,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                           <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
                                     <f:facet name="header">
                                     <h:outputLabel value="Leave Report"/>
                                 </f:facet>
@@ -141,14 +141,40 @@
                               
                                       <p:inputText value="#{ss.retireComments}"/>                                    
                                 </p:column> 
-                                <p:column headerText="Delete" exportable="false" rendered="false">  
-                                    <f:facet name="header">
-                                    <h:outputLabel value="Delete"/>
-                                </f:facet>
-                          
-                                    <p:commandButton  disabled="#{ss.retired}" ajax="false" value="Delete" action="#{hrReportController.delete(ss)}"></p:commandButton>                                    
-                                </p:column>
-
+                               <p:column>
+                                   #{ss.staffShift.shiftStartTime}
+                               </p:column>
+                                <p:column>
+                                   #{ss.staffShift.shiftEndTime}
+                               </p:column>
+                               <p:column>
+                                   <p:dataTable value="#{ss.staffShift.referenceStaffShiftLateIns}" var="i">
+                                       <p:column >
+                                           <p:outputLabel value="#{i.startRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                       <p:column >
+                                           <p:outputLabel value="#{i.endRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                   </p:dataTable>
+                               </p:column>
+                                <p:column>
+                                   <p:dataTable value="#{ss.staffShift.referenceStaffShiftEarlyOuts}" var="i">
+                                       <p:column >
+                                           <p:outputLabel value="#{i.startRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                       <p:column >
+                                           <p:outputLabel value="#{i.endRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                   </p:dataTable>
+                               </p:column>
                             </p:dataTable>
                         </p:panel>
 

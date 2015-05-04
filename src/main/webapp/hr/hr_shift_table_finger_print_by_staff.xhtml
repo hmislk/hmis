@@ -73,18 +73,27 @@
                     <p:column headerText="Shift Name" styleClass="singleLine">
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
-                    <p:column>
+                    <p:column headerText="ID">
                         #{sts.id}
                     </p:column>
                      
-                    <p:column>
-                        #{sts.shiftStartTime}
+                    <p:column headerText="Shift Start">
+                        <h:outputLabel value="#{sts.shiftStartTime}" >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
                     </p:column>
-                     <p:column>
-                        #{sts.shiftEndTime}
+                    <p:column headerText="Shift End Time">
+                         <h:outputLabel value="#{sts.shiftEndTime}" >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                        
                     </p:column>
                     <p:column headerText="Leave/Replace" styleClass="singleLine">                       
                         <h:outputLabel value="#{sts.leaveType}"  />                     
+                    </p:column>
+                    
+                     <p:column headerText="Halfday" styleClass="singleLine">                       
+                        <h:outputLabel value="#{sts.shift.halfShift}"  />                     
                     </p:column>
 
                     <p:column>

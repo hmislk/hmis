@@ -50,9 +50,10 @@ public class BillReportBean {
             sql += " and bi.bill.toInstitution=:ins ";
             m.put("ins", institution);
         }
+        
         if (department != null) {
             sql += " and bi.bill.toDepartment=:dep ";
-            m.put("dep", institution);
+            m.put("dep", department);
         }
         
         List<BillType> bts = Arrays.asList(billTypes);

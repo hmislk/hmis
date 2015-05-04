@@ -43,7 +43,7 @@
 
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" 
-                                     action="#{pharmacySaleReport.createDailyInwardFeeSummery}"/>
+                                     action="#{pharmacySaleReport.createDailyInwardFeeSummeryWithoutCounts}"/>
                     <p:commandButton ajax="false" value="Excel" 
                                      styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
@@ -59,7 +59,7 @@
                     </f:facet>
                     <p:columnGroup type="header">
                         <p:row >
-                            <p:column colspan="6" >
+                            <p:column colspan="5" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Institution - #{pharmacySaleReport.institution.name}" rendered="#{pharmacySaleReport.institution ne null}" />
                                     <p:outputLabel value="Department - #{pharmacySaleReport.department.name}" rendered="#{pharmacySaleReport.department ne null}" />
@@ -67,7 +67,7 @@
                             </p:column>
                         </p:row>
                         <p:row >
-                            <p:column colspan="6" >
+                            <p:column colspan="5" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="From : "/>
                                     <h:outputLabel value="#{pharmacySaleReport.fromDate}">
@@ -78,7 +78,7 @@
                             </p:column>
                         </p:row>
                         <p:row >
-                            <p:column colspan="7" >
+                            <p:column colspan="5" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="To :"/>
                                     <h:outputLabel value="#{pharmacySaleReport.toDate}">
@@ -90,7 +90,6 @@
                         </p:row>
                         <p:row>
                             <p:column headerText="Date" ></p:column>
-                            <p:column headerText="Item Count" ></p:column>
                             <p:column headerText="Hospital Fee" ></p:column>
                             <p:column headerText="Reagent Fee" ></p:column>
                             <p:column headerText="Professional Fee" ></p:column>
@@ -104,14 +103,6 @@
                             <h:outputLabel value="Date" />
                         </f:facet>
                         <h:outputLabel value="#{i.string}" />
-                    </p:column>
-                    <p:column headerText="Count" styleClass="averageNumericColumn">
-                        <f:facet name="header">
-                            <h:outputLabel value="Count" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.longValue1}">
-                            <f:convertNumber pattern="#,##0" />
-                        </h:outputLabel>
                     </p:column>
                     <p:column headerText="Hospital Fee" styleClass="averageNumericColumn">
                         <f:facet name="header">
@@ -150,13 +141,6 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column footerText="Total  "/>
-                            <p:column footerText="#{pharmacySaleReport.billedSummery.count}" style="text-align: right;">
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{pharmacySaleReport.billedSummery.count}">
-                                        <f:convertNumber pattern="#,##0" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
                             <p:column footerText="#{pharmacySaleReport.billedSummery.billedTotal}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal}">

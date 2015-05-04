@@ -87,6 +87,13 @@
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
                 </p:column>
                 
+                <p:column headerText="Surgery Name">
+                    <f:facet name="header">
+                        <h:outputLabel value="Surgery Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.forwardReferenceBill.procedure.item.name}" />
+                </p:column>
+                
                 <p:column headerText="Discharged Date">
                     <f:facet name="header">
                         <h:outputLabel value="Discharged Date" />
