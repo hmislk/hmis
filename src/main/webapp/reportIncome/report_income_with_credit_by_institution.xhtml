@@ -29,19 +29,19 @@
                                     <h:outputLabel value="From Date" />
                                     <p:spacer width="10" height="0"/>
 
-                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
                                     <p:spacer width="30" height="0"/>
                                     <h:outputLabel value="To Date" />
                                      <p:spacer width="10" height="0"/>
-                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
                                       <p:spacer width="20" height="0"/>
                                     <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
-                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
+                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
                                                      requiredMessage="You must select a institution" >
                                         <f:selectItem itemLabel="Select Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                                     </p:selectOneMenu>
 
                                      <p:spacer width="140" height="0"/>
@@ -69,27 +69,27 @@
 
                             <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
                             <br/>
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.institution.name}"  >
+                            <h:outputLabel value="#{institutionLabSumeryController.institution.name}"  >
                             </h:outputLabel>
                             <h:outputLabel value=" - Handover Report" />
                             <br/>
                             <h:outputLabel value="From : " />
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.fromDate}"  >
+                            <h:outputLabel value="#{institutionLabSumeryController.fromDate}"  >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <h:outputLabel value="To : "  ></h:outputLabel>
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.toDate}" >
+                            <h:outputLabel value="#{institutionLabSumeryController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
 
                         </p:panel>
 
 
-                        <p:dataTable id="tbl" value="#{labReportSearchByInstitutionController.labBillsOwn}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                        <p:dataTable id="tbl" value="#{institutionLabSumeryController.labBillsOwn}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                             <f:facet name="header">
                                 <h:outputLabel value="Hand Over Report "/>
-                                <h:outputLabel value=" #{labReportSearchByInstitutionController.institution.name}"/>
+                                <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/>
                             </f:facet>
 
                             <p:column headerText="No">
@@ -157,25 +157,25 @@
                                 <p:row>
                                     <p:panelGrid columns="2" style="text-align: right;">
                                         <h:outputLabel  value="Gross Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.hosTot + labReportSearchByInstitutionController.profTot }" style="text-align: right;" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.hosTot + institutionLabSumeryController.profTot }" style="text-align: right;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.disTot}" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.disTot}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.netTot}" >                                        
+                                        <h:outputLabel value="#{institutionLabSumeryController.netTot}" >                                        
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Professional Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.profTot}" style="text-align: right;" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.profTot}" style="text-align: right;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="" ></h:outputLabel>
                                         <h:outputLabel value="" ></h:outputLabel>
                                         <h:outputLabel style="font-weight: bolder; " value="Net Department Income"/>
-                                        <h:outputLabel style="font-weight: bolder; " value="#{labReportSearchByInstitutionController.labHandover}" >
+                                        <h:outputLabel style="font-weight: bolder; " value="#{institutionLabSumeryController.labHandover}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:panelGrid>

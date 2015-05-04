@@ -151,7 +151,7 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
+            newRow.setInstitution(ins);
             setInwardValues(ins, newRow, PaymentMethod.Credit);
 
             if (newRow.getValue1() != 0

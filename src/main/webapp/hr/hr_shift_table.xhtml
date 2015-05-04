@@ -26,7 +26,7 @@
 
             </h:panelGrid>
 
-            <h:panelGrid columns="6">                
+            <h:panelGrid columns="4">                
                 <p:commandButton ajax="false" value="Fill New"
                                  actionListener="#{shiftTableController.makeTableNull()}"
                                  action="#{shiftTableController.createShiftTable()}"
@@ -46,9 +46,14 @@
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print" ></p:printer>
                 </p:commandButton>
+                <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
+                    <p:printer target="print2" ></p:printer>
+                </p:commandButton>
+                <p:commandButton value="Go to Individual Roster Table" ajax="false" action="hr_shift_table_by_staff" actionListener="#{shiftTableController.makeNull()}"  >
+                </p:commandButton>
             </h:panelGrid>
 
-            <p:panel>
+            <p:panel id="print2">
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">

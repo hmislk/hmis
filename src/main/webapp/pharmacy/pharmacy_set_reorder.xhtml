@@ -16,7 +16,7 @@
                         <h:outputText value="Institution" ></h:outputText>
                         <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" >
                             <f:selectItem itemLabel="Please select a Institution"/>
-                            <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                             <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                         </p:selectOneMenu>
                         <h:outputText value="Department" ></h:outputText>

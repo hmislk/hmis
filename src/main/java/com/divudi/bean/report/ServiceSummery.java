@@ -221,6 +221,52 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public double calMarginTot(BillType billType, FeeType feeType) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(bi.feeMargin) FROM BillFee bi "
+                + " where bi.bill.billType= :bTp "
+                + " and bi.fee.feeType=:ftp "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        if (service != null) {
+            sql += " and bi.billItem.item=:itm ";
+            temMap.put("itm", getService());
+        }
+
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", billType);
+        temMap.put("ftp", feeType);
+
+        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public double calServiceTot(BillType billType, Item item, FeeType feeType, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
@@ -879,6 +925,7 @@ public class ServiceSummery implements Serializable {
             bi.setBillItem(i);
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setHospitalFeeMargin(calFeeMargin(i, FeeType.OwnInstitution));
             bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             serviceSummery.add(bi);
@@ -889,6 +936,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
+        hosFeeMarginTotal=calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
     }
 
@@ -935,6 +983,22 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    private double calFeeMargin(BillItem bi, FeeType feeType) {
+        HashMap hm = new HashMap();
+        String sql = "Select sum(f.feeMargin) from "
+                + " BillFee f where "
+                + " f.retired=false "
+                + " and f.billItem=:b and "
+                + " f.fee.feeType=:ftp";
+        hm.put("b", bi);
+        hm.put("ftp", feeType);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    
 
     private double calFeeFeeValue(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();

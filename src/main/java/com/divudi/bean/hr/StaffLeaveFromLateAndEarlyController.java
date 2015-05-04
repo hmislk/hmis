@@ -200,7 +200,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQLWithoutCache(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }
 
     public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from) {
@@ -249,7 +249,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQLWithoutCache(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }
 
     public FinalVariables getFinalVariables() {

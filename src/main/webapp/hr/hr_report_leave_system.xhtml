@@ -134,14 +134,14 @@
                                 <p:outputLabel value="#{ss.form.comments}" ></p:outputLabel>
                                     
                                 </p:column> 
-                                <p:column headerText="Delete Comments" >
+                                <p:column headerText="Delete Comments" rendered="false">
                                       <f:facet name="header">
                                     <h:outputLabel value="Delete Comments"/>
                                 </f:facet>
                               
                                       <p:inputText value="#{ss.retireComments}"/>                                    
                                 </p:column> 
-                                <p:column headerText="Delete" exportable="false" >  
+                                <p:column headerText="Delete" exportable="false" rendered="false">  
                                     <f:facet name="header">
                                     <h:outputLabel value="Delete"/>
                                 </f:facet>

@@ -45,7 +45,13 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{reportsTransfer.transferBills}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" 
+                                        value="#{reportsTransfer.transferBills}" var="i"  
+                                        rows="20"
+                                        paginator="true"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="20, 50, 100" 
+                                        >
                                 <f:facet name="header">
                                     <h:outputLabel value="Transfer Receive From "/>
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/> 
