@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
 
@@ -65,16 +65,25 @@
                                 <p:outputLabel value="#{r.str3}" style="#{r.boldStr3?'font-weight:bold;':''}"></p:outputLabel>
                             </p:column>
                             <p:column styleClass="averageNumericColumn">
-                                <p:outputLabel value="#{r.dbl1}" style="#{r.boldDbl1?'font-weight:bold;':''}"></p:outputLabel>
+                                <h:outputLabel value="#{r.dbl1}" style="#{r.boldDbl1?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
                             </p:column>
                             <p:column styleClass="averageNumericColumn">
-                                <p:outputLabel value="#{r.dbl2}" style="#{r.boldDbl2?'font-weight:bold;':''}"></p:outputLabel>
+                                <h:outputLabel value="#{r.dbl2}" style="#{r.boldDbl2?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
                             </p:column>
                             <p:column styleClass="averageNumericColumn">
-                                <p:outputLabel value="#{r.dbl3}" style="#{r.boldDbl3?'font-weight:bold;':''}"></p:outputLabel>
+                                <h:outputLabel value="#{r.dbl3}" style="#{r.boldDbl3?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
                             </p:column>
                             <p:column styleClass="averageNumericColumn">
-                                <p:outputLabel value="#{r.dbl4}" style="#{r.boldDbl4?'font-weight:bold;':''}"></p:outputLabel>
+                                <h:outputLabel value="#{r.dbl4}" style="#{r.boldDbl4?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                              
                             </p:column>
                             <p:columnGroup type="footer" rendered="true" >
                                 <p:row >

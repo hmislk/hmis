@@ -72,7 +72,7 @@ public class RevenueController implements Serializable {
         grandTotal = 0.0;
         for (Institution ins : institutions) {
             System.out.println("ins = " + ins.getName());
-
+            r = new StringsDoublesRow();
             r.setStr1(ins.getName());
             r.setBoldStr1(true);
             List<Department> depts = getDepartmentController().getInstitutionDepatrments(ins);
@@ -110,10 +110,10 @@ public class RevenueController implements Serializable {
         System.out.println("institutions = " + institutions);
         StringsDoublesRow r = new StringsDoublesRow();
         grandTotal = 0.0;
-        cashTotal=0.0;
-        creditTotal=0.0;
-        creditCardTotal=0.0;
-        chequeTotal=0.0;
+        cashTotal = 0.0;
+        creditTotal = 0.0;
+        creditCardTotal = 0.0;
+        chequeTotal = 0.0;
         for (Institution ins : institutions) {
             double insTotal = 0.0;
             double insCash = 0.0;
@@ -121,7 +121,7 @@ public class RevenueController implements Serializable {
             double insCard = 0.0;
             double insCheque = 0.0;
             System.out.println("ins = " + ins.getName());
-
+            r = new StringsDoublesRow();
             r.setStr1(ins.getName());
             r.setBoldStr1(true);
             List<Department> depts = getDepartmentController().getInstitutionDepatrments(ins);
@@ -224,7 +224,7 @@ public class RevenueController implements Serializable {
                 // Expenses
                 //
                 r.setStr3("Expenses");
-                
+
                 rows.add(r);
                 r = new StringsDoublesRow();
                 //TODO:
@@ -245,39 +245,37 @@ public class RevenueController implements Serializable {
 
                 rows.add(r);
                 r = new StringsDoublesRow();
-                
-                insCash+=depCash;
-                insCredit+=depCredit;
-                insCard+=depCard;
-                insCheque+=depCheque;
+
+                insCash += depCash;
+                insCredit += depCredit;
+                insCard += depCard;
+                insCheque += depCheque;
             }
-            
-            
+
             r = new StringsDoublesRow();
             r.setStr2(ins.getName() + " subtotal");
             r.setDbl1(insCash);
             r.setDbl2(insCredit);
             r.setDbl3(insCard);
             r.setDbl4(insCheque);
-            
+
             r.setBoldStr2(true);
             r.setBoldDbl1(true);
             r.setBoldDbl2(true);
             r.setBoldDbl3(true);
             r.setBoldDbl4(true);
-            
+
             rows.add(r);
             r = new StringsDoublesRow();
-            
-            cashTotal+=insCash;
-            creditTotal+=insCredit;
-            creditCardTotal+=insCard;
-            chequeTotal+=insCheque;
-            
-            
+
+            cashTotal += insCash;
+            creditTotal += insCredit;
+            creditCardTotal += insCard;
+            chequeTotal += insCheque;
+
         }
-        
-        grandTotal = cashTotal + creditTotal + creditCardTotal + chequeTotal ;
+
+        grandTotal = cashTotal + creditTotal + creditCardTotal + chequeTotal;
 
     }
 

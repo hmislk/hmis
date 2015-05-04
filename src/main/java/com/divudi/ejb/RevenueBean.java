@@ -160,12 +160,12 @@ public class RevenueBean {
         }
 
         if (department != null) {
-            sql += " and bf.item.department =:dept";
+            sql += " and bf.bill.department =:dept";
             m.put("dept", department);
         }
 
         if (institution != null) {
-            sql += " and (bf.item.institution =:ins or bf.item.department.institution =:ins)";
+            sql += " and (bf.bill.institution =:ins or bf.bill.department.institution =:ins)";
             m.put("ins", institution);
         }
 
