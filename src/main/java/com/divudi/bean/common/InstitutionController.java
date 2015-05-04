@@ -167,7 +167,7 @@ public class InstitutionController implements Serializable {
         return getFacade().findBySQL(sql, hm);
     }
 
-    public List<Institution> getCompany() {
+    public List<Institution> getCompanies() {
         String sql;
         HashMap hm = new HashMap();
         hm.put("type", InstitutionType.Company);
@@ -341,7 +341,7 @@ public class InstitutionController implements Serializable {
         return items;
     }
 
-//    public List<Institution> getCompany() {
+//    public List<Institution> getCompanies() {
 //        String sql = "select c from Institution c where c.retired=false and c.institutionType=:tp  order by c.name";
 //        HashMap hm = new HashMap();
 //        hm.put("tp", InstitutionType.Company);

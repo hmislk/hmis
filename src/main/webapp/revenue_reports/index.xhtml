@@ -3,7 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html">
 
     <body>
@@ -13,8 +12,10 @@
             <ui:define name="content">
                 <p:panel header="Revenue Reports" >
                     <h:form>
-                        <p:commandButton ajax="false" value="Revenue Summery" ></p:commandButton>
-                        
+                        <h:panelGrid columns="1" >
+                            <p:commandButton ajax="false" value="Revenue Summery" action="revenue_summery" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Revenue Report" action="revenue_report" ></p:commandButton>
+                        </h:panelGrid>
                     </h:form>
                 </p:panel>
             </ui:define>
