@@ -110,6 +110,10 @@ public class RevenueController implements Serializable {
         System.out.println("institutions = " + institutions);
         StringsDoublesRow r = new StringsDoublesRow();
         grandTotal = 0.0;
+        cashTotal=0.0;
+        creditTotal=0.0;
+        creditCardTotal=0.0;
+        chequeTotal=0.0;
         for (Institution ins : institutions) {
             double insTotal = 0.0;
             double insCash = 0.0;
@@ -220,7 +224,7 @@ public class RevenueController implements Serializable {
                 // Expenses
                 //
                 r.setStr3("Expenses");
-
+                
                 rows.add(r);
                 r = new StringsDoublesRow();
                 //TODO:
@@ -229,10 +233,15 @@ public class RevenueController implements Serializable {
                 // Expenses
                 //
                 r.setStr3(dept.getName() + " Subtotal");
+                r.setBoldStr3(true);
                 r.setDbl1(depCash);
+                r.setBoldDbl1(true);
                 r.setDbl2(depCredit);
+                r.setBoldDbl2(true);
                 r.setDbl3(depCard);
+                r.setBoldDbl3(true);
                 r.setDbl4(depCheque);
+                r.setBoldDbl4(true);
 
                 rows.add(r);
                 r = new StringsDoublesRow();
@@ -253,6 +262,10 @@ public class RevenueController implements Serializable {
             
             r.setBoldStr2(true);
             r.setBoldDbl1(true);
+            r.setBoldDbl2(true);
+            r.setBoldDbl3(true);
+            r.setBoldDbl4(true);
+            
             rows.add(r);
             r = new StringsDoublesRow();
             
