@@ -1418,7 +1418,7 @@ public class SearchController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
         m.put("bType", BillType.PharmacyPre);
-        m.put("rBType", BillType.PharmacySale);
+        m.put("rBType", BillType.PharmacyWholeSale);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
         m.put("rClass", BilledBill.class);
@@ -3152,7 +3152,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 
         temMap.put("billType", BillType.PharmacyPre);
-        temMap.put("refBillType", BillType.PharmacySale);
+        temMap.put("refBillType", BillType.PharmacyWholeSale);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", getSessionController().getInstitution());
