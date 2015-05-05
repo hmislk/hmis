@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>        
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr">
+            <f:facet name="header">
+                <p:outputLabel value="#{bookKeepingSummery.institution.name}"/> &nbsp;<h:outputLabel/>
+                <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
+                <h:outputLabel/><h:outputLabel/>
+                <h:outputLabel value="  From : "  />
+                <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
+                    <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                </h:outputLabel>
+                <h:outputLabel value="  To : "/> 
+                <h:outputLabel  value="#{bookKeepingSummery.toDate}">
+                    <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                </h:outputLabel>
+                <h:outputLabel value=""><br/>
+                </h:outputLabel>
+                <h:outputLabel value="Credit Company OPD Collection."/>     
+            </f:facet>
+            <p:column  headerText="Category" >
+                <f:facet name="header">
+                    <p:outputLabel value="Category" style="font-weight: bold;"/>
+                </f:facet>
+                <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
+            </p:column>
+            <p:column headerText="Item/Service" >
+                <f:facet name="header">
+                    <p:outputLabel value="Item/Service" />
+                </f:facet>
+                <p:outputLabel value="#{sr.itemName}"/> 
+            </p:column>
+            <p:column headerText="Count" >
+                <f:facet name="header">
+                    <p:outputLabel value="Count" />
+                </f:facet>
+                <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+
+            </p:column>
+            <p:column headerText="Hospital Fee" styleClass="numberCol" >
+                <f:facet name="header">
+                    <p:outputLabel value="Hospital Fee" />
+                </f:facet>
+                <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="#{sr.hosFee}" style="font-weight: bold;" 
+                               rendered="#{!sr.catRow and sr.totalRow eq true}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
+
+            </p:column>
+            <p:column headerText="Professional Fee"  styleClass="numberCol"  >
+                <f:facet name="header">
+                    <p:outputLabel value="Professional Fee" />
+                </f:facet>
+                <p:outputLabel value="#{sr.proFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="#{sr.proFee}" style="font-weight: bold;" 
+                               rendered="#{!sr.catRow and sr.totalRow eq true}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{bookKeepingSummery.opdStaffTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
+
+            </p:column>
+            <p:column  headerText="Total Fee"  styleClass="numberCol"  >
+                <f:facet name="header" >
+                    <p:outputLabel value="Total Fee" />
+                </f:facet>
+                <p:outputLabel value="#{sr.hosFee+sr.proFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="#{sr.hosFee+sr.proFee}" style="font-weight: bold;" 
+                               rendered="#{!sr.catRow and sr.totalRow eq true}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>  
+
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal + bookKeepingSummery.opdStaffTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>
