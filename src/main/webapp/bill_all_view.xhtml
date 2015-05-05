@@ -364,7 +364,14 @@
                                         <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
                                     </p:column>
                                     <p:column headerText="2">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Test/Service">
                                         <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
