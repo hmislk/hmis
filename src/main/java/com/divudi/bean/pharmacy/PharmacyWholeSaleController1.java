@@ -996,7 +996,7 @@ public class PharmacyWholeSaleController1 implements Serializable {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
 
-        getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillType(BillType.PharmacyWholeSale);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
