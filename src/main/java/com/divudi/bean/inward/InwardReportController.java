@@ -749,18 +749,18 @@ public class InwardReportController implements Serializable {
         }
 
     }
-    
-    public void fillProfessionalPaymentDone(){
-        billedBill=createProfessionalPaymentTableInwardAll(new BilledBill());
-        cancelledBill=createProfessionalPaymentTableInwardAll(new CancelledBill());
-        refundBill=createProfessionalPaymentTableInwardAll(new RefundBill());
-        
-        totalBilledBill=calTotalCreateProfessionalPaymentTableInwardAll(new BilledBill());
-        totalCancelledBill=calTotalCreateProfessionalPaymentTableInwardAll(new CancelledBill());
-        totalCancelledBill=calTotalCreateProfessionalPaymentTableInwardAll(new RefundBill());
+
+    public void fillProfessionalPaymentDone() {
+        billedBill = createBilledBillProfessionalPaymentTableInwardAll(new BilledBill());
+        cancelledBill = createCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
+        refundBill = createCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
+
+        totalBilledBill = calTotalCreateBilledBillProfessionalPaymentTableInwardAll(new BilledBill());
+        totalCancelledBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
+        totalRefundBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
     }
 
-    List<BillItem> createProfessionalPaymentTableInwardAll(Bill bill) {
+    List<BillItem> createBilledBillProfessionalPaymentTableInwardAll(Bill bill) {
         billItems = null;
         HashMap temMap = new HashMap();
         temMap.put("bclass", bill.getClass());
@@ -772,8 +772,52 @@ public class InwardReportController implements Serializable {
         String sql = "Select b FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-//                + " and b.bill.cancelled=false "
-                + " and type(b.bill)=:bclass"                
+                //                + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:bclass"
+                + " and (b.referenceBill.billType=:refType "
+                + " or b.referenceBill.billType=:refType2) "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (admissionType != null) {
+            sql = sql + " and (b.referenceBill.billType=:refType "
+                    + " or b.referenceBill.billType=:refType2) ";
+            temMap.put("at", admissionType);
+        }
+
+        if (admissionType != null) {
+            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
+            temMap.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
+            temMap.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            temMap.put("cc", institution);
+        }
+
+        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    List<BillItem> createCancelBillRefundBillProfessionalPaymentTableInwardAll(Bill bill) {
+        billItems = null;
+        HashMap temMap = new HashMap();
+        temMap.put("bclass", bill.getClass());
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bType", BillType.PaymentBill);
+//        temMap.put("refType", BillType.InwardBill);
+//        temMap.put("refType2", BillType.InwardProfessional);
+        String sql = "Select b FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.paidForBillFee.bill.patientEncounter is not null"
+                + " and type(b.bill)=:bclass"
+                //                + " and (b.bill.billedBill.referenceBill.billType=:refType "
+                //                + " or b.bill.billedBill.referenceBill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (admissionType != null) {
@@ -793,8 +837,8 @@ public class InwardReportController implements Serializable {
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
-    public double calTotalCreateProfessionalPaymentTableInwardAll(Bill bill) {
+
+    public double calTotalCreateBilledBillProfessionalPaymentTableInwardAll(Bill bill) {
         billItems = null;
         HashMap temMap = new HashMap();
         temMap.put("bclass", bill.getClass());
@@ -806,10 +850,46 @@ public class InwardReportController implements Serializable {
         String sql = "Select sum(b.netValue) FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-//                + " and b.bill.cancelled=false "
+                //                + " and b.bill.cancelled=false "
                 + " and type(b.bill)=:bclass"
                 + " and (b.referenceBill.billType=:refType "
                 + " or b.referenceBill.billType=:refType2) "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (admissionType != null) {
+            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
+            temMap.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
+            temMap.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            temMap.put("cc", institution);
+        }
+
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public double calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(Bill bill) {
+        billItems = null;
+        HashMap temMap = new HashMap();
+        temMap.put("bclass", bill.getClass());
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bType", BillType.PaymentBill);
+//        temMap.put("refType", BillType.InwardBill);
+//        temMap.put("refType2", BillType.InwardProfessional);
+        String sql = "Select sum(b.netValue) FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.paidForBillFee.bill.patientEncounter is not null"
+                + " and type(b.bill)=:bclass"
+                //                + " and (b.bill.billedBill.referenceBill.billType=:refType "
+                //                + " or b.bill.billedBill.referenceBill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (admissionType != null) {
@@ -924,8 +1004,6 @@ public class InwardReportController implements Serializable {
     public void setTotalRefundBill(double totalRefundBill) {
         this.totalRefundBill = totalRefundBill;
     }
-    
-    
 
     public Date getToDate() {
         if (toDate == null) {

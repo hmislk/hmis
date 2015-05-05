@@ -88,7 +88,7 @@ public class BookKeepingSummery implements Serializable {
     List<DepartmentPayment> departmentProfessionalPayments;
     List<DepartmentPayment> channellingProfessionalPayments;
     List<String1Value2> inwardProfessionalPayments;
-    bookKeepingSummeryRow bksr=new bookKeepingSummeryRow();
+    bookKeepingSummeryRow bksr = new bookKeepingSummeryRow();
     //Value
     double opdHospitalTotal;
     double opdStaffTotal;
@@ -197,8 +197,6 @@ public class BookKeepingSummery implements Serializable {
     public void setBksr(bookKeepingSummeryRow bksr) {
         this.bksr = bksr;
     }
-    
-    
 
     public void setDepartmentPayments(List<DepartmentPayment> departmentPayments) {
         this.departmentProfessionalPayments = departmentPayments;
@@ -1965,7 +1963,7 @@ public class BookKeepingSummery implements Serializable {
 
         bookKeepingSummeryRows.addAll(t);
     }
-    
+
     private double calBillFee(Date date, FeeType fTy, BillType bty) {
 
         String sql;
@@ -1987,7 +1985,7 @@ public class BookKeepingSummery implements Serializable {
         Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
-        m.put("billType", bty);        
+        m.put("billType", bty);
         m.put("ins", institution);
         m.put("ft", fTy);
         //    m.put("ins", getSessionController().getInstitution());        
@@ -1995,11 +1993,10 @@ public class BookKeepingSummery implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    
+
     public void createLabSummeryInward() {
-        bksr=new bookKeepingSummeryRow();
-        
+        bksr = new bookKeepingSummeryRow();
+
         bksr.setBills(new ArrayList<String1Value3>());
 
         Date nowDate = getFromDate();
@@ -2009,10 +2006,8 @@ public class BookKeepingSummery implements Serializable {
         double hospitalFeeTot = 0.0;
         double profeTotal = 0.0;
         double regentTot = 0.0;
-        
-        
-        //double regentFee;
 
+        //double regentFee;
         while (nowDate.before(getToDate())) {
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
@@ -2026,14 +2021,13 @@ public class BookKeepingSummery implements Serializable {
             double proTotCash = calBillFee(nowDate, FeeType.Staff, BillType.InwardBill);
 
             double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, BillType.InwardBill);
-            
+
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
 //            //double 
-
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
-            newRow.setValue3(proTotCash);            
+            newRow.setValue3(proTotCash);
 
             hospitalFeeTot += hospitalFeeCash;
             profeTotal += proTotCash;
@@ -2047,10 +2041,10 @@ public class BookKeepingSummery implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
         bksr.setHosFee(hospitalFeeTot);
         bksr.setProFee(profeTotal);
-        bksr.setReagentFee(regentTot);       
+        bksr.setReagentFee(regentTot);
 
     }
 
@@ -3048,13 +3042,27 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = 0.0;
+        opdStaffTotal = 0.0;
+        for (bookKeepingSummeryRow b : bookKeepingSummeryRows) {
+            System.out.println("b.getHosFee() = " + b.getHosFee());
+            System.out.println("b.getProFee() = " + b.getProFee());
+            opdHospitalTotal += b.getHosFee();
+            opdStaffTotal += b.getProFee();
+        }
+//        opdHospitalTotal = calFeeValue(fromDate, toDate, FeeType.OwnInstitution, institution, creditCompany, Arrays.asList(paymentMethods));
+//        opdStaffTotal= calFeeValue(fromDate, toDate, FeeType.Staff, institution, creditCompany, Arrays.asList(paymentMethods));
     }
 
     public void processCreditPaidItems() {
         makeNull();
         createOPdListWithCreditPaid();
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany);
+        for (bookKeepingSummeryRow b : bookKeepingSummeryRows) {
+            System.out.println("b.getHosFee() = " + b.getHosFee());
+            System.out.println("b.getProFee() = " + b.getProFee());
+            opdHospitalTotal += b.getHosFee();
+            opdStaffTotal += b.getProFee();
+        }
     }
 
     public void createCashCategoryWithoutProMonth() {
