@@ -486,7 +486,7 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calTotalDischargedNoChanges();
-
+        
         List<PatientEncounter> list = patientEncounters;
         patientEncounters = null;
         patientEncounters = new ArrayList<>();
@@ -502,7 +502,7 @@ public class InwardReportController implements Serializable {
             double paidValue = p.getTransPaidByPatient() + p.getTransPaidByCompany();
             double dueValue = p.getFinalBill().getNetTotal() - paidValue;
 
-            if (Math.abs(dueValue) != 0) {
+            if (Math.round(dueValue) != 0) {
                 total += p.getFinalBill().getNetTotal();
                 paid += p.getTransPaidByPatient();
                 creditPaid += p.getTransPaidByCompany();
