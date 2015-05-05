@@ -3045,23 +3045,27 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = 0.0;
         opdStaffTotal = 0.0;
         for (bookKeepingSummeryRow b : bookKeepingSummeryRows) {
-            System.out.println("b.getHosFee() = " + b.getHosFee());
-            System.out.println("b.getProFee() = " + b.getProFee());
-            opdHospitalTotal += b.getHosFee();
-            opdStaffTotal += b.getProFee();
+            if (b.isTotalRow()) {
+                System.out.println("b.getHosFee() = " + b.getHosFee());
+                System.out.println("b.getProFee() = " + b.getProFee());
+                opdHospitalTotal += b.getHosFee();
+                opdStaffTotal += b.getProFee();
+            }
         }
-//        opdHospitalTotal = calFeeValue(fromDate, toDate, FeeType.OwnInstitution, institution, creditCompany, Arrays.asList(paymentMethods));
-//        opdStaffTotal= calFeeValue(fromDate, toDate, FeeType.Staff, institution, creditCompany, Arrays.asList(paymentMethods));
     }
 
     public void processCreditPaidItems() {
         makeNull();
         createOPdListWithCreditPaid();
+        opdHospitalTotal = 0.0;
+        opdStaffTotal = 0.0;
         for (bookKeepingSummeryRow b : bookKeepingSummeryRows) {
-            System.out.println("b.getHosFee() = " + b.getHosFee());
-            System.out.println("b.getProFee() = " + b.getProFee());
-            opdHospitalTotal += b.getHosFee();
-            opdStaffTotal += b.getProFee();
+            if (b.isTotalRow()) {
+                System.out.println("b.getHosFee() = " + b.getHosFee());
+                System.out.println("b.getProFee() = " + b.getProFee());
+                opdHospitalTotal += b.getHosFee();
+                opdStaffTotal += b.getProFee();
+            }
         }
     }
 
