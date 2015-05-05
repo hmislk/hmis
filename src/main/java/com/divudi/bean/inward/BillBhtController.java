@@ -510,6 +510,9 @@ public class BillBhtController implements Serializable {
                     return true;
                 }
             }
+        }else{
+            getCurrentBillItem().setBillTime(new Date());
+            getCurrentBillItem().setDescreption("");
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {

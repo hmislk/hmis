@@ -48,3 +48,15 @@ root {
     width: 90%;
     font-size: 12px!important;
 }
+
+@media screen{
+    .ui-growl {
+        display: block;
+    }
+}
+
+@media print{
+    .ui-growl {
+        display: none;        
+    }
+}
