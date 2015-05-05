@@ -179,7 +179,7 @@ public class SearchController implements Serializable {
     }
     
     public void reportSettledPharmacyBills(){
-        settledBills(billType.PharmacySale);
+        settledBills(billType.PharmacyWholeSale);
     }
 
     public void settledBills(BillType bt) {
@@ -223,7 +223,7 @@ public class SearchController implements Serializable {
     }
     
     public void createCreditBillsWithPharmacyBill(){
-        createCreditBillsWithBill(billType.PharmacySale);
+        createCreditBillsWithBill(billType.PharmacyWholeSale);
     }
 
     public void createCreditBillsWithBill(BillType refBillType) {
@@ -434,7 +434,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacySale);
+        temMap.put("billType", BillType.PharmacyWholeSale);
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
