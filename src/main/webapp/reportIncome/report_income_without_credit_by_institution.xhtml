@@ -34,7 +34,7 @@
                             <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
                                              requiredMessage="You must select a institution" >
                                 <f:selectItem itemLabel="Select Institution"/>
-                                <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                             </p:selectOneMenu>
                             <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" action="#{institutionLabSumeryController.createLabBillsWithoutOwn()}" />
                             <p:defaultCommand target="btnRefresh"/>

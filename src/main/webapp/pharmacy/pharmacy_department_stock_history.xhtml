@@ -122,6 +122,20 @@
                                 </f:facet>
                                 <p:outputLabel value="#{item.stockQty}"/>
                             </p:column>
+                            <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Purchase Value"/>
+                                </f:facet>
+                                <p:outputLabel value="#{item.stockPurchaseValue}" rendered="#{item.stockPurchaseValue ne 0.0}"/>
+                                <p:outputLabel value="Not Recorded." rendered="#{item.stockPurchaseValue eq 0.0}"/>
+                            </p:column>
+                            <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Retail Sale Value"/>
+                                </f:facet>
+                                <p:outputLabel value="#{item.stockSaleValue}" rendered="#{item.stockSaleValue ne 0.0}"/>
+                                <p:outputLabel value="Not Recorded." rendered="#{item.stockSaleValue eq 0.0}"/>
+                            </p:column>
                         </p:dataTable>
                     </h:form>
 
