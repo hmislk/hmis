@@ -353,9 +353,25 @@
                                     <p:column headerText="Item Id">
                                         <h:outputLabel value="#{bip21.id}" />
                                     </p:column>
+                                    <p:column headerText="Ref Id">
+                                        <h:outputLabel value="#{bip21.referenceBill.id}" />
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip21.item.name}"/>
+                                    </p:column>
+                                    <p:column headerText="1">
+                                        <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
+                                    </p:column>
+                                    <p:column headerText="2">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Test/Service">
                                         <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
