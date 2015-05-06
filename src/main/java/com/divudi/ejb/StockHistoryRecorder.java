@@ -9,6 +9,7 @@ import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -63,7 +64,8 @@ public class StockHistoryRecorder {
                         h.setDepartment(d);
                         h.setItem(amp);
                         h.setStockQty(getStockQty(amp, d));
-                        
+                        h.setStockPurchaseValue(getStockPurchaseValue(amp, d));
+                        h.setStockSaleValue(getStockRetailSaleValue(amp, d));
                         //SET DATE DATAS
                         h.setHxDate(Calendar.getInstance().get(Calendar.DATE));
                         h.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
@@ -111,7 +113,34 @@ public class StockHistoryRecorder {
         return getStockFacade().findDoubleByJpql(sql, m);
     }
 
-    // Add business logic below. (Right-click in editor and choose
+    public double getStockRetailSaleValue(Item item, Department department) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("d", department);
+        m.put("i", item);
+        sql = "select sum(s.stock * s.itemBatch.retailsaleRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
+        return getStockFacade().findDoubleByJpql(sql, m);
+    }
+    
+
+    public double getStockPurchaseValue(Item item, Department department) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("d", department);
+        m.put("i", item);
+        sql = "select sum(s.stock * s.itemBatch.purcahseRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
+        return getStockFacade().findDoubleByJpql(sql, m);
+    }
+
+    
+
+// Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public StockFacade getStockFacade() {
         return StockFacade;

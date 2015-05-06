@@ -130,7 +130,10 @@
                                 <f:convertDateTime pattern="dd MMMM" />
                             </h:outputLabel>
                         </f:facet>
-                        
+                          <p:column headerText="Saved" >
+                              <h:outputLabel rendered="#{i.id ne null and !i.retired}" value="Y"/>
+                              <h:outputLabel rendered="#{i.id ne null and i.retired}" value="Del"/>
+                        </p:column>
                         
                         <p:column headerText="Code" sortBy="#{i.staff.codeInterger}">
                             <h:outputLabel value="#{i.staff.codeInterger}"/>

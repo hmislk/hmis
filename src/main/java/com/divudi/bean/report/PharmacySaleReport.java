@@ -50,6 +50,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -63,6 +64,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.eclipse.persistence.config.ResultType;
 
 /**
  *
@@ -680,81 +682,67 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-    private double calBillFee(Date date, FeeType fTy, PaymentMethod pm) {
-
+    private double calBillFee(Date date, FeeType fTy, BillType[] btyps) {
         String sql;
-
-        sql = "select sum(f.feeValue) "
-                + " from BillFee f "
-                + " where f.bill.retired=false "
-                + " and f.bill.billType = :billType "
-                + " and f.bill.paymentMethod = :pm "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.fee.feeType=:ft";
-
-        Date fd = CommonFunctions.getStartOfDay(date);
-        Date td = CommonFunctions.getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
         Map m = new HashMap();
-        m.put("fd", fd);
-        m.put("td", td);
-        m.put("pm", pm);
-        m.put("billType", BillType.OpdBill);
-        m.put("ft", fTy);
-
-        if (institution != null) {
-            m.put("ins", institution);
-            sql += " and f.bill.toInstitution=:ins ";
-        }
-        if (department != null) {
-            m.put("dep", department);
-            sql += " and f.bill.toDepartment=:dep ";
-        }
-
-        //    m.put("ins", getSessionController().getInstitution());
-        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-
-        return saleValue;
-
-    }
-
-    private double calBillFee(Date date, FeeType fTy, BillType bty) {
-
-        String sql;
-
         sql = "select sum(f.feeGrossValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
-                + " and f.bill.billType = :billType "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.bill.toInstitution=:ins "
-                + " and f.fee.feeType=:ft";
+                + " and f.bill.billType in :btyps "
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
-        m.put("billType", bty);
-        m.put("ins", institution);
+        List<BillType> lbs = Arrays.asList(btyps);
+        m.put("btyps", lbs);
+
         m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());        
-
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
+    private double calBillFee(Date date, FeeType fTy, BillType btyp) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select sum(f.feeGrossValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType =:btyp "
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
+
+        m.put("fd", fd);
+        m.put("td", td);
+        List<BillType> lbs = Arrays.asList(btyp);
+        m.put("btyp", lbs);
+
+        m.put("ft", fTy);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     private double calBillFee(Date date, FeeType fTy) {
-
         String sql;
-
+        Map m = new HashMap();
         sql = "select sum(f.feeValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
@@ -763,17 +751,19 @@ public class PharmacySaleReport implements Serializable {
                 + " or f.bill.paymentMethod = :pm2 "
                 + " or f.bill.paymentMethod = :pm3 "
                 + " or f.bill.paymentMethod = :pm4) "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.bill.toInstitution=:ins "
-                + " and f.fee.feeType=:ft";
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -781,13 +771,10 @@ public class PharmacySaleReport implements Serializable {
         m.put("pm3", PaymentMethod.Cheque);
         m.put("pm4", PaymentMethod.Slip);
         m.put("billType", BillType.OpdBill);
-        m.put("ins", institution);
+
         m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-
         return saleValue;
-
     }
 
     @Inject
@@ -2431,7 +2418,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     //pasan
-    public void createFeeSummery(BillType[] btps) {
+    public void createFeeSummeryWithCounts(BillType[] btps) {
         billedSummery = new PharmacySummery();
         billedSummery.setBills(new ArrayList<String1Value3>());
         Date nowDate = getFromDate();
@@ -2445,7 +2432,7 @@ public class PharmacySaleReport implements Serializable {
         double proTot;
         double regentFee;
         long count;
-        
+
         while (nowDate.before(getToDate())) {
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
@@ -2454,26 +2441,12 @@ public class PharmacySaleReport implements Serializable {
             String1Value3 newRow = new String1Value3();
             newRow.setString(formattedDate);
 
-//            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Cash);
-//            double hospitalFeeCredit = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Credit);
-//
-//            hospitalFee = hospitalFeeCash + hospitalFeeCredit;
-            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution);
-
-//            double proTotCash = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Cash);
-//            double proTotCredit = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Credit);
-//
-//            proTot = proTotCash + proTotCredit;
-            proTot = calBillFee(nowDate, FeeType.Staff);
-
-//            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Cash);
-//            double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
-//
-//            regentFee = regentFeeCash + regentFeeCredit;
-            regentFee = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution,btps);
+            proTot = calBillFee(nowDate, FeeType.Staff,btps);
+            regentFee = calBillFee(nowDate, FeeType.Chemical,btps);
 
             count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
-                    commonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
+                    CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
             newRow.setValue1(hospitalFee);
@@ -2494,9 +2467,6 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
-        labBhtIssueBilledBills = getLabBills(BillType.InwardBill, new BilledBill());
-        labBhtIssueBilledBillTotals = getLabBillTotal(BillType.InwardBill, new BilledBill());
-
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
@@ -2504,14 +2474,72 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-    public void createDailyOpdFeeSummery() {
-        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
-        createFeeSummery(btps);
+    public void createFeeSummeryWithoutCounts(BillType[] btps) {
+        billedSummery = new PharmacySummery();
+        billedSummery.setBills(new ArrayList<String1Value3>());
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
+        double hospitalFee;
+        double proTot;
+        double regentFee;
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution, btps);
+            proTot = calBillFee(nowDate, FeeType.Staff, btps);
+            regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
+
+            newRow.setValue1(hospitalFee);
+            newRow.setValue2(regentFee);
+            newRow.setValue3(proTot);
+
+            hospitalFeeTot += hospitalFee;
+            profeTotal += proTot;
+            regentTot += regentFee;
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+        billedSummery.setBilledTotal(hospitalFeeTot);
+        billedSummery.setCancelledTotal(profeTotal);
+        billedSummery.setRefundedTotal(regentTot);
+
     }
-    
-    public void createDailyInwardFeeSummery() {
+
+    public void createDailyOpdFeeSummeryWithCounts() {
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        createFeeSummeryWithCounts(btps);
+    }
+
+    public void createDailyOpdFeeSummeryWithoutCounts() {
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        createFeeSummeryWithoutCounts(btps);
+    }
+
+    public void createDailyInwardFeeSummeryWithCounts() {
         BillType[] btps = new BillType[]{BillType.InwardBill};
-        createFeeSummery(btps);
+        createFeeSummeryWithCounts(btps);
+    }
+
+    public void createDailyInwardFeeSummeryWithoutCounts() {
+        BillType[] btps = new BillType[]{BillType.InwardBill};
+        createFeeSummeryWithoutCounts(btps);
     }
 
     public void createLabSummeryInward() {

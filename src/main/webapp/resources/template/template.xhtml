@@ -5,7 +5,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core">
-    <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
@@ -21,7 +20,7 @@
     </h:head>
     <h:body  >
         <p:panel styleClass="fullSpread" >
-            <p:growl id="publicGrowl" autoUpdate="true"  life="10000"/>
+            <p:growl id="publicGrowl" autoUpdate="true"   />
             <h:panelGroup >
                 <h:form>
 
@@ -515,6 +514,7 @@
                                 <p:submenu label="Reports"  rendered="#{webUserController.hasPrivilege('Reports')}">
                                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/revenue_reports/index" value="Revenue Reports"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/reportInstitution/report_referrals_index" value="Referral Reports"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/reportLab/report_lab" value="Lab Report"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/credit/index_inward_due_access" value="Inward Dues and Access"  ></p:menuitem>
