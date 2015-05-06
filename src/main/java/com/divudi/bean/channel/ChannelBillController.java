@@ -156,6 +156,7 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
+        
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
