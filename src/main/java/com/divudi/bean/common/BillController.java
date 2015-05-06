@@ -1045,7 +1045,7 @@ public class BillController implements Serializable {
             }
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
+        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
             UtilityController.addErrorMessage("Check Payment method");
             return true;
         }
