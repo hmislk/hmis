@@ -909,6 +909,11 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
+      
+        System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
+        System.out.println("bill = " + bill);
+        System.out.println("bill.getInstitution() = " + bill.getInstitution());
+        
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -1040,7 +1045,7 @@ public class BillController implements Serializable {
             }
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
+        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
             UtilityController.addErrorMessage("Check Payment method");
             return true;
         }

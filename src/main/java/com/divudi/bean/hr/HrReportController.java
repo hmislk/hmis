@@ -2038,7 +2038,7 @@ public class HrReportController implements Serializable {
                 Double value = (Double) obj[1] != null ? (Double) obj[1] : 0;
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
-
+                System.err.println("Staff "+stf.getCodeInterger()+" :Value : "+value);                
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
                         weekDayWork.setSunDay(value);
