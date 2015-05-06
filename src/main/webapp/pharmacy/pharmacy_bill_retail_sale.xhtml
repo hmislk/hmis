@@ -63,9 +63,9 @@
                                                 <p:column headerText="Id">
                                                     <h:outputLabel value="#{i.itemBatch.item.id}"  style="width: 50px!important;"></h:outputLabel>
                                                 </p:column>
-                                                
+
                                                 <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
