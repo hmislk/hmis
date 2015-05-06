@@ -1698,7 +1698,7 @@ public class PharmacyWholeSaleController implements Serializable {
     public PreBill getPreBill() {
         if (preBill == null) {
             preBill = new PreBill();
-            preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillType(BillType.PharmacyWholesalePre);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
@@ -1711,7 +1711,7 @@ public class PharmacyWholeSaleController implements Serializable {
     public Bill getSaleBill() {
         if (saleBill == null) {
             saleBill = new BilledBill();
-            //   saleBill.setBillType(BillType.PharmacySale);
+            saleBill.setBillType(BillType.PharmacyWholeSale);
         }
         return saleBill;
     }

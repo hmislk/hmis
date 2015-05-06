@@ -588,10 +588,65 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createPharmacyTable() {
+    public void createPharmacyRetailBills() {
 
         Map m = new HashMap();
         m.put("bt", BillType.PharmacyPre);
+        //   m.put("class", PreBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        m.put("ldep", getSessionController().getLoggedUser().getDepartment());
+        String sql;
+
+        sql = "Select b from PreBill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt"
+                + " and b.billedBill is null "
+                + " and b.institution=:ins "
+                + " and b.department=:ldep";
+        //  + " and type(b)=:class ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.patient.person.name) like :patientName )";
+            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  (upper(b.department.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.total) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        if (getPaymentMethod() != null) {
+            sql += " and b.paymentMethod=:pay ";
+            m.put("pay", paymentMethod);
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        //     //System.out.println("sql = " + sql);
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+
+    }
+
+    public void createPharmacyWholesaleBills() {
+
+        Map m = new HashMap();
+        m.put("bt", BillType.PharmacyWholesalePre);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());

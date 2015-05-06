@@ -30,7 +30,7 @@
                         <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
                     </p:panel>
 
-                    <p:panel rendered="#{!pharmacyWholeSaleController3.billPreview}"  >
+                    <p:panel rendered="#{!pharmacyWholeSaleController3.billPreview}" style="background-color: goldenrod; color: brown;"  >
                         <h:panelGroup id="panelError" >
                             <h:panelGroup  
                                 rendered="#{pharmacyWholeSaleController3.errorMessage ne null}"
