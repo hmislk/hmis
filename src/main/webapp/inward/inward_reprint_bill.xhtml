@@ -22,13 +22,13 @@
                             </p:panel>
                             <p:panel>
                                 <p:commandButton ajax="false" value="Mark As Checked"
-                                                 action="#{inwardSearch.markAsChecked()}"                                               
+                                                action="#{inwardSearch.markAsChecked()}"                                               
                                                  rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Mark As Un Check"
-                                                 action="#{inwardSearch.markAsUnChecked()}"                                                 
+                                                action="#{inwardSearch.markAsUnChecked()}"                                                 
                                                  rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Back To Intrim" action="/inward/inward_bill_intrim" 
-                                                 actionListener="#{bhtSummeryController.createTables()}"
+                                                actionListener="#{bhtSummeryController.createTables()}"
                                                  onclick="onSubmitButton();" />
                             </p:panel>
 

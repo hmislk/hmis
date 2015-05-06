@@ -31,7 +31,7 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{collectingCentreController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{collectingCentreController.prepareAdd()}" styleClass="buttons" >
                                     </h:commandButton>
                                     <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{collectingCentreController.delete()}"  value="Delete"  >
@@ -48,7 +48,7 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{collectingCentreController.saveSelected()}" styleClass="buttons">
+                                    <h:commandButton id="btnSave" value="Save" action="#{collectingCentreController.saveSelected()}" styleClass="buttons">
 
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>

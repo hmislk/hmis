@@ -30,7 +30,7 @@
                                     </p:autoComplete>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{amppController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{amppController.prepareAdd()}" styleClass="buttons" >
 
                                     </h:commandButton>
                                     <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -57,7 +57,7 @@
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{amppController.saveSelected()}" styleClass="buttons">
+                                    <h:commandButton id="btnSave" value="Save" action="#{amppController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </h:commandButton>

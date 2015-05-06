@@ -24,7 +24,7 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{timedItemController.prepareTheatreTimeServiceAdd() }" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{timedItemController.prepareTheatreTimeServiceAdd() }" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -42,7 +42,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
 
-                                <p:commandButton style="float:right;" id="btnSave" value="Save"   action="#{timedItemController.saveSelected()}" styleClass="buttons" 
+                                <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{timedItemController.saveSelected()}" styleClass="buttons" 
                                                  process="gpDetail btnSave" update="lstSelect msg"   >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>

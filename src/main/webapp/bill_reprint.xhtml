@@ -19,7 +19,7 @@
 
                             <p:commandButton ajax="false" value="To Cancel" action="bill_cancel" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                           
                             </p:commandButton>
-                            <p:commandButton  ajax="false" value="To Refund" action="bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
+                            <p:commandButton ajax="false" value="To Refund" action="bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
                             </p:commandButton>
                         </f:facet>
 
@@ -154,7 +154,7 @@
                             <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                              onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                         </div>
@@ -179,7 +179,7 @@
                             <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                              onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                         </div>

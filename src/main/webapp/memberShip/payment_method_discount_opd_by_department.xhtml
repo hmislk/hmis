@@ -38,7 +38,7 @@
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
                                 <h:outputLabel value="" />
                                 <p:commandButton id="btnAdd" value="Add" ajax="false" 
-                                                 action="#{opdMemberShipDiscountController.saveSelectedDepartmentPaymentMethod}" />
+                                                action="#{opdMemberShipDiscountController.saveSelectedDepartmentPaymentMethod}" />
 
                                 <p:defaultCommand target="btnAdd"/>
                             </p:panelGrid>
@@ -47,7 +47,7 @@
                                 <pe:exporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill" 
-                                             action="#{opdMemberShipDiscountController.createItemsDepartmentsPaymentMethod}" />
+                                            action="#{opdMemberShipDiscountController.createItemsDepartmentsPaymentMethod}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
@@ -98,7 +98,7 @@
                                 </p:column>
                                 <p:column exportable="false">
                                     <p:commandButton ajax="false" value="Update" 
-                                                     action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
+                                                    action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
                                 </p:column>
                                 <p:column exportable="false">
                                     <p:commandButton ajax="false" value="Delete" action="#{opdMemberShipDiscountController.deleteDepartmentPaymentScheme()}">

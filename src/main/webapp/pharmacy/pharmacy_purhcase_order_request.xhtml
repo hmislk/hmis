@@ -17,7 +17,7 @@
 
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton ajax="false" value="Request" action="#{purchaseOrderRequestController.request}"/>
-                    <p:commandButton ajax="false"  value="New Order"  action="#{purchaseOrderRequestController.recreate}"/>
+                    <p:commandButton ajax="false"  value="New Order" action="#{purchaseOrderRequestController.recreate}"/>
                 </f:facet>
 
                 <p:tabView>
@@ -46,6 +46,9 @@
                             <p:column headerText="Pack Size" >
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                            </p:column>
+                            <p:column headerText="Current Stock" >
+                                <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton value="Add Item" action="#{purchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:component('itemList')} tot" />
@@ -91,7 +94,7 @@
                     <f:facet name="header">  
                         <h:outputLabel  value="Pharmacy Bill Item"/>
                         <p:commandButton ajax="false" value="Remove All" 
-                                         action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                        action="#{purchaseOrderRequestController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:column selectionMode="multiple"/>

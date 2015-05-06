@@ -35,7 +35,7 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{inwardServiceController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{inwardServiceController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -52,8 +52,8 @@
                             <f:facet name="header" >
 
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
-                                <p:commandButton style="float:right;" id="btnSave" value="Save"   action="#{inwardServiceController.saveSelected()}" styleClass="buttons"
-                                                 ajax="false" onclick="onSubmitButton();"  >
+                                <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{inwardServiceController.saveSelected()}" styleClass="buttons"
+                                               ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
 

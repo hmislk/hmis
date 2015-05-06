@@ -21,7 +21,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             action="pharmacy_cancel_bill_return_bht" 
+                                            action="pharmacy_cancel_bill_return_bht" 
                                              disabled="#{storeBillSearch.bill.cancelled}" onclick="onSubmitButton();" rendered="false">                           
                             </p:commandButton>
                             
@@ -32,13 +32,13 @@
 
                     <p:panel>
                         <p:commandButton ajax="false" value="Mark As Checked"
-                                         action="#{storeBillSearch.markAsChecked()}"
+                                        action="#{storeBillSearch.markAsChecked()}"
                                          rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Mark As Un Check"
-                                         action="#{storeBillSearch.markAsUnChecked()}"
+                                        action="#{storeBillSearch.markAsUnChecked()}"
                                          rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Back To Intrim"
-                                         action="/inward/inward_bill_intrim" onclick="onSubmitButton();" />
+                                        action="/inward/inward_bill_intrim" onclick="onSubmitButton();" />
                     </p:panel>
 
 

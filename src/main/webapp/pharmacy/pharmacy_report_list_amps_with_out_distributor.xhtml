@@ -12,11 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Pharmaceutical Item List Not include any Distributor" >
-                        <p:commandButton  ajax="false" value="Excel">
+                        <p:commandButton ajax="false" value="Excel">
                             <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Refresh"
-                                         action="#{pharmacySaleReport.createItemListWithOutItemDistributer}"/>
+                                        action="#{pharmacySaleReport.createItemListWithOutItemDistributer}"/>
 
                        
                         <p:panel id="paItems">

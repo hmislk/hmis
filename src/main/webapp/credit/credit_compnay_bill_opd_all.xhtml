@@ -38,7 +38,7 @@
                             </h:panelGroup>
 
                             <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBill}"
-                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                                           ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
                             <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >

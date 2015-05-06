@@ -32,7 +32,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:defaultCommand target="btnAdd" ></p:defaultCommand>
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{metadataSuperCategoryController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{metadataSuperCategoryController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -64,11 +64,11 @@
                                                 <td>
 
                                                     <p:commandButton id="btnAddNewCat"
-                                                                     ajax="false"
+                                                                   ajax="false"
                                                                      process="btnAddNewCat txtNewMetaCatName" 
                                                                      value="Add New Value"
                                                                      update="repeatSubCats txtNewMetaCatName"
-                                                                     action="#{metadataSuperCategoryController.addCatName()}" 
+                                                                    action="#{metadataSuperCategoryController.addCatName()}" 
                                                                      ></p:commandButton>
 
                                                 </td>
@@ -106,7 +106,7 @@
 
 
                                     <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <h:commandButton id="btnSave" value="Save"  action="#{metadataSuperCategoryController.saveSelected()}" styleClass="buttons">
+                                        <h:commandButton id="btnSave" value="Save" action="#{metadataSuperCategoryController.saveSelected()}" styleClass="buttons">
                                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                             </f:ajax>
                                         </h:commandButton>

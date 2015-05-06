@@ -35,7 +35,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton id="btnAdd" value="Add"  
-                                                     action="#{doctorController.prepareAdd()}" styleClass="buttons" ajax="false"/>                                   
+                                                    action="#{doctorController.prepareAdd()}" styleClass="buttons" ajax="false"/>                                   
                                     <p:commandButton ajax="false" id="btnDelete" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                                  return false;" action="#{doctorController.delete()}"  value="Delete">
@@ -72,7 +72,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"
-                                                     action="#{doctorController.saveSelected()}" styleClass="buttons"/>
+                                                    action="#{doctorController.saveSelected()}" styleClass="buttons"/>
 
                                     <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>

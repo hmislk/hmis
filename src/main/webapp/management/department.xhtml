@@ -27,7 +27,7 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Search Departments" ></p:outputLabel>
 
-                                    <p:commandButton id="btnAdd" value="Add New Department"  action="#{departmentController.prepareAdd()}" style="float: right;"
+                                    <p:commandButton id="btnAdd" value="Add New Department" action="#{departmentController.prepareAdd()}" style="float: right;"
                                                      update="lstSelect gpDetail detailFocus" process="btnAdd">
                                     </p:commandButton>
 
@@ -64,7 +64,7 @@
                             <f:facet name="header" >
 
                                 <p:outputLabel value="Details of Selected Department" ></p:outputLabel>
-                                <p:commandButton id="btnSave" value="Save"  action="#{departmentController.saveSelected()}" style="margin-left: 30px;" process="btnSave gpDetail" update="lstSelect gpDetail selectFocus" >
+                                <p:commandButton id="btnSave" value="Save" action="#{departmentController.saveSelected()}" style="margin-left: 30px;" process="btnSave gpDetail" update="lstSelect gpDetail selectFocus" >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>

@@ -21,14 +21,14 @@
                                          value="Process" 
                                          styleClass="noPrintButton" 
                                          style="float: right;" 
-                                         actionListener="#{cashierReportController.calCashierData()}" />  
+                                        actionListener="#{cashierReportController.calCashierData()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="reportPrint" />
                         </p:commandButton>  
 
-                        <p:commandButton  actionListener="#{cashierReportController.calCashierData()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
+                        <p:commandButton actionListener="#{cashierReportController.calCashierData()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" subTable="true"/>
                         </p:commandButton>  
 
