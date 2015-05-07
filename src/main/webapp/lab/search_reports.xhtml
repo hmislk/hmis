@@ -6,79 +6,40 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
-                            <h:panelGrid columns="6" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
-                                <p:spacer height="30"/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/> <h:outputLabel/>
 
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Patient Name"/>
-                                <h:outputLabel value="Patient Phone"/>                               
-                                <h:outputLabel value="Investigation Name"/>
-                                <h:outputLabel/><h:outputLabel/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-
-                            </h:panelGrid>
                         </f:facet>
+                        <h:panelGrid columns="7" >
+                            <h:outputLabel value="From"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <p:spacer width="50" height="1" ></p:spacer>
+                            <h:outputLabel value="To"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" styleClass="dateTimePicker">                                                                              
+                            </p:calendar>
+                            <p:spacer width="50" height="1" ></p:spacer>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchPatientInvestigations()}" onclick="onSubmitButton();" />
+                        </h:panelGrid>
                         <p:defaultCommand target="btnSearch" />
 
-
-
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
-
-                            
-                            
+                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  
+                                      rows="20"
+                                      paginator="true"
+                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                      rowsPerPageTemplate="10,20,50"
+                                      >
+                            <p:column  headerText="Billed From" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                            </p:column>
                             <p:column  headerText="Dept Id" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
-                                <p:tooltip for="lblBillNo"  >
-                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.department.name}" ></h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Sampled : " />
-                                    <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Received : " />
-                                    <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled : " />
-                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pi.billItem.refunded}" >
-                                        <h:outputLabel style="color: red;" value="Refunded : " />
-                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                </p:tooltip>
                             </p:column>
 
                             <p:column  headerText="Billed From" styleClass="alignTop" >
@@ -86,11 +47,11 @@
                                                value="#{pi.billItem.bill.department.name}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
                             </p:column>
-                            
+
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                              action="patient" 
+                                               action="patient" 
                                                style="text-decoration:underline;"
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
                                                >
@@ -119,7 +80,7 @@
                                     <p:commandLink process="btnSample" update="tblBills"  
                                                    disabled="#{pi.collected}"   
                                                    id="btnSample" 
-                                                  action="#{patientInvestigationController.markAsSampled}" >
+                                                   action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
@@ -161,7 +122,7 @@
                                               value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi" >
                                     <h:column >
                                         <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" action="#{patientReportController.enterNewReportFormat(pi, ifi)}" 
-                                                     ajax="false">
+                                                       ajax="false">
                                         </p:commandLink>
                                     </h:column>
                                 </h:dataTable>
@@ -181,7 +142,7 @@
 
                                             <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
                                                            value="#{dpr.item.name}" 
-                                                         ajax="false" action="lab_patient_report">
+                                                           ajax="false" action="lab_patient_report">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
 
@@ -203,7 +164,7 @@
                                             <p:commandLink style="float: right" ajax="false" 
                                                            id="btnRevert" 
                                                            disabled="#{!pi.collected}"
-                                                          action="#{patientInvestigationController.revertMarkedSample()}" 
+                                                           action="#{patientInvestigationController.revertMarkedSample()}" 
                                                            rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                 <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
@@ -264,5 +225,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -22,8 +22,8 @@
 
             <h:panelGrid columns="6">                
                 <p:commandButton ajax="false" value="Fill Old Roster"
-                                 actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.fetchShiftTableByStaff()}"
+                                actionListener="#{shiftTableController.makeTableNull()}"
+                                action="#{shiftTableController.fetchShiftTableByStaff()}"
                                  onclick="onSubmitButton();" />   
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print" ></p:printer>

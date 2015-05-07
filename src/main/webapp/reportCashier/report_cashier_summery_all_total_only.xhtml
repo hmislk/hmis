@@ -25,7 +25,7 @@
                             <p:printer target="reportPrint" />
                         </p:commandButton>  
 
-                        <p:commandButton  actionListener="#{cashierReportController.calCashierDataTotalOnly()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
+                        <p:commandButton actionListener="#{cashierReportController.calCashierDataTotalOnly()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
                            
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" subTable="true"/>
                         </p:commandButton>  

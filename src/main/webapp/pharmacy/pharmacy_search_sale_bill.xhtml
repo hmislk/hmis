@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyTable}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyRetailBills}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -54,7 +54,7 @@
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                 action="pharmacy_reprint_bill_sale">
+                                                action="pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>

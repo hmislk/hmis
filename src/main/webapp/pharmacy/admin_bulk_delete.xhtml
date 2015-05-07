@@ -13,11 +13,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Items by Name" >
-                        <p:commandButton  ajax="false" value="Excel">
+                        <p:commandButton ajax="false" value="Excel">
                             <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Process"
-                                         action="#{ampController.createItemList()}"/>
+                                        action="#{ampController.createItemList()}"/>
 
                         <p:commandButton ajax="false" value="Bulk Delete" action="#{ampController.removeSelectedItems}"/>
 

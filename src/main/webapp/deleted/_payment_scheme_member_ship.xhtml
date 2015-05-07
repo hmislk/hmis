@@ -39,7 +39,7 @@
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
                                     <p:commandButton ajax="false" id="btnAdd" value="Add" 
-                                                     action="#{paymentSchemeController.prepareAdd()}" 
+                                                    action="#{paymentSchemeController.prepareAdd()}" 
                                                      styleClass="buttons" />                                       
                                     
 
@@ -48,7 +48,7 @@
                                     </p:commandButton>
 
                                     <p:commandButton ajax="false" value="Fill"
-                                                     action="#{paymentSchemeController.createPaymentSchemesMembership()}"/>
+                                                    action="#{paymentSchemeController.createPaymentSchemesMembership()}"/>
 
                                 </h:panelGrid>
                             </p:panel>
@@ -94,7 +94,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
 
-                                    <h:commandButton id="btnSave" value="Save"  action="#{paymentSchemeController.saveSelected()}" styleClass="buttons">                                        
+                                    <h:commandButton id="btnSave" value="Save" action="#{paymentSchemeController.saveSelected()}" styleClass="buttons">                                        
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>

@@ -19,7 +19,7 @@
                             <p:inputText autocomplete="off" value="#{searchController.maxResult}"/>
                             <p:commandButton value="All Request" action="#{searchController.createPoRequestedAndApprovedStore()}" ajax="false" ></p:commandButton>
                             <p:commandButton value="Approved Only" action="#{searchController.createApprovedStore()}" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Not Approved" action="#{searchController.createNotApprovedStore()}"  ajax="false" ></p:commandButton>
+                            <p:commandButton value="Not Approved" action="#{searchController.createNotApprovedStore()}" ajax="false" ></p:commandButton>
                         </h:panelGroup>
                         <h:panelGrid columns="6" >
                             <h:outputLabel value="From Date"/>
@@ -110,7 +110,7 @@
 
                         <p:column headerText="Approve">
                             <p:commandButton ajax="false" value="Approve" 
-                                             action="store_purhcase_order_approving"
+                                            action="store_purhcase_order_approving"
                                              disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}" >
                                 <f:setPropertyActionListener target="#{storePurchaseOrderController.requestedBill}" value="#{b}"/>
                             </p:commandButton>

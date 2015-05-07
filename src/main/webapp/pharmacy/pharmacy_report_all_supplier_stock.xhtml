@@ -20,7 +20,7 @@
                         </h:panelGrid>
                         <h:panelGrid columns="3" >
                             <p:commandButton ajax="false" value="Process" 
-                                             actionListener="#{reportsStock.fillAllDistributorStocks()}" ></p:commandButton>
+                                            actionListener="#{reportsStock.fillAllDistributorStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -51,7 +51,7 @@
                                         <h:outputLabel value="Supplier"/>
                                     </f:facet>
                                     <p:commandLink value="#{i.institution.name}"
-                                                   action="#{reportsStock.fillDistributorStocks()}" ajax="false" >
+                                                  action="#{reportsStock.fillDistributorStocks()}" ajax="false" >
                                         <f:setPropertyActionListener target="#{reportsStock.institution}"
                                                                      value="#{i.institution}"/>
                                     </p:commandLink>

@@ -12,11 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="List Items One Item Has More Than One Distributor" >
-                        <p:commandButton  ajax="false" value="Excel">
+                        <p:commandButton ajax="false" value="Excel">
                             <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Refresh"
-                                         action="#{pharmacySaleReport.createItemListOneItemHasGreterThanOneDistributorOther}"/>
+                                        action="#{pharmacySaleReport.createItemListOneItemHasGreterThanOneDistributorOther}"/>
 
                        
                         <p:panel id="paItems">
