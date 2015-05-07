@@ -191,7 +191,7 @@ public class InstitutionController implements Serializable {
                 + " and (upper(c.name) like :q "
                 + " or upper(c.institutionCode) like :q )"
                 + " order by c.name";
-        return getFacade().findBySQL(sql, hm, 10);
+        return getFacade().findBySQL(sql, hm, 20);
     }
 
 //     public List<Institution> completeSupplier(String qry) {

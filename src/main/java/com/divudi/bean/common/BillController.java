@@ -20,6 +20,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -106,6 +107,8 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
+    @Inject
+    BillEjb billEjb;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
     //Interface Data
@@ -563,6 +566,20 @@ public class BillController implements Serializable {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+//    public void getOpdBills(){
+//        billEjb.findBillBills(sessionDate, sessionDate, billTypes, billClasses, null, creditCompany, null, paymentMethods, billTypesToExculde, billCLassesToExclude)
+//    }
+
+    public BillEjb getBillEjb() {
+        return billEjb;
+    }
+
+    public void setBillEjb(BillEjb billEjb) {
+        this.billEjb = billEjb;
+    }
+    
+    
 
     public Date getSessionDate() {
         if (sessionDate == null) {
