@@ -37,22 +37,17 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="Return without Traising" />
                                    
-                                    <p:autoComplete completeMethod="#{institutionController.completeSupplier(qry)}" 
+                                    <p:autoComplete converter="institutionConverter"
+                                                    completeMethod="#{institutionController.completeSupplier}" 
                                                     styleClass="noPrintButton"
                                                     forceSelection="true"
                                                     var="w" itemLabel="#{w.name}" itemValue="#{w}"
                                                     value="#{pharmacyReturnwithouttresing.toInstitution}" 
                                                     id="acDept">
-                                        <p:column headerText="Department Name">
-                                             <h:outputLabel value=" #{w.name}" />
-                                           
+                                        <p:column>
+                                            <h:outputLabel value="#{w.name}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Institution Name">
-                                          <h:outputLabel value=" #{w.institution.name}" />  
-                                           
-                                        </p:column>
-                                        <p:ajax process="acDept" update=":#{p:component('pBillDetails')} #{p:component('tblBillItem')} " 
-                                                event="itemSelect"  listener="#{pharmacyReturnwithouttresing.calculateAllRates}" />
+                                                                                
                                     </p:autoComplete>
 
                                     <p:inputText value="#{pharmacyReturnwithouttresing.preBill.invoiceNumber}" id="req"/>
