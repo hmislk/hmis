@@ -56,6 +56,7 @@ public enum BillType {
     StoreTransferReceive,
     StoreTransferRequest,
     PharmacyPre,
+    PharmacyWholesalePre,
     PharmacyOrder,
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out

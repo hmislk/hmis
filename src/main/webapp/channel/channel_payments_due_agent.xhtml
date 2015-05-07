@@ -26,8 +26,8 @@
                         <p:dataTable   id="tblFee" value="#{searchController.billFees}" var="bf" sortBy="#{bf.bill.billClass}">
                             <p:column>
                                 <p:commandButton ajax="false" value="Pay" 
-                                                 action="channel_payment_staff_bill" 
-                                                 actionListener="#{channelStaffPaymentBillController.calculateDueFees}">
+                                                action="channel_payment_staff_bill" 
+                                                actionListener="#{channelStaffPaymentBillController.calculateDueFees}">
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{channelStaffPaymentBillController.currentStaff}"/>
                                 </p:commandButton>
                             </p:column>

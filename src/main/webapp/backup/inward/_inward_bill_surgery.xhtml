@@ -19,10 +19,10 @@
                         <h:outputLabel value="Total Value : "/>
                         <h:outputLabel value="#{surgeryBillController.batchBill.total}"/>
                         <p:commandButton value="Clear All" ajax="false"
-                                         action="#{surgeryBillController.makeNull}"
+                                        action="#{surgeryBillController.makeNull}"
                                          style="float: right;"/>
                         <p:commandButton value="Save Surgery Detail" ajax="false" 
-                                         action="#{surgeryBillController.save()}" 
+                                        action="#{surgeryBillController.save()}" 
                                          style="float: right;" 
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
 
@@ -128,7 +128,7 @@
                                             <p:inputText autocomplete="off" id="prof" value="#{surgeryBillController.proEncounterComponent.billFee.feeValue}"/>
                                             <p:commandButton ajax="false" update="surgery"  
                                                              value="Add Professional Fee"  
-                                                             action="#{surgeryBillController.addProfessionalFee()}"
+                                                            action="#{surgeryBillController.addProfessionalFee()}"
                                                              disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                         </p:panelGrid>
                                     </p:panel>
@@ -166,18 +166,18 @@
                                             </p:column>     
                                             <p:column headerText="Update">
                                                 <p:commandButton ajax="false" value="Update"  
-                                                                 action="#{surgeryBillController.updateProFee(c.billFee)}"
+                                                                action="#{surgeryBillController.updateProFee(c.billFee)}"
                                                                  disabled="#{c.billFee.id eq null or surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                             </p:column>
 
                                             <p:column headerText="Remove">
                                                 <p:commandButton ajax="false" value="Remove"  
                                                                  rendered="#{c.billFee.id eq null}"
-                                                                 action="#{surgeryBillController.removeProEncFromList(c)}"
+                                                                action="#{surgeryBillController.removeProEncFromList(c)}"
                                                                  disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                                 <p:commandButton ajax="false" value="Remove"  
                                                                  rendered="#{c.billFee.id ne null}"
-                                                                 action="#{surgeryBillController.removeProEncFromDbase(c)}"
+                                                                action="#{surgeryBillController.removeProEncFromDbase(c)}"
                                                                  disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                             </p:column>
                                         </p:dataTable>
@@ -225,8 +225,8 @@
 
 
                                             </h:panelGrid>   
-                                            <p:commandButton value="Add Time Service"  ajax="false"
-                                                             action="#{surgeryBillController.addTimedService()}"
+                                            <p:commandButton value="Add Time Service" ajax="false"
+                                                            action="#{surgeryBillController.addTimedService()}"
                                                              disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                         </p:panel>
                                     </p:panel>
@@ -271,17 +271,17 @@
                                             </p:column>     
                                             <p:column >
                                                 <p:commandButton value="Update" ajax="false"  
-                                                                 action="#{surgeryBillController.updateTimedService(ti.billFee)}"
+                                                                action="#{surgeryBillController.updateTimedService(ti.billFee)}"
                                                                  disabled="#{ti.billFee.id eq null or surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>                                                                    
                                             </p:column>
                                             <p:column headerText="Remove">
                                                 <p:commandButton ajax="false" value="Remove A"  
                                                                  rendered="#{ti.billFee.id eq null}"
-                                                                 action="#{surgeryBillController.removeTimedEncFromList(ti)}"
+                                                                action="#{surgeryBillController.removeTimedEncFromList(ti)}"
                                                                  disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                                 <p:commandButton ajax="false" value="Remove B"  
                                                                  rendered="#{ti.billFee.id ne null}"
-                                                                 action="#{surgeryBillController.removeTimedEncFromDbase(ti)}"
+                                                                action="#{surgeryBillController.removeTimedEncFromDbase(ti)}"
                                                                  disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}"/>
                                             </p:column>
                                         </p:dataTable>

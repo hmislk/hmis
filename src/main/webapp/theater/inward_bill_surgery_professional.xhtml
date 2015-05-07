@@ -88,7 +88,7 @@
                                         <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
                                         <p:commandButton ajax="false" update="surgery"  
                                                          value="Add Professional Fee"  
-                                                         action="#{inwardProfessionalBillController.addProfessionalFee()}"
+                                                        action="#{inwardProfessionalBillController.addProfessionalFee()}"
                                                          disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
                                     </p:panelGrid>
                                 </p:panel>
@@ -140,18 +140,18 @@
                                     </p:column>     
                                     <p:column headerText="Update">
                                         <p:commandButton ajax="false" value="Update"  
-                                                         action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
+                                                        action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
                                                          disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
                                     </p:column>
 
                                     <p:column headerText="Remove">
                                         <p:commandButton ajax="false" value="Remove"  
                                                          rendered="#{c.billFee.id eq null}"
-                                                         action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
+                                                        action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
                                                          disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
                                         <p:commandButton ajax="false" value="Remove"  
                                                          rendered="#{c.billFee.id ne null}"
-                                                         action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
+                                                        action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
                                                          disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
                                     </p:column>
                                 </p:dataTable>

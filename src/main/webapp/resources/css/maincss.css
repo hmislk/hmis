@@ -598,8 +598,8 @@ a:hover {
         border-color: #008000;*/
 }
 
-.dateTimePicker{
-    width: 350px;
+.dateTimePicker input{
+    width: 280px;
 }
 
 

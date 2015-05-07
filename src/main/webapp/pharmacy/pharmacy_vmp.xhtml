@@ -21,7 +21,7 @@
                             </f:ajax>
                         </p:selectOneListbox>
                         <p:panelGrid id="gpSelectButtons" columns="3"  >
-                            <p:commandButton id="btnAdd" value="Add" ajax="false"  action="#{vmpController.prepareAdd()}" styleClass="buttons" >
+                            <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{vmpController.prepareAdd()}" styleClass="buttons" >
                                 <p:ajax update="btnAdd  btnDelete gpDetail " process="btnAdd" >
                                 </p:ajax>
                             </p:commandButton>
@@ -71,13 +71,13 @@
                             </p:column>
                             <p:column headerText="Remove">
 
-                                <p:commandButton value="Remove" ajax="false"  action="#{vmpController.remove}">
+                                <p:commandButton value="Remove" ajax="false" action="#{vmpController.remove}">
                                     <f:setPropertyActionListener value="#{v}" target="#{vmpController.removingVtmInVmp}"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
 
-                        <p:commandButton  action="#{vmpController.saveSelected()}"  ajax="false" value="Save" ></p:commandButton>
+                        <p:commandButton action="#{vmpController.saveSelected()}" ajax="false" value="Save" ></p:commandButton>
 
                     </p:panel>
 

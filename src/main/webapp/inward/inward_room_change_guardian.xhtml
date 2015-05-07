@@ -30,10 +30,10 @@
                             </p:column>
                         </p:autoComplete>   
                         <p:commandButton value="Change"  
-                                         action="#{roomChangeController.changeGurdianRoom()}" ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
+                                        action="#{roomChangeController.changeGurdianRoom()}" ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
                         <p:commandButton value="Clear"  
-                                         action="#{roomChangeController.recreate()}"
-                                         ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
+                                        action="#{roomChangeController.recreate()}"
+                                       ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
 
                     </h:panelGrid>
                 </p:panel>
@@ -87,7 +87,7 @@
                             </p:calendar>
 
                             <p:commandButton value="Change"  
-                                             action="#{roomChangeController.changeGurdianRoom()}" ajax="false" onclick="onSubmitButton();"  />
+                                            action="#{roomChangeController.changeGurdianRoom()}" ajax="false" onclick="onSubmitButton();"  />
                         </h:panelGrid>                                    
                     </p:tab>
 
@@ -122,7 +122,7 @@
 
                             <p:column>
                                 <p:commandButton ajax="false" value="Update" 
-                                                 action="#{roomChangeController.update(rm)}"
+                                                action="#{roomChangeController.update(rm)}"
                                                  disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
                             </p:column>
                             <p:column>
@@ -131,7 +131,7 @@
                             </p:column> 
                             <p:column>
                                 <p:commandButton ajax="false" value="Remove"  onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;"  action="#{roomChangeController.removeGuardianRoom(rm)}"/>
+                                            return false;" action="#{roomChangeController.removeGuardianRoom(rm)}"/>
                             </p:column>
                         </p:dataTable>
                     </p:tab>
@@ -143,7 +143,7 @@
                             </p:column>     
                             <p:column>
                                 <p:commandButton ajax="false" value="Update" 
-                                                 action="#{roomChangeController.update(rm)}"
+                                                action="#{roomChangeController.update(rm)}"
                                                  disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
                             </p:column>
 

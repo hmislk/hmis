@@ -32,7 +32,7 @@
                                          style="width: 400px;">                            
                         </p:autoComplete>
 
-                        <p:commandButton id="admt"  action="#{admissionController.saveSelected}"  ajax="false" value="Admit" onclick="onSubmitButton();" />
+                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>
                         <p:defaultCommand target="admt"/>
 

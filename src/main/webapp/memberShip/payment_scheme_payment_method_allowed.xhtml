@@ -38,7 +38,7 @@
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
                                     <p:commandButton ajax="false" id="btnAdd" value="Add" 
-                                                     action="#{paymentSchemeController.prepareAdd()}" 
+                                                    action="#{paymentSchemeController.prepareAdd()}" 
                                                      styleClass="buttons" disabled="true"/>                                       
 
 
@@ -47,7 +47,7 @@
                                     </p:commandButton>
 
                                     <p:commandButton ajax="false" value="Clear"
-                                                     action="#{paymentSchemeController.recreateModel}"/>
+                                                    action="#{paymentSchemeController.recreateModel}"/>
 
                                 </h:panelGrid>
                             </p:panel>
@@ -62,7 +62,7 @@
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
                                     </h:selectOneListbox>
 
-                                    <h:commandButton id="btnSave"  value="Add"  action="#{paymentSchemeController.saveSelectedAllowedPaymentMethod()}" styleClass="buttons">                                        
+                                    <h:commandButton id="btnSave"  value="Add" action="#{paymentSchemeController.saveSelectedAllowedPaymentMethod()}" styleClass="buttons">                                        
                                     </h:commandButton>
                                 </h:panelGrid>
                                 

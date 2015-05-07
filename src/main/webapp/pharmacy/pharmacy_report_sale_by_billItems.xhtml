@@ -45,7 +45,7 @@
 
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleBillItems()}"/>
-                    <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter subTable="true" type="xlsx" target="sum1" fileName="report_grn_detail_by_supplier"  />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
