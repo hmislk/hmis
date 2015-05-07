@@ -21,8 +21,9 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyWholesaleBills}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyWholesaleAllBills()}"/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                </h:panelGrid><h:panelGrid columns="6" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>    
                                 <h:outputLabel value="Department Name"/>   
