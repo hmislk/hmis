@@ -42,6 +42,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.memberShip.MembershipScheme;
@@ -141,6 +142,11 @@ public class BillController implements Serializable {
     String comment;
     double opdPaymentCredit;
     BilledBill opdBill;
+    Date fromDate;
+    Date toDate;
+    Department department;
+    Institution institution;
+    Category category;
 
     //Print Last Bill
     Bill billPrint;
@@ -567,9 +573,13 @@ public class BillController implements Serializable {
 
     }
     
-//    public void getOpdBills(){
-//        billEjb.findBillBills(sessionDate, sessionDate, billTypes, billClasses, null, creditCompany, null, paymentMethods, billTypesToExculde, billCLassesToExclude)
-//    }
+    public void getOpdBills(){
+        BillType[] billTypes={BillType.OpdBill};
+        Class[] billClasses={Bill.class};
+        PaymentMethod[] paymentMethods={PaymentMethod.Cash,PaymentMethod.Card,PaymentMethod.Cheque,PaymentMethod.Credit,PaymentMethod.Slip};
+        
+        bills=billEjb.findBillBills(fromDate, toDate, billTypes, billClasses, department, institution, category, paymentMethods, null, null);
+    }
 
     public BillEjb getBillEjb() {
         return billEjb;
@@ -577,6 +587,62 @@ public class BillController implements Serializable {
 
     public void setBillEjb(BillEjb billEjb) {
         this.billEjb = billEjb;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public SearchController getSearchController() {
+        return searchController;
+    }
+
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
+    }
+
+    public MembershipSchemeController getMembershipSchemeController() {
+        return membershipSchemeController;
+    }
+
+    public void setMembershipSchemeController(MembershipSchemeController membershipSchemeController) {
+        this.membershipSchemeController = membershipSchemeController;
     }
     
     
