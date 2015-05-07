@@ -3167,7 +3167,7 @@ public class SearchController implements Serializable {
     }
     
     public void createWholePreBillsForReturn() {
-        createPreBillsForReturn(BillType.PharmacyPre, BillType.PharmacyWholeSale);
+        createPreBillsForReturn(BillType.PharmacyWholesalePre, BillType.PharmacyWholeSale);
     }
 
     public void createPreBillsForReturn(BillType billType, BillType refBillType) {
