@@ -81,6 +81,8 @@ public class SearchController implements Serializable {
     Item item;
     double dueTotal;
     double doneTotal;
+    double netTotal;
+    
     ////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -644,6 +646,11 @@ public class SearchController implements Serializable {
         } else {
             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         }
+        netTotal=0.0;
+        for (Bill b : bills) {
+            netTotal+=b.getNetTotal();
+            
+        }
 
     }
 
@@ -710,6 +717,11 @@ public class SearchController implements Serializable {
              bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
         }else{
              bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        }
+        netTotal=0.0;
+        for (Bill b : bills) {
+            netTotal+=b.getNetTotal();
+            
         }
     }
     public void createPharmacyWholesaleBills(){
@@ -5360,5 +5372,14 @@ public class SearchController implements Serializable {
     public void setUserPatientInvestigations(List<PatientInvestigation> userPatientInvestigations) {
         this.userPatientInvestigations = userPatientInvestigations;
     }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+    
 
 }

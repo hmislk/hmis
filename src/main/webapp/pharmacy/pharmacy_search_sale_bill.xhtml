@@ -23,7 +23,7 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyRetailBills}"/>
                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyRetailAllBills()}"/>
                                 <p:spacer height="30"/>
-                                </h:panelGrid>
+                            </h:panelGrid>
                             <h:panelGrid columns="6" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>    
@@ -54,14 +54,19 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Total :"/>
+                                <h:outputLabel value="#{searchController.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                action="pharmacy_reprint_bill_sale">
+                                                 action="pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>
