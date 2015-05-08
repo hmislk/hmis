@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Pharmacy BILL TO PAY SEARCH "/>                          
+                    <h:panelGrid columns="5" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                        </p:calendar>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTablePharmacyCreditToPayBills()}"/>
+                        <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+
+                        <h:outputLabel value="Bill No"/>
+                        <h:outputLabel value="Staff Name"/>
+                        <h:outputLabel value="Credit Company Name"/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.staffName}" />
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.institution}" />
+
+                    </h:panelGrid>
+
+
+
+                    <p:defaultCommand target="btnSearch" />
+
+
+                </f:facet>
+
+                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
+                    <p:column headerText="No" styleClass="alignTop">
+                        <h:outputLabel value="#{i+1}"/>
+                    </p:column>
+                    <p:column headerText="View">
+                        <p:commandButton ajax="false" value="Pay" action="pharmacy_bill_payment_pharmacy" disabled="#{bill.cancelled or bill.refunded}">
+                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                            <f:setPropertyActionListener value="#{bill}" target="#{billController.opdBill}"/>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Bill No" >                                
+                        <h:outputLabel   value="#{bill.deptId}"/>
+                    </p:column>                            
+                    <p:column headerText="Credit Company"  >                                
+                        <h:outputLabel value="#{bill.toInstitution.name}" />
+                    </p:column>
+                    <p:column headerText="Credit Staff"  >                                
+                        <h:outputLabel value="#{bill.toStaff.person.name}" />
+                    </p:column>
+                    <p:column headerText="Billed at"  >
+                        <h:outputLabel value="#{bill.createdAt}" >
+                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                        </h:outputLabel>
+                        <br/>
+                        <h:panelGroup rendered="#{bill.cancelled}" >
+                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{bill.refunded}" >
+                            <h:outputLabel style="color: red;" value="Refunded at " />
+                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </p:column>  
+                    <p:column headerText="Billed by" >
+                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                        </h:outputLabel>
+                        <br/>
+                        <h:panelGroup rendered="#{bill.cancelled}" >
+                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{bill.refunded}" >
+                            <h:outputLabel style="color: red;" value="Refunded By " />
+                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </p:column>    
+                    <p:column headerText="Payment Method" >                                
+                        <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                        <h:outputLabel value="#{bill.paymentScheme.name}" />
+                    </p:column>
+                    <p:column headerText="Total Value"  >
+
+                        <h:outputLabel value="#{bill.netTotal}" >
+                            <f:convertNumber pattern="#,#00.00"/>
+                        </h:outputLabel>
+
+                    </p:column>
+                    <p:column headerText="To Pay Amount" >
+
+                        <h:outputLabel value="#{bill.netTotal-bill.paidAmount}" style="color: red;">
+                            <f:convertNumber pattern="#,#00.00"/>
+                        </h:outputLabel>
+
+                    </p:column>
+                    <p:column headerText="Paid Value" >
+
+                        <h:outputLabel value="#{bill.paidAmount}" >
+                            <f:convertNumber pattern="#,#00.00"/>
+                        </h:outputLabel>
+
+                    </p:column>                         
+                </p:dataTable>
+
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
+
