@@ -579,6 +579,20 @@ public class BillController implements Serializable {
         bills=billEjb.findBillBills(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
         System.out.println("bills = " + bills);
     }
+    
+    public void getPharmacyBills(){
+        BillType[] billTypes={BillType.PharmacySale};
+        
+        bills=billEjb.findBillBills(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
+        System.out.println("bills = " + bills);
+    }
+    
+    public void getPharmacyWholeBills(){
+        BillType[] billTypes={BillType.PharmacyWholesalePre};
+        
+        bills=billEjb.findBillBills(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
+        System.out.println("bills = " + bills);
+    }
 
     public BillEjb getBillEjb() {
         return billEjb;
