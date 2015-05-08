@@ -236,7 +236,7 @@
                                          <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_purchase"  
                                                      value="Purchase for Wholesale" rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>               
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_return_withouttresing"  
-                                                     value="Return Without Traising" rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                                                     value="Direct Return Without GRN" rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Transfer">
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
