@@ -96,12 +96,14 @@ public class BillEjb {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         BillListWithTotals r = new BillListWithTotals();
+        List<BillListWithTotals> rList = new ArrayList<>();
         r.setBills(getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP));
         if (r.getBills() != null) {
             for (Bill b : r.getBills()) {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
+                rList.add(r);
             }
         } else {
             r.setBills(new ArrayList<Bill>());
