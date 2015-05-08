@@ -46,8 +46,7 @@ public class BillEjb {
         String sql;
         Map m = new HashMap();
         
-        sql = "Select b";
-        sql += " from Bill b";
+        sql = "Select b from Bill b ";
         sql += " where b.createdAt between :fd and :td ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -78,12 +77,12 @@ public class BillEjb {
             m.put("bcse", lbcs);
         }
         if (department != null) {
-            sql += " and b.department =:dept";
+            sql += " and b.department =:dept ";
             m.put("dept", department);
         }
 
         if (institution != null) {
-            sql += " and (b.institution =:ins or b.department.institution =:ins)";
+            sql += " and (b.institution =:ins or b.department.institution =:ins) ";
             m.put("ins", institution);
         }
 

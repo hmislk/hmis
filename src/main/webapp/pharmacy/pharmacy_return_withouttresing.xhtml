@@ -50,9 +50,9 @@
                                                                                 
                                     </p:autoComplete>
 
-                                    <p:inputText value="#{pharmacyReturnwithouttresing.preBill.invoiceNumber}" id="req"/>
+                                    <p:inputText value="#{pharmacyReturnwithouttresing.preBill.comments}" id="com"/>
 
-                                    <p:watermark value="Request Number" for="req"/>
+                                    <p:watermark value="Comment" for="com"/>
                                     <p:watermark value="Return  Dealer/Supplier" for="acDept"/>
 
                                 </f:facet>
@@ -245,7 +245,7 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
                                                          onclick="onSubmitButton();"
-                                                       ajax="false" action="/pharmacy/pharmacy_issue"
+                                                       ajax="false" action="/pharmacy/pharmacy_return_withouttresing"
                                                         actionListener="#{pharmacyReturnwithouttresing.resetAll()}"  ></p:commandButton>
 
 
