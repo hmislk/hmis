@@ -123,7 +123,7 @@
                     <p:column headerText="Approve">
                         <p:commandButton ajax="false" value="Approve" 
                                         action="pharmacy_purhcase_order_approving"
-                                         disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false}">
+                                         disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                             <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
                         </p:commandButton>
                     </p:column>

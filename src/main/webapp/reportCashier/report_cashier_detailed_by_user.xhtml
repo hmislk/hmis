@@ -22,6 +22,9 @@
                             <h:outputLabel value="#{commonReport.webUser.institution.name}"/> <br/>
 
                             <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="From - &nbsp;&nbsp; #{commonReport.fromDate}">
+                            
+                            </h:outputLabel>
 
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
@@ -95,15 +98,15 @@
                         
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeBilled data="#{commonReport.userBillsOwnPh}"/>                        
+                        <ca:pharmacyWholeBilled data="#{commonReport.billedPhWholeSale}"/>                        
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
+                        <ca:pharmacyWholeCancelled data="#{commonReport.cancelledPhWholeSale}"  />
 
                         <p:spacer height="30"/>
 
-                        <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+                        <ca:phrmacyWholeRefunded data="#{commonReport.refundedPhWholeSale}"/>
 
                         <p:spacer height="30"/>
 

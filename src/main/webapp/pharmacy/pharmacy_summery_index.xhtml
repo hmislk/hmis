@@ -21,13 +21,13 @@
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) Cashier Detailed" 
-                                            action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                             action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2) Cashier Summary"
-                                            action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                             action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="3) Cashier Detailed Report by Department" 
-                                            action="/reportCashier/report_cashier_detailed_by_department.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                             action="/reportCashier/report_cashier_detailed_by_department.xhtml" actionListener="#{commonReport.recreteModal}"/>
 
 
                         </h:panelGrid>
@@ -36,21 +36,21 @@
                             <f:facet name="header">
                                 <p:outputLabel value="2) Sale Summary" />
                             </f:facet>    
-                             <p:commandButton styleClass="linkButton" ajax="false"  style="text-align: left"
-                                              value="1) All Department Sale Summary " 
+                            <p:commandButton styleClass="linkButton" ajax="false"  style="text-align: left"
+                                             value="1) All Department Sale Summary " 
                                              action="pharmacy_report_summery"/>                                    
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2)Sale Summary - By Bill Type"
-                                            action="pharmacy_report_sale_by_date_summery.xhtml"
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                             action="pharmacy_report_sale_by_date_summery.xhtml"
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>   
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="3)Sale Summary - By Paymentmethod "
-                                            action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                             action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>   
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="4) Sale Summary - By Paymentmethod(By Bill) "
-                                            action="pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
@@ -59,24 +59,24 @@
                             </f:facet>                               
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) Sale Detail - By Bill " 
-                                            action="pharmacy_report_sale_by_date_detail.xhtml"
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_date_detail.xhtml"
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2) Sale Detail - By Bill Items" 
-                                            action="pharmacy_report_sale_by_billItems.xhtml"
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_billItems.xhtml"
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="3) Sale Detail -By Payment Scheme"
-                                            action="pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="4) Sale Summary By Payment Scheme Summary"
-                                            action="pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false"  style="text-align: left"
                                              value="5) Sale Detail - By Paymentmethod"
-                                            action="pharmacy_report_sale_by_date_detail_payment_method.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_sale_by_date_detail_payment_method.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                         </h:panelGrid>
 
 
@@ -120,21 +120,21 @@
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) Unit Issue by bill" 
-                                            action="pharmacy_report_unit_issue_bill.xhtml" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_unit_issue_bill.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <!--                            <p:commandButton styleClass="linkButton" ajax="false" 
                                                                          value="Department Unit by Department" 
                            action="pharmacy_report_unit_issue_department.xhtml"  rendered="false"/>-->
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2) Unit Issue by Department" 
-                                            action="pharmacy_report_unit_issue_department_by_department.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_unit_issue_department_by_department.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="3) Unit Issue by Item(Batch)" 
-                                            action="unit_report_by_item.xhtml"/>
-                            
+                                             action="unit_report_by_item.xhtml"/>
+
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="4) Unit Issue by Item" 
-                                            action="unit_report_by_item_1.xhtml"/>
+                                             action="unit_report_by_item_1.xhtml"/>
 
                         </h:panelGrid>
 
@@ -144,21 +144,21 @@
                             </f:facet>   
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) BHT Issue - By Bill" 
-                                            action="pharmacy_report_bht_issue_bill" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_bht_issue_bill" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2) BHT Issue - By BillItem"
-                                            action="pharmacy_report_bht_issue_billItem" 
-                                            actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             action="pharmacy_report_bht_issue_billItem" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="3) BHT Issue - By Item" 
-                                            action="/inward/report_bht_issue_by_item.xhtml"/>
+                                             action="/inward/report_bht_issue_by_item.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false"  style="text-align: left"
                                              value="4) BHT Issue - Staff " 
-                                            action="pharmacy_report_staff_issue_bill" />
+                                             action="pharmacy_report_staff_issue_bill" />
                             <p:commandButton styleClass="linkButton" ajax="false"  style="text-align: left"
                                              value="5) BHT Issue With Margine report " 
-                                            action="pharmacy_report_bht_issue_item_with_margin" />
+                                             action="pharmacy_report_bht_issue_item_with_margin" />
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
@@ -180,27 +180,34 @@
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="2)Movement Report Stock By Date-By Batch" action="pharmacy_report_category_vice_movement_item_batch.xhtml" />
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="11)Summary All Report" />
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) Pharmacy All Report" action="pharmacy_report_summery_all.xhtml" />
-                            
+
                         </h:panelGrid>
-                        
-                        
-                          <h:panelGrid columns="1" >
+
+
+                        <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="12)Pharmacy Return Without Traising" />
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                              value="1) Pharmacy Return Without Traising" action="pharmacy_report_grn_detail_1.xhtml" />
-                            
+
                         </h:panelGrid>
 
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="13)Pharmacy WholeSale Repot" />
+                            </f:facet>    
+                            <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                             value="1) Pharmacy WholeSale Credit Bills" action="/pharmacy_wholesale/pharmacy_report_credit" />
 
+                        </h:panelGrid>
 
                     </h:panelGrid>
 
