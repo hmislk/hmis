@@ -17,15 +17,16 @@
                     <p:panel header="Opd All Bill" >
 
                         <h:panelGrid columns="8" >
-                            <h:outputLabel value="Opd All Bill" ></h:outputLabel>
+                            <h:outputLabel value="Institution" ></h:outputLabel>
+                            <p:autoComplete converter="institutionConverter"
+                                            completeMethod="#{institutionController.completeIns}" var="ins" 
+                                            itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
+                                            value="#{billController.institution}">
+                            </p:autoComplete>
+                            <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{billController.department}" converter="dep" >
-                            </p:autoComplete>
-                            <p:autoComplete converter="institutionConverter"
-                                            completeMethod="#{institutionController.completeSupplier}" var="ins" 
-                                            itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
-                                            value="#{billController.institution}" converter="ins" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
@@ -116,10 +117,7 @@
                                 </h:panelGroup>
                             </p:column>    
                             <p:column headerText="Client">                               
-                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
-                                <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                    <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
-                                </h:commandLink>                                
+                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Client Phone No">                              
                                 <h:outputLabel value="#{bill.patient.person.phone}" />

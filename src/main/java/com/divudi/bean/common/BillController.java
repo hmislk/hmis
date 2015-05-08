@@ -575,10 +575,9 @@ public class BillController implements Serializable {
     
     public void getOpdBills(){
         BillType[] billTypes={BillType.OpdBill};
-        Class[] billClasses={Bill.class};
-        PaymentMethod[] paymentMethods={PaymentMethod.Cash,PaymentMethod.Card,PaymentMethod.Cheque,PaymentMethod.Credit,PaymentMethod.Slip};
         
-        bills=billEjb.findBillBills(fromDate, toDate, billTypes, billClasses, department, institution, category, paymentMethods, null, null);
+        bills=billEjb.findBillBills(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
+        System.out.println("bills = " + bills);
     }
 
     public BillEjb getBillEjb() {
