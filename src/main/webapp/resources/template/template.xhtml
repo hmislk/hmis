@@ -233,7 +233,7 @@
                                                      value="GRN Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveReturn')}" ></p:menuitem>  
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase"  
                                                      value="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_purchase"  
+                                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_purchase"  
                                                      value="Purchase for Wholesale" rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>               
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_return_withouttresing"  
                                                      value="Direct Return Without GRN" rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
@@ -500,6 +500,11 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward" value="By Bht Bill"  />
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all" value="By Credit Company"  />
                                             </p:submenu>     
+                                        </p:submenu>
+                                        <p:submenu label="Pharmacy">
+                                            <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_to_pay" value="Credit Bill to Pay Search"  />
+                                            <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid" value="Credit Bill Pay Search"  />
+                                            <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid_bills" value="Credit Bill With Payment bills"  />
                                         </p:submenu>
                                         <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
@@ -806,12 +811,12 @@
                                                      value="GRN Receive"  actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_grn_list_for_return"  
                                                      value="GRN Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveReturn')}" ></p:menuitem> 
-                                                    
-                                                     
+
+
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase"  
                                                      value="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                                        
-                                                     
+
+
                                     </p:submenu>
                                     <p:submenu label="Transfer">
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>

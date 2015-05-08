@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Credit Payment Bills with Credit Bill "/>                          
+                    <h:panelGrid columns="5" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                        </p:calendar>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCreditBillsWithPharmacyBill()}"/>
+                    </h:panelGrid>
+                </f:facet>
+
+                <p:dataTable value="#{searchController.withbills}" var="wb" >
+                    <p:columnGroup type="header" >
+                        <p:row>
+                            <p:column headerText="Bill No"/>
+                            <p:column headerText="Billed for"/>
+                            <p:column headerText="Billed at"/>
+                            <p:column headerText="Billed by"/>
+                            <p:column headerText="Paymentmethod"/>
+                            <p:column headerText="Paid Value"/>
+                        </p:row>
+                    </p:columnGroup>
+                    <p:subTable value="#{wb.caBills}" var="bill" rendered="#{wb.caBills.size()>0}">
+                        <f:facet name="header">
+                            <p:outputLabel value="Bill No - #{wb.b.deptId}"></p:outputLabel>
+                            <p:outputLabel value="Balance - #{wb.b.netTotal-wb.b.paidAmount}" rendered="#{(wb.b.netTotal-wb.b.paidAmount)>0}" style="color: red; float: right;" />
+                            <p:outputLabel value="Balance - #{wb.b.netTotal-wb.b.paidAmount}" rendered="#{(wb.b.netTotal-wb.b.paidAmount) eq 0}" style="color: green; float: right;" />
+                            <p:outputLabel value="Bill Total - #{wb.b.netTotal}" style="float: right; padding-right: 50%;"></p:outputLabel>
+                        </f:facet>
+                        <p:column headerText="Bill No" >                                
+                            <h:outputLabel   value="#{bill.deptId}"/>
+                        </p:column>                            
+                        <p:column headerText="Billed for"  >                                
+                            <h:outputLabel value="#{bill.referenceBill.deptId}" />
+                        </p:column>
+                        <p:column headerText="Billed at"  >
+                            <h:outputLabel value="#{bill.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                            </h:outputLabel>
+                            <br/>
+                            <h:panelGroup rendered="#{bill.cancelled}" >
+                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                </h:outputLabel>
+                            </h:panelGroup>
+
+                        </p:column>  
+                        <p:column headerText="Billed by" >
+                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                            </h:outputLabel>
+                            <br/>
+                            <h:panelGroup rendered="#{bill.cancelled}" >
+                                <h:outputLabel style="color: red;" value="Cancelled By " />
+                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                </h:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{bill.refunded}" >
+                                <h:outputLabel style="color: red;" value="Refunded By " />
+                                <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                </h:outputLabel>
+                            </h:panelGroup>
+                        </p:column>    
+                        <p:column headerText="Payment Method" >                                
+                            <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                            <h:outputLabel value="#{bill.paymentScheme.name}" />
+                        </p:column>
+                        <p:column headerText="Paid Value"  >
+
+                            <h:outputLabel value="#{bill.netTotal}" >
+                                <f:convertNumber pattern="#,#00.00"/>
+                            </h:outputLabel>
+
+                        </p:column>
+                    </p:subTable>
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
+
