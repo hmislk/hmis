@@ -74,6 +74,14 @@
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Paid"  styleClass="alignTop" >
+                                #{pi.billItem.bill.paidAmount}<br/>
+                                #{pi.billItem.bill.total}<br/>
+                                #{(pi.billItem.bill.paidAmount - pi.billItem.bill.total)}<br/>
+                                <h:outputLabel value="#{(pi.billItem.bill.paidAmount - pi.billItem.bill.total) gt 1}" >
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
