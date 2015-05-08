@@ -22,6 +22,9 @@
                             <h:outputLabel value="#{commonReport.webUser.institution.name}"/> <br/>
 
                             <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="From - &nbsp;&nbsp; #{commonReport.fromDate}">
+                            
+                            </h:outputLabel>
 
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
