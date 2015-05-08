@@ -16,7 +16,7 @@
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" >
+                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" disabled="#{pharmacyBillSearch.bill.cancelled}" >
                             </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
@@ -62,7 +62,21 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:po bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        <p:panel>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Print" ></h:outputLabel>
+                                <hr/>
+                                <p:commandButton value="Reprint" ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton value="Back To Search" ajax="false" action="pharmacy_purhcase_order_list_to_approve" >
+                                </p:commandButton>
+                            </f:facet>
+                            <h:panelGroup id="gpBillPreview" >
+                                <pharmacy:po_request bill="#{pharmacyBillSearch.bill.cancelledBill}" can="true"/>
+                            </h:panelGroup>
+                        </p:panel>
+                        
                     </h:panelGroup>
 
 
