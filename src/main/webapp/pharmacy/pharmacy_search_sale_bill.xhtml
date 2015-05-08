@@ -13,7 +13,7 @@
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                          
                             <h:outputLabel value="PHARMACY BILL SEARCH SALE BILL  "/>                         
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="6" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -21,18 +21,25 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyRetailBills}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyRetailAllBills()}"/>
+                                <p:spacer height="30"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="6" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>    
                                 <h:outputLabel value="Department Name"/>   
                                 <h:outputLabel value="Total"/>
-                                <h:outputLabel value="Net Total"/>
+                                <h:outputLabel value="Net Total"/><h:outputLabel/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                                <p:selectOneMenu value="#{searchController.paymentMethod}">
+                                    <f:selectItem itemLabel="Select Payment Method"/>
+                                    <f:selectItems value="#{enumController.paymentMethods}" />
+                                    <f:ajax  event="change" execute="@this"  listener="#{searchController.makeNull}"/>
+                                </p:selectOneMenu><h:outputLabel/>
                             </h:panelGrid>
 
 
@@ -47,14 +54,19 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Total :"/>
+                                <h:outputLabel value="#{searchController.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                action="pharmacy_reprint_bill_sale">
+                                                 action="pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>

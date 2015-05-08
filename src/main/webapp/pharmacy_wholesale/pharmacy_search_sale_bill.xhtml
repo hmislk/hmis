@@ -21,8 +21,9 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyWholesaleBills}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyWholesaleAllBills()}"/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                </h:panelGrid><h:panelGrid columns="6" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>    
                                 <h:outputLabel value="Department Name"/>   
@@ -53,6 +54,12 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
+                            <f:facet name="header">
+                                <h:outputLabel value="Total :"/>
+                                <h:outputLabel value="#{searchController.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
