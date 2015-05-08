@@ -17,7 +17,7 @@
 
                         <p:panel header="Add new Matrix" >
                             <p:panelGrid columns="2" >
-                                <h:outputLabel value="Payment Scheme"/>
+                                <h:outputLabel value="Discount Scheme"/>
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{opdMemberShipDiscountController.paymentScheme}" 
                                                 completeMethod="#{paymentSchemeController.completePaymentScheme}" 
@@ -64,7 +64,7 @@
                             <p:dataTable id="inwd" value="#{opdMemberShipDiscountController.items}"
                                          filteredValue="#{opdMemberShipDiscountController.filterItems}"
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
-                                <p:column headerText="Payment Scheme">
+                                <p:column headerText="Discount Scheme">
                                     <p:autoComplete forceSelection="true" 
                                                     value="#{a.paymentScheme}" 
                                                     completeMethod="#{paymentSchemeController.completePaymentScheme}" 

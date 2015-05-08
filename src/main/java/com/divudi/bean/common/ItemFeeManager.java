@@ -166,11 +166,15 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void fillFees() {
+        itemFees = fillFees(item);
+    }
+    
+    public List<ItemFee> fillFees(Item i) {
         String jpql;
         Map m = new HashMap();
         jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
-        m.put("i", item);
-        itemFees = itemFeeFacade.findBySQL(jpql, m);
+        m.put("i", i);
+        return itemFeeFacade.findBySQL(jpql, m);
     }
     
     public void addNewFee(){
