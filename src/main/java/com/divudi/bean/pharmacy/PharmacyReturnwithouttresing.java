@@ -412,6 +412,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        
 
         getPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getPreBill().setCreater(getSessionController().getLoggedUser());
