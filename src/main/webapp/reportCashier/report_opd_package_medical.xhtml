@@ -78,7 +78,22 @@
                 <p:panel id="gpBillPreview">
                     <p:dataTable id="tbl" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
                         <f:facet name="header">
-                            <p:outputLabel value="Medical Package Bill Detail Report" />
+                            <p:outputLabel value="Medical Package Detail Report" />
+                            <br/>
+                            <p:outputLabel value="From : "/>
+                        <p:outputLabel value="#{commonReport.fromDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        </p:outputLabel>
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="To : "/>
+                        <p:outputLabel value="#{commonReport.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        </p:outputLabel><br/>
+                        <p:outputLabel value=" #{billPackageMedicalController.currentBillItem.item.name}" />
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
                         </f:facet>
                         <p:column headerText="Serial No">
                             <f:facet name="header">
@@ -157,6 +172,9 @@
                         </p:columnGroup>
                     </p:dataTable>
                 </p:panel>
+                <f:facet name="footer">
+                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                </f:facet>
             </p:panel>
 
         </h:form>
