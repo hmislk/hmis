@@ -28,7 +28,7 @@
                     <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                 </p:calendar>
                 <p:commandButton update=":#{p:component('grn')} :#{p:component('po')} :#{p:component('dp')} :#{p:component ('depIssue')}" 
-                                 action="#{storeController1.createTable()}" value="View Detail"/>
+                                action="#{storeController1.createTable()}" value="View Detail"/>
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >

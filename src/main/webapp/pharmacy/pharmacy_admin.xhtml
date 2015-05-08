@@ -83,11 +83,11 @@
                             <p:panel header="Issue To Unit">
                                 <h:panelGrid columns="1">
                                     <p:commandButton ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
-                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
+                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
                                     <p:commandButton ajax="false" value="2) Correction of Issue To Unit (Reset Gross Net Value )" 
-                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
+                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
                                     <p:commandButton ajax="false" value="3) Correction of Issue To Unit (Reset Gross Net Value To Old only Cost Issue )" 
-                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
+                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
 
                                 </h:panelGrid>
                             </p:panel>
@@ -95,17 +95,17 @@
 
                             <p:panel header="Major Stock Adjustment"> 
                                 <p:commandButton ajax="false" value="1)Stock Variant Report (Before)" 
-                                                 action="pharmacy_variant_category_stock_by_item" />
+                                                action="pharmacy_variant_category_stock_by_item" />
                                 <p:commandButton ajax="false" value="2)Stock Variant Adjustment(After)" 
-                                                 action="pharmacy_variant_ajustment_pre_list" />
+                                                action="pharmacy_variant_ajustment_pre_list" />
                             </p:panel>
                             <p:panel header="Bulk Update"> 
                                 <p:commandButton ajax="false" value="Update Bulk Categery" 
-                                                 action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                                action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                                 <p:commandButton ajax="false" value="Update Bulk Discount Allowed" 
-                                                 action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                                action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                                 <p:commandButton ajax="false" value="Stock Item List" 
-                                                 action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                                action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                             </p:panel>
 
                             <p:panel header="Set up" style="min-width: 300px;" >

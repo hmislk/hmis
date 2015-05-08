@@ -19,8 +19,8 @@
                         <h:panelGrid columns="15"  >                                                     
 
                             <p:commandButton  value="Return" 
-                                              action="#{bhtIssueReturnController.settle}" 
-                                              ajax="false" 
+                                             action="#{bhtIssueReturnController.settle}" 
+                                            ajax="false" 
                                               style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();" >
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 

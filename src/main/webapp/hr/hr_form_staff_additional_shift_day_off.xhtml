@@ -56,7 +56,7 @@
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
-                                             action="#{staffAdditionalFormController.saveAdditionalFormShiftDayOff()}"/>
+                                            action="#{staffAdditionalFormController.saveAdditionalFormShiftDayOff()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
@@ -81,7 +81,7 @@
                             <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
 
                             <p:commandButton ajax="false" value="Search Shift Date " 
-                                             action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShiftDayOff()}" />
+                                            action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShiftDayOff()}" />
 
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 

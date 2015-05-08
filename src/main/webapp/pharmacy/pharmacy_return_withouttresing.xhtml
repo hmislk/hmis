@@ -37,22 +37,17 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="Return without Traising" />
                                    
-                                    <p:autoComplete completeMethod="#{institutionController.completeSupplier(qry)}" 
+                                    <p:autoComplete converter="institutionConverter"
+                                                    completeMethod="#{institutionController.completeSupplier}" 
                                                     styleClass="noPrintButton"
                                                     forceSelection="true"
                                                     var="w" itemLabel="#{w.name}" itemValue="#{w}"
                                                     value="#{pharmacyReturnwithouttresing.toInstitution}" 
                                                     id="acDept">
-                                        <p:column headerText="Department Name">
-                                             <h:outputLabel value=" #{w.name}" />
-                                           
+                                        <p:column>
+                                            <h:outputLabel value="#{w.name}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Institution Name">
-                                          <h:outputLabel value=" #{w.institution.name}" />  
-                                           
-                                        </p:column>
-                                        <p:ajax process="acDept" update=":#{p:component('pBillDetails')} #{p:component('tblBillItem')} " 
-                                                event="itemSelect"  listener="#{pharmacyReturnwithouttresing.calculateAllRates}" />
+                                                                                
                                     </p:autoComplete>
 
                                     <p:inputText value="#{pharmacyReturnwithouttresing.preBill.invoiceNumber}" id="req"/>
@@ -120,7 +115,7 @@
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacyReturnwithouttresing.addBillItem}"
+                                                         action="#{pharmacyReturnwithouttresing.addBillItem}"
                                                           onclick="onSubmitButton();"
                                                           process="@this acStock txtQty :#{p:component('acDept')}" 
                                                           update=":#{p:component('pBillDetails')} :#{p:component('panelError')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
@@ -240,9 +235,9 @@
                                 <f:facet name="header" >
                                     <h:panelGrid columns="20"  >
                                         <p:commandButton  accesskey="s" value="Return" 
-                                                          action="#{pharmacyReturnwithouttresing.settleBill()}" 
+                                                         action="#{pharmacyReturnwithouttresing.settleBill()}" 
                                                           onclick="onSubmitButton();"
-                                                          actionListener="#{pharmacyReturnwithouttresing.calculateAllRates}">
+                                                         actionListener="#{pharmacyReturnwithouttresing.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -250,8 +245,8 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
                                                          onclick="onSubmitButton();"
-                                                         ajax="false" action="/pharmacy/pharmacy_issue"
-                                                         actionListener="#{pharmacyReturnwithouttresing.resetAll()}"  ></p:commandButton>
+                                                       ajax="false" action="/pharmacy/pharmacy_issue"
+                                                        actionListener="#{pharmacyReturnwithouttresing.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -308,8 +303,8 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Return"
                                              onclick="onSubmitButton();"
-                                             ajax="false" action="/pharmacy/pharmacy_return_withouttresing" 
-                                             actionListener="#{pharmacyReturnwithouttresing.resetAll()}" ></p:commandButton>
+                                           ajax="false" action="/pharmacy/pharmacy_return_withouttresing" 
+                                            actionListener="#{pharmacyReturnwithouttresing.resetAll()}" ></p:commandButton>
 
                         </div>
                         <!--                        <div >

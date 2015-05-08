@@ -14,7 +14,7 @@
 
                 </f:facet>
                 <p:commandButton ajax="false" value="Process" 
-                                 action="#{reportMemberShip.createCreditInstitutionInwardPriceAdjustments()}"/>
+                                action="#{reportMemberShip.createCreditInstitutionInwardPriceAdjustments()}"/>
 
                 <p:dataGrid columns="1" value="#{reportMemberShip.ipaCreditInstitutions}" var="tbl">
                     <p:dataTable value="#{tbl.ipaPaymentMethods}" var="inw">

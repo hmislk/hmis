@@ -78,10 +78,10 @@
                                     <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result"  action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}">
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format"  action="/lab_ix_for_ix" >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format" action="/lab_ix_for_ix" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <f:setPropertyActionListener value="#{pi}" target="#{itemForItemController.patientIx}"></f:setPropertyActionListener>
                                     </p:commandButton>

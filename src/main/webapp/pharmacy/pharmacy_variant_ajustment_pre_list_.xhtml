@@ -13,8 +13,8 @@
                     <p:outputLabel value="Pharmacy Variant Adjustment"/>      
                     <h:panelGroup style="float: right;">
                         <p:commandButton value="All Request"
-                                         action="#{variantAdjustment.createAll()}"
-                                         ajax="false" ></p:commandButton>
+                                        action="#{variantAdjustment.createAll()}"
+                                       ajax="false" ></p:commandButton>
                     </h:panelGroup>
                 </f:facet>
                 <h:panelGrid columns="4" >
@@ -73,7 +73,7 @@
 
                     <p:column headerText="Adjust">
                         <p:commandButton ajax="false" value="Adjust" 
-                                         action="pharmacy_variant_adjustment">
+                                        action="pharmacy_variant_adjustment">
                             <f:setPropertyActionListener target="#{variantAdjustment.reportedBill}" value="#{b}"/>
                         </p:commandButton>
                     </p:column>

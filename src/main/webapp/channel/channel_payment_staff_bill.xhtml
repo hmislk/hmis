@@ -37,7 +37,7 @@
                                         <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
                                         <p:watermark value="Staff" for="scStaff"/>
 
-                                        <p:commandButton ajax="false" value="Process"  action="#{channelStaffPaymentBillController.calculateDueFees}"/>
+                                        <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>
                                     </h:panelGrid>
 

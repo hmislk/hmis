@@ -27,10 +27,10 @@
                             <h:outputLabel value="To"/>
                             <p:calendar value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
 
-                            <p:commandButton  value="Save"  action="#{staffPaySheetComponentAllPerformancePercentageController.save}" onclick="onSubmitButton();">
+                            <p:commandButton  value="Save" action="#{staffPaySheetComponentAllPerformancePercentageController.save}" onclick="onSubmitButton();">
 
                             </p:commandButton>
-                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllPerformancePercentageController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
+                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllPerformancePercentageController.makeNull}" ajax="false" onclick="onSubmitButton();" />
 
                         </h:panelGrid>                      
                     </p:panel>
@@ -52,7 +52,7 @@
                         </h:panelGrid>
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
-                                         action="#{staffController.createActiveStaffTable()}"
+                                        action="#{staffController.createActiveStaffTable()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"

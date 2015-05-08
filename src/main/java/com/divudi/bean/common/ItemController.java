@@ -45,6 +45,7 @@ import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.facade.util.JsfUtil;
+import java.util.AbstractList;
 import java.util.Date;
 
 /**
@@ -63,6 +64,8 @@ public class ItemController implements Serializable {
     SessionController sessionController;
     private Item current;
     private List<Item> items = null;
+    List<Item> allItems;
+    List<Item> selectedList;
     private Institution instituion;
 
     public List<Item> completeDealorItem(String query) {
@@ -633,6 +636,63 @@ public class ItemController implements Serializable {
         return suggestions;
     }
 
+    public void nullInstitutionInOPDItems() {
+        for (Item i : fetchOPDItemList(false)) {
+            System.err.println("********");
+            System.out.println("i = " + i.getInstitution());
+            if (i.getInstitution() != null) {
+                System.out.println("i = " + i.getInstitution().getName());
+                i.setInstitution(null);
+                getFacade().edit(i);
+                System.err.println("Null");
+            }
+            System.out.println("i = " + i.getInstitution());
+            System.err.println("********");
+        }
+    }
+
+    public List<Item> fetchOPDItemList(boolean ins) {
+        List<Item> items=new ArrayList<>();
+        HashMap m = new HashMap();
+        String sql;
+
+        sql = "select c from Item c "
+                + " where c.retired=false "
+                + " and type(c)!=:pac "
+                + " and type(c)!=:inw "
+                + " and (type(c)=:ser "
+                + " or type(c)=:inv)  ";
+        
+        if (ins) {
+            sql+= " and c.institution is null ";
+        }
+        
+        sql+= " order by c.name";
+                
+        m.put("pac", Packege.class);
+        m.put("inw", InwardService.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        System.out.println(sql);
+        items = getFacade().findBySQL(sql, m);
+        System.err.println("items" + items.size());
+        return items;
+    }
+
+    public void createOPDItemListAll() {
+        allItems = new ArrayList<>();
+        allItems = fetchOPDItemList(false);
+    }
+    
+    public void createOPDItemListInstitutionNull() {
+        allItems = new ArrayList<>();
+        allItems = fetchOPDItemList(true);
+    }
+
+    public void updateSelectedOPDItemList() {
+
+    }
+
     /**
      *
      */
@@ -784,6 +844,22 @@ public class ItemController implements Serializable {
 
     public void setInstituion(Institution instituion) {
         this.instituion = instituion;
+    }
+
+    public List<Item> getSelectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(List<Item> selectedList) {
+        this.selectedList = selectedList;
+    }
+
+    public List<Item> getAllItems() {
+        return allItems;
+    }
+
+    public void setAllItems(List<Item> allItems) {
+        this.allItems = allItems;
     }
 
     @FacesConverter(forClass = Item.class)

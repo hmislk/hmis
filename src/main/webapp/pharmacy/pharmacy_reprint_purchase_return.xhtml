@@ -23,12 +23,12 @@
 
                           </p:commandButton>
                             <p:commandButton value="Cancel" ajax="false"
-                                             action="pharmacy_cancel_grn_return" 
+                                            action="pharmacy_cancel_grn_return" 
                                              disabled="#{pharmacyBillSearch.bill.cancelled}"/>
                                 
 
-                                <p:commandButton  ajax="false"  value="Return" 
-                                                  action="pharmacy_return_purchase" 
+                                <p:commandButton ajax="false"  value="Return" 
+                                                 action="pharmacy_return_purchase" 
                                                   disabled="#{pharmacyBillSearch.bill.cancelled}" >
                                     <f:setPropertyActionListener 
                                         target="#{purchaseReturnController.bill}"  

@@ -91,11 +91,11 @@
                     </p:panelGrid>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Added Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" style="float: right;" onclick="onSubmitButton();" />
 
                         <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
                             <pe:exporter type="xlsx" target="tbl" fileName="item_report_added_date"  />

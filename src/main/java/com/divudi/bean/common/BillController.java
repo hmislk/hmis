@@ -20,6 +20,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -41,6 +42,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.memberShip.MembershipScheme;
@@ -106,6 +108,8 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
+    @Inject
+    BillEjb billEjb;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
     //Interface Data
@@ -138,6 +142,11 @@ public class BillController implements Serializable {
     String comment;
     double opdPaymentCredit;
     BilledBill opdBill;
+    Date fromDate;
+    Date toDate;
+    Department department;
+    Institution institution;
+    Category category;
 
     //Print Last Bill
     Bill billPrint;
@@ -563,6 +572,80 @@ public class BillController implements Serializable {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public void getOpdBills(){
+        BillType[] billTypes={BillType.OpdBill};
+        Class[] billClasses={Bill.class};
+        PaymentMethod[] paymentMethods={PaymentMethod.Cash,PaymentMethod.Card,PaymentMethod.Cheque,PaymentMethod.Credit,PaymentMethod.Slip};
+        
+        bills=billEjb.findBillBills(fromDate, toDate, billTypes, billClasses, department, institution, category, paymentMethods, null, null);
+    }
+
+    public BillEjb getBillEjb() {
+        return billEjb;
+    }
+
+    public void setBillEjb(BillEjb billEjb) {
+        this.billEjb = billEjb;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public SearchController getSearchController() {
+        return searchController;
+    }
+
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
+    }
+
+    public MembershipSchemeController getMembershipSchemeController() {
+        return membershipSchemeController;
+    }
+
+    public void setMembershipSchemeController(MembershipSchemeController membershipSchemeController) {
+        this.membershipSchemeController = membershipSchemeController;
+    }
+    
+    
 
     public Date getSessionDate() {
         if (sessionDate == null) {

@@ -21,11 +21,11 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             action="pharmacy_cancel_bill_unit_issue" 
+                                            action="pharmacy_cancel_bill_unit_issue" 
                                              disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
-                                             action="pharmacy_bill_return_issue"   
+                                            action="pharmacy_bill_return_issue"   
                                              disabled="#{pharmacyBillSearch.bill.cancelled eq true}" onclick="onSubmitButton();" >                                
                                 <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" 
                                                              target="#{issueReturnController.bill}"  />

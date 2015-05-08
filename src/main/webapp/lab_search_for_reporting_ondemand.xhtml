@@ -90,7 +90,7 @@
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                               action="patient" 
+                                              action="patient" 
                                                style="text-decoration:underline;"
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
                                                >
@@ -119,11 +119,11 @@
                                     <p:commandLink process="btnSample" update="tblBills"  
                                                    disabled="#{pi.collected}"   
                                                    id="btnSample" 
-                                                   action="#{patientInvestigationController.markAsSampled}" >
+                                                  action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive" action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                     </p:commandLink>
@@ -131,7 +131,7 @@
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
+                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>
@@ -161,7 +161,7 @@
                                               value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi" >
                                     <h:column >
                                         <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" action="#{patientReportController.enterNewReportFormat(pi, ifi)}" 
-                                                       ajax="false">
+                                                     ajax="false">
                                         </p:commandLink>
                                     </h:column>
                                 </h:dataTable>
@@ -181,7 +181,7 @@
 
                                             <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
                                                            value="#{dpr.item.name}" 
-                                                           ajax="false" action="lab_patient_report">
+                                                         ajax="false" action="lab_patient_report">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
 
@@ -203,7 +203,7 @@
                                             <p:commandLink style="float: right" ajax="false" 
                                                            id="btnRevert" 
                                                            disabled="#{!pi.collected}"
-                                                           action="#{patientInvestigationController.revertMarkedSample()}" 
+                                                          action="#{patientInvestigationController.revertMarkedSample()}" 
                                                            rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                 <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>

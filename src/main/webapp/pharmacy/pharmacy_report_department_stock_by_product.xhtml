@@ -20,7 +20,7 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
-                                             actionListener="#{reportsStock.fillDepartmentNonEmptyProductStocks()}" ></p:commandButton>
+                                            actionListener="#{reportsStock.fillDepartmentNonEmptyProductStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -55,7 +55,7 @@
                                         <h:outputLabel value="Product"/>
                                     </f:facet>
                                     <h:commandLink value="#{i.item.name}" 
-                                                   action="#{reportsStock.fillDepartmentNonEmptyStocksByVmp()}">
+                                                  action="#{reportsStock.fillDepartmentNonEmptyStocksByVmp()}">
                                         <f:setPropertyActionListener value="#{i.item}" target="#{reportsStock.vmp}" ></f:setPropertyActionListener>
                                     </h:commandLink>
                                 </p:column>

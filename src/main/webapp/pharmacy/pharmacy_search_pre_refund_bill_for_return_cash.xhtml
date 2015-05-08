@@ -80,7 +80,7 @@
 
                             <p:column>
                                 <p:commandButton ajax="false" value="Return Payment" 
-                                                 action="#{pharmacyPreSettleController.toSettleReturn(bill)}" 
+                                                action="#{pharmacyPreSettleController.toSettleReturn(bill)}" 
                                                  disabled="#{bill.cancelled eq true}" >                                                                    
                                 </p:commandButton>
                             </p:column>
@@ -122,7 +122,7 @@
                                     </p:column>
                                     <p:column>
                                         <p:commandButton ajax="false" value="View Return Payment Bill"  rendered="#{rb.refundedBill eq null}"
-                                                         action="pharmacy_reprint_bill_return_cash"  >                                
+                                                        action="pharmacy_reprint_bill_return_cash"  >                                
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                         </p:commandButton>
                                     </p:column>

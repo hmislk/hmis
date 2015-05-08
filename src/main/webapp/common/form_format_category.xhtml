@@ -18,7 +18,7 @@
                             <f:ajax render=":#{p:component('gpDetail')}" execute="lstSelect" >
                             </f:ajax>
                         </p:selectOneListbox>
-                        <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{formFormatController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();"  >
+                        <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{formFormatController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();"  >
                         </p:commandButton>
                         <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                     return false;" action="#{formFormatController.delete()}"  value="Delete"  >
@@ -32,7 +32,7 @@
                             </h:outputText>
                             <p:inputTextarea id="txtCode"  value="#{formFormatController.current.description}"  >
                             </p:inputTextarea>
-                            <p:commandButton ajax="false" id="btnSave" value="Save"  action="#{formFormatController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" id="btnSave" value="Save" action="#{formFormatController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();" >
                             </p:commandButton>
                             <p:defaultCommand target="btnSave"/>
                         </h:panelGrid>
