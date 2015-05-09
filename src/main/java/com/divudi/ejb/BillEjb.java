@@ -142,6 +142,17 @@ public class BillEjb {
         return r;
     }
 
+    public BillListWithTotals calculateBillTotals(List<Bill> bills){
+        BillListWithTotals bt = new BillListWithTotals();
+        for(Bill b:bills){
+            bt.setGrossTotal(bt.getGrossTotal() + b.getTotal());
+            bt.setDiscount(bt.getDiscount() + b.getDiscount());
+            bt.setNetTotal(bt.getNetTotal() + b.getNetTotal());
+        }
+        return bt;
+    }
+    
+    
     public double findBillItemRevenue(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billCLasses, Department department, Institution institution,
             Category category, PaymentMethod[] paymentMethods,

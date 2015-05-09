@@ -815,6 +815,7 @@ public class BillSearch implements Serializable {
         tempbillItems = null;
         comment = null;
         lazyBills = null;
+        searchKeyword=null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {

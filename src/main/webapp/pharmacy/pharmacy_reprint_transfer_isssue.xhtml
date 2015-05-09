@@ -17,7 +17,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Issue Reprint" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton ajax="false" action="pharmacy_transfer_issued_list" actionListener="#{pharmacyBillSearch.makeNull()}" value="Issued List"/>
+                            <p:commandButton ajax="false" action="/pharmacy/pharmacy_transfer_request_list" actionListener="#{pharmacyBillSearch.makeNull()}" value="Issued List"/>
                             <p:commandButton value="Reprint" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -38,7 +38,7 @@
 <!--                            <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>-->
 
                             <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
-                                <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>
+                                <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
