@@ -16,7 +16,7 @@
 
                     <p:panel header="Opd All Bill" >
 
-                        <h:panelGrid columns="8" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <p:autoComplete converter="institutionConverter"
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
@@ -49,38 +49,55 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         value="#{billController.bills}" var="bill"  >
+                                         value="#{billController.bills}" var="bill"  rows="20"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Opd Bills"/>
-                                    <h:outputLabel value="#{billController.department}"/> 
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
+                                    <h:outputLabel value="Pharmacy Whole Sale Report : "/>
+                                    <h:outputLabel value="#{billController.department.name}"/> <br/>
+                                        <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{billController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        </h:outputLabel><p:spacer width="30" height="1"/>
+                                        <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{billController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
                                 </f:facet>
 
-                                <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                                <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}"
+                                          sortBy="#{bill.insId}"
+                                          filterBy="#{bill.insId}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
                             </p:column>    
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}"
+                                      sortBy="#{bill.deptId}"
+                                          filterBy="#{bill.deptId}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
-                            <p:column headerText="Billed For"  >                                
+                            <p:column headerText="Billed For" 
+                                      sortBy="#{bill.toDepartment.name}"
+                                          filterBy="#{bill.toDepartment.name}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
                             </p:column>
-                            <p:column headerText="Refering Institution"  >                                
+                            <p:column headerText="Refering Institution" 
+                                      sortBy="#{bill.referredByInstitution.name}"
+                                          filterBy="#{bill.referredByInstitution.name}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel value="#{bill.referredByInstitution.name}" />
                             </p:column>
-                            <p:column headerText="Billed At"  >                                
+                            <p:column headerText="Billed At" 
+                                      sortBy="#{bill.department.name}"
+                                          filterBy="#{bill.department.name}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                             </p:column>
-                            <p:column headerText="Billed at"  >
+                            <p:column headerText="Billed at"  
+                                      sortBy="#{bill.createdAt}">
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
@@ -101,7 +118,10 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
-                            <p:column headerText="Billed by" >
+                            <p:column headerText="Billed by" 
+                                      sortBy="#{bill.creater.webUserPerson.name}"
+                                          filterBy="#{bill.creater.webUserPerson.name}"
+                                          filterMatchMode="contains">
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
                                 <br/>
@@ -116,31 +136,43 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>    
-                            <p:column headerText="Client">                               
+                            <p:column headerText="Client" 
+                                      sortBy="#{bill.patient.person.nameWithTitle}"
+                                          filterBy="#{bill.patient.person.nameWithTitle}"
+                                          filterMatchMode="contains">                               
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Client Phone No">                              
+                            <p:column headerText="Client Phone No" 
+                                      sortBy="#{bill.patient.person.phone}"
+                                          filterBy="#{bill.patient.person.phone}"
+                                          filterMatchMode="contains">                              
                                 <h:outputLabel value="#{bill.patient.person.phone}" />
                             </p:column>
-                            <p:column headerText="Paymentmethod" >                                
+                            <p:column headerText="Paymentmethod" 
+                                      sortBy="#{bill.paymentMethod}"
+                                          filterBy="#{bill.paymentMethod}"
+                                          filterMatchMode="contains">                                
                                 <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
-                            <p:column headerText="Gross Value"  >
+                            <p:column headerText="Gross Value"  
+                                      sortBy="#{bill.total}">
 
                                 <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
                             </p:column>
-                            <p:column headerText="Discount" >
+                            <p:column headerText="Discount" 
+                                      sortBy="#{bill.discount}">
 
                                 <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
                             </p:column>
-                            <p:column headerText="Net Value" >
+                            <p:column headerText="Net Value" 
+                                      sortBy="#{bill.netTotal}" >
 
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -153,6 +185,9 @@
                                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                 </h:outputLabel>
                             </p:column>
+                                <f:facet name="footer">
+                                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                </f:facet>
 
 
 
