@@ -577,8 +577,13 @@ public class BillController implements Serializable {
 
     public void getOpdBills() {
         BillType[] billTypes = {BillType.OpdBill};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
-        if (r != null) {
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
             return;
         }
         if (r.getBills() != null) {
@@ -606,7 +611,7 @@ public class BillController implements Serializable {
     public void getPharamacyWholeSaleCreditBills() {
         BillType[] billTypes = {BillType.PharmacyWholeSale};
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, category, paymentMethods, null, null);
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
@@ -615,7 +620,7 @@ public class BillController implements Serializable {
 
     public void getPharmacyBills() {
         BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
@@ -624,7 +629,7 @@ public class BillController implements Serializable {
 
     public void getPharmacyWholeBills() {
         BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, category, null, null, null);
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
@@ -822,8 +827,7 @@ public class BillController implements Serializable {
 
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
-            
-            
+
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 

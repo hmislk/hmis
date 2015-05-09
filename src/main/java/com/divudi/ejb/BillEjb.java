@@ -40,8 +40,18 @@ public class BillEjb {
     BillFeeFacade billFeeFacade;
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
-            Class[] billClasses, Department department, Institution institution,
-            Category category, PaymentMethod[] paymentMethods,
+            Class[] billClasses,
+            Department department,
+            Institution institution,
+            PaymentMethod[] paymentMethods) {
+        return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, billTypes, billClasses);
+    }
+
+    public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
+            Class[] billClasses,
+            Department department, Department toDepartment, Department fromDepartment,
+            Institution institution, Institution toInstitution, Institution fromInstitution,
+            PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude) {
         System.out.println("findBillBills");
@@ -82,17 +92,30 @@ public class BillEjb {
             sql += " and b.department =:dept ";
             m.put("dept", department);
         }
+        if (toDepartment != null) {
+            sql += " and b.toDepartment =:tdept ";
+            m.put("tdept", toDepartment);
+        }
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment =:fdept ";
+            m.put("fdept", fromDepartment);
+        }
 
         if (institution != null) {
             sql += " and (b.institution =:ins or b.department.institution =:ins) ";
             m.put("ins", institution);
         }
+        if (toInstitution != null) {
+            sql += " and (b.toInstitution =:tins or b.toDepartment.institution =:tins) ";
+            m.put("tins", toInstitution);
 
-//        if (category != null) {
-//            sql += " and (bf.billItem.item.category=:cat or "
-//                    + "bf.billItem.item.category.parentCategory=:cat)";
-//            m.put("cat", category);
-//        }
+        }
+
+        if (fromInstitution != null) {
+            sql += " and (b.fromInstitution =:fins or b.fromDepartment.institution =:fins) ";
+            m.put("fins", fromInstitution);
+        }
+
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         BillListWithTotals r = new BillListWithTotals();
