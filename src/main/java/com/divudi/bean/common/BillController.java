@@ -779,7 +779,9 @@ public class BillController implements Serializable {
             }
 
             b.setBillItems(list);
-
+            b.setBillTotal(b.getNetTotal());
+            
+            
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 

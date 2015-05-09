@@ -33,9 +33,7 @@
                                       paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                       rowsPerPageTemplate="10,20,50"
                                       >
-                            <p:column  headerText="Billed From" styleClass="alignTop" >
-                                <h:outputLabel value="#{pi.billItem.bill.institution.name}" ></h:outputLabel>
-                            </p:column>
+
                             <p:column  headerText="Dept Id" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
@@ -43,9 +41,7 @@
                             </p:column>
 
                             <p:column  headerText="Billed From" styleClass="alignTop" >
-                                <h:outputLabel id="lblBillNo1" 
-                                               value="#{pi.billItem.bill.department.name}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                <h:outputLabel value="#{pi.billItem.bill.institution.name}" ></h:outputLabel>
                             </p:column>
 
                             <p:column  headerText="Patient" styleClass="alignTop" >
@@ -75,11 +71,31 @@
                             </p:column>
 
                             <p:column headerText="Paid"  styleClass="alignTop" >
-                                #{pi.billItem.bill.paidAmount}<br/>
-                                #{pi.billItem.bill.total}<br/>
-                                #{(pi.billItem.bill.paidAmount - pi.billItem.bill.total)}<br/>
-                                <h:outputLabel value="#{(pi.billItem.bill.paidAmount - pi.billItem.bill.total) gt 1}" >
-                                </h:outputLabel>
+                                <p:graphicImage id="imgPaid" library="images" name="paid.png" 
+                                                style="height: 30px; width: 30px; #{pi.billItem.bill.balance lt 1 ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                <p:tooltip for="imgPaid" >
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) lt 1}" value="Fully Paid" >
+                                    </h:outputLabel>
+
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) gt 1}" value="To Pay" style="font-weight: bold; text-decoration: underline ; text-decoration-style: wavy ;" >
+                                    </h:outputLabel>
+
+                                    <br/>
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) gt 1}" value="Value : " style="float: left;" >
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) gt 1}" value="#{(pi.billItem.bill.total - pi.billItem.bill.discount)}" style="float: right;"  >
+                                        <f:convertNumber pattern="#,###.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) gt 1}" value="Balance : " style="float: left;" >
+                                    </h:outputLabel>
+                                    <p:spacer width="10" rendered="#{(pi.billItem.bill.balance) gt 1}" ></p:spacer>
+                                    <h:outputLabel rendered="#{(pi.billItem.bill.balance) gt 1}" value="#{(pi.billItem.bill.balance)}" style="float: right;" >
+                                        <f:convertNumber pattern="#,###.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:tooltip>
+
+
                             </p:column>
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
