@@ -39,7 +39,7 @@ public class BillEjb {
     @EJB
     BillFeeFacade billFeeFacade;
 
-    public BillListWithTotals findBillBills(Date fromDate, Date toDate, BillType[] billTypes,
+    public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billClasses, Department department, Institution institution,
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
