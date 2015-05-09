@@ -182,6 +182,7 @@ public class BillController implements Serializable {
     //Temprory Variable
     private Patient tmpPatient;
     List<Bill> bills;
+    List<Bill> selectedBills;
     Double grosTotal;
     Bill bill;
     boolean foreigner = false;
@@ -195,6 +196,21 @@ public class BillController implements Serializable {
     @Inject
     SearchController searchController;
 
+    public List<Bill> getSelectedBills() {
+        return selectedBills;
+    }
+
+    public void setSelectedBills(List<Bill> selectedBills) {
+        this.selectedBills = selectedBills;
+    }
+
+    public void calculateSelectedBillTotals(){
+        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+        grosTotal = bt.getGrossTotal();
+        netTotal = bt.getNetTotal();
+        discount = bt.getDiscount();
+    }
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -600,6 +616,32 @@ public class BillController implements Serializable {
         }
     }
 
+    public void getPharmacySaleBills() {
+        BillType[] billTypes = {BillType.PharmacySale , BillType.PharmacyWholeSale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+    }
+
+    
     public Double getGrosTotal() {
         return grosTotal;
     }
