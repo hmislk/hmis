@@ -46,12 +46,12 @@ public class BillEjb {
             PaymentMethod[] paymentMethods) {
         return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null);
     }
-//    public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate,
-//            Class[] billClasses,
-//            Department department,
-//            Institution institution) {
-//        return findBillsAndTotals(fromDate, toDate, null, billClasses, department, null, null, institution, null, null, null, null, billClasses);
-//    }
+    public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate,
+            Class[] billClasses,
+            Department department,
+            Institution institution) {
+        return findBillsAndTotals(fromDate, toDate, null, billClasses, department, null, null, institution, null, null, null, null, billClasses);
+    }
     
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
