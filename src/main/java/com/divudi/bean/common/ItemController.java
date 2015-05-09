@@ -13,7 +13,6 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.facade.ItemFacade;
 import com.divudi.entity.Item;
