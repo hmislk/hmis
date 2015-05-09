@@ -645,6 +645,9 @@ public class BillController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate=CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -653,6 +656,9 @@ public class BillController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate=CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
