@@ -2,6 +2,7 @@ package com.divudi.ejb;
 
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -11,6 +12,7 @@ import com.divudi.entity.Institution;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ public class BillEjb {
     @EJB
     BillFeeFacade billFeeFacade;
 
-    public List<Bill> findBillBills(Date fromDate, Date toDate, BillType[] billTypes,
+    public BillListWithTotals findBillBills(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billClasses, Department department, Institution institution,
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
@@ -45,7 +47,7 @@ public class BillEjb {
         System.out.println("findBillBills");
         String sql;
         Map m = new HashMap();
-        
+
         sql = "Select b from Bill b ";
         sql += " where b.createdAt between :fd and :td ";
         m.put("fd", fromDate);
@@ -93,8 +95,23 @@ public class BillEjb {
 //        }
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        BillListWithTotals r = new BillListWithTotals();
+        List<BillListWithTotals> rList = new ArrayList<>();
+        r.setBills(getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP));
+        if (r.getBills() != null) {
+            for (Bill b : r.getBills()) {
+                r.setDiscount(r.getDiscount() + b.getDiscount());
+                r.setNetTotal(r.getNetTotal() + b.getNetTotal());
+                r.setGrossTotal(r.getGrossTotal() + b.getTotal());
+                rList.add(r);
+            }
+        } else {
+            r.setBills(new ArrayList<Bill>());
+            r.setDiscount(null);
+            r.setNetTotal(null);
+            r.setGrossTotal(null);
+        }
+        return r;
     }
 
     public double findBillItemRevenue(Date fromDate, Date toDate, BillType[] billTypes,
@@ -102,7 +119,7 @@ public class BillEjb {
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude) {
-        System.out.println("findBillItemRevenue" );
+        System.out.println("findBillItemRevenue");
         double answer = 0.0;
         String sql;
         Map m = new HashMap();
