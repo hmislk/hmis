@@ -114,6 +114,7 @@ public class SearchController implements Serializable {
         billFees = null;
         billItems = null;
         patientInvestigations = null;
+        searchKeyword=null;
     }
 
     public void makeListNull2() {
