@@ -63,6 +63,16 @@
                                         <p:commandButton value="After Stock Taking Report" action="pharmacy_report_after_stock_taking" ajax="false" ></p:commandButton>                            
                                     </p:panelGrid>
                                 </p:panel>
+
+
+
+                                <p:panel header="Bill Lists" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <p:panelGrid columns="1" styleClass="alignTop">
+                                        <p:commandButton value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills" ajax="false" ></p:commandButton>                            
+                                    </p:panelGrid>
+                                </p:panel>
+
+
                             </h:panelGrid>
 
                             <h:panelGrid columns="1" >
@@ -90,13 +100,6 @@
                                     </p:panelGrid>
                                 </p:panel>
 
-                                 <p:panel header="Bill Lists" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
-                                    <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills" ajax="false" ></p:commandButton>                            
-                                    </p:panelGrid>
-                                </p:panel>
-
-                                
                                 <p:panel header="Transaction Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton value="All Transaction View" action="/pharmacy/pharmacy_item_transactions" ajax="false" ></p:commandButton>                            

@@ -69,7 +69,7 @@ public class BillEjb implements Serializable {
             sql += " and b.paymentMethod in :pms ";
             m.put("pms", lpms);
         }
-         if (billTypes != null) {
+        if (billTypes != null) {
             List<BillType> lbtps = Arrays.asList(billTypes);
             sql += " and b.billType in :btps ";
             m.put("btps", lbtps);
@@ -132,7 +132,6 @@ public class BillEjb implements Serializable {
         if (r.getBills() != null) {
             System.out.println("bills not null");
             for (Bill b : r.getBills()) {
-                System.out.println("b = " + b);
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
@@ -148,6 +147,13 @@ public class BillEjb implements Serializable {
 
     public BillListWithTotals calculateBillTotals(List<Bill> bills) {
         BillListWithTotals bt = new BillListWithTotals();
+        System.out.println("bills = " + bills);
+        if (bills == null) {
+            return bt;
+        }
+        bt.setGrossTotal(0.0);
+        bt.setDiscount(0.0);
+        bt.setNetTotal(0.0);
         for (Bill b : bills) {
             bt.setGrossTotal(bt.getGrossTotal() + b.getTotal());
             bt.setDiscount(bt.getDiscount() + b.getDiscount());
