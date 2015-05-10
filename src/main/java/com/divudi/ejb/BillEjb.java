@@ -11,6 +11,7 @@ import com.divudi.entity.Institution;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -26,7 +29,7 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Stateless
-public class BillEjb {
+public class BillEjb implements Serializable {
 
     /**
      * EJBs
@@ -66,7 +69,7 @@ public class BillEjb {
             sql += " and b.paymentMethod in :pms ";
             m.put("pms", lpms);
         }
-        if (billTypes != null) {
+         if (billTypes != null) {
             List<BillType> lbtps = Arrays.asList(billTypes);
             sql += " and b.billType in :btps ";
             m.put("btps", lbtps);

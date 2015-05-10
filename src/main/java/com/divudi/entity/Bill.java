@@ -47,11 +47,6 @@ import org.eclipse.persistence.annotations.CacheType;
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b"),
     @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
-@Cache(
-  type=CacheType.NONE, 
-  expiry=0,
-  alwaysRefresh=true
-)
 public class Bill implements Serializable {
 
     @ManyToOne
