@@ -188,10 +188,9 @@ public class AmpController implements Serializable {
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
             a = getFacade().findBySQL("select c from Amp c where "
-                    + " c.retired=false and c.departmentType!=dep and "
-                    + "(upper(c.name) like :n or upper(c.code)  "
+                    + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
+                    + " and (upper(c.name) like :n or upper(c.code)  "
                     + "like :n or upper(c.barcode) like :n) order by c.name", m, 30);
-            //System.out.println("a size is " + a.size());
         }
 
         if (a == null) {

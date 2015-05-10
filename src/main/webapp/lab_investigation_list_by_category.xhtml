@@ -21,7 +21,7 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="panIx" />
                         </p:commandButton>
-                        <p:commandButton id="excel"  ajax="false" value="Excel" onclick="onSubmitButton();"  >
+                        <p:commandButton id="excel" ajax="false" value="Excel" onclick="onSubmitButton();"  >
                             <p:dataExporter target="tbl" type="xls" fileName="List of Investigations of #{investigationController.category}"  />
                         </p:commandButton>
                         <p:selectOneMenu id="cmbCat" value="#{investigationController.category}" >

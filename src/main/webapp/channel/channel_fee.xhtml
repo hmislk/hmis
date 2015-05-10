@@ -102,7 +102,7 @@
                                 <p:selectOneMenu id="cmbInstitution" value="#{channellingFeeController.fee.institution}"
                                                  rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" >
                                     <f:selectItem itemLabel="Select Institution"/>
-                                    <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                     <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
                                 </p:selectOneMenu>
                             </h:panelGroup>

@@ -82,7 +82,7 @@
                                                                itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                             </p:selectOneMenu>
                                             <p:commandButton ajax="false" value="Create" 
-                                                             action="#{reorderController.createPharmacyOrderRequest()}" ></p:commandButton>
+                                                            action="#{reorderController.createPharmacyOrderRequest()}" ></p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
                                     
@@ -103,7 +103,7 @@
                                             </p:selectOneMenu>
                                             
                                             <p:commandButton ajax="false" value="Create" 
-                                                             action="#{reorderController.createPharmacyTransferRequest()}" ></p:commandButton>
+                                                            action="#{reorderController.createPharmacyTransferRequest()}" ></p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
 
@@ -116,11 +116,11 @@
 
                             <h:panelGrid columns="4" >
                                 <p:commandButton ajax="false" value="Fill Reorders"
-                                                 actionListener="#{reorderController.fillReorders()}" ></p:commandButton>
+                                                actionListener="#{reorderController.fillReorders()}" ></p:commandButton>
                                 <p:commandButton ajax="false" value="Generate Reorders"
-                                                 actionListener="#{reorderController.generateReorders()}" ></p:commandButton>
+                                                actionListener="#{reorderController.generateReorders()}" ></p:commandButton>
                                 <p:commandButton ajax="false" value="Save Reorders"
-                                                 actionListener="#{reorderController.saveReorders()}" ></p:commandButton>
+                                                actionListener="#{reorderController.saveReorders()}" ></p:commandButton>
                                 <p:selectBooleanButton id="value2" value="#{reorderController.readOnly}" 
                                                        onLabel="Make Editable" offLabel="Remove Editable" 
                                                        onIcon="ui-icon-check" offIcon="ui-icon-close">

@@ -99,7 +99,9 @@ public class BookingController implements Serializable {
     private ChannelBean channelBean;
 
     List<Staff> consultants;
+    List<BillSession> getSelectedBillSession;
     boolean printPreview;
+    double absentCount;
 
     public String nurse() {
         if (preSet()) {
@@ -143,6 +145,16 @@ public class BookingController implements Serializable {
         }
     }
 
+    public List<BillSession> getGetSelectedBillSession() {
+        return getSelectedBillSession;
+    }
+
+    public void setGetSelectedBillSession(List<BillSession> getSelectedBillSession) {
+        this.getSelectedBillSession = getSelectedBillSession;
+    }
+    
+    
+
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
@@ -160,6 +172,16 @@ public class BookingController implements Serializable {
 
         return alreadyExists;
     }
+
+    public double getAbsentCount() {
+        return absentCount;
+    }
+
+    public void setAbsentCount(double absentCount) {
+        this.absentCount = absentCount;
+    }
+    
+    
 
 //    public void errorCheckChannelNumber() {
 //
@@ -433,6 +455,32 @@ public class BookingController implements Serializable {
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
 
     }
+    
+    public void fillAbsentBillSessions(SelectEvent event) {
+        selectedBillSession = null;
+        selectedServiceSession = ((ServiceSession) event.getObject());
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt "
+                + " and bs.absent=true "
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        //absentCount=billSessions.size();
+
+    }   
+    
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;

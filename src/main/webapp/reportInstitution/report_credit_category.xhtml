@@ -18,11 +18,11 @@
                     <h:outputLabel value="Book Keeping Summary With Pro (DAY)"  styleClass="noPrintButton" />
                     <p:commandButton value="Process Credit Items" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.processCreditItems()}"/>
+                                    action="#{bookKeepingSummery.processCreditItems()}"/>
                     
                     <p:commandButton value="Process Credit Items Paid" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.processCreditPaidItems()}"/>
+                                    action="#{bookKeepingSummery.processCreditPaidItems()}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -70,7 +70,7 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
-            <in:opd_new_with id="opd_new" />
+            <in:opd_new_with_credit id="opd_new" />
 
 
 

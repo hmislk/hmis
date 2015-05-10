@@ -1,5 +1,5 @@
 select billitem.id as 'Bill Item Id', bill.`ID` as 'Bill Id' ,
-bill.`BILLTYPE`, billitem.`NETVALUE` as 'BillItem Net Value' ,
+bill.`BILLTYPE`, bill.`CREATEDAT`, billitem.`NETVALUE` as 'BillItem Net Value' ,
 bill.`NETTOTAL` as 'bill Net Total',billitem.`PAIDFORBILLFEE_ID`,billitem.`REFERANCEBILLITEM_ID`,billitem.`REFERENCEBILL_ID`,
 bill.`REFERENCEBILL_ID`,bill.`CANCELLEDBILL_ID`
 from billitem 

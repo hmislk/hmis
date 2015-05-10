@@ -1028,6 +1028,19 @@ public class PharmacyController implements Serializable {
         return grns;
     }
 
+    public void fillDetails(){
+        createInstitutionSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
+        createInstitutionIssue();
+        createInstitutionTransferReceive();
+        createGrnTable();
+        createPoTable();
+        createDirectPurchaseTable();
+        createInstitutionIssue();
+    }
+    
     public void createTable() {
         createGrnTable();
         createPoTable();

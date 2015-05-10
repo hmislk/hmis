@@ -71,8 +71,8 @@
                                 </p:calendar>                                                                      
 
 
-                                <p:commandButton value="Add Time Service"  ajax="false"
-                                                 action="#{inwardTimedItemController.addTimedService()}"
+                                <p:commandButton value="Add Time Service" ajax="false"
+                                                action="#{inwardTimedItemController.addTimedService()}"
                                                  disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
 
 
@@ -123,17 +123,17 @@
                             </p:column>     
                             <p:column >
                                 <p:commandButton value="Update" ajax="false"  
-                                                 action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
+                                                action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
                                                  disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />                                                                    
                             </p:column>
                             <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove"  
                                                  rendered="#{ti.billFee.id eq null}"
-                                                 action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
+                                                action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
                                                  disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Remove "  
                                                  rendered="#{ti.billFee.id ne null}"
-                                                 action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
+                                                action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
                                                  disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
                             </p:column>
                         </p:dataTable>

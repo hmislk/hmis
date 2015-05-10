@@ -18,25 +18,33 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Extra Duty Attendance Report" />
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From : " />
+                                <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="To : " />
+                                <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="Employee : "/>
+                                <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Institution : "/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Staff Category : "/>
+                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Designation : "/>
+                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                <h:outputLabel value="Staff Roster : "/>
+                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            </h:panelGrid>
 
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="Day Type"/>
+                                <p:selectManyCheckbox value="#{hrReportController.dayTypesSelected}" layout="grid" columns="1" >
+                                    <f:selectItems value="#{enumController.dayTypes}" var="e" itemLabel="#{e}" itemValue="#{e}" ></f:selectItems>
+                                </p:selectManyCheckbox>
+                            </h:panelGrid>
+                        </h:panelGrid>
                         <p:commandButton ajax="false" value="Process All" action="#{hrReportController.createStaffShift()}"/>
                         <p:commandButton ajax="false" value="Process Only Extra Duty" action="#{hrReportController.createStaffShiftOnlyOt()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
@@ -48,123 +56,126 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
                                 <p:column headerText="Emp No">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp No"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
-                                 
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp No"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+
                                 </p:column>
-                                  <p:column headerText="Form Num">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Form Num"/>
-                                </f:facet>
-                                      <p:outputLabel value="  #{ss.additionalForm.code}" ></p:outputLabel>
-                                  
+                                <p:column headerText="Form Num">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Form Num"/>
+                                    </f:facet>
+                                    <p:outputLabel value="  #{ss.additionalForm.code}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp Name"/>
-                                </f:facet>
-                                <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
-                                  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp Name"/>
+                                    </f:facet>
+                                    <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Department Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Department Name"/>
-                                </f:facet>                                
-                                <p:outputLabel value=" #{ss.staff.workingDepartment.name}" ></p:outputLabel>
-                                <p:outputLabel value=" #{ss.staff.workingDepartment.institution.name}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department Name"/>
+                                    </f:facet>                                
+                                    <p:outputLabel value=" #{ss.staff.workingDepartment.name}" ></p:outputLabel>
+                                    <p:outputLabel value=" #{ss.staff.workingDepartment.institution.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Staff Category" rendered="false">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Category"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.staffCategory.name}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Category"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.staffCategory.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Staff Designation" rendered="false">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Designation"/>
-                                </f:facet>
-                                <p:outputLabel value="  #{ss.staff.designation.name}" ></p:outputLabel>
-                                  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Designation"/>
+                                    </f:facet>
+                                    <p:outputLabel value="  #{ss.staff.designation.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Staff Roster" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Roster"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Roster"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Staff Shift">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Shift"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.shift.name}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Shift"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.shift.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="In Checked ">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="In Checked"/>
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="In Checked"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
                                 </p:column>                                
                                 <p:column headerText="Out Checked">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Out Checked"/>
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Out Checked"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>  
                                 <p:column headerText="Extra From In Record">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Extra From In Record"/>
-                                </f:facet>
-                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified}">                                        
-                                        <f:converter converterId="longToTime"/>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra From In Record"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified/60}">   
+                                        <f:convertNumber pattern="0"/>
+                                        <!--                                        <f:converter converterId="longToTime"/>-->
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra From Out Record">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Extra From Out Record"/>
-                                </f:facet>
-                                    <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified}">                                        
-                                        <f:converter converterId="longToTime"/>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra From Out Record"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified/60}">    
+                                        <f:convertNumber pattern="0"/>
+                                        <!--<f:converter converterId="longToTime"/>-->
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra From Complete Record">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Extra From Complete Record"/>
-                                </f:facet>
-                                    <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified}">                                        
-                                        <f:converter converterId="longToTime"/>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra From Complete Record"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified/60}">  
+                                        <f:convertNumber pattern="0"/>
+                                        <!--<f:converter converterId="longToTime"/>-->
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Basic per Sec">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Basic per Sec"/>
-                                </f:facet>
-                                    <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
-                                        <f:convertNumber pattern="0.00" />
+                                <p:column headerText="Basic per Min">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Basic per Min"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.overTimeValuePerSecond*60}">                                        
+                                        
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Multiplying Factor"/>
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Multiplying Factor"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
-                                      <f:facet name="header">
-                                    <h:outputLabel value="Extra Duty Value"/>
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra Duty Value"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>

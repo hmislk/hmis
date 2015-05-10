@@ -41,6 +41,7 @@ public class UserPreference implements Serializable {
     Department department;
     @ManyToOne
     Institution institution;
+    boolean institutionSpecificItems=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
@@ -249,6 +250,16 @@ public class UserPreference implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public boolean isInstitutionSpecificItems() {
+        return institutionSpecificItems;
+    }
+
+    public void setInstitutionSpecificItems(boolean institutionSpecificItems) {
+        this.institutionSpecificItems = institutionSpecificItems;
+    }
+    
+    
 
     public boolean isPrintLabelForOPdBill() {
         return printLabelForOPdBill;

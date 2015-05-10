@@ -97,7 +97,7 @@ public class DataAdministrationController {
                 ib.setWholesaleRate((ib.getPurcahseRate() / 115) * 108);
                 itemBatchFacade.edit(ib);
                 System.out.println("ib.getWholesaleRate() = " + ib.getWholesaleRate());
-            }else{
+            } else {
                 System.out.println("no change");
             }
         }
@@ -133,6 +133,31 @@ public class DataAdministrationController {
             c.setRetireComments("Bulk1");
             categoryFacade.edit(c);
         }
+    }
+
+    public void detectWholeSaleBills() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select b from Bill b where (b.billType=:bt1 or b.billType=:bt2) order by b.id desc";
+        m.put("bt1", BillType.PharmacySale);
+        m.put("bt2", BillType.PharmacyPre);
+        List<Bill> bs = getBillFacade().findBySQL(sql, m, 20);
+        for (Bill b : bs) {
+            System.out.println("b = " + b);
+            System.out.println("b.getBillType() = " + b.getBillType());
+            if (b.getBillItems().get(0).getRate() == b.getBillItems().get(0).getPharmaceuticalBillItem().getStock().getItemBatch().getWholesaleRate()) {
+                System.out.println("whole sale bill");
+                if (b.getBillType() == BillType.PharmacySale) {
+                    b.setBillType(BillType.PharmacyWholeSale);
+                }
+                if (b.getBillType() == BillType.PharmacyPre) {
+                    b.setBillType(BillType.PharmacyWholesalePre);
+                }
+                getBillFacade().edit(b);
+            }
+
+        }
+
     }
 
     public void addBillFeesToProfessionalCancelBills() {

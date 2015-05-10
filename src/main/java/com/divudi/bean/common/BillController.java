@@ -18,8 +18,10 @@ import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -41,6 +43,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.memberShip.MembershipScheme;
@@ -106,6 +109,8 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
+    @EJB
+    BillEjb billEjb;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
     //Interface Data
@@ -138,6 +143,11 @@ public class BillController implements Serializable {
     String comment;
     double opdPaymentCredit;
     BilledBill opdBill;
+    Date fromDate;
+    Date toDate;
+    Department department;
+    Institution institution;
+    Category category;
 
     //Print Last Bill
     Bill billPrint;
@@ -172,6 +182,8 @@ public class BillController implements Serializable {
     //Temprory Variable
     private Patient tmpPatient;
     List<Bill> bills;
+    List<Bill> selectedBills;
+    Double grosTotal;
     Bill bill;
     boolean foreigner = false;
     Date sessionDate;
@@ -183,12 +195,36 @@ public class BillController implements Serializable {
 
     @Inject
     SearchController searchController;
+
+    public List<Bill> getSelectedBills() {
+        return selectedBills;
+    }
+
+    public void setSelectedBills(List<Bill> selectedBills) {
+        this.selectedBills = selectedBills;
+    }
+
+    public void calculateSelectedBillTotals(){
+        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+        grosTotal = bt.getGrossTotal();
+        netTotal = bt.getNetTotal();
+        discount = bt.getDiscount();
+    }
     
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
+        comment = null;
         searchController.createTableByKeywordToPayBills();
+    }
+
+    public void clearPharmacy() {
+        opdBill = new BilledBill();
+        printPreview = false;
+        opdPaymentCredit = 0.0;
+        comment = null;
+        searchController.createTablePharmacyCreditToPayBills();
     }
 
     public void saveBillOPDCredit() {
@@ -210,6 +246,58 @@ public class BillController implements Serializable {
         temp.setNetTotal(opdPaymentCredit);
 
         opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
+        getBillFacade().edit(opdBill);
+
+        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setBillType(BillType.CashRecieveBill);
+
+        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+
+        temp.setComments(comment);
+
+        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+
+        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setPaymentMethod(paymentMethod);
+        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(temp);
+
+        JsfUtil.addSuccessMessage("Paid");
+        opdBill = temp;
+        printPreview = true;
+
+    }
+
+    public void saveBillPharmacyCredit() {
+
+        BilledBill temp = new BilledBill();
+
+        if (opdPaymentCredit == 0) {
+            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            return;
+        }
+        if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
+            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            return;
+        }
+
+        temp.setReferenceBill(opdBill);
+        temp.setTotal(opdPaymentCredit);
+        temp.setPaidAmount(opdPaymentCredit);
+        temp.setNetTotal(opdPaymentCredit);
+        System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+        System.out.println("opdPaymentCredit = " + opdPaymentCredit);
+        opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
+        System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
         getBillFacade().edit(opdBill);
 
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
@@ -503,6 +591,163 @@ public class BillController implements Serializable {
 
     }
 
+    public void getOpdBills() {
+        BillType[] billTypes = {BillType.OpdBill};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+    }
+
+    public void getPharmacySaleBills() {
+        BillType[] billTypes = {BillType.PharmacySale , BillType.PharmacyWholeSale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+    }
+
+    
+    public Double getGrosTotal() {
+        return grosTotal;
+    }
+
+    public void setGrosTotal(Double grosTotal) {
+        this.grosTotal = grosTotal;
+    }
+
+    public void getPharamacyWholeSaleCreditBills() {
+        BillType[] billTypes = {BillType.PharmacyWholeSale};
+        PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+    }
+
+    public void getPharmacyBills() {
+        BillType[] billTypes = {BillType.PharmacySale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+    }
+
+    public void getPharmacyWholeBills() {
+        BillType[] billTypes = {BillType.PharmacySale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+    }
+
+    public BillEjb getBillEjb() {
+        return billEjb;
+    }
+
+    public void setBillEjb(BillEjb billEjb) {
+        this.billEjb = billEjb;
+    }
+
+    public Date getFromDate() {
+        if(fromDate==null){
+            fromDate=CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if(toDate==null){
+            toDate=CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public SearchController getSearchController() {
+        return searchController;
+    }
+
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
+    }
+
+    public MembershipSchemeController getMembershipSchemeController() {
+        return membershipSchemeController;
+    }
+
+    public void setMembershipSchemeController(MembershipSchemeController membershipSchemeController) {
+        this.membershipSchemeController = membershipSchemeController;
+    }
+
     public Date getSessionDate() {
         if (sessionDate == null) {
             sessionDate = Calendar.getInstance().getTime();
@@ -629,6 +874,7 @@ public class BillController implements Serializable {
             }
 
             b.setBillItems(list);
+            b.setBillTotal(b.getNetTotal());
 
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -848,6 +1094,11 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
+
+        System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
+        System.out.println("bill = " + bill);
+        System.out.println("bill.getInstitution() = " + bill.getInstitution());
+
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -979,7 +1230,7 @@ public class BillController implements Serializable {
             }
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
+        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
             UtilityController.addErrorMessage("Check Payment method");
             return true;
         }

@@ -20,11 +20,11 @@
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Inward Final Bill" />    
                             <p:commandButton update="dList tot" value="Refresh" style="float: right;"
-                                             actionListener="#{bhtSummeryController.updateTotal()}" 
+                                            actionListener="#{bhtSummeryController.updateTotal()}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
                                               id="settle"
-                                              ajax="false"
+                                            ajax="false"
                                               disabled="#{bhtSummeryController.changed}"
                                               style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
 

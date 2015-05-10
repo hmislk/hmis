@@ -163,7 +163,7 @@ public class PharmacyWholeSaleController1 implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-    
+
     public String pharmacyWholeRetailSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale_1";
     }
@@ -996,7 +996,7 @@ public class PharmacyWholeSaleController1 implements Serializable {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
 
-        getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillType(BillType.PharmacyWholeSale);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1698,7 +1698,7 @@ public class PharmacyWholeSaleController1 implements Serializable {
     public PreBill getPreBill() {
         if (preBill == null) {
             preBill = new PreBill();
-            preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillType(BillType.PharmacyWholesalePre);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
@@ -1711,7 +1711,7 @@ public class PharmacyWholeSaleController1 implements Serializable {
     public Bill getSaleBill() {
         if (saleBill == null) {
             saleBill = new BilledBill();
-            //   saleBill.setBillType(BillType.PharmacySale);
+            saleBill.setBillType(BillType.PharmacyWholeSale);
         }
         return saleBill;
     }

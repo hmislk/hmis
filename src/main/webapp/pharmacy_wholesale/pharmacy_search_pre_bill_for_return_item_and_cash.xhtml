@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPreBillsForReturn}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createWholePreBillsForReturn}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>                               
@@ -42,7 +42,7 @@
                             >
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
-                                                 action="pharmacy_reprint_bill_sale">
+                                                action="pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" 
                                                                  target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
@@ -84,7 +84,7 @@
 
                             <p:column>
                                 <p:commandButton ajax="false" value="Return Item and Cash"
-                                                 action="pharmacy_bill_return_retail"
+                                                action="pharmacy_bill_return_retail"
                                                  disabled="#{bill.cancelled eq true}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>
                                 </p:commandButton>

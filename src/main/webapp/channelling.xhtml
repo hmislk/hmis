@@ -17,19 +17,6 @@
     <h:body  >
 
         <h:form>
-            <div id="header" style="float: right">
-
-                <span id="infos">
-                    <h:commandLink value="Staff Login" action="index" ></h:commandLink>
-                    |
-                    <h:commandLink value="Administrator" action="index" ></h:commandLink>
-                </span>
-                <h:commandLink action="index" ></h:commandLink>
-
-                <!-- /#logo -->
-
-            </div> 
-
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">     
 
                 <p:panel header="Specialities" styleClass="alignTop">       
@@ -66,12 +53,6 @@
                         <p:column headerText="Session">
                             #{ses.name}
                         </p:column>
-                        <p:column headerText="Max">
-                            #{ses.maxNo}
-                        </p:column>
-                        <p:column headerText="Booked">
-                            #{ses.displayCount}
-                        </p:column>
                         <p:column headerText="Date">
                             <p:outputLabel value="#{ses.sessionAt}">
                                 <f:convertDateTime pattern="dd/MM/yy"/>
@@ -82,16 +63,13 @@
                                 <f:convertDateTime pattern="hh:mm a"/>
                             </p:outputLabel>
                         </p:column>
-
                         <p:column headerText="Fee">
                             <p:outputLabel value="#{ses.originatingSession.totalFee}">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>                                                            
                         </p:column>   
-
                         <p:column rendered="false">
                             <p:commandLink value="Edit" onclick="PF('dlgSessionEdit').show();" />
-
                         </p:column>
 
                     </p:dataTable>
@@ -148,44 +126,12 @@
 
                             </h:panelGroup>
 
-                            <p:outputLabel value="Payment Method"/>
-                            <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
-                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip" event="change" />
+                            
+                            <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}" style="display: none;">  
+                                <f:selectItems value="OnCall"/>                                                               
                             </p:selectOneMenu>
 
-                            <h:outputLabel/>
-                            <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
-                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
-                            </p:selectBooleanCheckbox>
-
-                            <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
-                                            value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt"/>
-                                <p:column>#{ix.institutionCode}</p:column>
-                                <p:column>#{ix.name}</p:column>                                
-                            </p:autoComplete> 
-
-                            <h:outputLabel id="agRefLbl" value="Agent Reference No"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                            <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-
-                            <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-
-                            <h:panelGroup id="creditCard" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{channelBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{channelBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{channelBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
+                            
                         </h:panelGrid>                        
 
                     </f:facet>
@@ -241,7 +187,7 @@
 
                         <p:commandButton   value="Add" process="@form" 
                                            update="gpThisBookingDetails" style="float: right;" 
-                                           action="#{channelBillController.addOnCall()}" 
+                                          action="#{channelBillController.addOnCall()}" 
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
 
@@ -355,13 +301,13 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.cancelCashFlowBill}"
+                                            action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                             action="#{channelBillController.cancelCreditPaidBill}"
+                                            action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
@@ -394,14 +340,14 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.refundCashFlowBill}" 
+                                            action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                             action="#{channelBillController.refundCreditPaidBill}" 
+                                            action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
@@ -439,7 +385,7 @@
                                 <p:commandButton id="setBtn"  value="Settle Credit"
                                                  process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                                  update="gpSettlePrint"
-                                                 action="#{channelBillController.settleCredit}" 
+                                                action="#{channelBillController.settleCredit}" 
                                                  disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                                              or channelBillController.billSession.bill.cancelled==true
                                                              or  channelBillController.billSession.bill.paidAmount ne 0}" 

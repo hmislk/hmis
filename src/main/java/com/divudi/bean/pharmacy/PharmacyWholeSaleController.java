@@ -996,7 +996,7 @@ public class PharmacyWholeSaleController implements Serializable {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
 
-        getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillType(BillType.PharmacyWholeSale);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1199,7 +1199,7 @@ public class PharmacyWholeSaleController implements Serializable {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return;
             }
-            if (toStaff == null && toInstitution == null) {
+            if (toStaff != null && toInstitution != null) {
                 UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return;
             }
@@ -1698,7 +1698,7 @@ public class PharmacyWholeSaleController implements Serializable {
     public PreBill getPreBill() {
         if (preBill == null) {
             preBill = new PreBill();
-            preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillType(BillType.PharmacyWholesalePre);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
@@ -1711,7 +1711,7 @@ public class PharmacyWholeSaleController implements Serializable {
     public Bill getSaleBill() {
         if (saleBill == null) {
             saleBill = new BilledBill();
-            //   saleBill.setBillType(BillType.PharmacySale);
+            saleBill.setBillType(BillType.PharmacyWholeSale);
         }
         return saleBill;
     }

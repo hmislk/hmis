@@ -11,10 +11,10 @@
     <ui:define name="content">
         <h:form>
             <p:commandButton ajax="false" 
-                             action="#{roomOccupancyController.createPatientRoom}"
+                            action="#{roomOccupancyController.createPatientRoom}"
                              value="Fill" onclick="onSubmitButton();" />
              <p:commandButton ajax="false" 
-                             action="#{roomOccupancyController.createPatientRoomAll}"
+                            action="#{roomOccupancyController.createPatientRoomAll}"
                              value="Fill All" onclick="onSubmitButton();" />
             <p:dataTable 
                 value="#{roomOccupancyController.patientRooms}" 

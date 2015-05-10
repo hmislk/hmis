@@ -18,11 +18,11 @@
 
                     <f:facet name="header" >
                         <h:outputLabel value="List of All Investigations"></h:outputLabel>
-                        <p:commandButton  ajax="false" value="Refresh" action="#{investigationController.listAllIxs}" styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                        <p:commandButton ajax="false" value="Refresh" action="#{investigationController.listAllIxs}" styleClass="noPrintButton" onclick="onSubmitButton();"  />
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="panIx" />
                         </p:commandButton>
-                        <p:commandButton id="excel"  ajax="false" value="Excel" onclick="onSubmitButton();"  >
+                        <p:commandButton id="excel" ajax="false" value="Excel" onclick="onSubmitButton();"  >
                             <p:dataExporter target="tbl" type="xls" fileName="List of All Investigations"  />
                         </p:commandButton>
                     </f:facet>

@@ -14,8 +14,8 @@
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Purchase Order Request Reprint" ></h:outputLabel>                           
-                            <p:commandButton  value="Cancel" action="pharmacy_cancel_bill" disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.referenceBill.creater ne null}" ajax="false">                           
+                            <h:outputLabel value="Purchase Order Request" ></h:outputLabel>                           
+                            <p:commandButton  value="Cancel" action="pharmacy_cancel_po_request" disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.referenceBill.creater ne null}" ajax="false">                           
                                 
                             </p:commandButton>                          
                         </f:facet>

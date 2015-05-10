@@ -89,8 +89,8 @@
 
                                 <!--                                <p:column headerText="View">
                                                                     <p:commandButton ajax="false" value="View Detail"
-                                                                                     action="/inward/inward_bill_intrim_finalized"
-                                                                                     actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                                                                    action="/inward/inward_bill_intrim_finalized"
+                                                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
                                                                         <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
                                                                     </p:commandButton>
                                                                 </p:column>-->
@@ -168,17 +168,17 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Gurdian Name" rendered="#{inwardReportController.guardian}">
+                                <p:column headerText="Guardian Name" rendered="#{inwardReportController.guardian}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Gurdian Name"/>
+                                        <h:outputLabel value="Guardian Name"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.guardian.nameWithTitle}"  >
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Gurdian Address" rendered="#{inwardReportController.guardian}">
+                                <p:column headerText="Guardian Address" rendered="#{inwardReportController.guardian}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Gurdian Address"/>
+                                        <h:outputLabel value="Guardian Address"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.guardian.address}"  >
                                     </h:outputLabel>

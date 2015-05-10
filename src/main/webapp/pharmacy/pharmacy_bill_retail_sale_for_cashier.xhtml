@@ -97,7 +97,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleController.addBillItemNew()}" 
+                                                         action="#{pharmacySaleController.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')}" ></p:commandButton>
 
@@ -293,7 +293,7 @@
                                         </p:selectOneMenu>
 
                                         <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}">   
-                                            <f:selectItem itemLabel="Payment Scheme"/>
+                                            <f:selectItem itemLabel="Discount Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
@@ -315,10 +315,10 @@
                                             <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <p:commandButton accesskey="c" ajax="false" value="For Cashier"
-                                                         action="#{pharmacySaleController.settlePreBill()}" 
+                                                        action="#{pharmacySaleController.settlePreBill()}" 
                                                          onclick="onSubmitButton();" ></p:commandButton>
-                                        <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" 
-                                                         actionListener="#{pharmacySaleController.resetAll}"  ></p:commandButton>
+                                        <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" 
+                                                        actionListener="#{pharmacySaleController.resetAll}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -425,7 +425,7 @@
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" action="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                            <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" action="#{pharmacySaleController.resetAll()}" ></p:commandButton>
 
                         </div>
 

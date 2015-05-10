@@ -63,9 +63,9 @@
                                                 <p:column headerText="Id">
                                                     <h:outputLabel value="#{i.itemBatch.item.id}"  style="width: 50px!important;"></h:outputLabel>
                                                 </p:column>
-                                                
+
                                                 <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
@@ -106,7 +106,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleController.addBillItemNew()}" 
+                                                         action="#{pharmacySaleController.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
@@ -302,7 +302,7 @@
                                         </p:selectOneMenu>
 
                                         <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq false}">   
-                                            <f:selectItem itemLabel="Payment Scheme"/>
+                                            <f:selectItem itemLabel="Discount Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
@@ -334,16 +334,16 @@
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                         action="#{pharmacySaleController.settleBillWithPay}" >
+                                                        action="#{pharmacySaleController.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                                         ajax="false" action="pharmacy_bill_retail_sale"
+                                                       ajax="false" action="pharmacy_bill_retail_sale"
                                                          onclick="onSubmitButton();"
-                                                         actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+                                                        actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -511,7 +511,7 @@
 
 
                         <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
+                                        action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -519,9 +519,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale" 
+                                           ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
-                                             actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                                            actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
@@ -532,33 +532,27 @@
                         <h:panelGroup   id="gpBillPreview" > 
 
                             <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
+                                <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>                            
 
                         </h:panelGroup>                     

@@ -18,25 +18,25 @@
                         <h:panelGrid columns="2">
                             <p:panel>
                                 <p:commandButton ajax="false" value="Cancel" 
-                                                 action="inward_cancel_bill_service"
+                                                action="inward_cancel_bill_service"
                                                  disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }" onclick="onSubmitButton();" >                           
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Return" 
-                                                 action="inward_bill_service_refund"
+                                                action="inward_bill_service_refund"
                                                  disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >    
-<!--                                    <f:setPropertyActionListener value="#{inwardSearch.bill}" target="#{billSearch.bill}" />-->
+                                    <f:setPropertyActionListener value="#{inwardSearch.bill}" target="#{billSearch.bill}" />
                                 </p:commandButton>
                             </p:panel>
                             <p:panel>
                                 <p:commandButton ajax="false" value="Mark As Checked"
-                                                 action="#{inwardSearch.markAsChecked()}"
+                                                action="#{inwardSearch.markAsChecked()}"
                                                  rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Mark As Un Check"
-                                                 action="#{inwardSearch.markAsUnChecked()}"
+                                                action="#{inwardSearch.markAsUnChecked()}"
                                                  rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Back To View" action="/inward/inward_edit_bill_item_view" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Back To Intrim" action="/inward/inward_bill_intrim" 
-                                                 actionListener="#{bhtSummeryController.createTables()}"
+                                                actionListener="#{bhtSummeryController.createTables()}"
                                                  onclick="onSubmitButton();" />
                             </p:panel>
 

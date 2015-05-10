@@ -30,7 +30,7 @@
                         <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
                     </p:panel>
 
-                    <p:panel rendered="#{!pharmacyWholeSaleController2.billPreview}"  >
+                    <p:panel rendered="#{!pharmacyWholeSaleController2.billPreview}" style="background-color: goldenrod; color: brown;"  >
                         <h:panelGroup id="panelError" >
                             <h:panelGroup  
                                 rendered="#{pharmacyWholeSaleController2.errorMessage ne null}"
@@ -105,7 +105,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacyWholeSaleController2.addBillItemNew()}" 
+                                                         action="#{pharmacyWholeSaleController2.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
@@ -301,7 +301,7 @@
                                         </p:selectOneMenu>
 
                                         <p:selectOneMenu   id="cmbPs" value="#{pharmacyWholeSaleController2.paymentScheme}" rendered="#{sessionController.institutionPreference.checkPaymentSchemeValidation eq false}">   
-                                            <f:selectItem itemLabel="Payment Scheme"/>
+                                            <f:selectItem itemLabel="Discount Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
@@ -333,16 +333,16 @@
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                         action="#{pharmacyWholeSaleController2.settleBillWithPay}" >
+                                                        action="#{pharmacyWholeSaleController2.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                                         ajax="false" action="pharmacy_bill_retail_sale"
+                                                       ajax="false" action="pharmacy_bill_retail_sale"
                                                          onclick="onSubmitButton();"
-                                                         actionListener="#{pharmacyWholeSaleController2.resetAll()}"  ></p:commandButton>
+                                                        actionListener="#{pharmacyWholeSaleController2.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -510,7 +510,7 @@
 
 
                         <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
+                                        action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -518,9 +518,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale" 
+                                           ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
-                                             actionListener="#{pharmacyWholeSaleController2.resetAll()}" ></p:commandButton>
+                                            actionListener="#{pharmacyWholeSaleController2.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeSale()}" />
                         </div>
 

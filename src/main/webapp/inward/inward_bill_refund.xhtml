@@ -86,7 +86,7 @@
                             <p:outputLabel value="Amount"/>
                             <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}"/>
                             <p:commandButton id="btnRefund" ajax="false" value="Refund" 
-                                             action="#{inwardRefundController.pay}" onclick="onSubmitButton();"/>
+                                            action="#{inwardRefundController.pay}" onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" onclick="onSubmitButton();"/>
                             <p:defaultCommand target="btnRefund"/>
                         </h:panelGrid>

@@ -36,7 +36,7 @@
                                 <h:outputText value="To Minute"/>
                                 <p:inputText value="#{staffLeaveFromLateAndEarlyController.reportKeyWord.to}"/>
                                 <p:commandButton ajax="false" value="Process Late and Early Shift" 
-                                                 action="#{staffLeaveFromLateAndEarlyController.fetchStaffShiftLateInErlyOut()}" />
+                                                action="#{staffLeaveFromLateAndEarlyController.fetchStaffShiftLateInErlyOut()}" />
                             </h:panelGroup>
                             <p:selectManyCheckbox id="s1" value="#{staffLeaveFromLateAndEarlyController.staffShiftsArray}"   >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
@@ -50,12 +50,12 @@
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                    disabled="#{staffLeaveFromLateAndEarlyController.currentLeaveForm.id ne null}"
-                                                 action="#{staffLeaveFromLateAndEarlyController.saveLeaveform()}"/>
+                                                action="#{staffLeaveFromLateAndEarlyController.saveLeaveform()}"/>
 
                                 <p:commandButton ajax="false" value="Clear" 
-                                                 action="#{staffLeaveFromLateAndEarlyController.clear}"/>
+                                                action="#{staffLeaveFromLateAndEarlyController.clear}"/>
                                 <p:commandButton ajax="false" value="Delete" 
-                                                 action="#{staffLeaveFromLateAndEarlyController.deleteLeaveForm()}"/>
+                                                action="#{staffLeaveFromLateAndEarlyController.deleteLeaveForm()}"/>
                             </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 

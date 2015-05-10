@@ -336,7 +336,10 @@ public class BillSearch implements Serializable {
 
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
-
+        
+        System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
+        getBillFeeFacade().edit(tmp.getPaidForBillFee());
+        System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
 //        if (tmp.getPaidValue() != 0.0) {
 //            UtilityController.addErrorMessage("Already Staff FeePaid");
 //            return;
@@ -812,6 +815,7 @@ public class BillSearch implements Serializable {
         tempbillItems = null;
         comment = null;
         lazyBills = null;
+        searchKeyword=null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {
