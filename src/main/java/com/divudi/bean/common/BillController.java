@@ -109,7 +109,7 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
-    @Inject
+    @EJB
     BillEjb billEjb;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";

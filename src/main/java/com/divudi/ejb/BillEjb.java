@@ -4,7 +4,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -46,13 +45,6 @@ public class BillEjb {
             PaymentMethod[] paymentMethods) {
         return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null);
     }
-    public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate,
-            Class[] billClasses,
-            Department department,
-            Institution institution) {
-        return findBillsAndTotals(fromDate, toDate, null, billClasses, department, null, null, institution, null, null, null, null, billClasses);
-    }
-    
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billClasses,
@@ -112,6 +104,7 @@ public class BillEjb {
             sql += " and (b.institution =:ins or b.department.institution =:ins) ";
             m.put("ins", institution);
         }
+
         if (toInstitution != null) {
             sql += " and (b.toInstitution =:tins or b.toDepartment.institution =:tins) ";
             m.put("tins", toInstitution);
@@ -124,11 +117,19 @@ public class BillEjb {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
+        System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
-        r.setBills(getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP));
-        System.out.println("r.getBills() = " + r.getBills());
+        System.out.println("r = " + r);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("r.getBills().size() = " + r.getBills().size());
+        System.out.println("r = " + r);
+        r.setBills(bills);
+
         if (r.getBills() != null) {
+            System.out.println("bills not null");
             for (Bill b : r.getBills()) {
+                System.out.println("b = " + b);
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
@@ -142,17 +143,16 @@ public class BillEjb {
         return r;
     }
 
-    public BillListWithTotals calculateBillTotals(List<Bill> bills){
+    public BillListWithTotals calculateBillTotals(List<Bill> bills) {
         BillListWithTotals bt = new BillListWithTotals();
-        for(Bill b:bills){
+        for (Bill b : bills) {
             bt.setGrossTotal(bt.getGrossTotal() + b.getTotal());
             bt.setDiscount(bt.getDiscount() + b.getDiscount());
             bt.setNetTotal(bt.getNetTotal() + b.getNetTotal());
         }
         return bt;
     }
-    
-    
+
     public double findBillItemRevenue(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billCLasses, Department department, Institution institution,
             Category category, PaymentMethod[] paymentMethods,
