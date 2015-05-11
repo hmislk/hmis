@@ -23,6 +23,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -212,6 +213,12 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            if (errorCheck()) {
+                return;
+            }
+        }
+
         PatientRoom newPatientRoom = new PatientRoom();
         newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom, oldPatientRoom, getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
         getCurrent().setCurrentPatientRoom(newPatientRoom);
@@ -227,16 +234,18 @@ public class RoomChangeController implements Serializable {
         changeAt = null;
         createPatientRoom();
     }
-    
-     public void addNewRoom() {
-      
+
+    public void addNewRoom() {
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            if (errorCheck()) {
+                return;
+            }
+        }
 
         PatientRoom newPatientRoom = new PatientRoom();
-        newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom,  getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
+        newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom, getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
-
-      
 
         UtilityController.addSuccessMessage("Successfully Room Changed");
 
@@ -246,6 +255,17 @@ public class RoomChangeController implements Serializable {
         createPatientRoom();
     }
 
+    public boolean errorCheck() {
+        if (getNewRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
+            JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
+            return true;
+        }
+        if (getNewRoomFacilityCharge().getMoChargeForAfterDuration().equals(null) || getNewRoomFacilityCharge().getMoChargeForAfterDuration().equals("") || getNewRoomFacilityCharge().getMoChargeForAfterDuration().equals(0.0)) {
+            JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+            return true;
+        }
+        return false;
+    }
 
     private PatientRoom getLastGuardianRoom() {
 

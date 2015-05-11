@@ -170,9 +170,9 @@ public class AttendanceUploadController implements Serializable {
 ////                if (strings.length < 3) {
 ////                    continue;
 ////                }
-//             //   System.out.println("strings0 = " + strings[0]);
-//             //   System.out.println("strings1 = " + strings[1]);
-//             //   System.out.println("strings2 = " + strings[2]);
+//             //   //System.out.println("strings0 = " + strings[0]);
+//             //   //System.out.println("strings1 = " + strings[1]);
+//             //   //System.out.println("strings2 = " + strings[2]);
 //
 //                String strCat = strings[0];
 //
@@ -185,7 +185,7 @@ public class AttendanceUploadController implements Serializable {
 //
 //                String str = strings[1] + " " + strings[2];
 //
-//                //System.out.println("date in string is " + str);
+//                ////System.out.println("date in string is " + str);
 //                if (s != null && !str.trim().equals("")) {
 //                    try {
 //                        FingerPrintRecord ffr = new FingerPrintRecord();

@@ -147,7 +147,7 @@ public class mdInwardReportController implements Serializable {
                 tmp += b.getHospitalFee();
             }
         }
-        System.out.println("tmp = " + tmp);
+        //System.out.println("tmp = " + tmp);
         return tmp;
     }
 
@@ -1722,8 +1722,8 @@ public class mdInwardReportController implements Serializable {
             iwf.setItem(i);
             setCount(iwf);
             setFee(iwf);
-            System.out.println("ss " + itemWithFees.size());
-            System.out.println("ss " + iwf.getItem());
+            //System.out.println("ss " + itemWithFees.size());
+            //System.out.println("ss " + iwf.getItem());
             itemWithFees.add(iwf);
         }
     }
@@ -1799,8 +1799,8 @@ public class mdInwardReportController implements Serializable {
             iwf.setItem(i);
             setCount(iwf);
             setFee(iwf);
-            //   //System.out.println("ss " + itemWithFees.size());
-            //      //System.out.println("ss " + iwf.getItem());
+            //   ////System.out.println("ss " + itemWithFees.size());
+            //      ////System.out.println("ss " + iwf.getItem());
             itemWithFees.add(iwf);
         }
 
@@ -1815,7 +1815,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("bTp", BillType.InwardBill);
 
-        System.out.println("in");
+        //System.out.println("in");
 
         if (getPaymentMethod() == null) {
             sql = "select bi "
@@ -1871,12 +1871,12 @@ public class mdInwardReportController implements Serializable {
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("out");
+        //System.out.println("out");
 
         total = 0.0;
         for (BillFee bf : billfees) {
             total += bf.getFee().getFee();
-            System.out.println("total = " + total);
+            //System.out.println("total = " + total);
         }
 
     }
@@ -1903,7 +1903,7 @@ public class mdInwardReportController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("bTp", BillType.InwardBill);
         m.put("billClass", billClass.getClass());
-        System.out.println("in");
+        //System.out.println("in");
 
         sql = "select DISTINCT(bi.bill) FROM BillFee bi"
                 + " where bi.bill.billType= :bTp "
@@ -1952,7 +1952,7 @@ public class mdInwardReportController implements Serializable {
         for (BillFee bf : bfs) {
             total += bf.getFee().getFee();
         }
-        System.out.println("total = " + total);
+        //System.out.println("total = " + total);
         return total;
 
     }
@@ -1966,7 +1966,7 @@ public class mdInwardReportController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("bTp", BillType.InwardBill);
 
-        System.out.println("in");
+        //System.out.println("in");
 
         sql = "select sum(bi.fee.fee) FROM BillFee bi"
                 + " where bi.bill.billType= :bTp ";
@@ -2071,7 +2071,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("bTp", BillType.InwardBill);
 
-        System.out.println("in");
+        //System.out.println("in");
 
         if (getPaymentMethod() == null) {
             sql = "select bi "
@@ -2127,12 +2127,12 @@ public class mdInwardReportController implements Serializable {
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("out");
+        //System.out.println("out");
 
         total = 0.0;
         for (BillFee bf : billfees) {
             total += bf.getFee().getFee();
-            System.out.println("total = " + total);
+            //System.out.println("total = " + total);
         }
 
     }
@@ -2146,7 +2146,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("bTp", BillType.InwardBill);
-        System.out.println("in");
+        //System.out.println("in");
         if (getPaymentMethod() == null) {
             sql = "select bi "
                     + " FROM BillFee bi "
@@ -2202,12 +2202,12 @@ public class mdInwardReportController implements Serializable {
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("out");
+        //System.out.println("out");
 
         total = 0.0;
         for (BillFee bf : billfees) {
             total += bf.getFee().getFee();
-            System.out.println("total = " + total);
+            //System.out.println("total = " + total);
         }
 
     }
@@ -2250,8 +2250,8 @@ public class mdInwardReportController implements Serializable {
                 iwf.setItem(i);
                 setCountDischarge(iwf);
                 setFeeDischarge(iwf);
-                //System.out.println("ss " + itemWithFees.size());
-                //System.out.println("ss " + iwf.getItem());
+                ////System.out.println("ss " + itemWithFees.size());
+                ////System.out.println("ss " + iwf.getItem());
                 itemWithFees.add(iwf);
             }
 

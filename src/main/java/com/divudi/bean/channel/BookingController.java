@@ -158,7 +158,7 @@ public class BookingController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            System.out.println("billSessions" + bs.getId());
+            //System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
 
@@ -186,9 +186,9 @@ public class BookingController implements Serializable {
 //    public void errorCheckChannelNumber() {
 //
 //        for (BillSession bs : billSessions) {
-//            System.out.println("billSessions" + bs.getName());
+//            //System.out.println("billSessions" + bs.getName());
 //            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
-//                System.out.println("billitem" + bi.getId());
+//                //System.out.println("billitem" + bi.getId());
 //                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
 //                    UtilityController.addErrorMessage("Number you entered already exist");
 //                    setSelectedBillSession(bs);
@@ -210,7 +210,7 @@ public class BookingController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        System.out.println(getSelectedBillSession().getBill().getPatient());
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
 
@@ -234,7 +234,7 @@ public class BookingController implements Serializable {
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
         }
         return suggestions;
@@ -251,7 +251,7 @@ public class BookingController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
         }
-//        System.out.println("consultants = " + consultants);
+//        //System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 

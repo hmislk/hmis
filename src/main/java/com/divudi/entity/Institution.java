@@ -173,7 +173,7 @@ public class Institution implements Serializable {
         }
         
         String arr[] = address.split(",");
-        System.out.println(arr);
+        //System.out.println(arr);
         if(arr==null){
             return;
         }
@@ -183,7 +183,7 @@ public class Institution implements Serializable {
             transAddress3=arr[2];
             transAddress4=arr[3];
        }catch(Exception e){
-           System.out.println(e.getMessage());
+           //System.out.println(e.getMessage());
        }
         
     }

@@ -158,7 +158,7 @@ public class TestFlagController implements Serializable {
     }
 
     public void addFlag() {
-        //System.out.println("adding flag");
+        ////System.out.println("adding flag");
         if (investigation == null) {
             UtilityController.addErrorMessage("Select an investigation");
             return;
@@ -383,14 +383,14 @@ public class TestFlagController implements Serializable {
     public List<TestFlag> getItems() {
         if (items == null) {
             String sql;
-            //System.out.println("getting items");
+            ////System.out.println("getting items");
             Map m = new HashMap();
             m.put("ix", getInvestigation());
             if (investigation != null) {
                 sql = "select i from TestFlag i where i.retired=false and i.item =:ix ";
                 items = getFacade().findBySQL(sql, m);
             }
-            //System.out.println("item are " + items);
+            ////System.out.println("item are " + items);
             if (items == null) {
                 items = new ArrayList<>();
             }

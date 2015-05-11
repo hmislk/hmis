@@ -66,7 +66,7 @@ public class TimedItemController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //System.out.println("gettin ins dep ");
+        ////System.out.println("gettin ins dep ");
         if(current==null){
              return new ArrayList<>();
         }
@@ -89,7 +89,7 @@ public class TimedItemController implements Serializable {
             suggestions = new ArrayList<TimedItem>();
         } else {
             sql = "select c from TimedItem c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -221,7 +221,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Theatre);
         selectedItems = getFacade().findBySQL(sql, m);
-        System.out.println("selectedItems = " + selectedItems);
+        //System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -233,7 +233,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Inward);
         selectedItems = getFacade().findBySQL(sql, m);
-        System.out.println("selectedItems = " + selectedItems);
+        //System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -260,7 +260,7 @@ public class TimedItemController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //System.out.println(code + " " + ix + " " + ic + " " + f);
+                ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
                 TimedItem tix = new TimedItem();
                 tix.setCode(code);
@@ -303,14 +303,14 @@ public class TimedItemController implements Serializable {
 
         if (getCurrent().getId() == null) {
 //            if (billedAs == false) {
-//                //System.out.println("2");
+//                ////System.out.println("2");
 //                getCurrent().setBilledAs(getCurrent());
 //
 //            }
 //            if (reportedAs == false) {
 //                getCurrent().setReportedAs(getCurrent());
 //            }
-            System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
+            //System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -325,7 +325,7 @@ public class TimedItemController implements Serializable {
 //                getCurrent().setReportedAs(getCurrent());
 //            }
             getFacade().edit(getCurrent());
-            System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
+            //System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
