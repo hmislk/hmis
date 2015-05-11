@@ -83,6 +83,11 @@ public class PharmacySaleReport implements Serializable {
     List<String1Value6> saleValuesSlip;
     List<String1Value6> saleValuesCard;
     List<String1Value6> saleValuesCredit;
+    List<String1Value6> wholeSaleValuesCash;
+    List<String1Value6> wholeSaleValuesCheque;
+    List<String1Value6> wholeSaleValuesSlip;
+    List<String1Value6> wholeSaleValuesCard;
+    List<String1Value6> wholeSaleValuesCredit;
     List<String1Value6> bhtIssues;
     List<String1Value6> unitIssues;
     List<BillItem> billItems;
@@ -146,6 +151,47 @@ public class PharmacySaleReport implements Serializable {
     double totalPSChequeBC = 0.0;
     double totalPSChequeRC = 0.0;
     double totalPSChequeNC = 0.0;
+
+    ///pharmacy whole sale
+    double totalPWSCashBV = 0.0;
+    double totalPWSCashCV = 0.0;
+    double totalPWSCashRV = 0.0;
+    double totalPWSCashNV = 0.0;
+    double totalPWSCashBC = 0.0;
+    double totalPWSCashRC = 0.0;
+    double totalPWSCashNC = 0.0;
+
+    double totalPWSCreditBV = 0.0;
+    double totalPWSCreditCV = 0.0;
+    double totalPWSCreditRV = 0.0;
+    double totalPWSCreditNV = 0.0;
+    double totalPWSCreditBC = 0.0;
+    double totalPWSCreditRC = 0.0;
+    double totalPWSCreditNC = 0.0;
+
+    double totalPWSCardBV = 0.0;
+    double totalPWSCardCV = 0.0;
+    double totalPWSCardRV = 0.0;
+    double totalPWSCardNV = 0.0;
+    double totalPWSCardBC = 0.0;
+    double totalPWSCardRC = 0.0;
+    double totalPWSCardNC = 0.0;
+
+    double totalPWSSlipBV = 0.0;
+    double totalPWSSlipCV = 0.0;
+    double totalPWSSlipRV = 0.0;
+    double totalPWSSlipNV = 0.0;
+    double totalPWSSlipBC = 0.0;
+    double totalPWSSlipRC = 0.0;
+    double totalPWSSlipNC = 0.0;
+
+    double totalPWSChequeBV = 0.0;
+    double totalPWSChequeCV = 0.0;
+    double totalPWSChequeRV = 0.0;
+    double totalPWSChequeNV = 0.0;
+    double totalPWSChequeBC = 0.0;
+    double totalPWSChequeRC = 0.0;
+    double totalPWSChequeNC = 0.0;
 
     double totalBHTIssueBV = 0.0;
     double totalBHTIssueCV = 0.0;
@@ -3056,6 +3102,11 @@ public class PharmacySaleReport implements Serializable {
         saleValuesSlip = new ArrayList<>();
         saleValuesCard = new ArrayList<>();
         saleValuesCredit = new ArrayList<>();
+        wholeSaleValuesCash = new ArrayList<>();
+        wholeSaleValuesCheque = new ArrayList<>();
+        wholeSaleValuesSlip = new ArrayList<>();
+        wholeSaleValuesCard = new ArrayList<>();
+        wholeSaleValuesCredit = new ArrayList<>();
         bhtIssues = new ArrayList<>();
         unitIssues = new ArrayList<>();
 
@@ -3099,6 +3150,46 @@ public class PharmacySaleReport implements Serializable {
         totalPSChequeRC = 0.0;
         totalPSChequeNC = 0.0;
 
+        totalPWSCashBV = 0.0;
+        totalPWSCashCV = 0.0;
+        totalPWSCashRV = 0.0;
+        totalPWSCashNV = 0.0;
+        totalPWSCashBC = 0.0;
+        totalPWSCashRC = 0.0;
+        totalPWSCashNC = 0.0;
+
+        totalPWSCreditBV = 0.0;
+        totalPWSCreditCV = 0.0;
+        totalPWSCreditRV = 0.0;
+        totalPWSCreditNV = 0.0;
+        totalPWSCreditBC = 0.0;
+        totalPWSCreditRC = 0.0;
+        totalPWSCreditNC = 0.0;
+
+        totalPWSCardBV = 0.0;
+        totalPWSCardCV = 0.0;
+        totalPWSCardRV = 0.0;
+        totalPWSCardNV = 0.0;
+        totalPWSCardBC = 0.0;
+        totalPWSCardRC = 0.0;
+        totalPWSCardNC = 0.0;
+
+        totalPWSSlipBV = 0.0;
+        totalPWSSlipCV = 0.0;
+        totalPWSSlipRV = 0.0;
+        totalPWSSlipNV = 0.0;
+        totalPWSSlipBC = 0.0;
+        totalPWSSlipRC = 0.0;
+        totalPWSSlipNC = 0.0;
+
+        totalPWSChequeBV = 0.0;
+        totalPWSChequeCV = 0.0;
+        totalPWSChequeRV = 0.0;
+        totalPWSChequeNV = 0.0;
+        totalPWSChequeBC = 0.0;
+        totalPWSChequeRC = 0.0;
+        totalPWSChequeNC = 0.0;
+
         totalBHTIssueBV = 0.0;
         totalBHTIssueCV = 0.0;
         totalBHTIssueRV = 0.0;
@@ -3140,15 +3231,17 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill()) - calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSChequeBV += newRow.getValue1();
             totalPSChequeRV += newRow.getValue2();
             totalPSChequeNV += newRow.getValue3();
             totalPSChequeBC += newRow.getValue4();
             totalPSChequeRC += newRow.getValue5();
             totalPSChequeNC += newRow.getValue6();
+            totalPSChequeCV += newRow.getValue7();
             saleValuesCheque.add(newRow);
 
             ////////////
@@ -3157,10 +3250,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill()) - calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSSlipBV += newRow.getValue1();
+            totalPSSlipCV += newRow.getValue7();
             totalPSSlipRV += newRow.getValue2();
             totalPSSlipNV += newRow.getValue3();
             totalPSSlipBC += newRow.getValue4();
@@ -3174,10 +3269,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill()) - calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSCardBV += newRow.getValue1();
+            totalPSCardCV += newRow.getValue7();
             totalPSCardRV += newRow.getValue2();
             totalPSCardNV += newRow.getValue3();
             totalPSCardBC += newRow.getValue4();
@@ -3191,10 +3288,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill()) - calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSCreditBV += newRow.getValue1();
+            totalPSCreditCV += newRow.getValue7();
             totalPSCreditRV += newRow.getValue2();
             totalPSCreditNV += newRow.getValue3();
             totalPSCreditBC += newRow.getValue4();
@@ -3202,16 +3301,113 @@ public class PharmacySaleReport implements Serializable {
             totalPSCreditNC += newRow.getValue6();
             saleValuesCredit.add(newRow);
 
+            /////////Pharmacy whole sale
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCashBV += newRow.getValue1();
+            totalPWSCashRV += newRow.getValue2();
+            totalPWSCashNV += newRow.getValue3();
+            totalPWSCashBC += newRow.getValue4();
+            totalPWSCashRC += newRow.getValue5();
+            totalPWSCashNC += newRow.getValue6();
+            totalPWSCashCV += newRow.getValue7();
+            wholeSaleValuesCash.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSChequeBV += newRow.getValue1();
+            totalPWSChequeRV += newRow.getValue2();
+            totalPWSChequeNV += newRow.getValue3();
+            totalPWSChequeBC += newRow.getValue4();
+            totalPWSChequeRC += newRow.getValue5();
+            totalPWSChequeNC += newRow.getValue6();
+            totalPWSChequeCV += newRow.getValue7();
+            wholeSaleValuesCheque.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSSlipBV += newRow.getValue1();
+            totalPWSSlipCV += newRow.getValue7();
+            totalPWSSlipRV += newRow.getValue2();
+            totalPWSSlipNV += newRow.getValue3();
+            totalPWSSlipBC += newRow.getValue4();
+            totalPWSSlipRC += newRow.getValue5();
+            totalPWSSlipNC += newRow.getValue6();
+            wholeSaleValuesSlip.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCardBV += newRow.getValue1();
+            totalPWSCardCV += newRow.getValue7();
+            totalPWSCardRV += newRow.getValue2();
+            totalPWSCardNV += newRow.getValue3();
+            totalPWSCardBC += newRow.getValue4();
+            totalPWSCardRC += newRow.getValue5();
+            totalPWSCardNC += newRow.getValue6();
+            wholeSaleValuesCard.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new BilledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCreditBV += newRow.getValue1();
+            totalPWSCreditCV += newRow.getValue7();
+            totalPWSCreditRV += newRow.getValue2();
+            totalPWSCreditNV += newRow.getValue3();
+            totalPWSCreditBC += newRow.getValue4();
+            totalPWSCreditRC += newRow.getValue5();
+            totalPWSCreditNC += newRow.getValue6();
+            wholeSaleValuesCredit.add(newRow);
+
             ////////////
             newRow = new String1Value6();
             newRow.setString(dep.getName());
             newRow.setValue1(calValue2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill()) - calCount2(BillType.PharmacyBhtPre, dep, new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill()));
+            newRow.setValue7(calCount2(BillType.PharmacyBhtPre, dep, new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalBHTIssueBV += newRow.getValue1();
+            totalBHTIssueCV += newRow.getValue7();
             totalBHTIssueRV += newRow.getValue2();
             totalBHTIssueNV += newRow.getValue3();
             totalBHTIssueBC += newRow.getValue4();
@@ -3225,10 +3421,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValue2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill()) - calCount2(BillType.PharmacyIssue, dep, new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill()));
+            newRow.setValue7(calCount2(BillType.PharmacyIssue, dep, new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalUnitIssueBV += newRow.getValue1();
+            totalUnitIssueCV += newRow.getValue7();
             totalUnitIssueRV += newRow.getValue2();
             totalUnitIssueNV += newRow.getValue3();
             totalUnitIssueBC += newRow.getValue4();
@@ -4415,6 +4613,48 @@ public class PharmacySaleReport implements Serializable {
         this.unitIssues = unitIssues;
     }
 
+    public List<String1Value6> getWholeSaleValuesCash() {
+        return wholeSaleValuesCash;
+    }
+
+    public void setWholeSaleValuesCash(List<String1Value6> wholeSaleValuesCash) {
+        this.wholeSaleValuesCash = wholeSaleValuesCash;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCheque() {
+        return wholeSaleValuesCheque;
+    }
+
+    public void setWholeSaleValuesCheque(List<String1Value6> wholeSaleValuesCheque) {
+        this.wholeSaleValuesCheque = wholeSaleValuesCheque;
+    }
+
+    public List<String1Value6> getWholeSaleValuesSlip() {
+        return wholeSaleValuesSlip;
+    }
+
+    public void setWholeSaleValuesSlip(List<String1Value6> wholeSaleValuesSlip) {
+        this.wholeSaleValuesSlip = wholeSaleValuesSlip;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCard() {
+        return wholeSaleValuesCard;
+    }
+
+    public void setWholeSaleValuesCard(List<String1Value6> wholeSaleValuesCard) {
+        this.wholeSaleValuesCard = wholeSaleValuesCard;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCredit() {
+        return wholeSaleValuesCredit;
+    }
+
+    public void setWholeSaleValuesCredit(List<String1Value6> wholeSaleValuesCredit) {
+        this.wholeSaleValuesCredit = wholeSaleValuesCredit;
+    }
+    
+    
+
     public double getTotalPSCashBV() {
         return totalPSCashBV;
     }
@@ -4655,6 +4895,286 @@ public class PharmacySaleReport implements Serializable {
         this.totalPSChequeNC = totalPSChequeNC;
     }
 
+    public double getTotalPWSCashBV() {
+        return totalPWSCashBV;
+    }
+
+    public void setTotalPWSCashBV(double totalPWSCashBV) {
+        this.totalPWSCashBV = totalPWSCashBV;
+    }
+
+    public double getTotalPWSCashCV() {
+        return totalPWSCashCV;
+    }
+
+    public void setTotalPWSCashCV(double totalPWSCashCV) {
+        this.totalPWSCashCV = totalPWSCashCV;
+    }
+
+    public double getTotalPWSCashRV() {
+        return totalPWSCashRV;
+    }
+
+    public void setTotalPWSCashRV(double totalPWSCashRV) {
+        this.totalPWSCashRV = totalPWSCashRV;
+    }
+
+    public double getTotalPWSCashNV() {
+        return totalPWSCashNV;
+    }
+
+    public void setTotalPWSCashNV(double totalPWSCashNV) {
+        this.totalPWSCashNV = totalPWSCashNV;
+    }
+
+    public double getTotalPWSCashBC() {
+        return totalPWSCashBC;
+    }
+
+    public void setTotalPWSCashBC(double totalPWSCashBC) {
+        this.totalPWSCashBC = totalPWSCashBC;
+    }
+
+    public double getTotalPWSCashRC() {
+        return totalPWSCashRC;
+    }
+
+    public void setTotalPWSCashRC(double totalPWSCashRC) {
+        this.totalPWSCashRC = totalPWSCashRC;
+    }
+
+    public double getTotalPWSCashNC() {
+        return totalPWSCashNC;
+    }
+
+    public void setTotalPWSCashNC(double totalPWSCashNC) {
+        this.totalPWSCashNC = totalPWSCashNC;
+    }
+
+    public double getTotalPWSCreditBV() {
+        return totalPWSCreditBV;
+    }
+
+    public void setTotalPWSCreditBV(double totalPWSCreditBV) {
+        this.totalPWSCreditBV = totalPWSCreditBV;
+    }
+
+    public double getTotalPWSCreditCV() {
+        return totalPWSCreditCV;
+    }
+
+    public void setTotalPWSCreditCV(double totalPWSCreditCV) {
+        this.totalPWSCreditCV = totalPWSCreditCV;
+    }
+
+    public double getTotalPWSCreditRV() {
+        return totalPWSCreditRV;
+    }
+
+    public void setTotalPWSCreditRV(double totalPWSCreditRV) {
+        this.totalPWSCreditRV = totalPWSCreditRV;
+    }
+
+    public double getTotalPWSCreditNV() {
+        return totalPWSCreditNV;
+    }
+
+    public void setTotalPWSCreditNV(double totalPWSCreditNV) {
+        this.totalPWSCreditNV = totalPWSCreditNV;
+    }
+
+    public double getTotalPWSCreditBC() {
+        return totalPWSCreditBC;
+    }
+
+    public void setTotalPWSCreditBC(double totalPWSCreditBC) {
+        this.totalPWSCreditBC = totalPWSCreditBC;
+    }
+
+    public double getTotalPWSCreditRC() {
+        return totalPWSCreditRC;
+    }
+
+    public void setTotalPWSCreditRC(double totalPWSCreditRC) {
+        this.totalPWSCreditRC = totalPWSCreditRC;
+    }
+
+    public double getTotalPWSCreditNC() {
+        return totalPWSCreditNC;
+    }
+
+    public void setTotalPWSCreditNC(double totalPWSCreditNC) {
+        this.totalPWSCreditNC = totalPWSCreditNC;
+    }
+
+    public double getTotalPWSCardBV() {
+        return totalPWSCardBV;
+    }
+
+    public void setTotalPWSCardBV(double totalPWSCardBV) {
+        this.totalPWSCardBV = totalPWSCardBV;
+    }
+
+    public double getTotalPWSCardCV() {
+        return totalPWSCardCV;
+    }
+
+    public void setTotalPWSCardCV(double totalPWSCardCV) {
+        this.totalPWSCardCV = totalPWSCardCV;
+    }
+
+    public double getTotalPWSCardRV() {
+        return totalPWSCardRV;
+    }
+
+    public void setTotalPWSCardRV(double totalPWSCardRV) {
+        this.totalPWSCardRV = totalPWSCardRV;
+    }
+
+    public double getTotalPWSCardNV() {
+        return totalPWSCardNV;
+    }
+
+    public void setTotalPWSCardNV(double totalPWSCardNV) {
+        this.totalPWSCardNV = totalPWSCardNV;
+    }
+
+    public double getTotalPWSCardBC() {
+        return totalPWSCardBC;
+    }
+
+    public void setTotalPWSCardBC(double totalPWSCardBC) {
+        this.totalPWSCardBC = totalPWSCardBC;
+    }
+
+    public double getTotalPWSCardRC() {
+        return totalPWSCardRC;
+    }
+
+    public void setTotalPWSCardRC(double totalPWSCardRC) {
+        this.totalPWSCardRC = totalPWSCardRC;
+    }
+
+    public double getTotalPWSCardNC() {
+        return totalPWSCardNC;
+    }
+
+    public void setTotalPWSCardNC(double totalPWSCardNC) {
+        this.totalPWSCardNC = totalPWSCardNC;
+    }
+
+    public double getTotalPWSSlipBV() {
+        return totalPWSSlipBV;
+    }
+
+    public void setTotalPWSSlipBV(double totalPWSSlipBV) {
+        this.totalPWSSlipBV = totalPWSSlipBV;
+    }
+
+    public double getTotalPWSSlipCV() {
+        return totalPWSSlipCV;
+    }
+
+    public void setTotalPWSSlipCV(double totalPWSSlipCV) {
+        this.totalPWSSlipCV = totalPWSSlipCV;
+    }
+
+    public double getTotalPWSSlipRV() {
+        return totalPWSSlipRV;
+    }
+
+    public void setTotalPWSSlipRV(double totalPWSSlipRV) {
+        this.totalPWSSlipRV = totalPWSSlipRV;
+    }
+
+    public double getTotalPWSSlipNV() {
+        return totalPWSSlipNV;
+    }
+
+    public void setTotalPWSSlipNV(double totalPWSSlipNV) {
+        this.totalPWSSlipNV = totalPWSSlipNV;
+    }
+
+    public double getTotalPWSSlipBC() {
+        return totalPWSSlipBC;
+    }
+
+    public void setTotalPWSSlipBC(double totalPWSSlipBC) {
+        this.totalPWSSlipBC = totalPWSSlipBC;
+    }
+
+    public double getTotalPWSSlipRC() {
+        return totalPWSSlipRC;
+    }
+
+    public void setTotalPWSSlipRC(double totalPWSSlipRC) {
+        this.totalPWSSlipRC = totalPWSSlipRC;
+    }
+
+    public double getTotalPWSSlipNC() {
+        return totalPWSSlipNC;
+    }
+
+    public void setTotalPWSSlipNC(double totalPWSSlipNC) {
+        this.totalPWSSlipNC = totalPWSSlipNC;
+    }
+
+    public double getTotalPWSChequeBV() {
+        return totalPWSChequeBV;
+    }
+
+    public void setTotalPWSChequeBV(double totalPWSChequeBV) {
+        this.totalPWSChequeBV = totalPWSChequeBV;
+    }
+
+    public double getTotalPWSChequeCV() {
+        return totalPWSChequeCV;
+    }
+
+    public void setTotalPWSChequeCV(double totalPWSChequeCV) {
+        this.totalPWSChequeCV = totalPWSChequeCV;
+    }
+
+    public double getTotalPWSChequeRV() {
+        return totalPWSChequeRV;
+    }
+
+    public void setTotalPWSChequeRV(double totalPWSChequeRV) {
+        this.totalPWSChequeRV = totalPWSChequeRV;
+    }
+
+    public double getTotalPWSChequeNV() {
+        return totalPWSChequeNV;
+    }
+
+    public void setTotalPWSChequeNV(double totalPWSChequeNV) {
+        this.totalPWSChequeNV = totalPWSChequeNV;
+    }
+
+    public double getTotalPWSChequeBC() {
+        return totalPWSChequeBC;
+    }
+
+    public void setTotalPWSChequeBC(double totalPWSChequeBC) {
+        this.totalPWSChequeBC = totalPWSChequeBC;
+    }
+
+    public double getTotalPWSChequeRC() {
+        return totalPWSChequeRC;
+    }
+
+    public void setTotalPWSChequeRC(double totalPWSChequeRC) {
+        this.totalPWSChequeRC = totalPWSChequeRC;
+    }
+
+    public double getTotalPWSChequeNC() {
+        return totalPWSChequeNC;
+    }
+
+    public void setTotalPWSChequeNC(double totalPWSChequeNC) {
+        this.totalPWSChequeNC = totalPWSChequeNC;
+    }
+
     public double getTotalBHTIssueBV() {
         return totalBHTIssueBV;
     }
@@ -4854,8 +5374,6 @@ public class PharmacySaleReport implements Serializable {
     public void setTotalUnitIssueCV(double totalUnitIssueCV) {
         this.totalUnitIssueCV = totalUnitIssueCV;
     }
-    
-    
 
     public List<BillItem> getBillItems() {
         return billItems;
