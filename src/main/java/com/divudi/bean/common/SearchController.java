@@ -616,7 +616,7 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailBills(BillType billtype, boolean maxNum) {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
+        m.put("bt", billtype);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());

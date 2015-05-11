@@ -285,7 +285,7 @@ public class AdmissionController implements Serializable {
         } else {
             sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
             hm.put("pm", PaymentMethod.Credit);
-            ////System.out.println(sql);
+            //System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, hm, TemporalType.TIME, 20);
         }
         return suggestions;
@@ -302,7 +302,7 @@ public class AdmissionController implements Serializable {
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
                     + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
                     + " like :q) ) order by c.bhtNo";
-            ////System.out.println(sql);
+            //System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findBySQL(sql, h, 20);
@@ -323,7 +323,7 @@ public class AdmissionController implements Serializable {
                     + " and (upper(c.bhtNo) like :q "
                     + " or upper(c.patient.person.name) like :q)"
                     + "  order by c.bhtNo";
-            ////System.out.println(sql);
+            //System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findBySQL(sql, h, 20);
@@ -338,7 +338,7 @@ public class AdmissionController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select c from Admission c where c.retired=false and c.discharged=true and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            ////System.out.println(sql);
+            //System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, 20);
         }
         return suggestions;
@@ -372,7 +372,7 @@ public class AdmissionController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Admission p where p.retired=false and upper(p.bhtNo) like '%" + query.toUpperCase() + "%'";
-            ////System.out.println(sql);
+            //System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, 20);
         }
         if (suggestions == null) {
@@ -500,6 +500,21 @@ public class AdmissionController implements Serializable {
             return true;
         }
 
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
+                JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
+                return true;
+            }
+            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration()==null) {
+                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                return true;
+            }
+            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals("") || getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals(0.0)) {
+                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                return true;
+            }
+        }
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
                 UtilityController.addErrorMessage("Select Empty Room");
@@ -608,30 +623,30 @@ public class AdmissionController implements Serializable {
         JsfUtil.addSuccessMessage("Patient Added. Go to Edit BHT and edit. ALso add a patient room");
 
     }
-    
-    public void updateBHTNo(){
-        //System.out.println("current.getBhtNo() = " + current.getBhtNo());
-        //System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
-        //System.out.println("current.getAdmissionType() = " + current.getAdmissionType());
-        if (current.getBhtNo()==null || current.getBhtNo().isEmpty()) {
+
+    public void updateBHTNo() {
+        System.out.println("current.getBhtNo() = " + current.getBhtNo());
+        System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
+        System.out.println("current.getAdmissionType() = " + current.getAdmissionType());
+        if (current.getBhtNo() == null || current.getBhtNo().isEmpty()) {
             UtilityController.addErrorMessage("BHT NO");
             return;
         }
-        if (patientRoom.getRoomFacilityCharge()==null) {
+        if (patientRoom.getRoomFacilityCharge() == null) {
             UtilityController.addErrorMessage("Room...");
             return;
         }
-        if (current.getAdmissionType()==null) {
+        if (current.getAdmissionType() == null) {
             UtilityController.addErrorMessage("Admission Type.");
             return;
         }
         addPatient();
         addGuardian();
         addPatientRoom();
-        //System.out.println("BHT No = " + current.getBhtNo());
+        System.out.println("BHT No = " + current.getBhtNo());
         getFacade().edit(current);
-        current=new Admission();
-        patientRoom=new PatientRoom();
+        current = new Admission();
+        patientRoom = new PatientRoom();
     }
 
     public void saveSelected() {
