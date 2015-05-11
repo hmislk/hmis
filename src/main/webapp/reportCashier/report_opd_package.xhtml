@@ -19,10 +19,11 @@
                         <h:outputLabel value="From"/>
                         <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         </p:calendar>
+                        <p:spacer width="30" height="1"/>
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         </p:calendar>
-                        
+
                     </p:panel>
                     <p:panel>
                         <p:autoComplete widgetVar="aIx1" id="acIx1" 
@@ -63,7 +64,7 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
-                                        action="#{billPackageMedicalController.createOtherPackageBillItems()}"
+                                         action="#{billPackageMedicalController.createOtherPackageBillItems()}"
                                          onclick="onSubmitButton();" />
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
@@ -82,7 +83,21 @@
                 <p:panel id="gpBillPreview">
                     <p:dataTable id="tbl" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
                         <f:facet name="header">
-                            <p:outputLabel value="Package Bill Detail Report" />
+                            <p:outputLabel value="Package Bill Detail Report - By Bill Item" /><br/>
+                            <p:outputLabel value="From : "/>
+                            <p:outputLabel value="#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </p:outputLabel>
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="To : "/>
+                            <p:outputLabel value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </p:outputLabel><br/>
+                            <p:outputLabel value="#{billPackageMedicalController.currentBillItem.item.name}" />
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
                         </f:facet>
                         <p:column headerText="Serial No">
                             <f:facet name="header">
@@ -160,7 +175,11 @@
                             </p:row>
                         </p:columnGroup>
                     </p:dataTable>
+
                 </p:panel>
+                <f:facet name="footer">
+                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                </f:facet>
             </p:panel>
 
         </h:form>

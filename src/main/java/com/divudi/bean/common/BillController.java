@@ -18,6 +18,7 @@ import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
@@ -108,7 +109,7 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
-    @Inject
+    @EJB
     BillEjb billEjb;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
@@ -181,6 +182,8 @@ public class BillController implements Serializable {
     //Temprory Variable
     private Patient tmpPatient;
     List<Bill> bills;
+    List<Bill> selectedBills;
+    Double grosTotal;
     Bill bill;
     boolean foreigner = false;
     Date sessionDate;
@@ -192,20 +195,35 @@ public class BillController implements Serializable {
 
     @Inject
     SearchController searchController;
+
+    public List<Bill> getSelectedBills() {
+        return selectedBills;
+    }
+
+    public void setSelectedBills(List<Bill> selectedBills) {
+        this.selectedBills = selectedBills;
+    }
+
+    public void calculateSelectedBillTotals(){
+        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+        grosTotal = bt.getGrossTotal();
+        netTotal = bt.getNetTotal();
+        discount = bt.getDiscount();
+    }
     
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
-        comment=null;
+        comment = null;
         searchController.createTableByKeywordToPayBills();
     }
-    
+
     public void clearPharmacy() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
-        comment=null;
+        comment = null;
         searchController.createTablePharmacyCreditToPayBills();
     }
 
@@ -258,7 +276,7 @@ public class BillController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public void saveBillPharmacyCredit() {
 
         BilledBill temp = new BilledBill();
@@ -267,7 +285,7 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
-        if (opdPaymentCredit > (opdBill.getNetTotal()-opdBill.getPaidAmount())) {
+        if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
             UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
@@ -278,7 +296,7 @@ public class BillController implements Serializable {
         temp.setNetTotal(opdPaymentCredit);
         System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        opdBill.setPaidAmount(opdPaymentCredit+opdBill.getPaidAmount());
+        opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
         System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
         getBillFacade().edit(opdBill);
 
@@ -572,13 +590,92 @@ public class BillController implements Serializable {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+
+    public void getOpdBills() {
+        BillType[] billTypes = {BillType.OpdBill};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+    }
+
+    public void getPharmacySaleBills() {
+        BillType[] billTypes = {BillType.PharmacySale , BillType.PharmacyWholeSale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+    }
+
     
-    public void getOpdBills(){
-        BillType[] billTypes={BillType.OpdBill};
-        Class[] billClasses={Bill.class};
-        PaymentMethod[] paymentMethods={PaymentMethod.Cash,PaymentMethod.Card,PaymentMethod.Cheque,PaymentMethod.Credit,PaymentMethod.Slip};
-        
-        bills=billEjb.findBillBills(fromDate, toDate, billTypes, billClasses, department, institution, category, paymentMethods, null, null);
+    public Double getGrosTotal() {
+        return grosTotal;
+    }
+
+    public void setGrosTotal(Double grosTotal) {
+        this.grosTotal = grosTotal;
+    }
+
+    public void getPharamacyWholeSaleCreditBills() {
+        BillType[] billTypes = {BillType.PharmacyWholeSale};
+        PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+    }
+
+    public void getPharmacyBills() {
+        BillType[] billTypes = {BillType.PharmacySale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+    }
+
+    public void getPharmacyWholeBills() {
+        BillType[] billTypes = {BillType.PharmacySale};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
     }
 
     public BillEjb getBillEjb() {
@@ -590,6 +687,9 @@ public class BillController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate=CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -598,6 +698,9 @@ public class BillController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate=CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
@@ -644,8 +747,6 @@ public class BillController implements Serializable {
     public void setMembershipSchemeController(MembershipSchemeController membershipSchemeController) {
         this.membershipSchemeController = membershipSchemeController;
     }
-    
-    
 
     public Date getSessionDate() {
         if (sessionDate == null) {
@@ -773,6 +874,7 @@ public class BillController implements Serializable {
             }
 
             b.setBillItems(list);
+            b.setBillTotal(b.getNetTotal());
 
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -992,11 +1094,11 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
-      
+
         System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
         System.out.println("bill = " + bill);
         System.out.println("bill.getInstitution() = " + bill.getInstitution());
-        
+
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);

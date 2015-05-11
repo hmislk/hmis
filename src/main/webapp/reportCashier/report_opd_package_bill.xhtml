@@ -12,7 +12,7 @@
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel>
                 <f:facet name="header">
-                    <p:outputLabel value="Package Bill Detail Report" />
+                    <p:outputLabel value="Package Detail Report - By Bill" />
                 </f:facet>
                 <h:panelGrid columns="2" style="min-width: 100%;">                    
 
@@ -43,7 +43,7 @@
                     </p:autoComplete>
 
                     <p:commandButton ajax="false" value="Search" 
-                                    action="#{billPackageMedicalController.createOtherPackageBills()}"
+                                     action="#{billPackageMedicalController.createOtherPackageBills()}"
                                      onclick="onSubmitButton();" />
 
                     <p:commandButton value="Print" ajax="false" action="#" >
@@ -53,14 +53,26 @@
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
                         <pe:exporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
                     </p:commandButton>
-            </h:panelGrid>
+                </h:panelGrid>
             </p:panel>
-               
+
 
             <p:panel id="gpBillPreview">
                 <p:dataTable id="tbl" value="#{billPackageMedicalController.bills}" rowIndexVar="i" var="bill">
                     <f:facet name="header">
-                        <p:outputLabel value="Package Bill Detail Report" />
+                        <p:outputLabel value="Package Detail Report - By Bill" /><br/>
+                        <p:outputLabel value="From : "/>
+                        <p:outputLabel value="#{commonReport.fromDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        </p:outputLabel>
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="To : "/>
+                        <p:outputLabel value="#{commonReport.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        </p:outputLabel><br/>
+                        <p:outputLabel value="Package: #{billPackageMedicalController.serviceItem.name}" />
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="Credit Company :#{billPackageMedicalController.institution.name}" />
                     </f:facet>
                     <p:column headerText="Serial No">
                         <f:facet name="header">
@@ -122,10 +134,14 @@
                     </p:column>
 
                 </p:dataTable>
+                <f:facet name="footer">
+                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                </f:facet>
             </p:panel>
             <!--</p:panel>-->
 
         </h:form>
+
     </ui:define>
 
 

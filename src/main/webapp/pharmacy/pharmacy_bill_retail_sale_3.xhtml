@@ -294,7 +294,7 @@
                                         </p:selectOneMenu>
 
                                         <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController3.paymentScheme}">   
-                                            <f:selectItem itemLabel="Payment Scheme"/>
+                                            <f:selectItem itemLabel="Discount Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 

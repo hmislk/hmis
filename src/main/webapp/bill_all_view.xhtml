@@ -20,7 +20,7 @@
                         </f:facet>
 
                         <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panelGrid columns="2" style="width: 100%;" styleClass="alignTop">
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
@@ -48,19 +48,19 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
-                                        
+
                                         <h:outputLabel value="Billed bill:" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.id}" />
-                                        
+
                                         <h:outputLabel value="Billed bill No (Ins Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.insId}" />
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" />
-                                        
+
                                         <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billedBill.createdAt}" />
-                                        
+
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
 
@@ -69,7 +69,7 @@
 
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.referenceBill}" />
 
@@ -208,6 +208,17 @@
 
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.netTotal}"/>
+
+                                        <h:outputLabel value="Paid Amount :" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.paidAmount}"/>
+
+                                        <h:outputLabel value="Balance:" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.balance}"/>
+
+                                          <h:outputLabel value="Paid:" ></h:outputLabel>
+                                          <h:inputText value="#{billSearch.billSearch.paid}"/>
+
+
 
                                         <h:outputLabel value="PerformInstitutionFee" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.performInstitutionFee}" />

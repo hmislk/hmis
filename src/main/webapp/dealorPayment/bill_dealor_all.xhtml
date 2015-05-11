@@ -50,7 +50,8 @@
                                             value="#{pharmacyDealorBill.institution}"
                                             completeMethod="#{institutionController.completeSupplier}"
                                             var="ix" itemLabel="#{ix.name}"
-                                            itemValue="#{ix}" size="30"  style="width: 400px;">                                  
+                                            itemValue="#{ix}" size="30"  style="width: 400px;"
+                                            converter="institutionConverter">                                  
                                 <p:column headerText="Name">
                                     #{ix.name}
                                 </p:column>

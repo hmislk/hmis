@@ -40,7 +40,7 @@
                             </h:panelGrid>
                             <h:panelGrid columns="1">                            
                                 <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
-                                    <f:selectItem itemLabel="Select Payment Scheme"/>
+                                    <f:selectItem itemLabel="Select Discount Scheme"/>
                                     <f:selectItems value="#{paymentSchemeController.items}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
@@ -216,7 +216,6 @@
                                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                         </h:outputLabel>
                                                     </p:column>
-                      ////////////////////////////////////////
                                                     <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
                                                             render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
                                                             listener="#{billController.calTotals()}" />
