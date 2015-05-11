@@ -3107,7 +3107,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill())-calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalPSCashBV += newRow.getValue1();
@@ -3124,7 +3124,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill())-calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalPSChequeBV += newRow.getValue1();
@@ -3141,7 +3141,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill())-calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalPSSlipBV += newRow.getValue1();
@@ -3158,7 +3158,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill())-calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalPSCardBV += newRow.getValue1();
@@ -3175,7 +3175,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill())-calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalPSCreditBV += newRow.getValue1();
@@ -3192,7 +3192,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValue2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill())-calCount2(BillType.PharmacyBhtPre, dep,new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalBHTIssueBV += newRow.getValue1();
@@ -3209,7 +3209,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValue2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill())-calCount2(BillType.PharmacyIssue, dep, new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             totalUnitIssueBV += newRow.getValue1();
