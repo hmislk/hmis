@@ -66,6 +66,11 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
                     <p:column headerText="Return Count">
                         <h:outputLabel value="#{i.value5}">
                             <f:convertNumber pattern="#,##0.00" />
@@ -107,6 +112,13 @@
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPSCashBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashCV}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </f:facet>

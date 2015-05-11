@@ -18,6 +18,7 @@ public class String1Value6 {
     double value4;
     double value5;
     double value6;
+    double value7;
 
     public String getString() {
         return string;
@@ -73,6 +74,14 @@ public class String1Value6 {
 
     public void setValue6(double value6) {
         this.value6 = value6;
+    }
+
+    public double getValue7() {
+        return value7;
+    }
+
+    public void setValue7(double value7) {
+        this.value7 = value7;
     }
     
     
