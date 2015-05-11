@@ -118,7 +118,7 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
-                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashCV}">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashCC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </f:facet>
@@ -169,6 +169,11 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
                     <p:column headerText="Return Count">
                         <h:outputLabel value="#{i.value5}">
                             <f:convertNumber pattern="#,##0.00" />
@@ -216,6 +221,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -256,6 +268,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -306,6 +323,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -346,6 +370,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -396,6 +425,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPSCardRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -436,6 +472,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -486,6 +527,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -504,7 +552,7 @@
                 
                  <p:dataTable value="#{pharmacySaleReport.wholeSaleValuesCash}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}" >
                     <f:facet name="header">
-                        <h:outputLabel value="Pharmacy Sale  - CASH"/>
+                        <h:outputLabel value="Pharmacy Whole Sale  - CASH"/>
                     </f:facet>
                     <p:column headerText="Department">
                         <h:outputLabel value="#{i.string}"/>
@@ -581,7 +629,7 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
-                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSCashCV}">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSCashCC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </f:facet>
@@ -607,7 +655,7 @@
 
                 <p:dataTable value="#{pharmacySaleReport.wholeSaleValuesCheque}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
-                        <h:outputLabel value="Pharmacy Sale - CHEQUE"/>
+                        <h:outputLabel value="Pharmacy Whole Sale - CHEQUE"/>
                     </f:facet>
                     <p:column headerText="Department">
                         <h:outputLabel value="#{i.string}"/>
@@ -629,6 +677,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -679,6 +732,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSChequeCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPWSChequeRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -697,7 +757,7 @@
 
                 <p:dataTable value="#{pharmacySaleReport.wholeSaleValuesSlip}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
-                        <h:outputLabel value="Pharmacy Sale - SLIP"/>
+                        <h:outputLabel value="Pharmacy Whole Sale - SLIP"/>
                     </f:facet>
                     <p:column headerText="Department">
                         <h:outputLabel value="#{i.string}"/>
@@ -719,6 +779,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -769,6 +834,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSSlipCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPWSSlipRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -787,7 +859,7 @@
 
                 <p:dataTable value="#{pharmacySaleReport.wholeSaleValuesCard}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
-                        <h:outputLabel value="Pharmacy Sale - CARD"/>
+                        <h:outputLabel value="Pharmacy Whole Sale - CARD"/>
                     </f:facet>
                     <p:column headerText="Department">
                         <h:outputLabel value="#{i.string}"/>
@@ -809,6 +881,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -859,6 +936,13 @@
                             </p:column>
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSCardCC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPWSCardRC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -877,7 +961,7 @@
 
                 <p:dataTable value="#{pharmacySaleReport.wholeSaleValuesCredit}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
-                        <h:outputLabel value="Pharmacy Sale - CREDIT"/>
+                        <h:outputLabel value="Pharmacy Whole Sale - CREDIT"/>
                     </f:facet>
                     <p:column headerText="Department">
                         <h:outputLabel value="#{i.string}"/>
@@ -899,6 +983,11 @@
                     </p:column>     
                     <p:column headerText="Billed Count">
                         <h:outputLabel value="#{i.value4}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled Count">
+                        <h:outputLabel value="#{i.value7}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -943,6 +1032,13 @@
                             <p:column style="text-align: left;">
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{pharmacySaleReport.totalPWSCreditBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPWSCreditCC}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </f:facet>
