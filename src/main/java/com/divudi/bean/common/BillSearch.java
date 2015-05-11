@@ -337,9 +337,9 @@ public class BillSearch implements Serializable {
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
         
-        System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
+        //System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
         getBillFeeFacade().edit(tmp.getPaidForBillFee());
-        System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
+        //System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
 //        if (tmp.getPaidValue() != 0.0) {
 //            UtilityController.addErrorMessage("Already Staff FeePaid");
 //            return;
@@ -396,11 +396,11 @@ public class BillSearch implements Serializable {
         List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //System.out.println("user is null");
+            ////System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
 
-            //System.out.println("user ok");
+            ////System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -950,7 +950,7 @@ public class BillSearch implements Serializable {
 //        }
         if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 
-            System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+            //System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
             if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
                 UtilityController.addErrorMessage("Sample Already collected can't cancel");
                 return true;
@@ -1011,10 +1011,10 @@ public class BillSearch implements Serializable {
                 getSessionController().setLoggedUser(wb);
 
                 if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                    //   System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                    //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                    //   //System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                    //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                     if (getBill().getToStaff() != null) {
-                        //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                        //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                         staffBean.updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                         UtilityController.addSuccessMessage("Staff Credit Updated");
                         cb.setFromStaff(getBill().getToStaff());
@@ -1221,13 +1221,13 @@ public class BillSearch implements Serializable {
     }
 
     public List<Bill> getOpdBillsToApproveCancellation() {
-        //System.out.println("1");
+        ////System.out.println("1");
         billsToApproveCancellation = ejbApplication.getOpdBillsToCancel();
         return billsToApproveCancellation;
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //System.out.println("1");
+        ////System.out.println("1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -1432,13 +1432,13 @@ public class BillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //System.out.println("getting user bills");
+        ////System.out.println("getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //System.out.println("user is null");
+            ////System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //System.out.println("user ok");
+            ////System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -1511,8 +1511,8 @@ public class BillSearch implements Serializable {
 //                sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getRefundedBill().getId();
 //            }
 //            billItems = getBillItemFacede().findBySQL(sql);
-//            // //System.out.println("sql for bill item search is " + sql);
-//            // //System.out.println("results for bill item search is " + billItems);
+//            // ////System.out.println("sql for bill item search is " + sql);
+//            // ////System.out.println("results for bill item search is " + billItems);
 //            if (billItems == null) {
 //                billItems = new ArrayList<>();
 //            }
@@ -1708,7 +1708,7 @@ public class BillSearch implements Serializable {
         }
         double tot = 0.0;
         for (BillFee f : getBillFees()) {
-            //System.out.println("Tot" + f.getFeeValue());
+            ////System.out.println("Tot" + f.getFeeValue());
             tot += f.getFeeValue();
         }
         getBillForRefund().setTotal(tot);

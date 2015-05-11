@@ -61,7 +61,7 @@ public  class AntibioticController implements Serializable {
             suggestions = new ArrayList<Antibiotic>();
         } else {
             sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -149,7 +149,7 @@ public  class AntibioticController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //System.out.println(code + " " + ix + " " + ic + " " + f);
+                ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
 
                 Antibiotic tix = new Antibiotic();
@@ -180,7 +180,7 @@ public  class AntibioticController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (billedAs == false) {
-                //System.out.println("2");
+                ////System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }

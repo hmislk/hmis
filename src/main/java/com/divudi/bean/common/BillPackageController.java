@@ -225,7 +225,7 @@ public class BillPackageController implements Serializable {
                 }
             }
             myBill.setBillItems(list);
-            //System.out.println("555");
+            ////System.out.println("555");
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
@@ -302,7 +302,7 @@ public class BillPackageController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //System.out.println("ggg : " + getBillSearch().getComment());
+            ////System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelBill();
         }
 
@@ -316,9 +316,9 @@ public class BillPackageController implements Serializable {
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
             BillItem temBi = be.getBillItem();
-            System.out.println("temBi = " + temBi);
+            //System.out.println("temBi = " + temBi);
             BillSession temBs = getServiceSessionBean().createBillSession(temBi);
-            System.out.println("temBs = " + temBs);
+            //System.out.println("temBs = " + temBs);
             temBi.setBillSession(temBs);
             if (temBs != null) {
                 getBillSessionFacade().create(temBs);
@@ -341,16 +341,16 @@ public class BillPackageController implements Serializable {
             getBills().add(b);
 
         } else {
-            //    //System.out.println("11");
+            //    ////System.out.println("11");
             putToBills();
-            //   //System.out.println("22");
+            //   ////System.out.println("22");
         }
 
         saveBatchBill();
         saveBillItemSessions();
 
         clearBillItemValues();
-        //System.out.println("33");
+        ////System.out.println("33");
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
@@ -609,7 +609,7 @@ public class BillPackageController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //System.out.println(b.getBillItem().getNetValue());
+                ////System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

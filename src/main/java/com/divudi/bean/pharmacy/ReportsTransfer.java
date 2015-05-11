@@ -190,12 +190,12 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
-            System.out.println("objs = " + objs);
+            //System.out.println("objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -863,7 +863,7 @@ public class ReportsTransfer implements Serializable {
     public void fillItemCountsWithOutMargin(BillType bt) {
 
         List<Object[]> list = fetchBillItemWithOutMargin(bt);
-        System.out.println("list = " + list);
+        //System.out.println("list = " + list);
         if (list == null) {
             return;
         }

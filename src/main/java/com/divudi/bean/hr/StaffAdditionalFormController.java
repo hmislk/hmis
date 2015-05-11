@@ -420,18 +420,18 @@ public class StaffAdditionalFormController implements Serializable {
             if (a.getFromTime() != null && a.getToTime() != null) {
                 Calendar frmCal = Calendar.getInstance();
                 frmCal.setTime(a.getFromTime());
-                System.out.println("frmCal = " + frmCal);
+                //System.out.println("frmCal = " + frmCal);
                 Calendar toCal = Calendar.getInstance();
                 frmCal.setTime(a.getToTime());
-                System.out.println("toCal = " + toCal);
-                System.out.println("toCal.getTimeInMillis() = " + toCal.getTimeInMillis());
-                System.out.println("frmCal.getTimeInMillis() = " + frmCal.getTimeInMillis());
-                System.out.println("toCal.getTimeInMillis()-frmCal.getTimeInMillis() = " + (toCal.getTimeInMillis() - frmCal.getTimeInMillis()));
+                //System.out.println("toCal = " + toCal);
+                //System.out.println("toCal.getTimeInMillis() = " + toCal.getTimeInMillis());
+                //System.out.println("frmCal.getTimeInMillis() = " + frmCal.getTimeInMillis());
+                //System.out.println("toCal.getTimeInMillis()-frmCal.getTimeInMillis() = " + (toCal.getTimeInMillis() - frmCal.getTimeInMillis()));
                 long time = ((toCal.getTime().getTime() - frmCal.getTime().getTime()) / (1000 * 60));
                 awt.setAf(a);
                 awt.setTime(time);
-                System.out.println("awt.getAf() = " + awt.getAf());
-                System.out.println("awt.getTime() = " + awt.getTime());
+                //System.out.println("awt.getAf() = " + awt.getAf());
+                //System.out.println("awt.getTime() = " + awt.getTime());
                 aditionalWithTimes.add(awt);
             }
         }

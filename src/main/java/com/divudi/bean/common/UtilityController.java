@@ -30,7 +30,7 @@ public class UtilityController implements Serializable {
         String pattern="###,###.##";
         DecimalFormat myFormatter = new DecimalFormat(pattern);
         String output = myFormatter.format(value);
-     //   System.out.println(value + "  " + pattern + "  " + output);
+     //   //System.out.println(value + "  " + pattern + "  " + output);
         return output;
     }
 

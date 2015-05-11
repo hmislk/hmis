@@ -830,7 +830,7 @@ public class ChannelBillController implements Serializable {
 //                return true;
 //            }
         }
-//        System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
             if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 UtilityController.addErrorMessage("Please Enter Agent Ref No");

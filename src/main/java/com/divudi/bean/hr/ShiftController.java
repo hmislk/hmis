@@ -232,7 +232,7 @@ public class ShiftController implements Serializable {
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
         //   + " order by s.shiftOrder ";
-        System.out.println("sql = " + sql);
+        //System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
         hm.put("rs", getCurrentRoster());
 

@@ -16,12 +16,12 @@
                 <p:panel id="panIx"  >
 
                     <f:facet name="header" >
-                        <h:outputLabel value="List of Service to Delete"></h:outputLabel>
+                        <h:outputLabel value="List of Investigations to Delete"></h:outputLabel>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="panIx" />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <p:dataExporter target="panIx" type="xls" fileName="All Services" />
+                            <p:dataExporter target="panIx" type="xls" fileName="All Items" />
                         </p:commandButton>
                     </f:facet>
 
@@ -29,13 +29,14 @@
 
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="List of Service to Delete"></h:outputLabel>
-                            <p:commandButton ajax="false" value="Remove" styleClass="noPrintButton" action="#{serviceController.removeSelectedItems()}">
+                            <h:outputLabel value="List of Investigations to Delete"></h:outputLabel>
+                            <p:commandButton ajax="false" value="Remove" styleClass="noPrintButton" 
+                                             action="#{investigationController.removeSelectedItems()}">
                             </p:commandButton>
                         </f:facet>
 
-                        <p:dataTable id="dtF" value="#{serviceController.items}" var="sv" 
-                                     rowKey="#{sv.id}" selection="#{serviceController.itemsToRemove}" 
+                        <p:dataTable id="dtF" value="#{investigationController.items}" var="sv" 
+                                     rowKey="#{sv.id}" selection="#{investigationController.itemsToRemove}" 
                                      rows="10"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
