@@ -38,6 +38,7 @@ public class RoomFacilityCharge implements Serializable {
     private Double linenCharge = 0.0;
     private Double nursingCharge = 0.0;
     private Double moCharge = 0.0;
+    private Double moChargeForAfterDuration = 0.0;
     double adminstrationCharge;
     double medicalCareCharge;
 //Main Properties
@@ -319,5 +320,13 @@ public class RoomFacilityCharge implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Double getMoChargeForAfterDuration() {
+        return moChargeForAfterDuration;
+    }
+
+    public void setMoChargeForAfterDuration(Double moChargeForAfterDuration) {
+        this.moChargeForAfterDuration = moChargeForAfterDuration;
     }
 }

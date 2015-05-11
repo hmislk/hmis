@@ -1444,6 +1444,7 @@ public class InwardBeanController implements Serializable {
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
         patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
         patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
@@ -1482,6 +1483,7 @@ public class InwardBeanController implements Serializable {
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
         patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
         patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());

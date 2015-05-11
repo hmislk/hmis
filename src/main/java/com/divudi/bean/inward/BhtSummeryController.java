@@ -61,6 +61,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -970,14 +971,14 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientLinenCharge(PatientRoom patientRoom, double discountPercent) {
-           
+
         double value = patientRoom.getCalculatedLinenCharge();
         double dis = (value * discountPercent) / 100;
         patientRoom.setDiscountLinenCharge(dis);
         //    patientRoom.setAjdustedLinenCharge(value);
         getPatientRoomFacade().edit(patientRoom);
-           return dis;
-         
+        return dis;
+
     }
 
     private double updatePatientNursingCharge(InwardChargeType inwardChargeType) {
@@ -1031,7 +1032,7 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().create(patientRoom);
         }
 
-       createTables();
+        createTables();
     }
 
     public void updatePrintingPatientRoom(PatientRoom patientRoom) {
@@ -1746,9 +1747,32 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        double mo = p.getCurrentMoCharge();
-        double calculated = getCharge(p, mo) + p.getAddedMoCharge();
-        p.setCalculatedMoCharge(calculated);
+        if (!sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            double mo = p.getCurrentMoCharge();
+            double calculated = getCharge(p, mo) + p.getAddedMoCharge();
+            p.setCalculatedMoCharge(calculated);
+        } else {
+            Date dischargedAt = p.getDischargedAt();
+            System.out.println("dischargeAt = " + dischargedAt);
+            long dCount = getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt);
+            System.out.println("dCount = " + dCount);
+            System.out.println("p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() = " + p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge());
+            
+            if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
+                System.out.println("p.getCurrentMoCharge() = " + p.getCurrentMoCharge());
+                System.out.println("p.getAddedMoCharge() = " + p.getAddedMoCharge());
+                double calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
+                System.out.println("calculated = " + calculated);
+                p.setCalculatedMoCharge(calculated);
+            } else {
+                long extra = dCount - p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge();
+                System.out.println("extra = " + extra);
+                System.out.println("p.getRoomFacilityCharge().getMoChargeForAfterDuration() = " + p.getRoomFacilityCharge().getMoChargeForAfterDuration());
+                double calculated = (p.getCurrentMoChargeForAfterDuration() * extra) + p.getCurrentMoCharge();
+                System.out.println("calculated = " + calculated);
+                p.setCalculatedMoCharge(calculated);
+            }
+        }
     }
 
     private void calculateAdministrationCharge(PatientRoom p) {
