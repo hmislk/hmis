@@ -1308,7 +1308,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantNetTotalByDepartment(BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -1462,7 +1462,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantNetTotalByDepartment(Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2027,26 +2027,29 @@ public class PharmacySaleReport implements Serializable {
     public void createSaleWholeSaleReportByDate() {
         billedSummery = new PharmacySummery();
 
-        List<String1Value3> listRowSale=setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
-        List<String1Value3> listRowWholeSale=setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacyWholeSale));
-        
+        List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
+
         System.err.println(listRowSale);
 
         billedSummery.setBills(listRowSale);
 
-        billedSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(),BillType.PharmacySale));
-        billedSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(),BillType.PharmacySale));
-        billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(),BillType.PharmacySale));
-        
-        System.err.println(listRowWholeSale);
-        
-        billedSummery.setBills(listRowWholeSale);
-
-        billedSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(),BillType.PharmacyWholeSale));
-        billedSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(),BillType.PharmacyWholeSale));
-        billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(),BillType.PharmacyWholeSale));
-
+        billedSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(), BillType.PharmacySale));
+        billedSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(), BillType.PharmacySale));
+        billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(), BillType.PharmacySale));
         grantNetTotal = calGrantNetTotalByDepartment(BillType.PharmacySale);
+
+        ///pharmacy whole sale
+        List<String1Value3> listRowWholeSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacyWholeSale));
+
+        System.err.println(listRowWholeSale);
+
+        billedWholeSaleSummery.setBills(listRowWholeSale);
+
+        billedWholeSaleSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(), BillType.PharmacyWholeSale));
+        billedWholeSaleSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(), BillType.PharmacyWholeSale));
+        billedWholeSaleSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(), BillType.PharmacyWholeSale));
+
+        
         grantNetTotalWholeSale = calGrantNetTotalByDepartment(BillType.PharmacyWholeSale);
 
     }
@@ -2057,29 +2060,26 @@ public class PharmacySaleReport implements Serializable {
 
         for (Object[] obj : list) {
             Date date = (Date) obj[0];
-            
+
             BillClassType billClassType = (BillClassType) obj[1];
             Double value = (Double) obj[2];
             System.out.println("value = " + value);
             System.out.println("billClassType = " + billClassType);
             System.out.println("value = " + value);
-            
+
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             String formattedDate = df.format(date);
-            
-            
-            //String1Value3 newRow = (String1Value3) hm.get(date);
 
+            //String1Value3 newRow = (String1Value3) hm.get(date);
 //            if (newRow == null) {
 //                newRow = new String1Value3();
 //                newRow.setDate(date);
 //            } else {
 //                hm.remove(date);
 //            }
-            
             String1Value3 sv3 = new String1Value3();
             sv3.setDate(date);
-            
+
             switch (billClassType) {
                 case BilledBill:
                     sv3.setValue1(value);
@@ -2106,7 +2106,6 @@ public class PharmacySaleReport implements Serializable {
 ////            listRow.add((String1Value3) pairs.getValue());
 ////            it.remove(); // avoids a ConcurrentModificationException
 //        }
-        
         return listRow;
     }
 //    public void createSaleReportByDate() {
@@ -4627,14 +4626,15 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public PharmacySummery getBilledWholeSaleSummery() {
+        if(billedWholeSaleSummery==null){
+            billedWholeSaleSummery=new PharmacySummery();
+        }
         return billedWholeSaleSummery;
     }
 
     public void setBilledWholeSaleSummery(PharmacySummery billedWholeSaleSummery) {
         this.billedWholeSaleSummery = billedWholeSaleSummery;
     }
-    
-    
 
     public PharmacyPaymetMethodSummery getBilledPaymentSummery() {
         return billedPaymentSummery;
