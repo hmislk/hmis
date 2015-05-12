@@ -106,12 +106,12 @@ public  class IxCalController implements Serializable {
             return;
         }
         addingIxCal.setCalIxItem(cal);
-        //System.out.println("id is " + addingIxCal.getId());
+        ////System.out.println("id is " + addingIxCal.getId());
         if (addingIxCal.getId() == null || addingIxCal.getId() == 0) {
-            //System.out.println("iivc creating");
+            ////System.out.println("iivc creating");
             getIivcFacade().create(addingIxCal);
         } else {
-            //System.out.println("iivc editing");
+            ////System.out.println("iivc editing");
             getIivcFacade().edit(addingIxCal);
         }
         items.add(addingIxCal);
@@ -123,7 +123,7 @@ public  class IxCalController implements Serializable {
     public IxCal lastCal() {
         IxCal tcal = null;
         if (items != null || items.isEmpty()!=true) {
-            //System.out.println("items are null or empty");
+            ////System.out.println("items are null or empty");
             tcal = items.get(items.size() - 1);
         }
         return tcal;
@@ -204,11 +204,11 @@ public  class IxCalController implements Serializable {
         }
 //        cals = new ArrayList<InvestigationItem>();
         if (ix != null) {
-            //System.out.println("ii count is " + ix.getReportItems().size());
+            ////System.out.println("ii count is " + ix.getReportItems().size());
             for (ReportItem ii : ix.getReportItems()) {
                 
                 if (ii instanceof InvestigationItem && ii.getIxItemType() == InvestigationItemType.Calculation) {
-                    //System.out.println("ii is " + ii);
+                    ////System.out.println("ii is " + ii);
                 }
             }
         }
@@ -246,7 +246,7 @@ public  class IxCalController implements Serializable {
         String sql;
         if (ix != null && cal != null) {
             sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + cal.getId();
-            System.out.println("sql = " + sql);
+            //System.out.println("sql = " + sql);
             items = getFacade().findBySQL(sql);
         }
         if (items == null) {

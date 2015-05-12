@@ -64,29 +64,29 @@ public class RevenueController implements Serializable {
      * Functions
      */
     public void fillRevenueSummery() {
-        System.out.println("fillRevenueSummery ");
+        //System.out.println("fillRevenueSummery ");
         rows = new ArrayList<>();
         List<Institution> institutions = getInstitutionController().getCompanies();
-        System.out.println("institutions = " + institutions);
+        //System.out.println("institutions = " + institutions);
         StringsDoublesRow r = new StringsDoublesRow();
         grandTotal = 0.0;
         for (Institution ins : institutions) {
-            System.out.println("ins = " + ins.getName());
+            //System.out.println("ins = " + ins.getName());
             r = new StringsDoublesRow();
             r.setStr1(ins.getName());
             r.setBoldStr1(true);
             List<Department> depts = getDepartmentController().getInstitutionDepatrments(ins);
             double insTotal = 0.0;
             for (Department dept : depts) {
-                System.out.println("dept = " + dept.getName());
-                System.out.println("r.getStr1() = " + r.getStr1());
+                //System.out.println("dept = " + dept.getName());
+                //System.out.println("r.getStr1() = " + r.getStr1());
                 double feeRevenue = getRevenueBean().findBillFeeRevenue(fromDate, toDate, null, null, dept, null, null, null, null, null);
                 Class[] billClassesToExclude = new Class[]{PreBill.class};
                 BillType[] billTypes = new BillType[]{BillType.PharmacySale, BillType.StoreSale};
                 double productRevenue = getRevenueBean().findBillItemRevenue(fromDate, toDate, billTypes, null, dept, null, null, null, null, billClassesToExclude);
                 r.setStr2(dept.getName());
                 r.setDbl1(feeRevenue + productRevenue);
-                System.out.println("feeRevenue + productRevenue = " + feeRevenue + productRevenue);
+                //System.out.println("feeRevenue + productRevenue = " + feeRevenue + productRevenue);
                 insTotal = insTotal + feeRevenue + productRevenue;
                 rows.add(r);
                 r = new StringsDoublesRow();
@@ -104,10 +104,10 @@ public class RevenueController implements Serializable {
     }
 
     public void fillRevenueReport() {
-        System.out.println("fillRevenueReport");
+        //System.out.println("fillRevenueReport");
         rows = new ArrayList<>();
         List<Institution> institutions = getInstitutionController().getCompanies();
-        System.out.println("institutions = " + institutions);
+        //System.out.println("institutions = " + institutions);
         StringsDoublesRow r = new StringsDoublesRow();
         grandTotal = 0.0;
         cashTotal = 0.0;
@@ -120,7 +120,7 @@ public class RevenueController implements Serializable {
             double insCredit = 0.0;
             double insCard = 0.0;
             double insCheque = 0.0;
-            System.out.println("ins = " + ins.getName());
+            //System.out.println("ins = " + ins.getName());
             r = new StringsDoublesRow();
             r.setStr1(ins.getName());
             r.setBoldStr1(true);

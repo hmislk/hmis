@@ -52,9 +52,9 @@ public class LazyBillItem extends LazyDataModel<BillItem> {
 
                     String[] arr = property.split("\\.");
 
-                    //System.out.println("Property " + property);
-                    //System.out.println("String Value " + stringValue);
-                    //System.out.println("Arr Size: " + arr.length);
+                    ////System.out.println("Property " + property);
+                    ////System.out.println("String Value " + stringValue);
+                    ////System.out.println("Arr Size: " + arr.length);
                     if (arr.length == 1) {
                         fieldValue = String.valueOf(billItem.getClass().getDeclaredField(property).get(billItem));
                     } else if (arr.length == 2) {

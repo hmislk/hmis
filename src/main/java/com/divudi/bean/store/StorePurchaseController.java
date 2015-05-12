@@ -360,7 +360,7 @@ public class StorePurchaseController implements Serializable {
     }
 
     public void createSerialNumber(BillItem billItem) {
-        System.out.println("In");
+        //System.out.println("In");
         long b = billNumberGenerator.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
@@ -368,7 +368,7 @@ public class StorePurchaseController implements Serializable {
                 b++;
             }
         }
-        System.out.println("b = " + b);
+        //System.out.println("b = " + b);
         String code = "";
         code += getSessionController().getInstitution().getInstitutionCode();
         code += "/";
@@ -383,7 +383,7 @@ public class StorePurchaseController implements Serializable {
             code += "/";
         }
         code += b;
-        System.out.println("code = " + code);
+        //System.out.println("code = " + code);
         billItem.getPharmaceuticalBillItem().setCode(code);
     }
 

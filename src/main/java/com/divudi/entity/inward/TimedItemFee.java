@@ -22,14 +22,11 @@ public class TimedItemFee extends Fee implements Serializable {
     private static final long serialVersionUID = 1L;
     private double durationHours = 0;
     private double overShootHours = 0;
-
-    
+    private long durationDaysForMoCharge;
 
     public void setDurationHours(Integer durationHours) {
         this.durationHours = durationHours;
     }
-
-   
 
     public void setOverShootHours(Integer overShootHours) {
         this.overShootHours = overShootHours;
@@ -49,5 +46,13 @@ public class TimedItemFee extends Fee implements Serializable {
 
     public void setOverShootHours(double overShootHours) {
         this.overShootHours = overShootHours;
+    }
+
+    public long getDurationDaysForMoCharge() {
+        return durationDaysForMoCharge;
+    }
+
+    public void setDurationDaysForMoCharge(long durationDaysForMoCharge) {
+        this.durationDaysForMoCharge = durationDaysForMoCharge;
     }
 }

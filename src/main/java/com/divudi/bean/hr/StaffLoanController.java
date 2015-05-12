@@ -80,7 +80,7 @@ public class StaffLoanController implements Serializable {
 
     public boolean errorCheckSelected() {
         for (StaffPaysheetComponent s : selectedList) {
-            System.out.println("getChequeNumber() = " + s.getChequeNumber());
+            //System.out.println("getChequeNumber() = " + s.getChequeNumber());
             if (s.getChequeNumber()==null || s.getChequeNumber().equals("")) {
                 return true;
             }

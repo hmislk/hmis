@@ -161,7 +161,7 @@ public class ChannelBillController implements Serializable {
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
         getBillSession().setPaidBillSession(bs);
-        getBillSessionFacade().edit(bs);
+        getBillSessionFacade().edit(bs);        
         System.out.println("bs = " + bs);
         System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
 
@@ -176,6 +176,7 @@ public class ChannelBillController implements Serializable {
 
 //        editBillSession(b, bi);
         UtilityController.addSuccessMessage("Channel Booking Added");
+        makeNull();
 
     }
 
@@ -406,6 +407,16 @@ public class ChannelBillController implements Serializable {
 
         if (getBillSession().getBill()== null) {
             UtilityController.addErrorMessage("No Paid BillSession");
+            return;
+        }
+        
+        if (getBillSession().getPaidBillSession()==null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
+            return;
+        }
+        
+        if (getBillSession().getPaidBillSession().getBill()==null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
 

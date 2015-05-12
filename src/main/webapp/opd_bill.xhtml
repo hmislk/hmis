@@ -192,7 +192,8 @@
                                                                 value="#{billController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;"
+                                                                minQueryLength="5">
 
 
                                                     <p:column headerText="Name">
@@ -568,7 +569,7 @@
                                                  process="@this" 
                                                  update="@all" 
                                                  type="button"  
-                                               ajax="false">
+                                                 ajax="false">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 

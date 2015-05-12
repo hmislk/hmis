@@ -279,7 +279,7 @@ public class StoreReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-                //   System.out.println("Previuos Stock " + sh.getStockQty());
+                //   //System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -287,13 +287,13 @@ public class StoreReportsStock implements Serializable {
                 flg = true;
             }
 
-            //   System.out.println("calculated History Qty " + calculatedStk);
+            //   //System.out.println("calculated History Qty " + calculatedStk);
             if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-                //   System.out.println("TRUE");
+                //   //System.out.println("TRUE");
             }
 
-            //   System.out.println("#########");
+            //   //System.out.println("#########");
         }
 
         stocks = new ArrayList<>();
@@ -397,12 +397,12 @@ public class StoreReportsStock implements Serializable {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
-                    //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                    //   System.out.println("Prv History Qty " + preHistoryQty);
-                    //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                    //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                    //   System.out.println("History " + curHistory);
-                    //   System.out.println("######");
+                    //   //System.out.println("Itm " + ph.getBillItem().getItem().getName());
+                    //   //System.out.println("Prv History Qty " + preHistoryQty);
+                    //   //System.out.println("Prv Qty " + previousPh.getQtyInUnit());
+                    //   //System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
+                    //   //System.out.println("History " + curHistory);
+                    //   //System.out.println("######");
                 }
 
                 previousPh = ph;
@@ -547,7 +547,7 @@ public class StoreReportsStock implements Serializable {
         records = new ArrayList<>();
         List<Institution> dealers = getDealerController().getItems();
         for (Institution i : dealers) {
-            //System.out.println("i = " + i);
+            ////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
@@ -555,7 +555,7 @@ public class StoreReportsStock implements Serializable {
             Object[] objs = getStockFacade().findSingleAggregate(sql, m);
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                //System.out.println("objs = " + objs);
+                ////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);

@@ -20,16 +20,16 @@ public class LabBillPaymentSchemeValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        //System.out.println("value of validator is going to be checked ");
+        ////System.out.println("value of validator is going to be checked ");
         if (value == null) {
-            //System.out.println("value is null");
+            ////System.out.println("value is null");
             FacesMessage msg =
                     new FacesMessage("Payment Scheme Error",
                     "Please select a payment method");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         } else {
-            //System.out.println("value of validator is " + value.toString());
+            ////System.out.println("value of validator is " + value.toString());
         }
     }
 }

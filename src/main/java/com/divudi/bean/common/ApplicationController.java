@@ -79,19 +79,19 @@ public class ApplicationController {
         try {
 //            for (SessionController s : getSessionControllers()) {
 //                if (s.getLoggedUser().equals(login.getWebUser())) {
-//                    //System.out.println("making log out");
+//                    ////System.out.println("making log out");
 //                    s.logout();
 //                }
 //            }
 //            getSessionControllers().add(sc);
         } catch (Exception e) {
-            //System.out.println("Error in addToLogins of Application controller." + e.getMessage());
+            ////System.out.println("Error in addToLogins of Application controller." + e.getMessage());
         }
     }
 
     public void removeLoggins(SessionController sc) {
         Logins login = sc.getThisLogin();
-        //System.out.println("sessions logged before removing is " + getLoggins().size());
+        ////System.out.println("sessions logged before removing is " + getLoggins().size());
         loggins.remove(login);
 //        sessionControllers.remove(sc);
     }
