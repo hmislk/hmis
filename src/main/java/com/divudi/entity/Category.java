@@ -259,12 +259,12 @@ public class Category implements Serializable {
     }
 
     public String getsName() {
-        //System.out.println("get name");
+        ////System.out.println("get name");
         return sName;
     }
 
     public void setsName(String sName) {
-        //System.out.println("set name");
+        ////System.out.println("set name");
         this.sName = sName;
     }
 

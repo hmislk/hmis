@@ -205,7 +205,7 @@ public class StaffSalaryController implements Serializable {
 //
 //    }
     public void onEdit(RowEditEvent event) {
-        ////System.out.println("Runn");
+        //////System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
 
         getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -341,7 +341,7 @@ public class StaffSalaryController implements Serializable {
         if (value == 0) {
             return 0;
         }
-//        System.out.println("calculating value");
+//        //System.out.println("calculating value");
         //Check Employee Join Date Come within Salary Cycle
         if (checkDateRange(getCurrent().getStaff().getDateJoined())
                 //Check Employee Date Left within Salary Cycle
@@ -358,7 +358,7 @@ public class StaffSalaryController implements Serializable {
             }
 
         } else {
-//            System.out.println("returning full value");
+//            //System.out.println("returning full value");
 
             return value;
         }
@@ -470,11 +470,11 @@ public class StaffSalaryController implements Serializable {
     FinalVariables finalVariables;
 
     public Long calculateOverTimeMinute() {
-//        System.out.println("calculating over time in minutes");
+//        //System.out.println("calculating over time in minutes");
         Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
-//        System.out.println("dateCount = " + dateCount);
+//        //System.out.println("dateCount = " + dateCount);
         Long numOfWeeks = dateCount / 7;
-//        System.out.println("numOfWeeks = " + numOfWeeks);
+//        //System.out.println("numOfWeeks = " + numOfWeeks);
         if (numOfWeeks == 0l) {
             return 0l;
         }
@@ -482,7 +482,7 @@ public class StaffSalaryController implements Serializable {
         Double overTimeSec = 0.0;
 
         Date fromDate = getSalaryCycle().getWorkedFromDate();
-//        System.out.println("fromDate = " + fromDate);
+//        //System.out.println("fromDate = " + fromDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fromDate);
         frmCal.setTime(fromDate);
@@ -506,10 +506,10 @@ public class StaffSalaryController implements Serializable {
 //        
         for (int i = 0; i < numOfWeeks; i++) {
 
-//            System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
 
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-//            System.out.println("worked Within TimeFrameVarified = " + workedWithinTimeFrameVarified / (60*60));
+//            //System.out.println("worked Within TimeFrameVarified = " + workedWithinTimeFrameVarified / (60*60));
 
 //            System.err.println("FROM " + i + frmCal.getTime());
 //            System.err.println("TO " + i + toCal.getTime());
@@ -518,7 +518,7 @@ public class StaffSalaryController implements Serializable {
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-//            System.out.println("otSec = " + otSec);
+//            //System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
 //            System.err.println("OT Time : " + otSec / (60 * 60));
 
@@ -558,19 +558,19 @@ public class StaffSalaryController implements Serializable {
     public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
-//        System.out.println("ss = " + ss);
+//        //System.out.println("ss = " + ss);
         if (ss.getStaffPaysheetComponent() != null) {
 
             Long overTimeMinute = calculateOverTimeMinute();
-//            System.out.println("overTimeMinute = " + overTimeMinute);
+//            //System.out.println("overTimeMinute = " + overTimeMinute);
 
             double overTimePerMinute = getOverTimeValuePerMinute();
-//            System.out.println("overTimePerMinute = " + overTimePerMinute);
+//            //System.out.println("overTimePerMinute = " + overTimePerMinute);
 
             ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
 
             getCurrent().setOverTimeMinute(overTimeMinute);
-//            System.out.println("overTimeMinute = " + overTimeMinute);
+//            //System.out.println("overTimeMinute = " + overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
 
             getCurrent().setOverTimeRatePerMinute(overTimePerMinute);

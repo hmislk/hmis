@@ -48,30 +48,41 @@
 
 
                         <h:panelGroup id="gpBillPreview">
+
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                          value="#{billController.bills}" var="bill"
                                          rows="20" rowKey="#{bill.id}"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100"
-                                         selection="#{billController.selectedBills}">
-                                
+                                         rowsPerPageTemplate="20, 50, 100, 100000" 
+                                         filteredValue="#{billController.selectedBills}"
+                                         lazy="false">
+
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Bill List"/>
-                                    <h:outputLabel value="#{billController.department.name}"/> 
+                                    <h:outputLabel id="lblPharmacyBillList" value="Pharmacy Bill List"/>
                                     <br/>
-                                    <h:outputLabel value="From : "/>
-                                    <h:outputLabel value="#{billController.fromDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <p:spacer width="30" height="1"/>
-                                    <h:outputLabel value="To : "/>
-                                    <h:outputLabel value="#{billController.toDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <p:commandButton value="Calculate Total" action="#{billController.calculateSelectedBillTotals()}" ajax="false" ></p:commandButton>
+                                    <h:outputLabel id="lblDept" 
+                                                   rendered="#{billController.department ne null}" value="#{billController.department.name}"/> 
+                                    <br/>
+                                    <h:panelGroup rendered="#{commonController.sameDate(billController.fromDate, billController.toDate)}" >
+                                        <h:outputLabel value="Date : "/>
+                                        <h:outputLabel value="#{billController.fromDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{commonController.sameDate(billController.fromDate, billController.toDate)}" >
+                                        <h:outputLabel value="From : "/>
+                                        <h:outputLabel value="#{billController.fromDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <p:spacer width="30" height="1"/>
+                                        <h:outputLabel value="To : "/>
+                                        <h:outputLabel value="#{billController.toDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
                                 </f:facet>
-                                <p:column selectionMode="multiple" ></p:column>
+
                                 <p:column headerText="Date"  
                                           sortBy="#{bill.createdAt}"
                                           rendered="#{!commonController.sameDate(billController.fromDate , billController.toDate)}">                                
@@ -79,6 +90,7 @@
                                         <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+
                                 <p:column headerText="Time"  
                                           sortBy="#{bill.createdAt}"
                                           >                                
@@ -86,13 +98,15 @@
                                         <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+
                                 <p:column headerText="Bill No" 
                                           sortBy="#{bill.insId}"
                                           filterBy="#{bill.insId}"
                                           filterMatchMode="contains">                                
                                     <h:outputLabel   value="#{bill.insId}"/>
                                 </p:column>  
-                                <p:column headerText="Institution"  rendered="#{billController.institution eq null}"
+
+                                <p:column headerText="Institution"  rendered="#{billController.institution eq null and billController.department eq null}"
                                           sortBy="#{bill.institution.name}">                                
                                     <h:outputLabel value="#{bill.institution.name}" />
                                 </p:column>
@@ -214,16 +228,15 @@
                                     </h:outputLabel>
                                 </p:column>  
 
-                                <p:columnGroup type="footer" id="tblFooter" >
+                                <p:columnGroup type="footer" >
                                     <p:row >
-                                        <p:column></p:column>
                                         <p:column headerText="Date" rendered="#{!commonController.sameDate(billController.fromDate , billController.toDate)}">                                
                                         </p:column>
                                         <p:column headerText="Time">                                
                                         </p:column>
                                         <p:column headerText="Bill No" >                                
                                         </p:column>  
-                                        <p:column headerText="Institution" rendered="#{billController.institution eq null}"> 
+                                        <p:column headerText="Institution" rendered="#{billController.institution eq null and billController.department eq null}"> 
                                         </p:column>
                                         <p:column headerText="Department"   rendered="#{billController.department eq null}"
                                                   sortBy="#{bill.department.name}">                                

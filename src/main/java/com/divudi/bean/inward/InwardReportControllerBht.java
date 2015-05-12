@@ -562,7 +562,7 @@ public class InwardReportControllerBht implements Serializable {
         sql = sql + " group by bf.billItem.item.category order by bf.billItem.item.category.name";
         List<Object[]> results = billFeeFacade.findAggregates(sql, m);
 
-        System.out.println("results = " + results);
+        //System.out.println("results = " + results);
 
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getAdmissionType();

@@ -57,7 +57,7 @@ public class CommonReportItemController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
-        //System.out.println("Common Report Format Category is " + category);
+        ////System.out.println("Common Report Format Category is " + category);
         items = null;
     }
 
@@ -191,7 +191,7 @@ public class CommonReportItemController implements Serializable {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", category);
-            //System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            ////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
             items = getFacade().findBySQL(temSql, m);
         } else {
             items = new ArrayList<>();
@@ -206,7 +206,7 @@ public class CommonReportItemController implements Serializable {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", cat);
-            //System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            ////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
             cis = getFacade().findBySQL(temSql, m);
         } else {
             cis = new ArrayList<>();

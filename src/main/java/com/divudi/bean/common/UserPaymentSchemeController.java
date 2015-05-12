@@ -172,11 +172,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + getSessionController().getLoggedUser().getId();
         items = getEjbFacade().findBySQL(sql);
-        //System.out.println("33");
+        ////System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //System.out.println("44");
+            ////System.out.println("44");
         }
         return items;
     }
@@ -190,11 +190,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + selectedUser.getId();
         items = getEjbFacade().findBySQL(sql);
-        //System.out.println("33");
+        ////System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //System.out.println("44");
+            ////System.out.println("44");
         }
         return items;
     }
@@ -212,7 +212,7 @@ public  class UserPaymentSchemeController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //System.out.println("Setting user");
+        ////System.out.println("Setting user");
         items=null;
         this.selectedUser = selectedUser;
         
