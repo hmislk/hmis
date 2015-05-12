@@ -175,8 +175,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
 
 //        editBillSession(b, bi);
-        UtilityController.addSuccessMessage("Channel Booking Added");
-        makeNull();
+        UtilityController.addSuccessMessage("Channel Booking Added");        
 
     }
 
