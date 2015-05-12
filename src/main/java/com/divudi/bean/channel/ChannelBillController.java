@@ -7,6 +7,8 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
+import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -43,6 +45,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -156,12 +159,12 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
-        
+
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
         getBillSession().setPaidBillSession(bs);
-        getBillSessionFacade().edit(bs);        
+        getBillSessionFacade().edit(bs);
         System.out.println("bs = " + bs);
         System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
 
@@ -405,17 +408,17 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        if (getBillSession().getBill()== null) {
+        if (getBillSession().getBill() == null) {
             UtilityController.addErrorMessage("No Paid BillSession");
             return;
         }
-        
-        if (getBillSession().getPaidBillSession()==null) {
+
+        if (getBillSession().getPaidBillSession() == null) {
             UtilityController.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
-        
-        if (getBillSession().getPaidBillSession().getBill()==null) {
+
+        if (getBillSession().getPaidBillSession().getBill() == null) {
             UtilityController.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
@@ -429,11 +432,11 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Cancelled");
             return;
         }
-        
+
         System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
         System.out.println("getBillSession().getPaidBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
         System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getBill());
-        
+
         System.out.println("getBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
         System.out.println("getBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
         System.out.println("getBillSession() = " + getBillSession().getPaidBillSession().getBill());
@@ -550,8 +553,13 @@ public class ChannelBillController implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
-
+//        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
+        String insId = generateBillNumberInsId(cb);
+        
+        if (insId.equals("")) {
+            return null;
+        }
+        cb.setInsId(insId);
         getBillFacade().create(cb);
 
         return cb;
@@ -678,6 +686,13 @@ public class ChannelBillController implements Serializable {
         rb.setNetTotal(0 - getRefundableTotal());
         rb.setTotal(0 - getRefundableTotal());
         rb.setPaidAmount(0 - getRefundableTotal());
+        
+        String insId = generateBillNumberInsId(rb);
+        
+        if (insId.equals("")) {
+            return null;
+        }
+        rb.setInsId(insId);
 
         getBillFacade().create(rb);
 
@@ -895,9 +910,6 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
-    
-    
-    
     public void add() {
         if (errorCheck()) {
             return;
@@ -912,13 +924,13 @@ public class ChannelBillController implements Serializable {
         UtilityController.addSuccessMessage("Channel Booking Added.");
 
     }
-    
+
     public void addOnCall() {
         if (errorCheck()) {
             return;
         }
-        
-        if(printingBill == null){
+
+        if (printingBill == null) {
             printingBill = new Bill();
         }
 
@@ -1120,7 +1132,13 @@ public class ChannelBillController implements Serializable {
                 break;
         }
 
-        bill.setInsId(getBillNumberBean().institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
+//        bill.setInsId(getBillNumberBean().institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
+        String insId = generateBillNumberInsId(bill);
+        
+        if (insId.equals("")) {
+            return null;
+        }
+        bill.setInsId(insId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
             bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
@@ -1184,6 +1202,34 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(savingBill);
 
         return savingBill;
+    }
+
+    private String generateBillNumberInsId(Bill bill) {
+        String suffix = "";
+        BillClassType billClassType = null;
+        if (bill instanceof BilledBill) {
+            suffix = "CHANN";
+            billClassType=BillClassType.BilledBill;
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix = "CHANNCAN";
+            billClassType=BillClassType.CancelledBill;
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix = "CHANNREF";
+            billClassType=BillClassType.RefundBill;
+        }
+        
+        System.out.println("billClassType = " + billClassType);
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType,suffix);
+        System.out.println("insId = " + insId);
+        return insId;
     }
 
     public List<BillFee> getBillFee() {
