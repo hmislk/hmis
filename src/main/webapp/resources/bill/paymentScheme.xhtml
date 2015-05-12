@@ -16,7 +16,7 @@
         <h:form>
             <h:panelGrid columns="5">
                 <p:selectOneMenu   id="cmbPs" value="#{cc.attrs.bill.paymentMethod}">     
-                    <f:selectItem itemLabel="Select Payment Scheme"/>
+                    <f:selectItem itemLabel="Select Discount Scheme"/>
                    <f:selectItems value="#{enumController.paymentMethods}"  />
                     <f:ajax execute="@this" render="@form" event="change" />
                 </p:selectOneMenu>

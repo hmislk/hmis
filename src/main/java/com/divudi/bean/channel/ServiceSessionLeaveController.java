@@ -48,7 +48,7 @@ public class ServiceSessionLeaveController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
         }
-        //System.out.println(sql);
+        ////System.out.println(sql);
         suggestions = getStaffFacade().findBySQL(sql);
 
         return suggestions;

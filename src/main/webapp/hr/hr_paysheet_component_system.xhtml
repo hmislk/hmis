@@ -31,7 +31,7 @@
                                     </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{paysheetComponentSystemController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                    <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{paysheetComponentSystemController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
                                         </f:ajax>
                                     </p:commandButton>
@@ -71,7 +71,7 @@
                                     <p:selectBooleanCheckbox value="#{paysheetComponentSystemController.current.includeForAllowance}" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{paysheetComponentSystemController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
+                                    <p:commandButton id="btnSave" ajax="false" value="Save" action="#{paysheetComponentSystemController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </p:commandButton>

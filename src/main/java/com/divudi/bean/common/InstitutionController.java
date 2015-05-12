@@ -191,7 +191,7 @@ public class InstitutionController implements Serializable {
                 + " and (upper(c.name) like :q "
                 + " or upper(c.institutionCode) like :q )"
                 + " order by c.name";
-        return getFacade().findBySQL(sql, hm, 10);
+        return getFacade().findBySQL(sql, hm, 20);
     }
 
 //     public List<Institution> completeSupplier(String qry) {
@@ -209,7 +209,7 @@ public class InstitutionController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

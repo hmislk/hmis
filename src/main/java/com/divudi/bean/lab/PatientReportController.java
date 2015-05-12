@@ -109,38 +109,38 @@ public class PatientReportController implements Serializable {
     }
 
     public String lastPatientReport(PatientInvestigation pi) {
-        //System.out.println("last pt rpt");
+        ////System.out.println("last pt rpt");
         if (pi == null) {
             currentPatientReport = null;
-            //System.out.println("pi is null");
+            ////System.out.println("pi is null");
             return "";
         }
         Investigation ix;
         ix = (Investigation) pi.getInvestigation().getReportedAs();
-        //System.out.println("ix = " + ix);
+        ////System.out.println("ix = " + ix);
         currentReportInvestigation = ix;
         currentPtIx = pi;
         String sql;
         Map m = new HashMap();
         sql = "select r from PatientReport r where r.patientInvestigation=:pi and r.retired=false order by r.id desc";
-        ////System.out.println("sql = " + sql);
+        //////System.out.println("sql = " + sql);
         m.put("pi", pi);
-        ////System.out.println("m = " + m);
+        //////System.out.println("m = " + m);
         PatientReport r = getFacade().findFirstBySQL(sql, m);
-        ////System.out.println("r = " + r);
+        //////System.out.println("r = " + r);
         if (r == null) {
-            //System.out.println("r is null");
+            ////System.out.println("r is null");
 //            if (ix.getReportType()==InvestigationReportType.Microbiology ) {
             if (ix.getReportType() == InvestigationReportType.Microbiology) {
                 r = createNewMicrobiologyReport(pi, ix);
             } else {
                 r = createNewPatientReport(pi, ix);
             }
-            //System.out.println("r = " + r);
+            ////System.out.println("r = " + r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
-            //System.out.println("r ok");
-            //System.out.println("r = " + r);
+            ////System.out.println("r ok");
+            ////System.out.println("r = " + r);
             getCommonReportItemController().setCategory(currentReportInvestigation.getReportFormat());
         }
         currentPatientReport = r;
@@ -184,16 +184,16 @@ public class PatientReportController implements Serializable {
             UtilityController.addErrorMessage("Report Items values is empty");
             return 0;
         }
-        //System.out.println("currentPatientReport = " + currentPatientReport);
-        //System.out.println("currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
+        ////System.out.println("currentPatientReport = " + currentPatientReport);
+        ////System.out.println("currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
 
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv != null) {
-                //System.out.println("priv = " + priv);
-                //System.out.println("priv in finding val is " + priv.getInvestigationItem().getName());
-                //System.out.println("compairing are " + priv.getInvestigationItem().getId() + "  vs " + ii.getId());
+                ////System.out.println("priv = " + priv);
+                ////System.out.println("priv in finding val is " + priv.getInvestigationItem().getName());
+                ////System.out.println("compairing are " + priv.getInvestigationItem().getId() + "  vs " + ii.getId());
                 if (Objects.equals(priv.getInvestigationItem().getId(), ii.getId())) {
-                    //System.out.println("double val is " + priv.getDoubleValue());
+                    ////System.out.println("double val is " + priv.getDoubleValue());
                     if (priv.getDoubleValue() == null) {
                         return 0.0;
                     }
@@ -222,7 +222,7 @@ public class PatientReportController implements Serializable {
                 String sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
-                //System.out.println("ixcals size is " + ixCals.size());
+                ////System.out.println("ixcals size is " + ixCals.size());
                 String calString = "";
                 for (IxCal c : ixCals) {
                     if (c.getCalculationType() == CalculationType.Constant) {
@@ -297,42 +297,42 @@ public class PatientReportController implements Serializable {
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
-//            //System.out.println("priv = " + priv.getStrValue());
+//            ////System.out.println("priv = " + priv.getStrValue());
             getPirivFacade().edit(priv);
-//            //System.out.println("priv = " + priv);
+//            ////System.out.println("priv = " + priv);
         }
 //        getFacade().edit(currentPatientReport);
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
-//        ////System.out.println("pr is " + pr + " and details");
-//        ////System.out.println("ii is " + ii);
+//        //////System.out.println("pr is " + pr + " and details");
+//        //////System.out.println("ii is " + ii);
         PatientReportItemValue iv = null;
 
         if (pr != null && ii != null) {
 //
-//            ////System.out.println("pr ix is " + pr.getItem().getName());
-//            ////System.out.println("pr pt is " + pr.getPatientInvestigation().getPatient().getPerson().getName());
+//            //////System.out.println("pr ix is " + pr.getItem().getName());
+//            //////System.out.println("pr pt is " + pr.getPatientInvestigation().getPatient().getPerson().getName());
 //
-//            ////System.out.println("ii name is  " + ii.getName());
+//            //////System.out.println("ii name is  " + ii.getName());
 //
-//            ////System.out.println("pr.getPatientReportItemValues() is " + pr.getPatientReportItemValues());
+//            //////System.out.println("pr.getPatientReportItemValues() is " + pr.getPatientReportItemValues());
             for (PatientReportItemValue v : pr.getPatientReportItemValues()) {
-//                ////System.out.println("v is " + v);
-//                ////System.out.println("v str value is " + v.getStrValue());
-//                ////System.out.println("v dbl value is " + v.getDoubleValue());
-//                ////System.out.println("v iis is " + v.getInvestigationItem());
-//                ////System.out.println("v iis name is " + v.getInvestigationItem().getName());
+//                //////System.out.println("v is " + v);
+//                //////System.out.println("v str value is " + v.getStrValue());
+//                //////System.out.println("v dbl value is " + v.getDoubleValue());
+//                //////System.out.println("v iis is " + v.getInvestigationItem());
+//                //////System.out.println("v iis name is " + v.getInvestigationItem().getName());
 
                 if (v.getInvestigationItem().equals(ii)) {
-//                    ////System.out.println("v equals ii");
+//                    //////System.out.println("v equals ii");
                     iv = v;
                 } else {
-//                    ////System.out.println("v is not compatible");
+//                    //////System.out.println("v is not compatible");
                 }
             }
         }
-//        ////System.out.println("iv returning is " + iv);
+//        //////System.out.println("iv returning is " + iv);
         return iv;
     }
 
@@ -351,13 +351,13 @@ public class PatientReportController implements Serializable {
             //System.err.println("From AgeInMonths is " + f.getFromAge());
             //System.err.println("To AgeInMonths is " + f.getToAge());
 
-            ////System.out.println("flah low message " + f.getLowMessage());
+            //////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
-                ////System.out.println("searching val");
+                //////System.out.println("searching val");
                 PatientReportItemValue val = findItemValue(currentPatientReport, f.getInvestigationItemOfValueType());
-                ////System.out.println("val is " + val);
+                //////System.out.println("val is " + val);
                 if (val == null) {
-                    ////System.out.println("val is null");
+                    //////System.out.println("val is null");
                     continue;
                 }
                 Double d = val.getDoubleValue();
@@ -374,19 +374,19 @@ public class PatientReportController implements Serializable {
                     }
                 }
 
-                ////System.out.println("f is " + f);
-                ////System.out.println("d is " + d);
-                ////System.out.println("f is not null");
-                ////System.out.println("fromVal is " + f.getFromVal());
-                ////System.out.println("toVal is " + f.getToVal());
+                //////System.out.println("f is " + f);
+                //////System.out.println("d is " + d);
+                //////System.out.println("f is not null");
+                //////System.out.println("fromVal is " + f.getFromVal());
+                //////System.out.println("toVal is " + f.getToVal());
                 if (f.getFromVal() > d) {
-                    ////System.out.println("dddddddddddddd 1");
+                    //////System.out.println("dddddddddddddd 1");
                     return f.getLowMessage();
                 } else if (f.getToVal() < d) {
-                    ////System.out.println("dddddddddddddd 2");
+                    //////System.out.println("dddddddddddddd 2");
                     return f.getHighMessage();
                 } else {
-                    ////System.out.println("dddddddddddddd 3");
+                    //////System.out.println("dddddddddddddd 3");
                     return f.getFlagMessage();
                 }
             }
@@ -432,7 +432,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentReportInvestigation(Investigation currentReportInvestigation) {
-        ////System.out.println("setting currentReportInvestigation - " + currentReportInvestigation.getName());
+        //////System.out.println("setting currentReportInvestigation - " + currentReportInvestigation.getName());
         this.currentReportInvestigation = currentReportInvestigation;
     }
 
@@ -463,10 +463,10 @@ public class PatientReportController implements Serializable {
     public void savePatientReportItemValues() {
         if (currentPatientReport != null) {
             for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
-                //System.out.println("saving ptrtiv + " + v);
-                //System.out.println("saving ptrtiv Stre " + v.getStrValue());
-                //System.out.println("saving ptrtiv Double " + v.getDoubleValue());
-                //System.out.println("saving ptrtiv Lob " + v.getLobValue());
+                ////System.out.println("saving ptrtiv + " + v);
+                ////System.out.println("saving ptrtiv Stre " + v.getStrValue());
+                ////System.out.println("saving ptrtiv Double " + v.getDoubleValue());
+                ////System.out.println("saving ptrtiv Lob " + v.getLobValue());
                 getPirivFacade().edit(v);
             }
         }
@@ -486,9 +486,9 @@ public class PatientReportController implements Serializable {
         currentPtIx.setDataEntryUser(getSessionController().getLoggedUser());
         currentPtIx.setDataEntryDepartment(getSessionController().getDepartment());
 
-        //System.out.println("1. getPatientReportItemValues() = " + getPatientReportItemValues());
-        //System.out.println("2. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
-        //System.out.println("3. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
+        ////System.out.println("1. getPatientReportItemValues() = " + getPatientReportItemValues());
+        ////System.out.println("2. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
+        ////System.out.println("3. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
         currentPatientReport.setDataEntered(Boolean.TRUE);
 
         currentPatientReport.setDataEntryAt(Calendar.getInstance().getTime());
@@ -536,7 +536,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void printPatientReport() {
-        ////System.out.println("going to save as printed");
+        //////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
             UtilityController.addErrorMessage("Nothing to approve");
             return;
@@ -687,8 +687,8 @@ public class PatientReportController implements Serializable {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
         currentPtIx = pi;
-        System.out.println("ix = " + ix.getName());
-        System.out.println("pi = " + pi.getInvestigation().getName());
+        //System.out.println("ix = " + ix.getName());
+        //System.out.println("pi = " + pi.getInvestigation().getName());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {

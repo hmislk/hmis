@@ -33,9 +33,9 @@
                                         pattern="dd MM yyyy hh mm a" ></p:calendar>
                             <h:outputLabel value="" ></h:outputLabel>
                             <p:commandButton ajax="false" value="Average By Date"
-                                             actionListener="#{pharmacyController.averageByDatePercentage()}" ></p:commandButton>
+                                            actionListener="#{pharmacyController.averageByDatePercentage()}" ></p:commandButton>
                             <p:commandButton ajax="false" value="Average By Month"
-                                             actionListener="#{pharmacyController.averageByMonthByPercentage()}" ></p:commandButton>
+                                            actionListener="#{pharmacyController.averageByMonthByPercentage()}" ></p:commandButton>
                         </h:panelGrid>
 
                         <p:dataGrid value="#{pharmacyController.stockAverages}" var="sA" columns="1">

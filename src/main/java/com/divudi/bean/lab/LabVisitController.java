@@ -77,7 +77,7 @@ public  class LabVisitController implements Serializable {
 
     public List<LabVisit> getAdminRoles() {
         adminRoles = getFacade().findBySQL("Select d From LabVisit d");
-        //System.out.println("Count of admins roles is " + adminRoles.size());
+        ////System.out.println("Count of admins roles is " + adminRoles.size());
         return adminRoles;
     }
 

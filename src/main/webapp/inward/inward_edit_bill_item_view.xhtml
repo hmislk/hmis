@@ -13,7 +13,7 @@
         <h:panelGroup >
             <h:form  >
                 <p:commandButton ajax="false" value="Back to Intrim"
-                                 action="/inward/inward_bill_intrim" onclick="onSubmitButton();"/>
+                                action="/inward/inward_bill_intrim" onclick="onSubmitButton();"/>
                 <p:dataTable value="#{bhtSummeryController.billItems}" var="ser"
                              rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.entity.BilledBill')? '':'noDisplayRow'}">
                     <p:column headerText="Services Name">
@@ -108,7 +108,7 @@
                     <p:column>
                         <p:commandButton ajax="false" action="inward_reprint_bill_service" 
                                          value="View Bill" onclick="onSubmitButton();" 
-                                         actionListener="#{inwardSearch.selectBillItem(ser)}" >  
+                                        actionListener="#{inwardSearch.selectBillItem(ser)}" >  
                         </p:commandButton>
                     </p:column>
 

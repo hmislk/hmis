@@ -202,7 +202,7 @@ public class StaffPaymentBillController implements Serializable {
                     + " or  upper(p.code) like :q )"
                     + " order by p.person.name";
         }
-        //System.out.println(sql);
+        ////System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getStaffFacade().findBySQL(sql, hm, 20);
 
@@ -269,13 +269,13 @@ public class StaffPaymentBillController implements Serializable {
         totalPaying = 0;
 
         for (BillFee f : payingBillFees) {
-            //System.out.println("totalPaying before " + totalPaying);
-            //System.out.println("fee val is " + f.getFeeValue());
-            //System.out.println("paid val is " + f.getPaidValue());
+            ////System.out.println("totalPaying before " + totalPaying);
+            ////System.out.println("fee val is " + f.getFeeValue());
+            ////System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //System.out.println("totalPaying after " + totalPaying);
+            ////System.out.println("totalPaying after " + totalPaying);
         }
-        //System.out.println("total pay is " + totalPaying);
+        ////System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -299,7 +299,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //System.out.println("setting paying bill fees " + payingBillFees.size());
+        ////System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -420,7 +420,7 @@ public class StaffPaymentBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         UtilityController.addSuccessMessage("Successfully Paid");
-        //System.out.println("Paid");
+        ////System.out.println("Paid");
     }
 
     private void saveBillCompo(Bill b) {
@@ -429,7 +429,7 @@ public class StaffPaymentBillController implements Serializable {
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            //System.out.println("marking as paid");
+            ////System.out.println("marking as paid");
         }
     }
 
@@ -571,12 +571,12 @@ public class StaffPaymentBillController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BillFee b where b.retired=false and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and b.bill.institution.id=" + getSessionController().getInstitution().getId() + " and b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
-        //System.out.println("sql is " + sql);
+        ////System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.out.println(dueBillFeeReport.size());
+        ////System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
             dueBillFeeReport = new ArrayList<BillFee>();
@@ -596,14 +596,14 @@ public class StaffPaymentBillController implements Serializable {
         } else {
             sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
         }
-        //System.out.println("sql is " + sql);
+        ////System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.ChannelPaid);
         temMap.put("btp2", BillType.ChannelCredit);
 
         dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.out.println(dueBillFeeReport.size());
+        ////System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
             dueBillFeeReport = new ArrayList<BillFee>();

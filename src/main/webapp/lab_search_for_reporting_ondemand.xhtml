@@ -43,9 +43,8 @@
 
                         <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
 
-                            
-                            
-                            <p:column  headerText="Dept Id" styleClass="alignTop" >
+
+                            <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
@@ -53,8 +52,6 @@
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                     <br/>
                                     <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.department.name}" ></h:outputLabel>
                                     <br/>
                                     <h:outputLabel value="Sampled : " />
                                     <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
@@ -81,12 +78,6 @@
                                 </p:tooltip>
                             </p:column>
 
-                            <p:column  headerText="Billed From" styleClass="alignTop" >
-                                <h:outputLabel id="lblBillNo1" 
-                                               value="#{pi.billItem.bill.department.name}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
-                            </p:column>
-                            
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
@@ -111,6 +102,7 @@
                             <p:column headerText="Investigation"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
+                               
                             </p:column>
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >

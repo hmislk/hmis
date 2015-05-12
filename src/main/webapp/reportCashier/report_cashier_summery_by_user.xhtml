@@ -20,18 +20,30 @@
 
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
+                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/>
+                            <br/>
+                            <h:outputLabel value="Casheir Summary :"/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
-                            <h:outputLabel value="  Casheir Session Report"/>
+                            <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
+                            <h:outputLabel value="#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </h:outputLabel>
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
                                              styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
+                                            action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                         </f:facet>
+                        <f:facet name="footer">
+                        <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                    </f:facet>
 
 
                         <h:panelGrid columns="6" styleClass="noPrintButton" >
@@ -48,27 +60,6 @@
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
 
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
-
-                            <h:outputLabel value="From Date " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Date" />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-
-                            <h:outputLabel value="From Time " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Time " />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
                         </h:panelGrid>
 
                         <ca:opdBilledSummery data="#{commonReport.userBillsOwn}"/>
@@ -104,6 +95,18 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPaymentCancell data="#{commonReport.grnPaymentCancell}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPaymentRefund data="#{commonReport.grnPaymentReturn}"/>
 
                         <p:spacer height="30"/>
 

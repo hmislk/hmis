@@ -500,6 +500,21 @@ public class AdmissionController implements Serializable {
             return true;
         }
 
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
+                JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
+                return true;
+            }
+            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration()==null) {
+                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                return true;
+            }
+            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals("") || getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration().equals(0.0)) {
+                JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
+                return true;
+            }
+        }
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
                 UtilityController.addErrorMessage("Select Empty Room");
@@ -608,20 +623,20 @@ public class AdmissionController implements Serializable {
         JsfUtil.addSuccessMessage("Patient Added. Go to Edit BHT and edit. ALso add a patient room");
 
     }
-    
-    public void updateBHTNo(){
+
+    public void updateBHTNo() {
         System.out.println("current.getBhtNo() = " + current.getBhtNo());
         System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
         System.out.println("current.getAdmissionType() = " + current.getAdmissionType());
-        if (current.getBhtNo()==null || current.getBhtNo().isEmpty()) {
+        if (current.getBhtNo() == null || current.getBhtNo().isEmpty()) {
             UtilityController.addErrorMessage("BHT NO");
             return;
         }
-        if (patientRoom.getRoomFacilityCharge()==null) {
+        if (patientRoom.getRoomFacilityCharge() == null) {
             UtilityController.addErrorMessage("Room...");
             return;
         }
-        if (current.getAdmissionType()==null) {
+        if (current.getAdmissionType() == null) {
             UtilityController.addErrorMessage("Admission Type.");
             return;
         }
@@ -630,8 +645,8 @@ public class AdmissionController implements Serializable {
         addPatientRoom();
         System.out.println("BHT No = " + current.getBhtNo());
         getFacade().edit(current);
-        current=new Admission();
-        patientRoom=new PatientRoom();
+        current = new Admission();
+        patientRoom = new PatientRoom();
     }
 
     public void saveSelected() {

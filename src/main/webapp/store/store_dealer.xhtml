@@ -42,7 +42,7 @@
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{storeDealorController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{storeDealorController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus gpDetailText" execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -70,7 +70,7 @@
                                     <h:inputText autocomplete="off"  value="#{storeDealorController.current.email}"  ></h:inputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{storeDealorController.saveSelected()}" styleClass="buttons">
+                                    <h:commandButton id="btnSave" value="Save" action="#{storeDealorController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </h:commandButton>

@@ -1072,7 +1072,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            //System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
         sql += "order by b.deptId,b.fromInstitution.name ";
 
@@ -1192,8 +1192,8 @@ public class CommonReport implements Serializable {
         m.put("dt", DepartmentType.Inventry);
 
         billItems = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("billItems = " + billItems);
-        System.out.println("billItems Size = " + billItems.size());
+        //System.out.println("billItems = " + billItems);
+        //System.out.println("billItems Size = " + billItems.size());
     }
 
     public List<BillItem> getBillItems() {
@@ -1783,7 +1783,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            //System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -2208,6 +2208,30 @@ public class CommonReport implements Serializable {
         getRefundedPhWholeSale().setCheque(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getRefundedPhWholeSale().setCredit(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getRefundedPhWholeSale().setSlip(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        
+        //Pharmacy GRN Payment Billed
+        getGrnPaymentBill().setBills(userBillsOwn(new BilledBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentBill().setCard(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getGrnPaymentBill().setCash(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getGrnPaymentBill().setCheque(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getGrnPaymentBill().setCredit(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+        getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
+
+        //Pharmacy GRN Payment Cancelled       
+        getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getGrnPaymentCancell().setCheque(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getGrnPaymentCancell().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+        getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
+
+        //Pharmacy GRN Payment Refunded      
+        getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getGrnPaymentReturn().setCheque(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getGrnPaymentReturn().setCredit(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+        getGrnPaymentReturn().setSlip(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
         
         //Payment Billed Bill
         getPaymentBills().setBills(userBillsOwn(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
@@ -3168,6 +3192,9 @@ public class CommonReport implements Serializable {
         list2.add(billedPhWholeSale);
         list2.add(cancelledPhWholeSale);
         list2.add(refundedPhWholeSale);
+        list2.add(GrnPaymentBill);
+        list2.add(GrnPaymentCancell);
+        list2.add(GrnPaymentReturn);
         list2.add(paymentBills);
         list2.add(paymentCancelBills);
         list2.add(pettyPayments);
@@ -3245,6 +3272,9 @@ public class CommonReport implements Serializable {
         list2.add(billedBillsPh);
         list2.add(cancellededBillsPh);
         list2.add(refundedBillsPh);
+        list2.add(billedPhWholeSale);
+        list2.add(cancelledPhWholeSale);
+        list2.add(refundedPhWholeSale);
         list2.add(paymentBills);
         list2.add(paymentCancelBills);
         list2.add(pettyPayments);
@@ -3801,6 +3831,9 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentBill() {
+        if(GrnPaymentBill==null){
+            GrnPaymentBill=new BillsTotals();
+        }
         return GrnPaymentBill;
     }
 
@@ -3809,6 +3842,9 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentReturn() {
+        if(GrnPaymentReturn==null){
+            GrnPaymentReturn=new BillsTotals();
+        }
         return GrnPaymentReturn;
     }
 
@@ -3817,6 +3853,9 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentCancell() {
+        if(GrnPaymentCancell==null){
+            GrnPaymentCancell=new BillsTotals();
+        }
         return GrnPaymentCancell;
     }
 

@@ -156,10 +156,14 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
+        
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
         getBillSession().setPaidBillSession(bs);
+        getBillSessionFacade().edit(bs);        
+        System.out.println("bs = " + bs);
+        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
 
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
@@ -171,7 +175,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
 
 //        editBillSession(b, bi);
-        UtilityController.addSuccessMessage("Channel Booking Added");
+        UtilityController.addSuccessMessage("Channel Booking Added");        
 
     }
 
@@ -295,6 +299,7 @@ public class ChannelBillController implements Serializable {
         }
 
         if (getBillSession().getPaidBillSession() == null) {
+            UtilityController.addErrorMessage("No Paid Bill Session");
             return;
         }
 
@@ -399,7 +404,18 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        if (getBillSession().getPaidBillSession() == null) {
+        if (getBillSession().getBill()== null) {
+            UtilityController.addErrorMessage("No Paid BillSession");
+            return;
+        }
+        
+        if (getBillSession().getPaidBillSession()==null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
+            return;
+        }
+        
+        if (getBillSession().getPaidBillSession().getBill()==null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
 
@@ -412,6 +428,14 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Cancelled");
             return;
         }
+        
+        System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
+        System.out.println("getBillSession().getPaidBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
+        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getBill());
+        
+        System.out.println("getBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
+        System.out.println("getBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
+        System.out.println("getBillSession() = " + getBillSession().getPaidBillSession().getBill());
 
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());

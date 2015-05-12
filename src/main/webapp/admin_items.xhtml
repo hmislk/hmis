@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
@@ -11,8 +12,8 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" styleClass="alignTop" >
-                        
+                    <h:panelGrid columns="4" styleClass="alignTop" >
+
                         <p:panel header="Manage Items / Services" >
                             <h:panelGrid columns="1" >
 
@@ -46,8 +47,8 @@
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Forms" action="/common/form_format_category" ></p:commandButton>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Form Format" action="/common/form_format" ></p:commandButton>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="/common/metadata_super_category" ></p:commandButton>
-                                
-                                
+
+
                             </h:panelGrid>
                         </p:panel>
 
@@ -56,9 +57,20 @@
                             <h:panelGrid columns="1" >
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Investigations" action="lab_investigation_list_to_remove" onclick="onSubmitButton();"/>
                             </h:panelGrid>
                         </p:panel>
-                    
+
+                        <p:panel header="Setup">
+                            <h:panelGrid columns="1" >
+                                <p:commandButton styleClass="linkButton"
+                                                 ajax="false" 
+                                                 value="Create New Items for New Institution" 
+                                                 action="/dataAdmin/create_items_for_new_institution" 
+                                                 onclick="onSubmitButton();"/>
+                            </h:panelGrid>
+                        </p:panel>
+
                     </h:panelGrid>
 
                 </h:form>

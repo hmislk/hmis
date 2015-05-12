@@ -164,8 +164,8 @@ public class StoreReportsTransfer implements Serializable {
                     + "bi.bill.billDate between :fd and :td group by bi.item "
                     + "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) ";
         }
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
+        ////System.out.println("sql = " + sql);
+        ////System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
         movementRecords = new ArrayList<>();
         for (Object[] obj : objs) {
@@ -444,8 +444,8 @@ public class StoreReportsTransfer implements Serializable {
                 + " bi.item.name, "
                 + " bi.id";
 
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
 
         transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
@@ -459,24 +459,24 @@ public class StoreReportsTransfer implements Serializable {
         CategoryBillRow cbr = null;
         ItemBillRow ibr = null;
 
-        System.out.println("transferItems = " + transferItems);
+        //System.out.println("transferItems = " + transferItems);
 
-        System.out.println("transferItems.size() = " + transferItems.size());
+        //System.out.println("transferItems.size() = " + transferItems.size());
 
         for (BillItem ts : transferItems) {
-            System.out.println("ts = " + ts);
+            //System.out.println("ts = " + ts);
 
             if (dept != null && dept.equals(ts.getBill().getToDepartment())) {
-                System.out.println("old dept");
+                //System.out.println("old dept");
 
                 if (cat != null && cat.equals(ts.getItem().getCategory())) {
-                    System.out.println("old cat");
+                    //System.out.println("old cat");
 
                     if (item != null && item.equals(ts.getItem())) {
-                        System.out.println("old item");
+                        //System.out.println("old item");
 
                     } else {
-                        System.out.println("new item");
+                        //System.out.println("new item");
 
                         item = ts.getItem();
 
@@ -486,7 +486,7 @@ public class StoreReportsTransfer implements Serializable {
                         cbr.getItemBillRows().add(ibr);
                     }
                 } else {
-                    System.out.println("new cat");
+                    //System.out.println("new cat");
 
                     cbr = new CategoryBillRow();
                     ibr = new ItemBillRow();
@@ -503,7 +503,7 @@ public class StoreReportsTransfer implements Serializable {
 
             } else {
 
-                System.out.println("new dept");
+                //System.out.println("new dept");
 
                 dbr = new DepartmentBillRow();
                 cbr = new CategoryBillRow();
@@ -520,7 +520,7 @@ public class StoreReportsTransfer implements Serializable {
                 dbr.getCategoryBillRows().add(cbr);
                 cbr.getItemBillRows().add(ibr);
                 drows.add(dbr);
-                System.out.println("drows = " + drows);
+                //System.out.println("drows = " + drows);
             }
 
             ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());

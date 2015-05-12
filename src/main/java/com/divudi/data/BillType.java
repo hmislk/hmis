@@ -20,10 +20,12 @@ public enum BillType {
     @Deprecated
     ChannelCreditFlow(null),
     OpdBathcBill,
+    OpdBathcBillPre,
     SurgeryBill,
     LabBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
+    OpdPreBill,
     InwardPaymentBill,
     InwardFinalBill,
     InwardAppointmentBill,
@@ -56,6 +58,7 @@ public enum BillType {
     StoreTransferReceive,
     StoreTransferRequest,
     PharmacyPre,
+    PharmacyWholesalePre,
     PharmacyOrder,
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
@@ -188,6 +191,8 @@ public enum BillType {
                 return "Pharmacy Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
+                case OpdPreBill:
+                return "OPD Bills To Pay";
             
         }
 

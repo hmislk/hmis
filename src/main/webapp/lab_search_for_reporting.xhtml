@@ -106,7 +106,7 @@
                                             <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}" onclick="onSubmitButton();" >
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();"  >
+                                            <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();"  >
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                             </p:commandButton>
 

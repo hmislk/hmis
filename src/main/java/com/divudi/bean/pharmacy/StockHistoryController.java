@@ -53,7 +53,7 @@ public class StockHistoryController implements Serializable {
         m.put("td", toDate);
         m.put("ht", HistoryType.MonthlyRecord);
         jpql = "select FUNC('Date',s.stockAt) from StockHistory s where s.historyType=:ht and s.stockAt between :fd and :td group by FUNC('Date',s.stockAt)";
-        System.out.println("m = " + m);
+        //System.out.println("m = " + m);
         pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m);
     }
 
@@ -68,8 +68,8 @@ public class StockHistoryController implements Serializable {
             m.put("d", department);
             jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd order by s.item.name";
         }
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
+        //System.out.println("m = " + m);
+        //System.out.println("jpql = " + jpql);
         pharmacyStockHistories = facade.findBySQL(jpql, m);
     }
 

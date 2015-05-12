@@ -21,11 +21,11 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             action="store_cancel_bill_unit_issue" 
+                                            action="store_cancel_bill_unit_issue" 
                                              disabled="#{storeBillSearch.bill.cancelled}">                           
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
-                                             action="store_bill_return_issue"   
+                                            action="store_bill_return_issue"   
                                              disabled="#{storeBillSearch.bill.cancelled eq true}" onclick="onSubmitButton();" >                                
                                 <f:setPropertyActionListener value="#{storeBillSearch.bill}" 
                                                              target="#{storeIssueReturnController.bill}"  />

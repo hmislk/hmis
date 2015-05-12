@@ -290,7 +290,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
 //                for (StaffPaysheetComponent err : getRepeatedComponent()) {
 //                    if (sp.getId().equals(err.getId())) {
 //                        sp.setExist(true);
-//                        //System.out.println("settin");
+//                        ////System.out.println("settin");
 //                    }
 //                }
 //            }

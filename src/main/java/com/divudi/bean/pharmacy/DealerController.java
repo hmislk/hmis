@@ -60,11 +60,11 @@ public class DealerController implements Serializable {
 
         sql = "select c from Institution c where c.retired=false and "
                 + " c.institutionType =:t and upper(c.name) like :q order by c.name";
-        //System.out.println(sql);
+        ////System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
         institutionList = getEjbFacade().findBySQL(sql, m, 10);
-        //System.out.println("suggestions = " + suggestions);
+        ////System.out.println("suggestions = " + suggestions);
 
         return institutionList;
     }

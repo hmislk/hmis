@@ -135,7 +135,7 @@ public class PharmacyErrorChecking implements Serializable {
         for (BillItem bi : billItems) {
 
             if (bi.getQty() != bi.getPharmaceuticalBillItem().getQty()) {
-                //System.out.println("Error in qty " + bi);
+                ////System.out.println("Error in qty " + bi);
             }
 
             if (bi.getBill().getCreatedAt() == null) {
@@ -198,7 +198,7 @@ public class PharmacyErrorChecking implements Serializable {
 
             }
 
-            //System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
+            ////System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
 //
             //
             //

@@ -45,7 +45,7 @@
 
 
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
-                        <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                             <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                             </f:ajax>
                         </p:commandButton>
@@ -54,7 +54,7 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" id="btnSave" value="Save"  
-                                         action="#{sheduleController.saveSelected}"
+                                        action="#{sheduleController.saveSelected}"
                                          styleClass="buttons" onclick="onSubmitButton();">
 
                         </p:commandButton>

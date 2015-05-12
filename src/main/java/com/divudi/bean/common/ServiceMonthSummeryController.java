@@ -107,17 +107,17 @@ public class ServiceMonthSummeryController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BillItem b where "
                 + "b.item.id=" + w.getId() + " and  b.createdAt between :fromDate and :toDate";
-        //System.out.println(w.getId());
+        ////System.out.println(w.getId());
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.out.println("Size : " + temps.size());
+        ////System.out.println("Size : " + temps.size());
 
         double tot = 0.0;
         for (BillItem b : temps) {
             tot += b.getNetValue();
         }
-        //System.out.println("Total : " + tot);
+        ////System.out.println("Total : " + tot);
         is.setCount(temps.size());
         is.setTotal(tot);
     }
@@ -134,7 +134,7 @@ public class ServiceMonthSummeryController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         services = getServiceFacade().findBySQL(sql, temMap);
-        //System.out.println("Services : "+services.size());
+        ////System.out.println("Services : "+services.size());
         if (services == null) {
             services = new ArrayList<Service>();
 
@@ -164,11 +164,11 @@ public class ServiceMonthSummeryController implements Serializable {
     }
 
     public List<ServiceSummeryData> getItemDetails() {
-        //System.out.println("1");
+        ////System.out.println("1");
         itemDetails = new ArrayList<ServiceSummeryData>();
 
         for (Service w : getServices()) {
-            //System.out.println("2");
+            ////System.out.println("2");
             ServiceSummeryData temp = new ServiceSummeryData();
             temp.setService(w);
             setBillItems(temp, w);

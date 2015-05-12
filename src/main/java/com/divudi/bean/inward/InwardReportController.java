@@ -519,14 +519,14 @@ public class InwardReportController implements Serializable {
     }
 
     public void updateOutSideBill() {
-        System.out.println("In");
-        System.out.println("Bill ID -" + getBill().getId());
-        System.out.println("Bill Creater -" + getSessionController().getLoggedUser());
+        //System.out.println("In");
+        //System.out.println("Bill ID -" + getBill().getId());
+        //System.out.println("Bill Creater -" + getSessionController().getLoggedUser());
         getBill().setEditor(getSessionController().getLoggedUser());
         getBill().setEditedAt(new Date());
         getBillFacade().edit(getBill());
         UtilityController.addSuccessMessage("Updated");
-        System.out.println("Out");
+        //System.out.println("Out");
     }
 
     public void createOutSideBillsByAddedDate() {
