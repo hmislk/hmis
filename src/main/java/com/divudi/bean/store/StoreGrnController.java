@@ -133,7 +133,7 @@ public class StoreGrnController implements Serializable {
         grns = null;
         currentExpense = null;
         billExpenses = null;
-        System.out.println("clear");
+        //System.out.println("clear");
 
     }
 
@@ -224,11 +224,11 @@ public class StoreGrnController implements Serializable {
         }
 
         for (BillItem bi : billItems) {
-                System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
-                System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
+                //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+                //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
                 bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
-                System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
-                System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
+                //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+                //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
         }
 
         storeCalculation.calSaleFreeValue(getGrnBill());
@@ -331,16 +331,16 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
-        System.out.println("getBillExpenses() = " + getBillExpenses());
+        //System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
+        //System.out.println("getBillExpenses() = " + getBillExpenses());
 
         if (getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
-            System.out.println("Adding ");
+            //System.out.println("Adding ");
             getGrnBill().setBillExpenses(getBillExpenses());
         }
 
-        System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
-        System.out.println("getBillExpenses() = " + getBillExpenses());
+        //System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
+        //System.out.println("getBillExpenses() = " + getBillExpenses());
 
         getBillFacade().edit(getGrnBill());
 
@@ -351,7 +351,7 @@ public class StoreGrnController implements Serializable {
 
     public void purchaseRateUpdateListner(BillItem bi) {
         bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
-        System.out.println("Updated Purchase Rate Update Listner");
+        //System.out.println("Updated Purchase Rate Update Listner");
     }
 
     @EJB
@@ -441,7 +441,7 @@ public class StoreGrnController implements Serializable {
         addBillItem(bi);
         createSerialNumber(bi);
         //  getBillItems().r
-        System.out.println("getBillItems() = " + getBillItems());
+        //System.out.println("getBillItems() = " + getBillItems());
 
     }
 //
@@ -496,7 +496,7 @@ public class StoreGrnController implements Serializable {
         if (billItem == null) {
             return;
         }
-        System.out.println("In");
+        //System.out.println("In");
         long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
@@ -504,7 +504,7 @@ public class StoreGrnController implements Serializable {
                 b++;
             }
         }
-        System.out.println("b = " + b);
+        //System.out.println("b = " + b);
         String code = "";
         code += getSessionController().getInstitution().getInstitutionCode();
         code += "/";
@@ -529,7 +529,7 @@ public class StoreGrnController implements Serializable {
         code += "/";
         code += b;
 
-        System.out.println("code = " + code);
+        //System.out.println("code = " + code);
         billItem.getPharmaceuticalBillItem().setCode(code);
     }
 
@@ -551,7 +551,7 @@ public class StoreGrnController implements Serializable {
         System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
 
-        System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
+        //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
@@ -565,10 +565,10 @@ public class StoreGrnController implements Serializable {
     public void createGrn() {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
-        System.out.println("in");
+        //System.out.println("in");
         generateBillComponent();
         calTotal();
-        System.out.println("out");
+        //System.out.println("out");
     }
 
     private double getRetailPrice(BillItem billItem) {
@@ -683,10 +683,10 @@ public class StoreGrnController implements Serializable {
 //        for (BillItem e : getBillExpenses()) {
 //            double nv = e.getNetRate() * e.getQty();
 //            e.setNetValue(0 - nv);
-//            System.out.println("nv = " + nv);
+//            //System.out.println("nv = " + nv);
 //            exp += e.getNetValue();
-//            System.out.println("e.getNetValue() = " + e.getNetValue());
-//            System.out.println("exp = " + exp);
+//            //System.out.println("e.getNetValue() = " + e.getNetValue());
+//            //System.out.println("exp = " + exp);
 //        }
 //
 //        getGrnBill().setExpenseTotal(exp);
@@ -698,7 +698,7 @@ public class StoreGrnController implements Serializable {
 //
 //    }
     public void addTest() {
-        System.out.println("this = " + this);
+        //System.out.println("this = " + this);
     }
 
     public void addTest1() {
@@ -710,7 +710,7 @@ public class StoreGrnController implements Serializable {
     }
 
     public void ChangeDiscountLitenerNew() {
-        System.out.println("ChangeDiscountLitener");
+        //System.out.println("ChangeDiscountLitener");
         //Example - Case 1
         //Net Total=  -99.50
         //Cash Paid= 100
@@ -723,8 +723,8 @@ public class StoreGrnController implements Serializable {
 
         nt = getGrnBill().getNetTotal() + getGrnBill().getDiscount();
         dt = getGrnBill().getDiscount();
-        System.out.println("nt = " + nt);
-        System.out.println("dt = " + dt);
+        //System.out.println("nt = " + nt);
+        //System.out.println("dt = " + dt);
         if (getGrnBill().getCashPaid() == null || getGrnBill().getCashPaid().equals(0.0)) {
             adt = 0.0;
             pt = nt;
@@ -733,14 +733,14 @@ public class StoreGrnController implements Serializable {
             adt = pt - Math.abs(nt);
         }
 
-        System.out.println("nt = " + nt);
-        System.out.println("adt = " + adt);
-        System.out.println("pt = " + pt);
-        System.out.println("dt = " + dt);
+        //System.out.println("nt = " + nt);
+        //System.out.println("adt = " + adt);
+        //System.out.println("pt = " + pt);
+        //System.out.println("dt = " + dt);
 
         getGrnBill().setNetTotal(nt + dt - adt);
 
-        System.out.println("dt = " + getGrnBill().getNetTotal());
+        //System.out.println("dt = " + getGrnBill().getNetTotal());
 
     }
 
@@ -766,7 +766,7 @@ public class StoreGrnController implements Serializable {
         this.approveBill = approveBill;
         makeNull();
         createGrn();
-        System.out.println("set Approvebill.");
+        //System.out.println("set Approvebill.");
     }
 
     public Bill getGrnBill() {
@@ -1062,31 +1062,31 @@ public class StoreGrnController implements Serializable {
                     bi.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                     bi.getPharmaceuticalBillItem().setBillItem(bi);
                     bi.getPharmaceuticalBillItem().copy(getCurrentBillItem().getPharmaceuticalBillItem());
-                    System.out.println("Item Number = " + i);
+                    //System.out.println("Item Number = " + i);
                     bi.getPharmaceuticalBillItem().setQty(1);
                     bi.setQty(1.0);
 
-                    System.out.println("****Inventory Code 1****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
+                    //System.out.println("****Inventory Code 1****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
                     createSerialNumber(bi);
-                    System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
+                    //System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
 
                     addBillItem(bi);
                     calTotal();
                 }
                 currentBillItem = null;
             } else {
-                System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+                //System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
                 createSerialNumber(getCurrentBillItem());
-                System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+                //System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 
                 addBillItem(getCurrentBillItem());
                 currentBillItem = null;
                 calTotal();
             }
         }
-//        System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+//        //System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 //        createSerialNumber(getCurrentBillItem());
-//        System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+//        //System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 //
 //        addBillItem(getCurrentBillItem());
 //        currentBillItem = null;

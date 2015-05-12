@@ -240,9 +240,9 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public void prepareAdd() {
-        System.out.println("prepairing to add");
+        //System.out.println("prepairing to add");
         fee = new ItemFee();
-        System.out.println("fee = " + fee);
+        //System.out.println("fee = " + fee);
     }
 
     public void fillSessions() {

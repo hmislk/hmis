@@ -152,7 +152,7 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        ////System.out.println("Specific Count : " + sessionDayCount);
+                        //////System.out.println("Specific Count : " + sessionDayCount);
                         serviceSessions.add(newSs);
 
                         if (tmp != ss.getSessionWeekday()) {
@@ -179,7 +179,7 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        // //System.out.println("Count : " + sessionDayCount);
+                        // ////System.out.println("Count : " + sessionDayCount);
 
                         serviceSessions.add(newSs);
 
@@ -274,7 +274,7 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        ////System.out.println("Specific Count : " + sessionDayCount);
+                        //////System.out.println("Specific Count : " + sessionDayCount);
                         createdSessions.add(newSs);
 
                         if (!Objects.equals(tmp, ss.getSessionWeekday())) {
@@ -313,7 +313,7 @@ public class ChannelBean {
                         newSs.setSessionDate(nowDate);
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        // //System.out.println("Count : " + sessionDayCount);
+                        // ////System.out.println("Count : " + sessionDayCount);
 //                        System.err.println("@@@45");
                         createdSessions.add(newSs);
 //                        System.err.println("@@@46");

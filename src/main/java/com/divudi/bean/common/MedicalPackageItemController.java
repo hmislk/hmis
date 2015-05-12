@@ -139,7 +139,7 @@ public class MedicalPackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
+            ////System.out.println(e.getMessage());
         }
     }
 
@@ -151,11 +151,11 @@ public class MedicalPackageItemController implements Serializable {
 
     private boolean checkPackageItem() {
         for (MedicalPackageItem i : getItems()) {
-            //System.out.println("a : " + i.getItem().getId());
-            //System.out.println("b : " + getCurrentItem().getId());
+            ////System.out.println("a : " + i.getItem().getId());
+            ////System.out.println("b : " + getCurrentItem().getId());
             if (i.getItem().getId() == getCurrentItem().getId()) {
-                //System.out.println("c : " + i.getItem().getId());
-                //System.out.println("d : " + getCurrentItem().getId());
+                ////System.out.println("c : " + i.getItem().getId());
+                ////System.out.println("d : " + getCurrentItem().getId());
                 return true;
             }
         }

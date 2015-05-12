@@ -23,7 +23,7 @@ public class StaffBean {
     
     public void updateStaffCredit(Staff staff, double value) {
         if(staff==null || staff.getId()==null){
-         //   System.out.println("Staff Null or Not previously persisted.");
+         //   //System.out.println("Staff Null or Not previously persisted.");
             return;
         }
         staff.setAnnualWelfareUtilized(staff.getAnnualWelfareUtilized() + value);

@@ -56,7 +56,7 @@ public class TimedItemFeeController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        ////System.out.println("gettin ins dep ");
+        //////System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<Department>();
         } else {
