@@ -11,7 +11,7 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder"
-                     header="Daily Inward Fee Summery">
+                     header="Daily Inward Fee Summery with Counts">
 
                 <p:panelGrid columns="3" styleClass="noPrintButton">
 
@@ -53,9 +53,14 @@
                     </p:commandButton>
                 </h:panelGrid>
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
+                    rows="20"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="20, 50, 100" 
+                     >   
                     <f:facet name="header" >
-                        <p:outputLabel value="Daily Inward Fee Summery" />
+                        <p:outputLabel value="Daily Inward Fee Summery with Counts" />
                     </f:facet>
                     <p:columnGroup type="header">
                         <p:row >

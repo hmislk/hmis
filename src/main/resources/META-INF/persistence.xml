@@ -4,6 +4,6 @@
     <jta-data-source>ruhu1</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <shared-cache-mode>NONE</shared-cache-mode>
-    <properties/>
+    
   </persistence-unit>
 </persistence>
