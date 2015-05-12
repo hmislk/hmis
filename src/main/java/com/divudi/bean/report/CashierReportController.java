@@ -121,6 +121,26 @@ public class CashierReportController implements Serializable {
 
     }
 
+    private BillsTotals createRowWithoutPro(BillType billType, String suffix, Bill bill, WebUser webUser) {
+        BillsTotals newB = new BillsTotals();
+        newB.setName(billType.getLabel() + " " + suffix);
+        newB.setCard(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Card, billType));
+        System.out.println("newB.getCard() = " + newB.getCard());
+        finalCardTot += newB.getCard();
+        newB.setCash(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cash, billType));
+        System.out.println("newB.getCash = " + newB.getCash());
+        finalCashTot += newB.getCash();
+        newB.setCheque(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cheque, billType));
+        finalChequeTot += newB.getCheque();
+        newB.setCredit(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Credit, billType));
+        finalCreditTot += newB.getCredit();
+        newB.setSlip(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Slip, billType));
+        finalSlipTot += newB.getSlip();
+
+        return newB;
+
+    }
+
     private BillsTotals createRowInOut(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
@@ -357,6 +377,51 @@ public class CashierReportController implements Serializable {
 
     }
 
+    public void calCashierDataTotalOnlyWithoutPro() {
+        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+        webUserBillsTotals = new ArrayList<>();
+        for (WebUser webUser : getCashiersWithoutPro()) {
+            WebUserBillsTotal tmp = new WebUserBillsTotal();
+            tmp.setWebUser(webUser);
+            List<BillsTotals> billls = new ArrayList<>();
+
+            double uCard = 0;
+            double uCash = 0;
+            double uCheque = 0;
+            double uCredit = 0;
+            double uSlip = 0;
+            for (BillType btp : getEnumController().getCashFlowBillTypes()) {
+                BillsTotals newB = createRowWithoutPro(btp, "Billed", new BilledBill(), webUser);
+                BillsTotals newC = createRowWithoutPro(btp, "Cancelled", new CancelledBill(), webUser);
+                BillsTotals newR = createRowWithoutPro(btp, "Refunded", new RefundBill(), webUser);
+
+                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+            }
+
+            BillsTotals newSum = new BillsTotals();
+            newSum.setName("Total ");
+            newSum.setBold(true);
+            newSum.setCard(uCard);
+            newSum.setCash(uCash);
+            newSum.setCheque(uCheque);
+            newSum.setCredit(uCredit);
+            newSum.setSlip(uSlip);
+
+            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                billls.add(newSum);
+            }
+            tmp.setBillsTotals(billls);
+            webUserBillsTotals.add(tmp);
+
+        }
+
+    }
+
     private List<WebUserBillsTotal> webUserBillsTotals;
 
     private double calTotalValueOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
@@ -374,6 +439,36 @@ public class CashierReportController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(b.netTotal) from Bill b where type(b)=:bill and b.creater=:cret and "
+                + " b.paymentMethod= :payMethod  and b.institution=:ins"
+                + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTp", billType);
+        temMap.put("payMethod", pM);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private double calTotalValueOwnWithoutPro(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
+////        int day= Calendar.HOUR_OF_DAY(getToDate())- Calendar.DATE(getFromDate()) ;
+//        Date a;
+//        a = Calendar.Date.getToDate()-Date.getFromDate();
+//        int day2;
+//        day2 = Calendar.DAY_OF_YEAR(getToDate());
+//        if(day2>=2){
+//                    
+//            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
+//            return 0;
+//        }
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal-b.staffFee) from Bill b where type(b)=:bill and b.creater=:cret and "
                 + " b.paymentMethod= :payMethod  and b.institution=:ins"
                 + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate ";
 
@@ -763,6 +858,32 @@ public class CashierReportController implements Serializable {
     }
 
     public List<WebUser> getCashiers() {
+        String sql;
+        Map temMap = new HashMap();
+        BillType[] btpArr = enumController.getCashFlowBillTypes();
+        List<BillType> btpList = Arrays.asList(btpArr);
+        sql = "select us from "
+                + " Bill b "
+                + " join b.creater us "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
+                + " and b.billType in :btp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " group by us "
+                + " having sum(b.netTotal)!=0 ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", btpList);
+        temMap.put("ins", sessionController.getInstitution());
+        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        if (cashiers == null) {
+            cashiers = new ArrayList<>();
+        }
+
+        return cashiers;
+    }
+
+    public List<WebUser> getCashiersWithoutPro() {
         String sql;
         Map temMap = new HashMap();
         BillType[] btpArr = enumController.getCashFlowBillTypes();
