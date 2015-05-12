@@ -41,7 +41,7 @@ public class RevenueBean {
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude) {
-        System.out.println("findBillFeeRevenue");
+        //System.out.println("findBillFeeRevenue");
         double answer = 0.0;
         String sql;
         Map m = new HashMap();
@@ -103,8 +103,8 @@ public class RevenueBean {
                     + "bf.billItem.item.category.parentCategory=:cat)";
             m.put("cat", category);
         }
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
         answer = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         return answer;
     }
@@ -114,7 +114,7 @@ public class RevenueBean {
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude) {
-        System.out.println("findBillItemRevenue" );
+        //System.out.println("findBillItemRevenue" );
         double answer = 0.0;
         String sql;
         Map m = new HashMap();
@@ -174,8 +174,8 @@ public class RevenueBean {
                     + "bf.item.category.parentCategory=:cat)";
             m.put("cat", category);
         }
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
         answer = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         return answer;
     }

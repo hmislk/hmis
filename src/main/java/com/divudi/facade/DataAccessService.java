@@ -24,7 +24,7 @@ public abstract class DataAccessService<T> {
         try {
             return qry.getResultList().get(0);
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
+            ////System.out.println(e.getMessage());
             return null;
         }
     }

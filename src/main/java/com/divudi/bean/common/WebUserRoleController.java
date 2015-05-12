@@ -108,7 +108,7 @@ public  class WebUserRoleController implements Serializable {
 
     public List<WebUserRole> getAdminRoles() {
         adminRoles = getFacade().findBySQL("Select d From WebUserRole d");
-        //System.out.println("Count of admins roles is " + adminRoles.size());
+        ////System.out.println("Count of admins roles is " + adminRoles.size());
         return adminRoles;
     }
 

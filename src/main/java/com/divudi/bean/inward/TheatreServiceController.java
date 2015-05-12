@@ -102,7 +102,7 @@ public class TheatreServiceController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //System.out.println("gettin ins dep ");
+        ////System.out.println("gettin ins dep ");
         if (getCurrent().getInstitution() == null) {
             return new ArrayList<>();
         } else {
@@ -120,7 +120,7 @@ public class TheatreServiceController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select c from TheatreService c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getTheatreServiceFacade().findBySQL(sql);
         }
         return suggestions;
@@ -203,7 +203,7 @@ public class TheatreServiceController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //System.out.println(code + " " + ix + " " + ic + " " + f);
+                ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
                 TheatreService tix = new TheatreService();
                 tix.setCode(code);
@@ -255,29 +255,29 @@ public class TheatreServiceController implements Serializable {
 //            getCurrent().setCategory(getServiceSubCategoryController().getParentCategory());
 //        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //System.out.println("1");
+            ////System.out.println("1");
             if (billedAs == false) {
-                //System.out.println("2");
+                ////System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }
             if (reportedAs == false) {
-                //System.out.println("3");
+                ////System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
             getTheatreServiceFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("savedOldSuccessfully");
         } else {
-            //System.out.println("4");
+            ////System.out.println("4");
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getTheatreServiceFacade().create(getCurrent());
             if (billedAs == false) {
-                //System.out.println("5");
+                ////System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
             }
             if (reportedAs == false) {
-                //System.out.println("6");
+                ////System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
             getTheatreServiceFacade().edit(getCurrent());
@@ -380,7 +380,7 @@ public class TheatreServiceController implements Serializable {
 
     public List<TheatreService> getItems() {
         String sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.department.name";
-        //System.out.println(sql);
+        ////System.out.println(sql);
         items = getTheatreServiceFacade().findBySQL(sql);
 
         for (TheatreService i : items) {
@@ -404,7 +404,7 @@ public class TheatreServiceController implements Serializable {
         } else {
             sql = "select c from TheatreService c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
-        //System.out.println(sql);
+        ////System.out.println(sql);
         items = getTheatreServiceFacade().findBySQL(sql);
 
         if (items == null) {
@@ -418,7 +418,7 @@ public class TheatreServiceController implements Serializable {
             String sql;
             sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.name";
 
-            //System.out.println(sql);
+            ////System.out.println(sql);
             items = getTheatreServiceFacade().findBySQL(sql);
 
             for (TheatreService i : items) {

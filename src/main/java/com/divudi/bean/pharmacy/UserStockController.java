@@ -139,7 +139,7 @@ public class UserStockController implements Serializable {
         us.setCreater(webUser);
         us.setCreatedAt(new Date());
         us.setUserStockContainer(userStockContainer);
-        //   System.out.println("2");
+        //   //System.out.println("2");
         if (us.getId() == null) {
             getUserStockFacade().create(us);
         } else {

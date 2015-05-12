@@ -17,7 +17,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+        <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" 
+            rows="20"
+            paginator="true"
+            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="20, 50, 100" 
+            >
 
             <f:facet name="header">
                 <h:outputLabel value="#{bookKeepingSummery.fromDate}">
@@ -29,10 +34,22 @@
                 </h:outputLabel>
             </f:facet>
 
-            <p:column  headerText="Category">
+            <p:column  headerText="Category"
+                sortBy="#{sr.categoryName}" 
+                filterBy="#{sr.categoryName}"
+                filterMatchMode="contains">
+                <f:facet name="header">
+                    <h:outputLabel value="Category"/>
+                </f:facet>
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
-            <p:column headerText="Item/Service" >
+            <p:column headerText="Item/Service"
+                sortBy="#{sr.itemName}" 
+                filterBy="#{sr.itemName}"
+                filterMatchMode="contains">
+                <f:facet name="header">
+                    <h:outputLabel value="Item/Service"/>
+                </f:facet>
                 <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
             </p:column>
             <p:column headerText="Count" >

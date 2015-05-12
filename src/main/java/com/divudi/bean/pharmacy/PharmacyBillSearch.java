@@ -336,7 +336,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private boolean errorCheckForEdit() {
-        System.out.println("error = " + getBill());
+        //System.out.println("error = " + getBill());
 
         if (getBill().isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -357,7 +357,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private boolean errorCheckForEdit(Bill bill) {
-        System.out.println("error = " + bill);
+        //System.out.println("error = " + bill);
 
         if (bill.isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -378,7 +378,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void editBillItem(BillItem billItem) {
-        System.out.println("billItem = " + billItem);
+        //System.out.println("billItem = " + billItem);
 
         if (errorCheckForEdit(billItem.getBill())) {
             return;
@@ -465,7 +465,7 @@ public class PharmacyBillSearch implements Serializable {
         sql = "Select b from BilledBill b where b.retired=false and b.createdAt  "
                 + " between :fd and :td and b.billType=:bt order by b.id desc ";
 
-        //     //System.out.println("sql = " + sql);
+        //     ////System.out.println("sql = " + sql);
         List<Bill> lst = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         lazyBills = new LazyBill(lst);
     }
@@ -523,10 +523,10 @@ public class PharmacyBillSearch implements Serializable {
         List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //System.out.println("user is null");
+            ////System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-            //System.out.println("user ok");
+            ////System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -706,8 +706,8 @@ public class PharmacyBillSearch implements Serializable {
                 return true;
             }
             if (!getBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
-                System.out.println("getBill().getDepartment()"+getBill().getDepartment());
-                System.out.println("getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
+                //System.out.println("getBill().getDepartment()"+getBill().getDepartment());
+                //System.out.println("getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
                 UtilityController.addErrorMessage("You Can't Cancel This Transfer Using "+getSessionController().getLoggedUser().getDepartment().getName()
                         +" Department. Please Log "+getBill().getDepartment().getName()+" Deaprtment.");
                 return true;
@@ -1267,9 +1267,9 @@ public class PharmacyBillSearch implements Serializable {
 //                return;
 //            } before
             
-            System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
-            System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
-            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
+            //System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
+            //System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
+            //System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
             
             if (checkDepartment(getBill())) {
                 return;
@@ -1299,12 +1299,12 @@ public class PharmacyBillSearch implements Serializable {
             getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
 
             UtilityController.addSuccessMessage("Cancelled");
-            //   System.out.println("going to cancel staff payments");
+            //   //System.out.println("going to cancel staff payments");
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                //   System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                //   //System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
-                    //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     UtilityController.addSuccessMessage("Staff Credit Updated");
                     cb.setFromStaff(getBill().getToStaff());
@@ -2059,13 +2059,13 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //System.out.println("getting user bills");
+        ////System.out.println("getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //System.out.println("user is null");
+            ////System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //System.out.println("user ok");
+            ////System.out.println("user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -2128,8 +2128,8 @@ public class PharmacyBillSearch implements Serializable {
                 sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getRefundedBill().getId();
             }
             billItems = getBillItemFacede().findBySQL(sql);
-            // //System.out.println("sql for bill item search is " + sql);
-            // //System.out.println("results for bill item search is " + billItems);
+            // ////System.out.println("sql for bill item search is " + sql);
+            // ////System.out.println("results for bill item search is " + billItems);
             if (billItems == null) {
                 billItems = new ArrayList<>();
             }
@@ -2307,7 +2307,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         double tot = 0.0f;
         for (BillFee f : getBillFees()) {
-            //System.out.println("Tot" + f.getFeeValue());
+            ////System.out.println("Tot" + f.getFeeValue());
             tot += f.getFeeValue();
         }
         getBillForRefund().setTotal(tot);

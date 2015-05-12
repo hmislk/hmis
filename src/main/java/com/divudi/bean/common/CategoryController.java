@@ -76,7 +76,7 @@ public class CategoryController implements Serializable {
         }
         List<Item> cis = itemController.getItems(fromCategory);
         for(Item i:cis){
-            System.out.println("i.getName() = " + i.getName());
+            //System.out.println("i.getName() = " + i.getName());
             i.setCategory(toCategory);
             itemController.saveSelected(i);
         }
@@ -128,7 +128,7 @@ public class CategoryController implements Serializable {
         } else {
 
             sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
             suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
@@ -501,7 +501,7 @@ public class CategoryController implements Serializable {
 
     public void updateCategory(Category cat) {
         if (cat == null) {
-            System.out.println("cat = " + cat);
+            //System.out.println("cat = " + cat);
             return;
         }
         getFacade().edit(cat);

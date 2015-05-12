@@ -72,7 +72,7 @@ public class VmpController implements Serializable {
             vmpList = new ArrayList<Vmp>();
         } else {
             sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             vmpList = getFacade().findBySQL(sql);
         }
         return vmpList;
@@ -199,7 +199,7 @@ public class VmpController implements Serializable {
             suggestions = new ArrayList<Vmp>();
         } else {
             sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -264,7 +264,7 @@ public class VmpController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //System.out.println(code + " " + ix + " " + ic + " " + f);
+                ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
 
                 Vmp tix = new Vmp();
