@@ -161,8 +161,7 @@ public class ChannelBillController implements Serializable {
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
         getBillSession().setPaidBillSession(bs);
-        getBillSessionFacade().edit(bs);
-        getBillSessionFacade().edit(getBillSession().getPaidBillSession());
+        getBillSessionFacade().edit(bs);        
         System.out.println("bs = " + bs);
         System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
 
