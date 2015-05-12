@@ -91,6 +91,7 @@ public class PharmacySaleReport implements Serializable {
     List<String1Value6> bhtIssues;
     List<String1Value6> unitIssues;
     List<BillItem> billItems;
+    List<BillItem> wholeSaleBillItems;
     private Department department;
     Department toDepartment;
     private Institution institution;
@@ -483,6 +484,11 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public void createTableSaleBillItems() {
+        billItems = createSaleBillItems(BillType.PharmacySale);
+        wholeSaleBillItems = createSaleBillItems(BillType.PharmacyWholeSale);
+    }
+
     public void createSaleBillItems() {
         String sql;
         Map m = new HashMap();
@@ -515,6 +521,38 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public List<BillItem> createSaleBillItems(BillType billType) {
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", billType);
+        sql = "select i "
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                //                + " and i.retired=false "
+                + " and i.bill.retired=false "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        if (item != null) {
+            sql += " and i.item=:itm";
+            m.put("itm", item);
+        }
+
+        sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
+        return billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     private List<Object[]> fetchSaleValueByPaymentmethod() {
         String sql;
 
@@ -524,6 +562,37 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
         m.put("btp", BillType.PharmacySale);
+        sql = "select FUNC('Date',i.createdAt),"
+                + " i.bill.paymentMethod,"
+                + " sum(i.netValue)"
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                //                + " and i.retired=false "
+                + " and i.bill.retired=false "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += " group by FUNC('Date',i.createdAt),i.bill.paymentMethod"
+                + " order by i.createdAt,i.bill.paymentMethod ";
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private List<Object[]> fetchSaleValueByPaymentmethod(BillType billType) {
+        String sql;
+
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", billType);
         sql = "select FUNC('Date',i.createdAt),"
                 + " i.bill.paymentMethod,"
                 + " sum(i.netValue)"
@@ -713,6 +782,45 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", getToDate());
         m.put("cl", bill.getClass());
         m.put("btp", BillType.PharmacySale);
+        sql = "select sum(i.netTotal) "
+                + " from Bill i where "
+                + " i.referenceBill.department=:d "
+                + " and i.retired=false "
+                + " and i.billType=:btp "
+                + " and type(i)=:cl "
+                + " and i.createdAt between :fd and :td ";
+
+        if (paymentMethod != null) {
+
+            sql += " and i.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+
+        }
+
+        if (ps != null) {
+
+            sql += " and i.paymentScheme=:ps ";
+            m.put("ps", ps);
+
+        }
+
+        sql += " order by i.deptId ";
+
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+    
+    private double getSaleValueByDepartmentPaymentSchemeP(Bill bill, PaymentScheme ps, BillType billType) {
+
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", bill.getClass());
+        m.put("btp", billType);
         sql = "select sum(i.netTotal) "
                 + " from Bill i where "
                 + " i.referenceBill.department=:d "
@@ -2049,7 +2157,6 @@ public class PharmacySaleReport implements Serializable {
         billedWholeSaleSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(), BillType.PharmacyWholeSale));
         billedWholeSaleSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(), BillType.PharmacyWholeSale));
 
-        
         grantNetTotalWholeSale = calGrantNetTotalByDepartment(BillType.PharmacyWholeSale);
 
     }
@@ -2260,7 +2367,6 @@ public class PharmacySaleReport implements Serializable {
 
                 //System.out.println("pi = " + pi);
                 //System.out.println("ti = " + ti);
-
                 if (pi == null || !ti.equals(pi)) {
                     //System.out.println("new item - " + ti.getName());
                     r = new CategoryMovementReportRow();
@@ -2280,7 +2386,6 @@ public class PharmacySaleReport implements Serializable {
                 }
 
                 //System.out.println("tbt = " + tbt);
-
                 switch (tbt) {
                     case PharmacySale:
                     case PharmacyPre:
@@ -2317,7 +2422,7 @@ public class PharmacySaleReport implements Serializable {
                         break;
 
                     default:
-                        //System.out.println("other bill type");
+                    //System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
@@ -2457,7 +2562,7 @@ public class PharmacySaleReport implements Serializable {
                         break;
 
                     default:
-                        //System.out.println("other bill type");
+                    //System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
@@ -4048,6 +4153,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     List<PaymentSchemeSummery> paymentSchemeSummerys;
+    List<PaymentSchemeSummery> paymentSchemeSummeryWholeSale;
     double billTotal;
     double canTotal;
     double refTotal;
@@ -4062,6 +4168,16 @@ public class PharmacySaleReport implements Serializable {
     public void setPaymentSchemeSummerys(List<PaymentSchemeSummery> paymentSchemeSummerys) {
         this.paymentSchemeSummerys = paymentSchemeSummerys;
     }
+
+    public List<PaymentSchemeSummery> getPaymentSchemeSummeryWholeSale() {
+        return paymentSchemeSummeryWholeSale;
+    }
+
+    public void setPaymentSchemeSummeryWholeSale(List<PaymentSchemeSummery> paymentSchemeSummeryWholeSale) {
+        this.paymentSchemeSummeryWholeSale = paymentSchemeSummeryWholeSale;
+    }
+    
+    
 
     public double getBillTotal() {
         return billTotal;
@@ -4101,17 +4217,30 @@ public class PharmacySaleReport implements Serializable {
 
         for (PaymentScheme ps : paymentSchemes) {
             PaymentSchemeSummery pss = new PaymentSchemeSummery();
+            PaymentSchemeSummery pwss = new PaymentSchemeSummery();
 
             pss.setPaymentScheme(ps.getName());
-            pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps));
-            pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps));
-            pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps));
-
+            pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, BillType.PharmacySale));
+            pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, BillType.PharmacySale));
+            pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, BillType.PharmacySale));
+            
             billTotal += pss.getBillTotal();
             canTotal += pss.getCancelBillTotal();
             refTotal += pss.getRefundBillTotal();
-
+            
             paymentSchemeSummerys.add(pss);
+            
+            
+            pwss.setPaymentScheme(ps.getName());
+            pwss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, BillType.PharmacyWholeSale));
+            pwss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, BillType.PharmacyWholeSale));
+            pwss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, BillType.PharmacyWholeSale));
+
+            billTotal += pwss.getBillTotal();
+            canTotal += pwss.getCancelBillTotal();
+            refTotal += pwss.getRefundBillTotal();       
+            
+            paymentSchemeSummeryWholeSale.add(pwss);
             //System.out.println("Added - " + ps.getName());
         }
 
@@ -4626,8 +4755,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public PharmacySummery getBilledWholeSaleSummery() {
-        if(billedWholeSaleSummery==null){
-            billedWholeSaleSummery=new PharmacySummery();
+        if (billedWholeSaleSummery == null) {
+            billedWholeSaleSummery = new PharmacySummery();
         }
         return billedWholeSaleSummery;
     }
@@ -5570,6 +5699,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public List<BillItem> getWholeSaleBillItems() {
+        return wholeSaleBillItems;
+    }
+
+    public void setWholeSaleBillItems(List<BillItem> wholeSaleBillItems) {
+        this.wholeSaleBillItems = wholeSaleBillItems;
     }
 
     public SearchKeyword getSearchKeyword() {
