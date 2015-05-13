@@ -37,7 +37,7 @@
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
-                                 selection="#{bookingController.selectedServiceSession}" >
+                                 selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="300">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
