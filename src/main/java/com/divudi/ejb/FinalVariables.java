@@ -34,7 +34,7 @@ public class FinalVariables {
         maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
         //System.out.println("maxRowNumber = " + maxRowNumber);
         if(getSheduleController().getCurrent().getMaxTableRows() == 0){
-           return 7;
+           return 14;
         }
         return maxRowNumber;
     }

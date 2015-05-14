@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
 import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
@@ -811,7 +812,7 @@ public class PharmacySaleReport implements Serializable {
         return saleValue;
 
     }
-    
+
     private double getSaleValueByDepartmentPaymentSchemeP(Bill bill, PaymentScheme ps, BillType billType) {
 
         String sql;
@@ -4157,6 +4158,9 @@ public class PharmacySaleReport implements Serializable {
     double billTotal;
     double canTotal;
     double refTotal;
+    double billTotalWholeSale;
+    double canTotalWholeSale;
+    double refTotalWholeSale;
 
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -4176,8 +4180,6 @@ public class PharmacySaleReport implements Serializable {
     public void setPaymentSchemeSummeryWholeSale(List<PaymentSchemeSummery> paymentSchemeSummeryWholeSale) {
         this.paymentSchemeSummeryWholeSale = paymentSchemeSummeryWholeSale;
     }
-    
-    
 
     public double getBillTotal() {
         return billTotal;
@@ -4203,47 +4205,80 @@ public class PharmacySaleReport implements Serializable {
         this.refTotal = refTotal;
     }
 
+    public double getBillTotalWholeSale() {
+        return billTotalWholeSale;
+    }
+
+    public void setBillTotalWholeSale(double billTotalWholeSale) {
+        this.billTotalWholeSale = billTotalWholeSale;
+    }
+
+    public double getCanTotalWholeSale() {
+        return canTotalWholeSale;
+    }
+
+    public void setCanTotalWholeSale(double canTotalWholeSale) {
+        this.canTotalWholeSale = canTotalWholeSale;
+    }
+
+    public double getRefTotalWholeSale() {
+        return refTotalWholeSale;
+    }
+
+    public void setRefTotalWholeSale(double refTotalWholeSale) {
+        this.refTotalWholeSale = refTotalWholeSale;
+    }
+
     public void createSalereportByDateSummeryPaymentscheam() {
         if (department == null) {
             UtilityController.addErrorMessage("Select Department");
             return;
         }
         paymentSchemeSummerys = new ArrayList<>();
+        paymentSchemeSummeryWholeSale = new ArrayList<>();
         List<PaymentScheme> paymentSchemes = paymentSchemeController.getItems();
 
-        billTotal = 0.0;
-        canTotal = 0.0;
-        refTotal = 0.0;
-
+        
         for (PaymentScheme ps : paymentSchemes) {
-            PaymentSchemeSummery pss = new PaymentSchemeSummery();
-            PaymentSchemeSummery pwss = new PaymentSchemeSummery();
+            addSaleValueByDepartmentPaymentSchemeP(paymentSchemeSummerys, ps, BillType.PharmacySale);
+            addSaleValueByDepartmentPaymentSchemeP(paymentSchemeSummeryWholeSale, ps, BillType.PharmacyWholeSale);
 
-            pss.setPaymentScheme(ps.getName());
-            pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, BillType.PharmacySale));
-            pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, BillType.PharmacySale));
-            pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, BillType.PharmacySale));
-            
-            billTotal += pss.getBillTotal();
-            canTotal += pss.getCancelBillTotal();
-            refTotal += pss.getRefundBillTotal();
-            
-            paymentSchemeSummerys.add(pss);
-            
-            
-            pwss.setPaymentScheme(ps.getName());
-            pwss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, BillType.PharmacyWholeSale));
-            pwss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, BillType.PharmacyWholeSale));
-            pwss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, BillType.PharmacyWholeSale));
-
-            billTotal += pwss.getBillTotal();
-            canTotal += pwss.getCancelBillTotal();
-            refTotal += pwss.getRefundBillTotal();       
-            
-            paymentSchemeSummeryWholeSale.add(pwss);
-            //System.out.println("Added - " + ps.getName());
         }
+        BillListWithTotals b = addSaleTotal(paymentSchemeSummerys, billTotal, canTotal, refTotal);
+        BillListWithTotals w = addSaleTotal(paymentSchemeSummeryWholeSale, billTotalWholeSale, canTotalWholeSale, refTotalWholeSale);
+        
+        billTotal = b.getNetTotal();
+        canTotal = b.getCancelledTotal();
+        refTotal = b.getRefundTotal();
+        billTotalWholeSale =w.getNetTotal();
+        canTotalWholeSale = w.getCancelledTotal();
+        refTotalWholeSale = w.getRefundTotal();
 
+    }
+
+    public void addSaleValueByDepartmentPaymentSchemeP(List<PaymentSchemeSummery> schemeSummerys, PaymentScheme ps, BillType billType) {
+        PaymentSchemeSummery pss = new PaymentSchemeSummery();
+        pss.setPaymentScheme(ps.getName());
+        pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, billType));
+        pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, billType));
+        pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, billType));
+
+        schemeSummerys.add(pss);
+
+    }
+
+    public BillListWithTotals addSaleTotal(List<PaymentSchemeSummery> schemeSummerys, double bilTotal, double cancellTotal, double refundTotal) {
+        BillListWithTotals b = new BillListWithTotals();
+        b.setNetTotal(0.0);
+        b.setCancelledTotal(0.0);
+        b.setRefundTotal(0.0);
+
+        for (PaymentSchemeSummery pss : schemeSummerys) {
+            b.setNetTotal(b.getNetTotal() + pss.getBillTotal());
+            b.setCancelledTotal(b.getCancelledTotal() + pss.getCancelBillTotal());
+            b.setRefundTotal(b.getRefundTotal() + pss.getRefundBillTotal());
+        }
+        return b;
     }
 
     public class PaymentSchemeSummery {
