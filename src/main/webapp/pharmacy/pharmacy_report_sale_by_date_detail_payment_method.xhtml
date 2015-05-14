@@ -50,7 +50,7 @@
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
-                        <h:outputLabel value="BILLED"/>
+                        <h:outputLabel value="Pharmacy Sale Billed"/>
                     </f:facet>
 
                     <p:columnGroup type="header">
@@ -208,7 +208,7 @@
                 
                 <p:dataTable id="sum2" value="#{pharmacySaleReport.cancelledDetail.datedBills}" var="i">
                     <f:facet name="header">                        
-                        <h:outputLabel value="CANCELLED"/>
+                        <h:outputLabel value="Pharmacy Sale Cancelled"/>
                     </f:facet>
 
                     <p:columnGroup type="header">
@@ -366,7 +366,7 @@
                 
                 <p:dataTable id="sum3" value="#{pharmacySaleReport.refundedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
-                        <h:outputLabel value="REFUNDED"/>
+                        <h:outputLabel value="Pharmacy Sale Refunded"/>
                     </f:facet>
 
                     <p:columnGroup type="header">
@@ -530,18 +530,503 @@
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
+                
+                <p:dataTable id="sum4" value="#{pharmacySaleReport.billedDetailWholeSale.datedBills}" var="i">
+                    <f:facet name="header">                        
+                        <h:outputLabel value="Pharmacy Whole Sale Billed"/>
+                    </f:facet>
+
+                    <p:columnGroup type="header">
+                        <p:row>
+                            <p:column headerText="Bill No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Billed Time">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed Time"/>
+                                </f:facet>
+                            </p:column>                          
+                            <p:column headerText="Billed By">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed By"/>
+                                </f:facet>
+                            </p:column>                            
+                            <p:column headerText="Discount">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Cash">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Credit">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Card">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Card"/>
+                                </f:facet>
+                            </p:column>                            
+                        </p:row>
+                    </p:columnGroup>
+
+                    <p:subTable value="#{i.bills}" var="b" >
+                        <f:facet name="header">
+                            <h:outputLabel value="#{i.date}">
+                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:column>
+                           <h:outputLabel value="#{b.deptId}"/>
+                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{b.createdAt}">
+                                <f:convertDateTime pattern="hh mm ss a" />
+                            </h:outputLabel>
+                        </p:column>                       
+                        <p:column>
+                            <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                        </p:column>                        
+                        <p:column style="text-align: right;">
+                            <h:outputLabel value="#{b.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column style=" text-align: right" >                             
+                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                        </p:column>
+                        <p:column style=" text-align: right" >                            
+                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                        </p:column>
+
+                        <p:column style=" text-align: right" >                           
+                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="3" footerText="Summary">                                    
+                                </p:column>
+                                <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCashTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCreditTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCardTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:subTable>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column footerText="Total" colspan="3"/>                           
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.billedDetail.creditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.billedDetail.cardTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.billedDetail.cardTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+                
+                <p:dataTable id="sum5" value="#{pharmacySaleReport.cancelledDetailWholeSale.datedBills}" var="i">
+                    <f:facet name="header">                        
+                        <h:outputLabel value="Pharmacy Whole Sale Cancelled"/>
+                    </f:facet>
+
+                    <p:columnGroup type="header">
+                        <p:row>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed Time"/>
+                                </f:facet>
+                            </p:column>                          
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed By"/>
+                                </f:facet>
+                            </p:column>                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Card"/>
+                                </f:facet>
+                            </p:column>                            
+                        </p:row>
+                    </p:columnGroup>
+
+                    <p:subTable value="#{i.bills}" var="b" >
+                        <f:facet name="header">
+                            <h:outputLabel value="#{i.date}">
+                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:column>
+                           <h:outputLabel value="#{b.deptId}"/>
+                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{b.createdAt}">
+                                <f:convertDateTime pattern="hh mm ss a" />
+                            </h:outputLabel>
+                        </p:column>                       
+                        <p:column>
+                            <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                        </p:column>                        
+                        <p:column style="text-align: right;">
+                            <h:outputLabel value="#{b.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column style=" text-align: right"  > 
+                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                        </p:column>
+                        <p:column style=" text-align: right" >
+                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                        </p:column>
+
+                        <p:column style=" text-align: right" >                             
+                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="3" footerText="Summary">                                    
+                                </p:column>
+                                <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCashTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCreditTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCardTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:subTable>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column footerText="Total" colspan="3"/>                           
+                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.cashTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cashTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.creditTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.creditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.cardTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cardTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+                
+                <p:dataTable id="sum6" value="#{pharmacySaleReport.refundedDetailWholeSale.datedBills}" var="i">
+                    <f:facet name="header">                        
+                        <h:outputLabel value="Pharmacy Whole Sale Refunded"/>
+                    </f:facet>
+
+                    <p:columnGroup type="header">
+                        <p:row>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed Time"/>
+                                </f:facet>
+                            </p:column>                          
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed By"/>
+                                </f:facet>
+                            </p:column>                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Card"/>
+                                </f:facet>
+                            </p:column>                            
+                        </p:row>
+                    </p:columnGroup>
+
+                    <p:subTable value="#{i.bills}" var="b" >
+                        <f:facet name="header">
+                            <h:outputLabel value="#{i.date}">
+                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:column>
+                           <h:outputLabel value="#{b.deptId}"/>
+                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{b.createdAt}">
+                                <f:convertDateTime pattern="hh mm ss a" />
+                            </h:outputLabel>
+                        </p:column>                       
+                        <p:column>
+                            <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                        </p:column>                        
+                        <p:column style="text-align: right;">
+                            <h:outputLabel value="#{b.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Cash" style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cash"/>
+                            </f:facet> 
+                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                        </p:column>
+                        <p:column headerText="Credit" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Credit"/>
+                            </f:facet> 
+                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                        </p:column>
+
+                        <p:column headerText="C Card" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="C Card"/>
+                            </f:facet> 
+                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="3" footerText="Summary">                                    
+                                </p:column>
+                                <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCashTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCreditTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{i.sumCardTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:subTable>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column footerText="Total" colspan="3"/>                           
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.creditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cardTotal}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cardTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+                
+                
                 <p:panelGrid columns="2" id="fin">
                     <p:outputLabel value="Final Cash Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCashTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCashTotal+pharmacySaleReport.grantCashTotalWholeSale}"/>
                     
                     <p:outputLabel value="Final Card Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCardTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCardTotal+pharmacySaleReport.grantCardTotalWholeSale}"/>
                     
                     <p:outputLabel value="Final Credit Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCreditTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCreditTotal+pharmacySaleReport.grantCreditTotalWholeSale}"/>
                     
                     <p:outputLabel value="Final Discount Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantDiscount}"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantDiscount+pharmacySaleReport.grantDiscountWholeSale}"/>
                 </p:panelGrid>
               
 
