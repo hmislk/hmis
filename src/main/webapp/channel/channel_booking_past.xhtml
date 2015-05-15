@@ -13,39 +13,43 @@
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
-                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                            <f:ajax  event="change" execute="@this" render="scStaff tbl bSession "  /> 
+                            <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <p:ajax  event="click" process="@this" update="scStaff" /> 
+                            <f:ajax  event="change" execute="@this" render="scStaff"  /> 
                         </p:selectOneListbox>
 
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Consultant">       
+                <p:panel header="Consultant" id="scStaff">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox converter="stfcon" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tbl bSession"  /> 
+                            <f:ajax  event="change" execute="@this" render="tbl"  />
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Session">  
+                <p:panel header="Session" >  
                     <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
-                        <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
+                        <p:ajax event="dateSelect" process="@this date" 
+                                update=":#{p:component('tblBookingsOfSelectedSession')}"
+                                listener="#{bookingPastController.generateSessions}" />
+<!--                        <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>-->
                     </p:calendar>
-                    <h:panelGrid columns="1">
+                    <h:panelGrid columns="1" id="tblBookingsOfSelectedSession">
                         <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}"
                                             style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
 
                             <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> 
+<!--                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> -->
                         </p:selectOneListbox>
                     </h:panelGrid>
 
                 </p:panel>
 
                 <p:panel>
-                    <p:dataTable id="bSession" value="#{bookingPastController.billSessions}" var='bs'
+                    <p:dataTable value="#{bookingPastController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingPastController.selectedBillSession}">
                         <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
