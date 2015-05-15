@@ -372,7 +372,10 @@ public class PharmacyController implements Serializable {
     private double grantBhtIssueQty;
     private double grantSaleValue;
     private double grantBhtValue;
-
+    
+    private double grantWholeSaleQty;    
+    private double grantWholeSaleValue;
+    
     private double grantTransferIssueQty;
     private double grantIssueQty;
     private double grantTransferIssueValue;
@@ -600,6 +603,38 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public List<Object[]> calDepartmentWholeSale(Institution institution) {
+        Item item;
+
+        if (pharmacyItem instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            item = pharmacyItem;
+        }
+
+        String sql;
+        Map m = new HashMap();
+        m.put("itm", item);
+        m.put("ins", institution);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyWholesalePre);
+        m.put("refType", BillType.PharmacyWholeSale);
+        sql = "select i.bill.department,"
+                + " sum(i.netValue),"
+                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " group by i.bill.department";
+
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public double calDepartmentSaleQty(Department department, Item itm) {
 
@@ -647,6 +682,24 @@ public class PharmacyController implements Serializable {
         createStockAverage(dayCount);
 
     }
+
+    public double getGrantWholeSaleQty() {
+        return grantWholeSaleQty;
+    }
+
+    public void setGrantWholeSaleQty(double grantWholeSaleQty) {
+        this.grantWholeSaleQty = grantWholeSaleQty;
+    }
+
+    public double getGrantWholeSaleValue() {
+        return grantWholeSaleValue;
+    }
+
+    public void setGrantWholeSaleValue(double grantWholeSaleValue) {
+        this.grantWholeSaleValue = grantWholeSaleValue;
+    }
+    
+    
 
     public void averageByMonth() {
         Calendar frm = Calendar.getInstance();
@@ -797,6 +850,47 @@ public class PharmacyController implements Serializable {
         }
 
     }
+    
+    public void createInstitutionWholeSale() {
+        List<Institution> insList = getCompany();
+
+        institutionWholeSales = new ArrayList<>();
+        grantWholeSaleQty = 0;
+        grantWholeSaleValue = 0;
+
+        for (Institution ins : insList) {
+            InstitutionSale newTable = new InstitutionSale();
+            List<DepartmentSale> list = new ArrayList<>();
+            double totalValue = 0;
+            double totalQty = 0;
+            List<Object[]> objs = calDepartmentWholeSale(ins);
+
+            for (Object[] obj : objs) {
+                DepartmentSale r = new DepartmentSale();
+                r.setDepartment((Department) obj[0]);
+                r.setSaleValue((Double) obj[1]);
+                r.setSaleQty((Double) obj[2]);
+                list.add(r);
+                //Total Institution Stock
+                totalValue += r.getSaleValue();
+                totalQty += r.getSaleQty();
+                grantWholeSaleValue += r.getSaleValue();
+                grantWholeSaleQty += r.getSaleQty();
+
+            }
+
+            if (totalQty != 0 || totalValue != 0) {
+                newTable.setDepartmentSales(list);
+                newTable.setInstitution(ins);
+                newTable.setInstitutionQty(totalQty);
+                newTable.setInstitutionValue(totalValue);
+
+                institutionWholeSales.add(newTable);
+
+            }
+        }
+
+    }
 
     public double getGrantBhtIssueQty() {
         return grantBhtIssueQty;
@@ -868,6 +962,7 @@ public class PharmacyController implements Serializable {
     }
 
     private List<InstitutionSale> institutionSales;
+    private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
 
     private List<InstitutionSale> institutionTransferIssue;
@@ -880,6 +975,15 @@ public class PharmacyController implements Serializable {
     public void setInstitutionIssue(List<InstitutionSale> institutionIssue) {
         this.institutionIssue = institutionIssue;
     }
+
+    public List<InstitutionSale> getInstitutionWholeSales() {
+        return institutionWholeSales;
+    }
+
+    public void setInstitutionWholeSales(List<InstitutionSale> institutionWholeSales) {
+        this.institutionWholeSales = institutionWholeSales;
+    }
+    
 
     private List<InstitutionSale> institutionTransferReceive;
     private double grantTransferReceiveQty = 0;
@@ -1190,6 +1294,7 @@ public class PharmacyController implements Serializable {
 
         this.pharmacyItem = pharmacyItem;
         createInstitutionSale();
+        createInstitutionWholeSale();
         createInstitutionBhtIssue();
         createInstitutionStock();
         createInstitutionTransferIssue();

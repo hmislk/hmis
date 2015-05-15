@@ -38,18 +38,18 @@
                     </p:calendar>
 
                     <h:panelGrid columns="1" id="tblBookingsOfSelectedSession">
-                        <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}"
+                        <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}" 
                                             style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
 
                             <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this tblBookingsOfSelectedSession scStaff date" render=":#{p:component('bSession')} "
-                                     listener="#{bookingPastController.fillBillSessions}"/> 
+                            <f:ajax  event="change" execute="@this tblBookingsOfSelectedSession" render=":#{p:component('bSession')} "
+                                     listener="#{bookingPastController.fillBillSessions(event)}"/> 
                         </p:selectOneListbox>
                     </h:panelGrid>
 
                 </p:panel>
 
-                <p:panel id="bSession">
+                <p:panel header="Bookings" id="bSession">
                     <p:dataTable value="#{bookingPastController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingPastController.selectedBillSession}">

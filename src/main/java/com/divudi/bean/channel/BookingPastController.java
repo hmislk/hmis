@@ -235,26 +235,30 @@ public class BookingPastController implements Serializable {
     }
 
     public void fillBillSessions(SelectEvent event) {
-        selectedBillSession = null;
+        System.out.println("inside = ");
+//        selectedServiceSession = null;
+//        selectedBillSession = null;
         selectedServiceSession = ((ServiceSession) event.getObject());
+//        billSessions = new ArrayList<>();
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
-        List<BillType> bts = Arrays.asList(billTypes);
-
-        String sql = "Select bs From BillSession bs "
-                + " where bs.retired=false"
-                + " and bs.serviceSession=:ss "
-                + " and bs.bill.billType in :bt"
-                + " and type(bs.bill)=:class "
-                + " and bs.sessionDate= :ssDate "
-                + " order by bs.serialNo ";
-        HashMap hh = new HashMap();
-        hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
-        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-        hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-
+//        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+//        List<BillType> bts = Arrays.asList(billTypes);
+//
+//        String sql = "Select bs From BillSession bs "
+//                + " where bs.retired=false"
+//                + " and bs.serviceSession=:ss "
+//                + " and bs.bill.billType in :bt"
+//                + " and type(bs.bill)=:class "
+//                + " and bs.sessionDate= :ssDate "
+//                + " order by bs.serialNo ";
+//        HashMap hh = new HashMap();
+//        hh.put("bt", bts);
+//        hh.put("class", BilledBill.class);
+//        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+//        hh.put("ss", getSelectedServiceSession());
+//        System.out.println("billSessions = " + billSessions);
+//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//        System.out.println("billSessions = " + billSessions);
     }
 
     public void generateSessions(SelectEvent event) {
@@ -268,21 +272,17 @@ public class BookingPastController implements Serializable {
             return;
         }
 
-        String sql;
-        Map m = new HashMap();
-        m.put("staff", getStaff());
-        m.put("ssDate", getDate());
+        String sql = "";
 
         if (staff != null) {
-            sql = "Select s From ServiceSession s "
-                    + " where s.retired=false "
-                    + " and s.staff=:staff "
-                    + " and s.sessionDate= :ssDate "
-                    + " order by s.sessionWeekday";
-            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
-            System.err.println("Fetch Sessions " + tmp);
-            calculateFee(tmp);
+            Calendar c = Calendar.getInstance();
+            c.setTime(getDate());
+            int wd = c.get(Calendar.DAY_OF_WEEK);
+            System.out.println("wd = " + wd);
+            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
+            serviceSessions = getServiceSessionFacade().findBySQL(sql);
         }
+
     }
 
     public void calculateFee(List<ServiceSession> lstSs) {
@@ -389,16 +389,16 @@ public class BookingPastController implements Serializable {
     }
 
     public List<ServiceSession> getServiceSessions() {
-        serviceSessions = new ArrayList<ServiceSession>();
-        String sql = "";
-
-        if (staff != null) {
-            Calendar c = Calendar.getInstance();
-            c.setTime(getDate());
-            int wd = c.get(Calendar.DAY_OF_WEEK);
-            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-            serviceSessions = getServiceSessionFacade().findBySQL(sql);
-        }
+//        serviceSessions = new ArrayList<ServiceSession>();
+//        String sql = "";
+//
+//        if (staff != null) {
+//            Calendar c = Calendar.getInstance();
+//            c.setTime(getDate());
+//            int wd = c.get(Calendar.DAY_OF_WEEK);
+//            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
+//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//        }
 
         return serviceSessions;
     }
@@ -424,22 +424,21 @@ public class BookingPastController implements Serializable {
         this.finalVariables = finalVariables;
     }
 
-    public List<BillSession> getBillSessions() {
-        if (billSessions == null) {
-            if (getSelectedServiceSession() != null) {
-                String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id="
-                        + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate and bs.serviceSession.staff.id=" + getStaff().getId();
-                HashMap hh = new HashMap();
-                hh.put("ssDate", getDate());
-                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-
-                setFees();
-            }
-        }
-
-        return billSessions;
-    }
-
+//    public List<BillSession> getBillSessions() {
+//        if (billSessions == null) {
+//            if (getSelectedServiceSession() != null) {
+//                String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id="
+//                        + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate and bs.serviceSession.staff.id=" + getStaff().getId();
+//                HashMap hh = new HashMap();
+//                hh.put("ssDate", getDate());
+//                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//
+//                setFees();
+//            }
+//        }
+//
+//        return billSessions;
+//    }
     private void setFees() {
         for (BillSession bs : billSessions) {
             bs.setDoctorFee(getChannelBean().getChannelFee(bs, FeeType.Staff));
@@ -449,17 +448,24 @@ public class BookingPastController implements Serializable {
         }
     }
 
+    public List<BillSession> getBillSessions() {
+        return billSessions;
+    }
+
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
     }
 
     public ServiceSession getSelectedServiceSession() {
+        if (selectedServiceSession == null) {
+            selectedServiceSession = new ServiceSession();
+        }
         return selectedServiceSession;
     }
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
-        makeBillSessionNull();
-        calTotal();
+//        makeBillSessionNull();
+//        calTotal();
         this.selectedServiceSession = selectedServiceSession;
     }
 
