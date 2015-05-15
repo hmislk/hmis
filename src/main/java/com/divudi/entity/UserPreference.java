@@ -57,6 +57,7 @@ public class UserPreference implements Serializable {
     boolean pharmayPurchaseWithLastRate;
     boolean inwardAddServiceBillTimeCheck;
     boolean inwardMoChargeCalculateInitialTime;
+    boolean inwardChangeAdmissionFee;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -339,6 +340,14 @@ public class UserPreference implements Serializable {
 
     public void setInwardMoChargeCalculateInitialTime(boolean inwardMoChargeCalculateInitialTime) {
         this.inwardMoChargeCalculateInitialTime = inwardMoChargeCalculateInitialTime;
+    }
+
+    public boolean isInwardChangeAdmissionFee() {
+        return inwardChangeAdmissionFee;
+    }
+
+    public void setInwardChangeAdmissionFee(boolean inwardChangeAdmissionFee) {
+        this.inwardChangeAdmissionFee = inwardChangeAdmissionFee;
     }
     
     @Override
