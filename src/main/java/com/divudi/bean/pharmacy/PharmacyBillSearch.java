@@ -287,7 +287,7 @@ public class PharmacyBillSearch implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
-    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment,PaymentMethod paymentMethod) {
+    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment, PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         for (BillItem bi : billItems) {
@@ -295,7 +295,7 @@ public class PharmacyBillSearch implements Serializable {
             double rate = Math.abs(bi.getRate());
             double margin = 0;
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment,paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
 
             if (priceMatrix != null) {
                 margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -319,7 +319,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public void updateFeeMargin() {
 
-        updateMargin(getBill().getBillItems(), getBill(), getBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
+        updateMargin(getBill().getBillItems(), getBill(), getBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
 
     }
 
@@ -708,8 +708,8 @@ public class PharmacyBillSearch implements Serializable {
             if (!getBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
                 //System.out.println("getBill().getDepartment()"+getBill().getDepartment());
                 //System.out.println("getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
-                UtilityController.addErrorMessage("You Can't Cancel This Transfer Using "+getSessionController().getLoggedUser().getDepartment().getName()
-                        +" Department. Please Log "+getBill().getDepartment().getName()+" Deaprtment.");
+                UtilityController.addErrorMessage("You Can't Cancel This Transfer Using " + getSessionController().getLoggedUser().getDepartment().getName()
+                        + " Department. Please Log " + getBill().getDepartment().getName() + " Deaprtment.");
                 return true;
             }
         }
@@ -1266,11 +1266,9 @@ public class PharmacyBillSearch implements Serializable {
 //            if (checkDepartment(getBill().getReferenceBill())) {
 //                return;
 //            } before
-            
             //System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
             //System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
             //System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
-            
             if (checkDepartment(getBill())) {
                 return;
             }
@@ -2322,6 +2320,42 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         return billForRefund;
+    }
+
+    public String viewBill() {
+        
+        if (bill != null) {
+            switch (bill.getBillType()) {
+                case PharmacyPre:
+                    return "pharmacy_reprint_bill";
+                case PharmacyBhtPre:
+                    return "pharmacy_reprint_bill";
+                case PharmacyIssue:
+                    return "pharmacy_reprint_bill_issue";
+                case PharmacyTransferIssue:
+                    return "pharmacy_reprint_transfer_isssue";
+                case PharmacyTransferReceive:
+                    return "pharmacy_reprint_transfer_receive";
+                case PharmacyPurchaseBill:
+                    return "pharmacy_reprint_purchase";
+                case PharmacyGrnBill:
+                    return "pharmacy_reprint_grn";
+                case PharmacyGrnReturn:
+                    return "pharmacy_reprint_grn_return";
+                case PurchaseReturn:
+                    return "pharmacy_reprint_purchase_return";
+                case PharmacyAdjustment:
+                    return "pharmacy_reprint_adjustment";
+                case PharmacyWholesalePre:
+                    return "pharmacy_reprint_bill_sale";
+                default:
+                    return "pharmacy_reprint_bill";
+            }
+        } else {
+
+            return "";
+        }
+
     }
 
     public void setBillForRefund(RefundBill billForRefund) {
