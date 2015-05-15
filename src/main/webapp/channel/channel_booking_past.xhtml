@@ -25,7 +25,7 @@
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="stfcon" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tbl"  />
+                            <f:ajax  event="change" execute="@this" render="tblBookingsOfSelectedSession"  />
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -37,19 +37,53 @@
                                 listener="#{bookingPastController.generateSessions}" />
                     </p:calendar>
 
-                    <h:panelGrid columns="1" id="tblBookingsOfSelectedSession">
-                        <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}" 
-                                            style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
+                    
+                    <p:dataTable value="#{bookingPastController.serviceSessions}" rowKey="#{ses.roomNo}"
+                                 id="tblBookingsOfSelectedSession" var="ses"
+                                 selectionMode="single" 
+                                 selection="#{bookingPastController.selectedServiceSession}" scrollable="true" scrollHeight="300">
 
-                            <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this tblBookingsOfSelectedSession" render=":#{p:component('bSession')} "
-                                     listener="#{bookingPastController.fillBillSessions(event)}"/> 
-                        </p:selectOneListbox>
-                    </h:panelGrid>
+                        <p:ajax event="rowSelect" process="@this tblBookingsOfSelectedSession" 
+                                update=":#{p:component('lblSessionTotal')}"
+                                listener="#{bookingController.fillBillSessions}" />  
+
+
+                        <p:column headerText="Session">
+                            #{ses.name}
+                        </p:column>
+                        <p:column headerText="Max">
+                            #{ses.maxNo}
+                        </p:column>
+                        <p:column headerText="Booked">
+                            #{ses.displayCount}
+                        </p:column>
+                        <p:column headerText="Date">
+                            <p:outputLabel value="#{ses.sessionAt}">
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Time">
+                            <p:outputLabel value="#{ses.startingTime}">
+                                <f:convertDateTime pattern="hh:mm a"/>
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Fee">
+                            <p:outputLabel value="#{ses.originatingSession.totalFee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>                                                            
+                        </p:column>   
+
+                        <p:column >
+                            <p:commandLink value="Edit" onclick="PF('dlgSessionEdit').show();" />
+
+                        </p:column>
+
+                    </p:dataTable>
 
                 </p:panel>
 
-                <p:panel header="Bookings" id="bSession">
+                <p:panel header="Bookings" id="lblSessionTotal">
                     <p:dataTable value="#{bookingPastController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingPastController.selectedBillSession}">
