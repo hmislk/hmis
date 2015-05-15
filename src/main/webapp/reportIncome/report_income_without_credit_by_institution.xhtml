@@ -62,9 +62,9 @@
 
                             <p:dataTable id="tbl" value="#{institutionLabSumeryController.bills}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="OPD Doctor Payment(By Bill)"/>
+                                    <h:outputLabel value="Handover Reports"/>
                                     <br/>
-                                    <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/>
+                                    <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/><br/>
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
                                             <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
