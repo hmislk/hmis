@@ -238,7 +238,11 @@ public class BookingPastController implements Serializable {
         System.out.println("inside = ");
 //        selectedServiceSession = null;
 //        selectedBillSession = null;
-        selectedServiceSession = ((ServiceSession) event.getObject());
+        try {
+            selectedServiceSession = ((ServiceSession) event.getObject());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        billSessions = new ArrayList<>();
 
 //        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
