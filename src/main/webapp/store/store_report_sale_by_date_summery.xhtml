@@ -6,11 +6,12 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:pe="http://primefaces.org/ui/extensions">
-
+    <body>
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <h:panelGrid columns="6" styleClass="noPrintButton">
+            
+            <p:panel header="OPD Doctor Payments And Due">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
                     </p:calendar>
@@ -22,8 +23,10 @@
                     </p:autoComplete>
                     
                 </h:panelGrid>
-                
-                <h:panelGrid columns="3">
+            </p:panel>
+              <p:panel id="panelPrint">
+                <h:panelGrid columns="4">
+                    <p:spacer width="80" height="1"/>
                     <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createSaleReportByDate()}"/>
                     <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.createSaleReportByDate()}" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
@@ -140,7 +143,7 @@
         </h:form>
 
     </ui:define>
-
+</body>
 
 
 </ui:composition>
