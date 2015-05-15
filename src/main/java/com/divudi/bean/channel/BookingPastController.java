@@ -184,8 +184,6 @@ public class BookingPastController implements Serializable {
         }
     }
 
-  
-
     public void updatePatient() {
         getBillSessionFacade().edit(getSelectedBillSession());
 
@@ -200,14 +198,14 @@ public class BookingPastController implements Serializable {
         /////////////////////
         serviceSessions = null;
         billSessions = null;
-    } 
+    }
 
     /**
      * Creates a new instance of bookingController
      */
     public BookingPastController() {
     }
-    
+
     @Inject
     BookingController bookingController;
 
@@ -220,7 +218,7 @@ public class BookingPastController implements Serializable {
         fillConsultants();
         setStaff(null);
     }
-    
+
     public void fillConsultants() {
         String sql;
         Map m = new HashMap();
@@ -235,7 +233,7 @@ public class BookingPastController implements Serializable {
 //        //System.out.println("consultants = " + consultants);
         setStaff(null);
     }
-    
+
     public void fillBillSessions(SelectEvent event) {
         selectedBillSession = null;
         selectedServiceSession = ((ServiceSession) event.getObject());
@@ -258,15 +256,22 @@ public class BookingPastController implements Serializable {
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
 
     }
-    
+
     public void generateSessions(SelectEvent event) {
-        date=null;
-        date=((Date)event.getObject());
+        date = null;
+        date = ((Date) event.getObject());
         serviceSessions = new ArrayList<>();
+
+        Date currenDate = new Date();
+        if (getDate().after(currenDate)) {
+            UtilityController.addErrorMessage("Please Select Before Date");
+            return;
+        }
+
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
-        m.put("ssDate", getDate());       
+        m.put("ssDate", getDate());
 
         if (staff != null) {
             sql = "Select s From ServiceSession s "
@@ -279,7 +284,7 @@ public class BookingPastController implements Serializable {
             calculateFee(tmp);
         }
     }
-    
+
     public void calculateFee(List<ServiceSession> lstSs) {
         for (ServiceSession ss : lstSs) {
             Double[] dbl = fetchFee(ss, FeeType.OwnInstitution);
@@ -298,7 +303,7 @@ public class BookingPastController implements Serializable {
             ss.setItemFees(fetchFee(ss));
         }
     }
-    
+
     private double fetchLocalFee(Item item) {
         String jpql;
         Map m = new HashMap();
@@ -311,7 +316,7 @@ public class BookingPastController implements Serializable {
 
         return obj;
     }
-    
+
     private double fetchForiegnFee(Item item) {
         String jpql;
         Map m = new HashMap();
@@ -328,7 +333,7 @@ public class BookingPastController implements Serializable {
 
         return obj;
     }
-    
+
     private List<ItemFee> fetchFee(Item item) {
         String jpql;
         Map m = new HashMap();
@@ -341,7 +346,7 @@ public class BookingPastController implements Serializable {
         System.err.println("Fetch Fess " + list);
         return list;
     }
-    
+
     private Double[] fetchFee(Item item, FeeType feeType) {
         String jpql;
         Map m = new HashMap();
@@ -481,10 +486,6 @@ public class BookingPastController implements Serializable {
     public void setItemFeeFacade(ItemFeeFacade ItemFeeFacade) {
         this.ItemFeeFacade = ItemFeeFacade;
     }
-    
-    
-    
-    
 
     public void makeBillSessionNull() {
         billSessions = null;

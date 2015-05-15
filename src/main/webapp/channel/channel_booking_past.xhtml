@@ -35,20 +35,21 @@
                         <p:ajax event="dateSelect" process="@this date" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')}"
                                 listener="#{bookingPastController.generateSessions}" />
-<!--                        <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>-->
                     </p:calendar>
+
                     <h:panelGrid columns="1" id="tblBookingsOfSelectedSession">
                         <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}"
                                             style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
 
                             <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-<!--                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> -->
+                            <f:ajax  event="change" execute="@this tblBookingsOfSelectedSession scStaff date" render=":#{p:component('bSession')} "
+                                     listener="#{bookingPastController.fillBillSessions}"/> 
                         </p:selectOneListbox>
                     </h:panelGrid>
 
                 </p:panel>
 
-                <p:panel>
+                <p:panel id="bSession">
                     <p:dataTable value="#{bookingPastController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingPastController.selectedBillSession}">
@@ -105,7 +106,7 @@
 
 
                         <p:tab title="Reprint" id="print">
-                            
+
                             <h:panelGroup id="panelReBillPrint" styleClass="noBorder">
                                 <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                             </h:panelGroup>
@@ -113,40 +114,40 @@
 
 
                         <p:tab title="Cancel" id="cancel">
-                            
+
                             <h:panelGroup>
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
-                            
+
                             <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
                         </p:tab>
 
 
                         <p:tab title="Refund" id="refund">
-                                                                 
-                                <h:panelGrid columns="2">
-                                    <h:outputLabel value="Refundable Total : "/>
-                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
-                                </h:panelGrid>
-                                <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
-                                    <p:column headerText="Fee Name">
-                                        <p:outputLabel value="#{bi.fee.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Fee Type">
-                                        <p:outputLabel value="#{bi.fee.feeType}"/>
-                                    </p:column>
-                                    <p:column headerText="Fee Value">
-                                        <p:outputLabel value="#{bi.feeValue}"/> 
-                                    </p:column>
-                                    <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}">
-                                            <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
-                                        </p:inputText>
 
-                                    </p:column>
-                                </p:dataTable>
-                            
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Refundable Total : "/>
+                                <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
+                            </h:panelGrid>
+                            <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
+                                <p:column headerText="Fee Name">
+                                    <p:outputLabel value="#{bi.fee.name}"/>
+                                </p:column>
+                                <p:column headerText="Fee Type">
+                                    <p:outputLabel value="#{bi.fee.feeType}"/>
+                                </p:column>
+                                <p:column headerText="Fee Value">
+                                    <p:outputLabel value="#{bi.feeValue}"/> 
+                                </p:column>
+                                <p:column headerText="Return Value">
+                                    <p:inputText value="#{bi.tmpChangedValue}">
+                                        <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
+                                    </p:inputText>
+
+                                </p:column>
+                            </p:dataTable>
+
 
 
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
@@ -159,15 +160,15 @@
 
                         <p:tab title="Settle" id="settle">
                             <p:panel  id="set">
-                                
-                                    <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
+
+                                <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
 
                                 <p:commandButton id="setBtn" ajax="false" value="Settle Credit" action="#{channelBillController.settleCredit}" disabled="#{channelBillController.billSession.bill.billType ne 'ChannelCredit' 
                                                                                                           or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
 
 
                             </p:panel>
-                            
+
                         </p:tab>
 
 
