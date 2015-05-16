@@ -694,6 +694,15 @@ public class ServiceSummery implements Serializable {
     BillFacade billFacade;
 
     double totalBill;
+    double discountBill;
+
+    public double getDiscountBill() {
+        return discountBill;
+    }
+
+    public void setDiscountBill(double discountBill) {
+        this.discountBill = discountBill;
+    }
 
     public double getTotalBill() {
         return totalBill;
@@ -727,31 +736,21 @@ public class ServiceSummery implements Serializable {
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
 
-        bills = billFacade.findBySQL(sql, m);
+        bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         //System.out.println("bills = " + bills);
 
-        calTotal();
+        calTotal(bills);
 
     }
 
-    public void calTotal() {
-        String sql;
-        Map m = new HashMap();
-
-        sql = " select sum(b.netTotal) from Bill b where "
-                + " b.retired=false "
-                + " and b.toStaff is not null "
-                + " and b.createdAt between :fd and :td "
-                + " and (b.billType=:bt1 or b.billType=:bt2) "
-                + " order by b.id ";
-
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt1", BillType.PharmacySale);
-        m.put("bt2", BillType.OpdBill);
-
-        totalBill = billFacade.findDoubleByJpql(sql, m);
-        //System.out.println("totalBill = " + totalBill);
+    public void calTotal(List<Bill>bills) {
+        totalBill=0.0;
+        discountBill=0.0;
+        for (Bill bill : bills) {
+            totalBill+=bill.getNetTotal();
+            discountBill+=bill.getDiscount();
+           
+        }
     }
 
     Department department;
