@@ -236,33 +236,34 @@ public class BookingPastController implements Serializable {
 
     public void fillBillSessions(SelectEvent event) {
         System.out.println("inside = ");
-//        selectedServiceSession = null;
-//        selectedBillSession = null;
+        selectedServiceSession = null;
+        selectedBillSession = null;
         try {
             selectedServiceSession = ((ServiceSession) event.getObject());
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        billSessions = new ArrayList<>();
+        billSessions = new ArrayList<>();
 
-//        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
-//        List<BillType> bts = Arrays.asList(billTypes);
-//
-//        String sql = "Select bs From BillSession bs "
-//                + " where bs.retired=false"
-//                + " and bs.serviceSession=:ss "
-//                + " and bs.bill.billType in :bt"
-//                + " and type(bs.bill)=:class "
-//                + " and bs.sessionDate= :ssDate "
-//                + " order by bs.serialNo ";
-//        HashMap hh = new HashMap();
-//        hh.put("bt", bts);
-//        hh.put("class", BilledBill.class);
-//        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-//        hh.put("ss", getSelectedServiceSession());
-//        System.out.println("billSessions = " + billSessions);
-//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-//        System.out.println("billSessions = " + billSessions);
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        System.out.println("getSelectedServiceSession = " + getSelectedServiceSession());
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());        
+        System.out.println("billSessions = " + billSessions);
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("billSessions = " + billSessions);
     }
 
     public void generateSessions(SelectEvent event) {
@@ -461,10 +462,7 @@ public class BookingPastController implements Serializable {
     }
 
     public ServiceSession getSelectedServiceSession() {
-        if (selectedServiceSession == null) {
-            selectedServiceSession = new ServiceSession();
-        }
-        return selectedServiceSession;
+       return selectedServiceSession;
     }
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
