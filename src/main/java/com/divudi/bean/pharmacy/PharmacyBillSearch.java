@@ -162,6 +162,15 @@ public class PharmacyBillSearch implements Serializable {
 
     public void unitCancell() {
 
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Please Select a Bill");
+            return;
+        }
+
+        if (checkDepartment(getBill())) {
+            return;
+        }
+
         Bill prebill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(),
                 getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
 
@@ -169,7 +178,7 @@ public class PharmacyBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(prebill);
             getBillFacade().edit(getBill());
-
+            JsfUtil.addSuccessMessage("Canceled");
             printPreview = true;
         }
     }
@@ -1233,11 +1242,13 @@ public class PharmacyBillSearch implements Serializable {
 
     private boolean checkDepartment(Bill bill) {
         if (bill == null) {
+            UtilityController.addErrorMessage("Bill Null");
             return true;
 
         }
 
         if (bill.getDepartment() == null) {
+            UtilityController.addErrorMessage("Bill Department Null");
             return true;
         }
 
@@ -1600,6 +1611,10 @@ public class PharmacyBillSearch implements Serializable {
             if (pharmacyErrorCheck()) {
                 return;
             }
+            
+            if (checkDepartment(getBill())) {
+                return;
+            }
 
             if (checkBillItemStock()) {
                 UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
@@ -1649,6 +1664,10 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
@@ -1684,6 +1703,10 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
             if (checkBillItemStock()) {
                 UtilityController.addErrorMessage("Items for this Note Already issued so you can't cancel ");
                 return;
@@ -1715,6 +1738,10 @@ public class PharmacyBillSearch implements Serializable {
     public void pharmacyPurchaseCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
+                return;
+            }
+            
+            if (checkDepartment(getBill())) {
                 return;
             }
 
@@ -1764,6 +1791,10 @@ public class PharmacyBillSearch implements Serializable {
     public void pharmacyGrnReturnCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
+                return;
+            }
+            
+            if (checkDepartment(getBill())) {
                 return;
             }
 
@@ -2323,15 +2354,15 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String viewBill() {
-        
+
         if (bill != null) {
             switch (bill.getBillType()) {
                 case PharmacyPre:
-                    return "pharmacy_reprint_bill";
+                    return "pharmacy_reprint_bill_sale";
                 case PharmacyBhtPre:
-                    return "pharmacy_reprint_bill";
+                    return "pharmacy_reprint_bill_sale";
                 case PharmacyIssue:
-                    return "pharmacy_reprint_bill_issue";
+                    return "pharmacy_reprint_bill_unit_issue";
                 case PharmacyTransferIssue:
                     return "pharmacy_reprint_transfer_isssue";
                 case PharmacyTransferReceive:
@@ -2349,7 +2380,7 @@ public class PharmacyBillSearch implements Serializable {
                 case PharmacyWholesalePre:
                     return "pharmacy_reprint_bill_sale";
                 default:
-                    return "pharmacy_reprint_bill";
+                    return "pharmacy_reprint_bill_sale";
             }
         } else {
 
