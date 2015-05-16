@@ -45,7 +45,7 @@
 
                         <p:ajax event="rowSelect" process="@this tblBookingsOfSelectedSession" 
                                 update=":#{p:component('lblSessionTotal')}"
-                                listener="#{bookingController.fillBillSessions}" />  
+                                listener="#{bookingPastController.fillBillSessions}" />  
 
 
                         <p:column headerText="Session">
