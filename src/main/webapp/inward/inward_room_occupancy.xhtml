@@ -11,10 +11,10 @@
     <ui:define name="content">
         <h:form>
             <p:commandButton ajax="false" 
-                            action="#{roomOccupancyController.createPatientRoom}"
+                             action="#{roomOccupancyController.createPatientRoom}"
                              value="Fill" onclick="onSubmitButton();" />
-             <p:commandButton ajax="false" 
-                            action="#{roomOccupancyController.createPatientRoomAll}"
+            <p:commandButton ajax="false" 
+                             action="#{roomOccupancyController.createPatientRoomAll}"
                              value="Fill All" onclick="onSubmitButton();" />
             <p:dataTable 
                 value="#{roomOccupancyController.patientRooms}" 
@@ -26,13 +26,19 @@
                 <f:facet name="header">
                     Room Occupancy Detail
                 </f:facet>
-                 <p:column headerText="ID">
+                <p:column headerText="ID">
                     #{pr.id}                    
                 </p:column>
-                <p:column headerText="Room">
+                <p:column headerText="Room"
+                          sortBy="#{pr.roomFacilityCharge.room.name}"
+                          filterBy="#{pr.roomFacilityCharge.room.name}"
+                          filterMatchMode="contains">
                     #{pr.roomFacilityCharge.room.name}                    
                 </p:column>
-                <p:column headerText="BHT No">
+                <p:column headerText="BHT No" 
+                          sortBy="#{pr.patientEncounter.bhtNo}"
+                          filterBy="#{pr.patientEncounter.bhtNo}"
+                          filterMatchMode="contains">
                     #{pr.patientEncounter.bhtNo}
                 </p:column>
                 <p:column headerText="Patient" >

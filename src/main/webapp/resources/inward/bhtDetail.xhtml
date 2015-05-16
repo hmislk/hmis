@@ -43,6 +43,9 @@
             <h:outputLabel/>
             <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill : "/>
             <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
+            <h:outputLabel  value="Admission Fee : " rendered="#{sessionController.institutionPreference.inwardChangeAdmissionFee}"/>
+            <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.institutionPreference.inwardChangeAdmissionFee}"/>
+            <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.institutionPreference.inwardChangeAdmissionFee}"></p:commandButton>
         </h:panelGrid>
     </cc:implementation>
 </html>
