@@ -16,13 +16,13 @@
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
-                            <h:outputLabel value="Issue To" ></h:outputLabel>
+                            <h:outputLabel value="To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.toDepartment}" converter="dep" >
@@ -33,7 +33,8 @@
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="4">
+                            <p:spacer width="75" height="1"/>
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentUnitIssueByBillItemStore}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -53,16 +54,14 @@
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
                                     <h:outputLabel value=" To "/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/>
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="From  " style=" white-space:pre-line;"/>
                                         <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="&emsp;&emsp;To  "/>
                                         <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
                                 </f:facet>
                                 
                                 <p:column headerText="Bill No">
@@ -154,7 +153,9 @@
                                     </h:outputLabel>   
                                     </f:facet>
                                 </p:column>
-
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
 <!--                                <p:columnGroup type="footer">
                                     <p:row>

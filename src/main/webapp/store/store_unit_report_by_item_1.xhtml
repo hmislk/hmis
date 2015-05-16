@@ -13,7 +13,8 @@
 
             <ui:define name="content">
                 <h:form >
-                    <h:panelGrid columns="4" >
+                    <p:panel header="Issue Report">
+                    <h:panelGrid columns="2" >
                         <h:outputLabel value="From Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
@@ -39,8 +40,7 @@
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                         </p:autoComplete> 
                     </h:panelGrid>
-
-
+                        <p:spacer width="95" height="1"/>
                     <p:commandButton ajax="false" value="Fill" 
                                     action="#{reportsTransfer.fillItemCountsWithOutMarginStore}" />
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
@@ -55,7 +55,19 @@
                                      stickyHeader="true"
                                      var="i"  >
                             <f:facet name="header" >
-                                <p:outputLabel value="Store Unit Issue Item Count With Net Total" />
+                                <h:outputLabel value="Department Unit Issue By Item" />
+                                <h:outputLabel value=" From "  style=" white-space:pre-line;"/>
+                                <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
+                                <h:outputLabel value=" &emsp; &emsp;To "/>
+                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
+                                        <h:outputLabel value="From  " style=" white-space:pre-line;"/>
+                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="&emsp;&emsp;To  "/>
+                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
                             </f:facet>
                             <p:column headerText="Item">
                                 <f:facet name="header" >
@@ -83,6 +95,7 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
+                    </p:panel>
                     </p:panel>
                 </h:form>
             </ui:define>
