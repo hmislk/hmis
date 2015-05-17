@@ -12,7 +12,8 @@
 
             <ui:define name="content">
                 <h:form >
-                    <h:panelGrid columns="4" >
+                    <p:panel header="Unit Issue By Item(Batch)">
+                        <h:panelGrid columns="4" >
                         <h:outputLabel value="From Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
@@ -96,11 +97,9 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-
                     </p:dataTable>
-
-
-
+                    </p:panel>
+                    
                 </h:form>
             </ui:define>
 

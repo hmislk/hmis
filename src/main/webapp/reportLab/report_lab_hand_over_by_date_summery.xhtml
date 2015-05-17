@@ -40,8 +40,9 @@
 
                     <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
                         <f:facet name="header">
-                            <p:outputLabel value="#{pharmacySaleReport.institution.name} : Hand Over Report By Date" />
+                            <p:outputLabel value="#{pharmacySaleReport.institution.name}" />
                             <br/>
+                             <h:outputLabel value="Hand Over Report By Date"/><br/>
                             <h:outputLabel value="From : "/>
                             <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>

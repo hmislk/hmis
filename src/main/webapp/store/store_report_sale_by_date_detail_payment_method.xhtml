@@ -9,8 +9,8 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:panelGrid columns="6" styleClass="noPrintButton">
+            <p:panel header="3) Sale Report By Payment Method">
+                <p:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
                     </p:calendar>
@@ -18,14 +18,15 @@
                     <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a" >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
                     
                 </p:panelGrid>
-                
-                <h:panelGrid columns="3">
-                    
-                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createSalePaymentMethodDetail()}"/>
+               </p:panel> 
+            <p:panel id="panelPrint">
+                <h:panelGrid columns="4">
+                    <p:spacer width="90" height="1"/>
+                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createSalePaymentMethodDetail()}" styleClass="noPrintButton" />
                     <p:commandButton actionListener="#{storeSaleReport.createSalePaymentMethodDetail()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3" fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
@@ -33,24 +34,21 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
-                
-                <h:panelGrid styleClass="printBlock" columns="2">
-                     <h:outputLabel value="#{storeSaleReport.department.name}"/>
-                        <h:outputLabel value="DEPARTMENT SALE REPORT DETAIL"/>
-                        <h:outputLabel/>
-                        <h:outputLabel value="From Date :  "/>
-                        <h:outputLabel value="#{storeSaleReport.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputLabel>
-                        <h:outputLabel value="To Date"/>
-                        <h:outputLabel value="#{storeSaleReport.toDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputLabel>                       
-                </h:panelGrid>
 
                 <p:dataTable id="sum1" value="#{storeSaleReport.billedDetail.datedBills}" var="i">
-                    <f:facet name="header">                        
-                        <h:outputLabel value="BILLED"/>
+                    <f:facet name="header">
+                         <p:outputLabel value="Department :" />
+                        <h:outputLabel value="#{storeSaleReport.department.name}"/>
+                        <h:outputLabel/>
+                        <h:outputLabel value="From  :  " style="white-space:pre-line;"/>
+                        <h:outputLabel value="#{storeSaleReport.fromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+                        <h:outputLabel value=" &emsp;&emsp;To :"/>
+                        <h:outputLabel value="#{storeSaleReport.toDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+                        <h:outputLabel value="BILLED" style="white-space:pre-line;"/>
                     </f:facet>
 
                     <p:columnGroup type="header">
@@ -529,6 +527,9 @@
                             </p:column>
                         </p:row>
                     </p:columnGroup>
+                       <f:facet name="footer" >
+                      <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                  </f:facet>
                 </p:dataTable>
               
 
