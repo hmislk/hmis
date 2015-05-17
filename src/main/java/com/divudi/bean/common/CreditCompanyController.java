@@ -56,7 +56,7 @@ public class CreditCompanyController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

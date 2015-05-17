@@ -11,7 +11,7 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder"
-                     header="Daily OPD Fee Summery">
+                     header="Daily OPD Fee Summery with count">
 
                 <p:panelGrid columns="3" styleClass="noPrintButton">
 
@@ -41,7 +41,7 @@
 
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" 
-                                     action="#{pharmacySaleReport.createDailyOpdFeeSummeryWithCounts}"/>
+                                    action="#{pharmacySaleReport.createDailyOpdFeeSummeryWithCounts}"/>
                     <p:commandButton ajax="false" value="Excel" 
                                      styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
@@ -51,9 +51,14 @@
                     </p:commandButton>
                 </h:panelGrid>
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
+                    rows="20"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="20, 50, 100" 
+                    >   
                     <f:facet name="header" >
-                        <p:outputLabel value="Daily OPD Fee Summery" />
+                        <p:outputLabel value="Daily OPD Fee Summery with count" />
                     </f:facet>
                     <p:columnGroup type="header">
                         <p:row >

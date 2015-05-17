@@ -49,7 +49,7 @@
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
-                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
+                                            action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>

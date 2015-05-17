@@ -49,9 +49,9 @@ public class StaffTable {
             this.repeatedDay = repeatedDay--;
         }
 
-        //   //System.out.println("Staff : " + this.staff.getPerson().getName());
-        //  //System.out.println("Settin : " + this.shift.getName());
-        //  //System.out.println("Settin : " + this.repeatedDay);
+        //   ////System.out.println("Staff : " + this.staff.getPerson().getName());
+        //  ////System.out.println("Settin : " + this.shift.getName());
+        //  ////System.out.println("Settin : " + this.repeatedDay);
     }
 
     public boolean isDayOff() {

@@ -63,7 +63,7 @@ public  class VtmController implements Serializable {
             vtmList = new ArrayList<Vtm>();
         } else {
             sql = "select c from Vtm c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             vtmList = getFacade().findBySQL(sql);
         }
         return vtmList;
@@ -151,7 +151,7 @@ public  class VtmController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //System.out.println(code + " " + ix + " " + ic + " " + f);
+                ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
 
                 Vtm tix = new Vtm();
@@ -182,7 +182,7 @@ public  class VtmController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (billedAs == false) {
-                //System.out.println("2");
+                ////System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }

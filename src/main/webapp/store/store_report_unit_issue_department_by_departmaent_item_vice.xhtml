@@ -14,25 +14,25 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Unit Issue Report" styleClass="noBorder summeryBorder" >
+                    <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="10" >
-                            <h:outputLabel value="Issue From" ></h:outputLabel>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Issue From" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
-                            
-                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                            <h:outputLabel value="To" />
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.toDepartment}" converter="dep" >
                             </p:autoComplete>
-                            
-                        
+
+
                             <h:outputLabel value="From" />
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                            
-                            <p:spacer width="30"/>
+
+
                             <h:outputLabel value="To" />
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         </h:panelGrid>
@@ -44,7 +44,7 @@
                                 <p:printer target="gpBillPreview" />
                             </p:commandButton>
 
-                           
+
                         </h:panelGrid>
 
 
@@ -53,7 +53,8 @@
 
                             <p:dataTable id="tbl"  value="#{storeReportsTransfer.drows}" var="i"  >
 
-                                <p:column headerText="Department and Category vice Item Issue" >
+                                <p:column headerText="Department Unit Issue By Department - Detailed" >
+                                
                                     <p:dataTable id="tblDep" value="#{i.categoryBillRows}" var="cbr" >
                                         <f:facet name="header">
                                             <h:outputLabel value= "#{i.department.name}" />
@@ -97,7 +98,7 @@
                                                 <h:outputText value="#{ibr.bill.grantTotal}" >
                                                     <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </h:outputText>
-                                                
+
                                             </p:column>
                                             <p:column  style="text-align: right;">
                                                 <h:outputText value="#{ibr.bill.netTotal}">
@@ -112,17 +113,32 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
-                                      
+
                                     </p:dataTable>
 
                                 </p:column>
 
 
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="All Department Total" ></h:outputLabel>/
+                                    
+                                    <h:outputLabel value="Unit Issue From "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
+                                       <h:outputLabel value="To"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
+                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="&emsp;&emsp;To : "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
                                     <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" style="float: right;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
 
                             </p:dataTable>

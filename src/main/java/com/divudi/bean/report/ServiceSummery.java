@@ -305,7 +305,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("ftp", feeType);
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
+        //System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -350,7 +350,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("dtype", bill.getClass());
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
+        //System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -393,7 +393,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("ftp", feeType);
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
+        //System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -694,6 +694,15 @@ public class ServiceSummery implements Serializable {
     BillFacade billFacade;
 
     double totalBill;
+    double discountBill;
+
+    public double getDiscountBill() {
+        return discountBill;
+    }
+
+    public void setDiscountBill(double discountBill) {
+        this.discountBill = discountBill;
+    }
 
     public double getTotalBill() {
         return totalBill;
@@ -727,31 +736,21 @@ public class ServiceSummery implements Serializable {
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
 
-        bills = billFacade.findBySQL(sql, m);
-        System.out.println("bills = " + bills);
+        bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        //System.out.println("bills = " + bills);
 
-        calTotal();
+        calTotal(bills);
 
     }
 
-    public void calTotal() {
-        String sql;
-        Map m = new HashMap();
-
-        sql = " select sum(b.netTotal) from Bill b where "
-                + " b.retired=false "
-                + " and b.toStaff is not null "
-                + " and b.createdAt between :fd and :td "
-                + " and (b.billType=:bt1 or b.billType=:bt2) "
-                + " order by b.id ";
-
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt1", BillType.PharmacySale);
-        m.put("bt2", BillType.OpdBill);
-
-        totalBill = billFacade.findDoubleByJpql(sql, m);
-        System.out.println("totalBill = " + totalBill);
+    public void calTotal(List<Bill>bills) {
+        totalBill=0.0;
+        discountBill=0.0;
+        for (Bill bill : bills) {
+            totalBill+=bill.getNetTotal();
+            discountBill+=bill.getDiscount();
+           
+        }
     }
 
     Department department;
@@ -777,15 +776,15 @@ public class ServiceSummery implements Serializable {
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
-            System.out.println("bi = " + bi);
+            //System.out.println("bi = " + bi);
             serviceSummery.add(bi);
         }
 
 //        calCountTotalItem(BillType.OpdBill, false);
-//        System.out.println("proFeeTotal = " + proFeeTotal);
-//        System.out.println("hosFeeTotal = " + hosFeeTotal);
-//        System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
-//        System.out.println("reagentFeeTotal = " + reagentFeeTotal);
+//        //System.out.println("proFeeTotal = " + proFeeTotal);
+//        //System.out.println("hosFeeTotal = " + hosFeeTotal);
+//        //System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
+//        //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
         proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
         hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
@@ -794,24 +793,24 @@ public class ServiceSummery implements Serializable {
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
 //            proFeeTotal+=bf.getFeeValue();
-//            System.out.println("bf.getFeeValue = " + bf.getFeeValue());
-//            System.out.println("proFeeTotal = " + proFeeTotal);
-//            System.out.println("date = " + bf.getBill().getCreatedAt());
+//            //System.out.println("bf.getFeeValue = " + bf.getFeeValue());
+//            //System.out.println("proFeeTotal = " + proFeeTotal);
+//            //System.out.println("date = " + bf.getBill().getCreatedAt());
 //        }
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
 //            hosFeeTotal+=bf.getFeeValue();
-//            System.out.println("hosFeeTotal = " + hosFeeTotal);
+//            //System.out.println("hosFeeTotal = " + hosFeeTotal);
 //        }
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
 //            outSideFeeTotoal+=bf.getFeeValue();
-//            System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
+//            //System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
 //        }
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
 //            reagentFeeTotal+=bf.getFeeValue();
-//            System.out.println("reagentFeeTotal = " + reagentFeeTotal);
+//            //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
 
     }
@@ -896,7 +895,7 @@ public class ServiceSummery implements Serializable {
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
-            System.out.println("bi = " + bi);
+            //System.out.println("bi = " + bi);
             billItemWithFees.add(bi);
         }
     }

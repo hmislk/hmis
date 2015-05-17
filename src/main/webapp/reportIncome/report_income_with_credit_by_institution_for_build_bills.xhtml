@@ -41,7 +41,7 @@
                                     <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
                                                      requiredMessage="You must select a institution" >
                                         <f:selectItem itemLabel="Select Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                                     </p:selectOneMenu>
                                     <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
                                     <p:autoComplete styleClass="noPrintButton"  value="#{institutionLabSumeryController.department}" 

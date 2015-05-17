@@ -19,9 +19,9 @@
                         <h:outputLabel value="Total Value : "/>
                         <h:outputLabel value="#{surgeryBillController.batchBill.total}"/>
                         <p:commandButton value="Clear All" ajax="false"
-                                         action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
+                                        action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
                         <p:commandButton value="Save Surgery Detail" ajax="false" 
-                                         action="#{surgeryBillController.save()}" 
+                                        action="#{surgeryBillController.save()}" 
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
                         <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="panThe" ></p:printer>

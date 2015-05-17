@@ -54,9 +54,9 @@ public class LazyBill extends LazyDataModel<Bill> {
 
                     String[] arr = property.split("\\.");
 
-//                    //System.out.println("Property " + property);
-//                    //System.out.println("String Value " + stringValue);
-//                    //System.out.println("Arr Size: " + arr.length);
+//                    ////System.out.println("Property " + property);
+//                    ////System.out.println("String Value " + stringValue);
+//                    ////System.out.println("Arr Size: " + arr.length);
                     if (arr.length == 1) {
                         //       //System.err.println("1 :" + bill.getClass().getSuperclass().getDeclaredField(property).get(bill));
                         if (bill.getClass().getSuperclass() != null && bill.getClass().getSuperclass() != Object.class) {

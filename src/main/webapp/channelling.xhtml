@@ -187,7 +187,7 @@
 
                         <p:commandButton   value="Add" process="@form" 
                                            update="gpThisBookingDetails" style="float: right;" 
-                                           action="#{channelBillController.addOnCall()}" 
+                                          action="#{channelBillController.addOnCall()}" 
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
 
@@ -301,13 +301,13 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.cancelCashFlowBill}"
+                                            action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                             action="#{channelBillController.cancelCreditPaidBill}"
+                                            action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
@@ -340,14 +340,14 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.refundCashFlowBill}" 
+                                            action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                             action="#{channelBillController.refundCreditPaidBill}" 
+                                            action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
@@ -385,7 +385,7 @@
                                 <p:commandButton id="setBtn"  value="Settle Credit"
                                                  process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                                  update="gpSettlePrint"
-                                                 action="#{channelBillController.settleCredit}" 
+                                                action="#{channelBillController.settleCredit}" 
                                                  disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                                              or channelBillController.billSession.bill.cancelled==true
                                                              or  channelBillController.billSession.bill.paidAmount ne 0}" 

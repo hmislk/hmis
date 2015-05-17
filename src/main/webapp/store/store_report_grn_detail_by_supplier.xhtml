@@ -14,10 +14,10 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Detail">
+                <p:panel  header="GRN Detail">
 
 
-                    <p:panelGrid columns="8" style="noPrintButton">
+                    <p:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -38,22 +38,24 @@
                         <p:autoComplete converter="deal" 
                                         value="#{commonReport.institution}"
                                         completeMethod="#{storeDealorController.completeDealor}"
-                                         forceSelection="true" rendered="true"
+                                        forceSelection="true" rendered="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
                         <p:defaultCommand target="btnRefresh"/>
 
                     </p:panelGrid>
-                    
-                    <h:panelGrid columns="3">
+                </p:panel> 
+                <p:panel id="reportPrint">
+                    <h:panelGrid columns="4">
+                        <p:spacer width="90" height="1"/>
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
                                          actionListener="#{commonReport.createGrnDetailTableByDealorStore()}"
                                          style="float: right;" /> 
-                        
+
                         <p:commandButton actionListener="#{commonReport.createGrnDetailTableByDealorStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
-                            </p:commandButton>
+                            <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
+                        </p:commandButton>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
                                          style="float: right;" >
@@ -65,20 +67,7 @@
 
                     <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
 
-                        <h:outputLabel value="GRN Detailed Report "/>
-                        <h:outputLabel/>
-                        <h:outputLabel value="Institution "/>
-                        <h:outputLabel value="#{commonReport.department.institution.name}"/>
-                        <h:outputLabel value="Department "/>
-                        <h:outputLabel value="#{commonReport.department.name}"/>
-                        <h:outputLabel value="From" />
-                        <h:outputLabel  value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                        </h:outputLabel>                          
-                        <h:outputLabel value="To"/>
-                        <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                        </h:outputLabel>
+
                     </h:panelGrid>
 
 
@@ -87,7 +76,18 @@
                                  sortBy="#{b.billType}"  >
 
                         <f:facet name="header">  
-                            <h:outputLabel value="GRN"/>
+                            <h:outputLabel value="GRN Summary By Supplier - "/>
+                            <h:outputLabel/>
+                            <h:outputLabel value="#{commonReport.department.name}"/>
+                            <h:outputLabel value="From" style=" white-space:pre-line;"/>
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="GRN" style=" white-space:pre-line;"/>
                         </f:facet>
 
                         <p:column headerText="GRN No" >

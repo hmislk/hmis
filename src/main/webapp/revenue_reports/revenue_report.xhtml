@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <p:panel header="Revenue Summery" >
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar value="#{revenueController.fromDate}" pattern="dd MMM yyyy" >
+                            </p:calendar>
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:calendar value="#{revenueController.toDate}" pattern="dd MMM yyyy" >
+                            </p:calendar>
+                        </p:panelGrid>
+                        <p:panelGrid columns="3" >
+                            <p:commandButton value="Process" ajax="false"
+                                            action="#{revenueController.fillRevenueReport()}" >
+                            </p:commandButton>
+                            <p:commandButton value="Excel" >
+
+                            </p:commandButton>
+                            <p:commandButton value="Print" >
+
+                            </p:commandButton>
+                        </p:panelGrid>
+
+                        <p:dataTable id="tbl"
+                                     value="#{revenueController.rows}" var="r" >
+                            <p:columnGroup type="header" >
+                                <p:row >
+                                    <p:column headerText="Institution" >
+                                    </p:column>
+                                    <p:column headerText="Department" >
+                                    </p:column>
+                                    <p:column headerText="Type" >
+                                    </p:column>
+                                    <p:column headerText="Cash" >
+                                    </p:column>
+                                    <p:column headerText="Credit" >
+                                    </p:column>
+                                    <p:column headerText="Credit Card" >
+                                    </p:column>
+                                    <p:column headerText="Cheque" >
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column >
+                                <p:outputLabel value="#{r.str1}" style="#{r.boldStr1?'font-weight:bold;':''}" ></p:outputLabel>
+                            </p:column>
+                            <p:column >
+                                <p:outputLabel value="#{r.str2}" style="#{r.boldStr2?'font-weight:bold;':''}"></p:outputLabel>
+                            </p:column>
+                            <p:column >
+                                <p:outputLabel value="#{r.str3}" style="#{r.boldStr3?'font-weight:bold;':''}"></p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{r.dbl1}" style="#{r.boldDbl1?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{r.dbl2}" style="#{r.boldDbl2?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{r.dbl3}" style="#{r.boldDbl3?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{r.dbl4}" style="#{r.boldDbl4?'font-weight:bold;':''}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                              
+                            </p:column>
+                            <p:columnGroup type="footer" rendered="true" >
+                                <p:row >
+                                    <p:column footerText="Gross Total" colspan="3" >
+                                    </p:column>
+                                    <p:column footerText="#{revenueController.cashTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{revenueController.creditTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{revenueController.creditCardTotal}">
+                                    </p:column>
+                                    <p:column footerText="#{revenueController.chequeTotal}">
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

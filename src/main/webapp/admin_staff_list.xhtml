@@ -16,15 +16,15 @@
                     <p:panel header="Staff List" >
                         <p:panel>
                             <h:panelGrid columns="1">
-                                <p:commandButton  ajax="false" value="Fill All" 
-                                                  action="#{staffController.createStaffList}"
+                                <p:commandButton ajax="false" value="Fill All" 
+                                                 action="#{staffController.createStaffList}"
                                                   onclick="onSubmitButton();"/>
-                                <p:commandButton  ajax="false" value="Fill Staff Only" 
-                                                  action="#{staffController.createStaffOnly}"
+                                <p:commandButton ajax="false" value="Fill Staff Only" 
+                                                 action="#{staffController.createStaffOnly}"
                                                   onclick="onSubmitButton();"/>
 
-                                <p:commandButton  ajax="false" value="Fill All(Staff who has no speciality)"
-                                                  action="#{staffController.createStaffListWithOutSpecility}" 
+                                <p:commandButton ajax="false" value="Fill All(Staff who has no speciality)"
+                                                 action="#{staffController.createStaffListWithOutSpecility}" 
                                                   onclick="onSubmitButton();"/>
                             </h:panelGrid>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >

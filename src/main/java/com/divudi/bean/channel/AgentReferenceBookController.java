@@ -55,11 +55,11 @@ public class AgentReferenceBookController implements Serializable {
 
         sql = "select c from Institution c where c.retired=false and "
                 + " c.institutionType =:t and upper(c.name) like :q order by c.name";
-        //System.out.println(sql);
+        ////System.out.println(sql);
         m.put("t", InstitutionType.Agency);
         m.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getInstitutionFacade().findBySQL(sql, m);
-        //System.out.println("suggestions = " + suggestions);
+        ////System.out.println("suggestions = " + suggestions);
 
         return suggestions;
     }
@@ -105,12 +105,12 @@ public class AgentReferenceBookController implements Serializable {
         getAgentReferenceBook().setCreatedAt(new Date());
         getAgentReferenceBook().setCreater(getSessionController().getLoggedUser());
         getAgentReferenceBook().setDeactivate(false);
-        System.out.println("out 1 : " + getAgentReferenceBook().getInstitution().getName());
-        System.out.println("out 2 : " + getAgentReferenceBook().getBookNumber());
-        System.out.println("out 3 : " + getAgentReferenceBook().getStartingReferenceNumber());
-        System.out.println("out 4 : " + getAgentReferenceBook().getEndingReferenceNumber());
-        System.out.println("out 5 : " + getAgentReferenceBook().getCreatedAt());
-        System.out.println("out 6 : " + getAgentReferenceBook().getCreater());
+        //System.out.println("out 1 : " + getAgentReferenceBook().getInstitution().getName());
+        //System.out.println("out 2 : " + getAgentReferenceBook().getBookNumber());
+        //System.out.println("out 3 : " + getAgentReferenceBook().getStartingReferenceNumber());
+        //System.out.println("out 4 : " + getAgentReferenceBook().getEndingReferenceNumber());
+        //System.out.println("out 5 : " + getAgentReferenceBook().getCreatedAt());
+        //System.out.println("out 6 : " + getAgentReferenceBook().getCreater());
         getAgentReferenceBookFacade().create(agentReferenceBook);
         UtilityController.addSuccessMessage("Saved");
         makeNull();

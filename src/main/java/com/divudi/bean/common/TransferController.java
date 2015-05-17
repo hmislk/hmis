@@ -31,12 +31,12 @@ public class TransferController implements Serializable {
     }
 
     public Patient getPatient() {
-//        //System.out.println("getting patient = " + patient);
+//        ////System.out.println("getting patient = " + patient);
         return patient;
     }
 
     public void setPatient(Patient patient) {
-//        //System.out.println("setting patient = " + patient);
+//        ////System.out.println("setting patient = " + patient);
         this.patient = patient;
     }
 

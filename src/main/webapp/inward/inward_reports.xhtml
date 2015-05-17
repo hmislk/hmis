@@ -15,9 +15,9 @@
                         <p:panel header="(1) Service Report " collapsed="true" toggleable="true">
                             <h:panelGrid columns="1">
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_md_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item (Count)" action="report_md_inward_item"   actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_md_inward_item_1"   actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item With Bill " action="report_md_inward_item_with_bill"   actionListener="#{mdInwardReportController.makeNull()}"/> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item (Count)" action="report_md_inward_item"  actionListener="#{mdInwardReportController.makeNull()}"/> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_md_inward_item_1"  actionListener="#{mdInwardReportController.makeNull()}"/> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item With Bill " action="report_md_inward_item_with_bill"  actionListener="#{mdInwardReportController.makeNull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Out Side Bill Report" action="report_out_side_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Time Service Report" action="inward_report_timed_service" actionListener="#{inwardTimedItemController.makeNull()}"/>
                             </h:panelGrid>
@@ -45,13 +45,13 @@
                         <p:panel header="(3)BHT Issuing" collapsed="true" toggleable="true">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="(1)BHT Issue By Bill Item"
-                                                 action="report_bht_issue_by_bill_item" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}"
+                                                action="report_bht_issue_by_bill_item" 
+                                                actionListener="#{mdInwardReportController.makeNull()}"
                                                  styleClass="linkButton" ajax="false"/> 
                                 <p:commandButton value="(2)BHT Issue By Item" 
                                                  styleClass="linkButton"
-                                                 ajax="false"
-                                                 action="pharmacy_report_bht_issue_by_item"/>
+                                               ajax="false"
+                                                action="pharmacy_report_bht_issue_by_item"/>
                                 
                                 
                                 
@@ -67,7 +67,7 @@
                                 <p:commandButton styleClass="linkButton" ajax="false" value="(5)Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="(6)Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="(7)All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                 <p:commandButton styleClass="linkButton"  ajax="false" value="(8)BHT rofessional Payment Analys"  action="inward_report_professional_payment"/>
+                                 <p:commandButton styleClass="linkButton" ajax="false" value="(9)Doctor Payment Done Detailed" action="inward_report_professional_done_payment"/>
                                 
                             </h:panelGrid>
                         </p:panel>
@@ -111,28 +111,28 @@
                         <p:panel header="(9)Inward Payment" collapsed="true" toggleable="true">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="(1)Payment By Created Date " action="bht_deposit_by_created_date_discharged_all" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(2)Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                  <p:commandButton value="(3)All Payment of Discharged Patient"
-                                                 action="all_payment_by_created_date_discharged_only"
-                                                 actionListener="#{mdInwardReportController.makeNull()}" 
+                                                action="all_payment_by_created_date_discharged_only"
+                                                actionListener="#{mdInwardReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(4)Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(5)All Deposite of Not Discharged Patient" 
-                                                 action="bht_deposit_of_not_discharged_patient" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                action="bht_deposit_of_not_discharged_patient" 
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(6)All Deposite of Not Discharged Patient by BHT" 
-                                                 action="bht_deposit_of_not_discharged_patient_by_bht" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                action="bht_deposit_of_not_discharged_patient_by_bht" 
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(7)Discharged List and Due Report"
-                                                 action="discharge_book_no_changes_due"
-                                                 actionListener="#{mdInwardReportController.makeNull()}" 
+                                                action="discharge_book_no_changes_due"
+                                                actionListener="#{mdInwardReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
                                 
 <!--                                <p:commandButton rendered="false" value="(4)Complete  Payment of Not Discharge Patient" action="bht_deposit_by_created_date_discharged_above" 
-                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                                actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                               -->
                             </h:panelGrid>
                         </p:panel>

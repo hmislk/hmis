@@ -78,8 +78,8 @@
                                             pattern="dd MMMM yyyy hh mm ss a" >
                                 </p:calendar>   
 
-                                <p:commandButton value="Add Service"  ajax="false"
-                                                 action="#{inwardTimedItemController.save}" 
+                                <p:commandButton value="Add Service" ajax="false"
+                                                action="#{inwardTimedItemController.save}" 
                                                  styleClass="highLight" onclick="onSubmitButton();" />
 
                             </h:panelGrid>
@@ -127,7 +127,7 @@
                             </p:column>
                             <p:column>
                                 <p:commandButton ajax="false" value="Remove "  
-                                                 action="#{inwardTimedItemController.removePatientItem(ti)}"
+                                                action="#{inwardTimedItemController.removePatientItem(ti)}"
                                                  disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
                             </p:column>
                         </p:dataTable>

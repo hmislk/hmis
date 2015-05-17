@@ -30,7 +30,7 @@
                     </p:selectOneMenu>
                     <p:commandButton  value="Settle" action="#{grnController.settle}"
                                       onclick="onSubmitButton();"
-                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                    ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
 
@@ -46,7 +46,7 @@
                     <f:facet name="header">  
                         <h:outputLabel  value="Ordered Bill Item"/>   
                         <p:commandButton ajax="false" value="Remove All" 
-                                         action="#{grnController.removeSelected()}"/>
+                                        action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" />  
@@ -187,7 +187,7 @@
                     <p:column >
                         <p:commandButton value="Remove" ajax="false"
                                          onclick="onSubmitButton();"
-                                         action="#{grnController.removeItem(bi)}"/>
+                                        action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
                 </p:dataTable>  
@@ -228,7 +228,7 @@
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
                                  onclick="onSubmitButton();"
-                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
+                                actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>

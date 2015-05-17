@@ -133,7 +133,7 @@ public class InwardProfessionalBillController implements Serializable {
 
         hm.put("q", "%" + qry.toUpperCase() + "%");
         List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
-        System.out.println("s = " + s);
+        //System.out.println("s = " + s);
         return s;
     }
 
@@ -853,18 +853,18 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void removeBillItem() {
         //TODO: Need to add Logic
-        //System.out.println(getIndex());
+        ////System.out.println(getIndex());
         if (getIndex() != null) {
             //   boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            ////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////System.out.println("Is Removed:" + remove);
+            //////System.out.println("Is Removed:" + remove);
             calTotals();
-            //System.out.println(getCurrent().getNetTotal());
+            ////System.out.println(getCurrent().getNetTotal());
         }
     }
 
@@ -883,7 +883,7 @@ public class InwardProfessionalBillController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //System.out.println(b.getBillItem().getNetValue());
+                ////System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

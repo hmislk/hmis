@@ -89,7 +89,7 @@ public class MedicalPackageItemFeeController implements Serializable {
             } else {
                 sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
         }
         return suggestions;
@@ -97,7 +97,7 @@ public class MedicalPackageItemFeeController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //System.out.println("gettin ins dep ");
+        ////System.out.println("gettin ins dep ");
         //if (getCurrentFee()==null && getCurrentFee().getInstitution() == null && getCurrentFee().getInstitution().getId() == null) {
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<>();

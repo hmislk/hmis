@@ -40,7 +40,7 @@
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
                             </h:panelGrid>
                             <p:commandButton ajax="false" value="Process  Shift" 
-                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                                            action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
                             <p:dataTable value="#{staffLeaveApplicationFormController.staffShifts}" var="l">
                                 <p:column>
                                     #{l.shift.name}
@@ -54,7 +54,7 @@
                             </p:dataTable>
 
                             <p:commandButton ajax="false" value="Process Lie Shift" 
-                                             action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
+                                            action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
                             <p:selectOneMenu id="s1"
                                              var="t"
                                              value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
@@ -88,12 +88,12 @@
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
-                                                 action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
+                                                action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
 
                                 <p:commandButton ajax="false" value="Clear" 
-                                                 action="#{staffLeaveApplicationFormController.clear}"/>
+                                                action="#{staffLeaveApplicationFormController.clear}"/>
                                 <p:commandButton ajax="false" value="Delete" 
-                                                 action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                                                action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
                                 <p:inputText id="recomment" value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"/>
                                 <p:watermark for="recomment" value="Comment"/>
 

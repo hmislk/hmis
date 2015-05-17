@@ -31,7 +31,7 @@ public class CollectingCentreController implements Serializable{
      * Creates a new instance of CollectingCentreController
      */
     public CollectingCentreController() {
-        //System.out.println("");
+        ////System.out.println("");
     }
     private static final long serialVersionUID = 1L;
     @Inject
@@ -50,7 +50,7 @@ public class CollectingCentreController implements Serializable{
             suggestions = new ArrayList<Institution>();
         } else {
             sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CollectingCentre and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
 

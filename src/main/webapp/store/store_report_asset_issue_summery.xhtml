@@ -9,26 +9,27 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <h:panelGrid columns="6" styleClass="noPrintButton">
+            <p:panel header=" Asset Transfer Report">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
                     <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  id="fromDep" style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <h:outputLabel value="From Department"/>
+                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  id="fromDep" style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
-                    
-                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.toDepartment}"  id="toDep" style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <h:outputLabel value="To Department"/>
+                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.toDepartment}"  id="toDep" style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
                     
                 </h:panelGrid>
                 <p:watermark value="From Department" for="fromDep"/>
                 <p:watermark value="To Department" for="toDep"/>
-                
+               </p:panel> <p:panel id="panelPrint" >
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.getTransIssueValueByDate()}"/>
+                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.getTransIssueValueByDate()}"  styleClass="noPrintButton"/>
                     <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.getTransIssueValueByDate()}" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_store_issue_by_item_summery"  />
                     </p:commandButton>
@@ -37,23 +38,21 @@
                     </p:commandButton>
                 </h:panelGrid>
 
-                <h:panelGrid styleClass="printBlock" columns="2">
-                    <h:outputLabel value="#{storeSaleReport.department.name}"/>
-                    <h:outputLabel value=" DEPARTMENT ASSET ISSUE REPORT SUMMERY"/>                   
-                    <h:outputLabel value="From Date :  "/>
+                <p:dataTable id="sum1" value="#{storeSaleReport.billItem}" var="i">   
+                    <f:facet name="header">
+                        <h:outputLabel value="Transfer Issue Summary Report By Date"/>
+                         <h:outputLabel value="&emsp; &emsp;From : "  style=" white-space:pre-line;"/>
+                         <h:outputLabel value="#{storeSaleReport.department.name}"/>
+                         <h:outputLabel value=" &emsp; &emsp;To : " />
+                        <h:outputLabel value="#{storeSaleReport.toDepartment.name}"/>
+                    <h:outputLabel value="&emsp; &emsp;From  :  " style=" white-space:pre-line;"/>
                     <h:outputLabel value="#{storeSaleReport.fromDate}"  >
                         <f:convertDateTime pattern="dd MMMM yyyy" />
                     </h:outputLabel>
-                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value=" &emsp; &emsp;To : "/>
                     <h:outputLabel value="#{storeSaleReport.toDate}"  >
                         <f:convertDateTime pattern="dd MMMM yyyy" />
-                    </h:outputLabel>                       
-                </h:panelGrid>
-
-
-                <p:dataTable id="sum1" value="#{storeSaleReport.billItem}" var="i">   
-                    <f:facet name="header">
-                        <p:outputLabel value="Issue Report Bill" />
+                    </h:outputLabel> 
                     </f:facet>
                     
                     <p:column headerText="Bill No">

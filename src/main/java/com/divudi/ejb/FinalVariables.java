@@ -30,11 +30,11 @@ public class FinalVariables {
 
     public Integer getSessionSessionDayCounter() {
         int maxRowNumber=0;
-        System.out.println("maxRowNumber = " + maxRowNumber);
+        //System.out.println("maxRowNumber = " + maxRowNumber);
         maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
-        System.out.println("maxRowNumber = " + maxRowNumber);
+        //System.out.println("maxRowNumber = " + maxRowNumber);
         if(getSheduleController().getCurrent().getMaxTableRows() == 0){
-           return 7;
+           return 14;
         }
         return maxRowNumber;
     }

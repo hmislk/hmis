@@ -7,6 +7,10 @@
     <property name="keepgenerated" value="true">
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
+    <jsp-property-group>
+      <url-pattern>*.xhtml</url-pattern>
+      <page-encoding>UTF-8</page-encoding>
+    </jsp-property-group>
   </jsp-config>
   <parameter-encoding default-charset="UTF-8"/>
 </glassfish-web-app>

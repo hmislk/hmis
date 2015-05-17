@@ -120,7 +120,7 @@
                                         <h:panelGrid columns="1" style="width: 100px!important;text-align: right;"  >
                                             <p:outputLabel value="&nbsp;" ></p:outputLabel>
                                             <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                              action="#{storeIssueController.addBillItem}"
+                                                             action="#{storeIssueController.addBillItem}"
                                                               onclick="onSubmitButton();"
                                                               process="@this acStock txtQty :#{p:component('acDept')}" 
                                                               update=":#{p:component('pBillDetails')} :#{p:component('panelError')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem pBis" ></p:commandButton>
@@ -215,9 +215,9 @@
                                 <f:facet name="header" >
                                     <h:panelGrid columns="20"  >
                                         <p:commandButton  accesskey="s" value="Issue" 
-                                                          action="#{storeIssueController.settleBill()}" 
+                                                         action="#{storeIssueController.settleBill()}" 
                                                           onclick="onSubmitButton();"
-                                                          actionListener="#{storeIssueController.calculateAllRates}">
+                                                         actionListener="#{storeIssueController.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -225,8 +225,8 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
                                                          onclick="onSubmitButton();"
-                                                         ajax="false" action="/store_issue"
-                                                         actionListener="#{storeIssueController.resetAll()}"  ></p:commandButton>
+                                                       ajax="false" action="/store_issue"
+                                                        actionListener="#{storeIssueController.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -283,8 +283,8 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
                                              onclick="onSubmitButton();"
-                                             ajax="false" action="store_issue" 
-                                             actionListener="#{storeIssueController.resetAll()}" ></p:commandButton>
+                                           ajax="false" action="store_issue" 
+                                            actionListener="#{storeIssueController.resetAll()}" ></p:commandButton>
 
                         </div>
                         <div >

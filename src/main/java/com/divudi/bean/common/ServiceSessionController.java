@@ -72,7 +72,7 @@ public class ServiceSessionController implements Serializable {
         } else {
 
             sql = "select p from ServiceSession p where p.retired=false and ((upper(p.staff.person.name) like '%" + query.toUpperCase() + "%') or (upper(p.name) like '%" + query.toUpperCase() + "%') or (upper(p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

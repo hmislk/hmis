@@ -41,6 +41,7 @@ public class UserPreference implements Serializable {
     Department department;
     @ManyToOne
     Institution institution;
+    boolean institutionSpecificItems=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
@@ -55,6 +56,8 @@ public class UserPreference implements Serializable {
     boolean channelWithOutReferenceNumber;
     boolean pharmayPurchaseWithLastRate;
     boolean inwardAddServiceBillTimeCheck;
+    boolean inwardMoChargeCalculateInitialTime;
+    boolean inwardChangeAdmissionFee;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -250,6 +253,16 @@ public class UserPreference implements Serializable {
         this.id = id;
     }
 
+    public boolean isInstitutionSpecificItems() {
+        return institutionSpecificItems;
+    }
+
+    public void setInstitutionSpecificItems(boolean institutionSpecificItems) {
+        this.institutionSpecificItems = institutionSpecificItems;
+    }
+    
+    
+
     public boolean isPrintLabelForOPdBill() {
         return printLabelForOPdBill;
     }
@@ -319,6 +332,22 @@ public class UserPreference implements Serializable {
 
     public void setInwardAddServiceBillTimeCheck(boolean inwardAddServiceBillTimeCheck) {
         this.inwardAddServiceBillTimeCheck = inwardAddServiceBillTimeCheck;
+    }
+    
+    public boolean isInwardMoChargeCalculateInitialTime() {
+        return inwardMoChargeCalculateInitialTime;
+    }
+
+    public void setInwardMoChargeCalculateInitialTime(boolean inwardMoChargeCalculateInitialTime) {
+        this.inwardMoChargeCalculateInitialTime = inwardMoChargeCalculateInitialTime;
+    }
+
+    public boolean isInwardChangeAdmissionFee() {
+        return inwardChangeAdmissionFee;
+    }
+
+    public void setInwardChangeAdmissionFee(boolean inwardChangeAdmissionFee) {
+        this.inwardChangeAdmissionFee = inwardChangeAdmissionFee;
     }
     
     @Override

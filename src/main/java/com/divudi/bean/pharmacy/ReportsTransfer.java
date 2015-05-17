@@ -190,12 +190,12 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
-            System.out.println("objs = " + objs);
+            //System.out.println("objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -366,23 +366,28 @@ public class ReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.department=:fdept"
                     + " and b.toDepartment=:tdept "
                     + " and b.createdAt between :fd "
-                    + " and :td and b.billType=:bt"
+                    + " and :td and b.billType=:bt "
+                    + " and b.retired=false "
                     + " order by b.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
             sql = "select b from Bill b where"
                     + " b.toDepartment=:tdept and b.createdAt "
-                    + " between :fd and :td and "
+                    + " between :fd and :td "
+                    + " and b.retired=false "
                     + " b.billType=:bt order by b.id";
         } else if (fromDepartment != null && toDepartment == null) {
             m.put("fdept", fromDepartment);
             sql = "select b from Bill b where "
                     + " b.department=:fdept and b.createdAt "
-                    + " between :fd and :td and"
+                    + " between :fd and :td "
+                    + " and b.retired=false "
                     + "  b.billType=:bt order by b.id";
         } else {
             sql = "select b from Bill b where b.createdAt "
-                    + " between :fd and :td and b.billType=:bt order by b.id";
+                    + " between :fd and :td and b.billType=:bt "
+                    + " and b.retired=false "
+                    + " order by b.id";
         }
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
@@ -858,7 +863,7 @@ public class ReportsTransfer implements Serializable {
     public void fillItemCountsWithOutMargin(BillType bt) {
 
         List<Object[]> list = fetchBillItemWithOutMargin(bt);
-        System.out.println("list = " + list);
+        //System.out.println("list = " + list);
         if (list == null) {
             return;
         }

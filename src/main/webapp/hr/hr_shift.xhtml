@@ -29,7 +29,7 @@
                                 </p:selectOneListbox>                               
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{shiftController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{shiftController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                                 </p:commandButton>
                                 <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                             return false;" action="#{shiftController.delete()}"  value="Delete"  >
@@ -94,7 +94,7 @@
                             <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
 
                             <p:commandButton ajax="false" value="Save"  
-                                             action="#{shiftController.saveSelected}"  
+                                            action="#{shiftController.saveSelected}"  
                                              onclick="onSubmitButton();"/>
                         </h:panelGrid>
                     </p:panel>

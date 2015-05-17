@@ -63,7 +63,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss" resizableColumns="true">
                                 <f:facet name="header">
                                     <h:outputLabel style="font-size:20px" value="  No Pay And Late No Pay  Report "  />
                                     <h:outputLabel/>

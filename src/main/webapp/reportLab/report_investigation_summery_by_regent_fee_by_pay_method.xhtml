@@ -15,7 +15,7 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Reagent Summary - All Bills"  styleClass="noPrintButton" />
+                    <h:outputLabel value="Investigation Summary Regent Fee by Payment Method"  styleClass="noPrintButton" />
 
 
                     <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
@@ -44,7 +44,7 @@
                     </h:panelGrid>
                     <h:panelGroup style="float: right">
                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createOPdLabListWithProDayEndTablebyPaymentMethod()}"/>
+                                        action="#{bookKeepingSummery.createOPdLabListWithProDayEndTablebyPaymentMethod()}"/>
 
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
