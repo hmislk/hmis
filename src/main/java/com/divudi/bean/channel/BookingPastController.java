@@ -256,10 +256,13 @@ public class BookingPastController implements Serializable {
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
+        System.out.println("bts = " + bts);
         hh.put("bt", bts);
+        System.out.println("BilledBill.class = " + BilledBill.class);
         hh.put("class", BilledBill.class);
-        System.out.println("getSelectedServiceSession = " + getSelectedServiceSession());
+        System.out.println("getSelectedServiceSession = " + getSelectedServiceSession().getSessionAt());
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        System.out.println("getSelectedServiceSession = " + getSelectedServiceSession());
         hh.put("ss", getSelectedServiceSession());        
         System.out.println("billSessions = " + billSessions);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
