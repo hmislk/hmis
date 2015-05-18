@@ -56,15 +56,15 @@
                                      var="i"  >
                             <f:facet name="header" >
                                 <h:outputLabel value="Department Unit Issue By Item" />
-                                <h:outputLabel value=" From "  style=" white-space:pre-line;"/>
+                                <h:outputLabel value=" From : "  style=" white-space:pre-line;"/>
                                 <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                <h:outputLabel value=" &emsp; &emsp;To "/>
+                                <h:outputLabel value=" &emsp; &emsp;To : "/>
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
-                                        <h:outputLabel value="From  " style=" white-space:pre-line;"/>
+                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="&emsp;&emsp;To  "/>
+                                        <h:outputLabel value="&emsp;&emsp;To : "/>
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
