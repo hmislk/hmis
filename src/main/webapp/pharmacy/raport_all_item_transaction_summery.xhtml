@@ -26,16 +26,15 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
                                     navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                            <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                            <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                         </p:calendar>
 
                         <p:commandButton ajax="false"
-                                         action="#{pharmacyController.fillDetails()}" value="View Detail"/>
+                                         action="#{pharmacyController.createAllItemTransactionSummery()}" value="Process"/>
+                    
                     </h:panelGrid>
 
 

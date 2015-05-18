@@ -156,13 +156,67 @@ public class PharmacyController implements Serializable {
     public void createAllItemTransactionSummery() {
         List<Amp> allAmps = ampController.getItems();
         itemTransactionSummeryRows = new ArrayList<>();
-        for(Amp a:allAmps){
+        for (Amp a : allAmps) {
             ItemTransactionSummeryRow r = new ItemTransactionSummeryRow();
             r.setItem(a);
-            
+
         }
     }
-    
+
+    public double findPharmacyTrnasactionQuantityAndValues(Date fromDate,
+            Date toDate,
+            Institution ins,
+            Department department,
+            Item item,
+            BillType[] billTypes,
+            BillType[] referenceBillTypes) {
+
+        if (item instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        }
+
+        
+        String sql;
+        Map m = new HashMap();
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+
+        sql = "select sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.createdAt between :frm and :to  ";
+        
+        if (department != null) {
+            m.put("dep", department);
+            sql+= " and i.bill.department=:dep";
+        }
+        
+        if(item!=null){
+            m.put("item", department);
+            sql+= " and i.item=:item ";
+        }
+        
+        if(billTypes!=null){
+            List<BillType> bts = Arrays.asList(billTypes);
+            m.put("bts", bts);
+            sql+= " and i.bill.billType in :bts ";
+        }
+        
+        if(referenceBillTypes!=null){
+            List<BillType> rbts = Arrays.asList(referenceBillTypes);
+            m.put("rbts", rbts);
+            sql+= " and i.bill.referenceBill.billType in :rbts ";
+        }
+        
+        if (ins != null) {
+            m.put("ins", ins);
+            sql+=" and (i.bill.institution=:ins or i.bill.department.institution=:ins) ";
+        }
+        sql+=" group by i.item";
+        sql+=" order by i.item.name";
+        
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public void averageByDatePercentage() {
         Calendar frm = Calendar.getInstance();
