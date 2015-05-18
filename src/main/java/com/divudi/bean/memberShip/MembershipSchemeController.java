@@ -149,6 +149,9 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public MembershipScheme getCurrent() {
+        if(current==null){
+            current=new MembershipScheme();
+        }
         return current;
     }
 
