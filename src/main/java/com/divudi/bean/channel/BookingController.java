@@ -314,6 +314,7 @@ public class BookingController implements Serializable {
      */
     public BookingController() {
     }
+    
 
     public Speciality getSpeciality() {
         return speciality;
