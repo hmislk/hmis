@@ -26,7 +26,7 @@
                     <h:panelGrid columns="2" id="ins">
                         <p:panel header="PaymentSchme allowed for this user are">
                             <p:dataTable  value="#{userPaymentSchemeController.items}" var="i">
-                                <p:column headerText="Payment Scheme">
+                                <p:column headerText="Discount Scheme">
                                     <h:outputLabel value="#{i.paymentScheme.name}"/>                              
                                 </p:column>
                             </p:dataTable>                        
@@ -41,7 +41,7 @@
                                 <f:selectItems value="#{paymentSchemeController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
                         </p:panel>
-                        <h:commandButton id="btnAddPaymentScheme" value="Add Payment Scheme" action="#{userPaymentSchemeController.addPaymentSchemeForUser()}"/>
+                        <h:commandButton id="btnAddPaymentScheme" value="Add Discount Scheme" action="#{userPaymentSchemeController.addPaymentSchemeForUser()}"/>
                         <p:defaultCommand target="btnAddPaymentScheme"/>
                     </p:panelGrid>
 

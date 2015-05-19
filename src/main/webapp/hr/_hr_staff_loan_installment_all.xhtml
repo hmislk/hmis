@@ -51,7 +51,7 @@
                         <h:outputLabel/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
                                                  itemLabel="Completed"/>
-                        <p:commandButton value="Save"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
                         
                         </h:panelGrid>
                     </p:panel>
@@ -59,7 +59,7 @@
                     <p:panel id="staff" header="Staff List">
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
-                                         action="#{staffController.createStaffWithCode()}"
+                                        action="#{staffController.createStaffWithCode()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"

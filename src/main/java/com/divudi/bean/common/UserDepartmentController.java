@@ -165,20 +165,20 @@ public  class UserDepartmentController implements Serializable {
 
     public List<WebUserDepartment> getItems() {
         // items = getFacade().findAll("name", true);
-        //System.out.println("11");
+        ////System.out.println("11");
         if (selectedUser == null) {
             items = new ArrayList<WebUserDepartment>();
-            //System.out.println("22");
+            ////System.out.println("22");
             return items;
         }
 
         String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
         items = getEjbFacade().findBySQL(sql);
-        //System.out.println("33");
+        ////System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserDepartment>();
-            //System.out.println("44");
+            ////System.out.println("44");
         }
         return items;
     }
@@ -196,7 +196,7 @@ public  class UserDepartmentController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //System.out.println("Setting user");
+        ////System.out.println("Setting user");
         this.selectedUser = selectedUser;
     }
 
@@ -265,15 +265,15 @@ public  class UserDepartmentController implements Serializable {
 
     public List<Department> getCurrentInsDepartments() {
         if (currentInstituion == null) {
-            //System.out.println("1");
+            ////System.out.println("1");
             return new ArrayList<Department>();
         }
-        //System.out.println("2");
+        ////System.out.println("2");
         String sql = "SELECT i FROM Department i where i.retired=false and i.institution.id=" + getCurrentInstituion().getId() + " order by i.name";
         currentInsDepartments = getDepartmentFacade().findBySQL(sql);
-        //System.out.println("3");
+        ////System.out.println("3");
         if (currentInsDepartments == null) {
-            //System.out.println("4");
+            ////System.out.println("4");
             currentInsDepartments = new ArrayList<Department>();
         }
         return currentInsDepartments;

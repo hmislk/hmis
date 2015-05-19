@@ -20,13 +20,13 @@
                                 <p:outputLabel value="Cashier"/>
                             </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summery" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
                             
-                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summery Detail " action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summery " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary Detail " action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>                            
                             <p:commandButton styleClass="linkButton" ajax="false" value="Bills by Cashier" action="/opd_search_user_bills.xhtml"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type" action="/lab/report_investigation_summery_by_feetype"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee" action="/lab/report_investigation_summery_by_regent_fee"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type" action="/lab/report_investigation_summery_by_feetype"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="/lab/report_investigation_summery_by_regent_fee"/>
                         </h:panelGrid>                     
 
                       
@@ -45,7 +45,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Petty,Agent,OPD" />
                             </f:facet>                           
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Summery By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
 
                         </h:panelGrid>
                         

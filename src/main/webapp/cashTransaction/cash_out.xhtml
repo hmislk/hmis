@@ -49,11 +49,11 @@
                         </p:panel>
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputLabel value="Summery"/>
+                                <h:outputLabel value="Summary"/>
                             </f:facet>
                             <h:panelGrid columns="2">                                
                                 <p:commandButton ajax="false" value="Cal Cash Value" 
-                                                 action="#{cashOutController.calTotal()}" onclick="onSubmitButton();"/>
+                                                action="#{cashOutController.calTotal()}" onclick="onSubmitButton();"/>
                                 <p:inputText autocomplete="off" id="netTotal" value="#{cashOutController.bill.cashTransaction.cashValue}" >
                                     <f:convertNumber pattern="#000.00"/>
                                 </p:inputText>

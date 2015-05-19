@@ -472,7 +472,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
 
         return getBillFeeFacade().findBySQL(sql, hm, TemporalType.TIME);
-        //System.out.println("Size : " + profesionallFee.size());
+        ////System.out.println("Size : " + profesionallFee.size());
 
     }
 
@@ -497,7 +497,7 @@ public class InwardBeanController implements Serializable {
             getBillFeeFacade().edit(bf);
         }
 
-        //System.out.println("Size : " + profesionallFee.size());
+        ////System.out.println("Size : " + profesionallFee.size());
     }
 
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType) {
@@ -1442,6 +1442,10 @@ public class InwardBeanController implements Serializable {
             return null;
         }
 
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
@@ -1482,6 +1486,7 @@ public class InwardBeanController implements Serializable {
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
         patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
         patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
@@ -1580,8 +1585,6 @@ public class InwardBeanController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
 
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
@@ -1609,11 +1612,11 @@ public class InwardBeanController implements Serializable {
         temp = temp + admissionType.getAdditionToCount();
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
-        
-        if(getSessionController().getInstitutionPreference().isBhtNumberWithYear()){
-        Calendar c = Calendar.getInstance();
 
-        bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+        if (getSessionController().getInstitutionPreference().isBhtNumberWithYear()) {
+            Calendar c = Calendar.getInstance();
+
+            bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
         return bhtText;
     }

@@ -15,7 +15,7 @@
 
 
                     <p:panel header="Manage Financial Activities" >
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <p:panel header="Fees" >
                                 <h:panelGrid columns="1" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Item Fees" action="/common/manage_item_fees" onclick="onSubmitButton();"/>
@@ -26,8 +26,8 @@
 
                             <p:panel header="Manage Price Scheme" >
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Payment Schemes" action="payment_scheme" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Payment Schemes(MemberShip)" action="payment_scheme_member_ship" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="payment_scheme" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes(MemberShip)" action="payment_scheme_member_ship" onclick="onSubmitButton();"/>
                                 </h:panelGrid>
                             </p:panel>
                              <p:panel header="Manage Membership Scheme" >

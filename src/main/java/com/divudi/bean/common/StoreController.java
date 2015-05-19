@@ -102,7 +102,7 @@ public  class StoreController implements Serializable {
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d "
                 + " and i.itemBatch.item.departmentType=:dtp1"
-                + " and i.stock > :stk "
+                + " and i.stock >= :stk "
                 + " and (upper(i.itemBatch.item.name) like :n  or "
                 + " upper(i.itemBatch.item.code) like :n  or  "
                 + " upper(i.itemBatch.item.barcode) like :n ) ";

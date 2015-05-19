@@ -24,7 +24,7 @@
                             <p:commandButton ajax="false"  value="Fill" action="#{reportsStock.fillDepartmentStocks}" >
                                
                             </p:commandButton>
-                            <p:commandButton value="Print"  action="#" ajax="false">
+                            <p:commandButton value="Print" action="#" ajax="false">
                                 <p:printer target="gpBillPreview" ></p:printer>
                                 
                             </p:commandButton>
@@ -37,7 +37,13 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
+                                         value="#{reportsStock.stocks}" var="i" 
+                                         rows="20"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100" 
+                                         >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>  
                                 </f:facet>

@@ -22,7 +22,7 @@
 
 
                         <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton"
-                                         actionListener="#{commonReport.recreteModal}" style="float: right;" />  
+                                        actionListener="#{commonReport.recreteModal}" style="float: right;" />  
                         <p:defaultCommand target="btnRefresh"/>
                         
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -1317,7 +1317,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.dataTableDataByType}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>

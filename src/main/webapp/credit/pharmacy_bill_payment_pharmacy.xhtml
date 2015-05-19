@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy/credit"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Reprint"  rendered="#{!billController.printPreview}">
+                <f:facet name="header" >
+                    <h:outputLabel value="Paymetnt For Pharmacy Bill" ></h:outputLabel>
+                    <hr></hr>
+                    <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <p:panelGrid columns="2" style="width: 100%;">
+                        <p:panel header="Patient Detail">
+                            <p:panelGrid columns="2">
+                                <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.toInstitution.name}" ></h:outputLabel>
+                                <h:outputLabel value="Address" >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.toInstitution.address}" >
+                                </h:outputLabel>
+                                <h:outputLabel value="Phone" >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.toInstitution.phone}" >
+                                </h:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel header="Bill Detail">
+                            <p:panelGrid columns="2">
+                                <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.deptId}" >
+                                </h:outputLabel>
+                                <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.paymentMethod}" >
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Total :" ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value=" Total Previous Settlements :" ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.paidAmount}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Due Amount :" ></h:outputLabel>
+                                <h:outputLabel value="#{billSearch.bill.netTotal - billSearch.bill.paidAmount}" style="color: red;" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panelGrid>
+                    <p:panel>
+                        <p:panelGrid columns="2" >
+
+                            <p:outputLabel value="Payment Methord" />
+                            <p:panelGrid columns="5" >
+                                <h:panelGrid columns="1">                                
+                                    <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
+                                        <f:selectItems value="#{enumController.paymentMethods}"  />
+                                        <p:ajax process="@this" 
+                                                update="creditCard cheque slip"
+                                                event="change"
+                                                listener="#{billController.changeListener()}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+                                <p:inputText value="#{billController.comment}" id="comment"/>
+                                <p:watermark value="Comment" for="comment"/>
+
+                                <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                            <p:outputLabel value="Paying Ammount" />
+                            <p:inputText value="#{billController.opdPaymentCredit}" />
+                            <p:commandButton value="Pay" action="#{billController.saveBillPharmacyCredit()}" ajax="false" />
+                        </p:panelGrid>
+                    </p:panel>
+                </p:panel>
+            </p:panel>
+
+
+
+
+            <h:panelGroup  rendered="#{billController.printPreview}">
+                <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:commandButton value="New Bill" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                </p:commandButton>
+
+                <h:panelGroup   id="gpBillPreview" > 
+
+                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <phi:saleBill bill="#{billController.opdBill}"></phi:saleBill>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                </h:panelGroup>  
+            </h:panelGroup>
+
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>
+

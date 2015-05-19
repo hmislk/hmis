@@ -19,10 +19,19 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/> <br/>
+                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/> 
+                            
+                            <br/>
 
-                            <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
-
+                            <h:outputLabel value="Cashier  Report : #{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="&emsp;From :"/>
+                            <h:outputLabel value="#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                            </h:outputLabel>
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
                             <p:defaultCommand target="btnRefresh"/>
@@ -34,19 +43,20 @@
                             <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
-
-
+                        </f:facet>
+                        <f:facet name="footer">
+                            <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
 
-
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+                        <h:panelGrid columns="8" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-
+                            <p:spacer width="30" height="1"/>
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
+                            <p:spacer width="30" height="1"/>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
@@ -57,18 +67,6 @@
 
                         <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
 
-                            <h:panelGroup >
-
-                                <h:outputLabel value="From" />
-                                <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="To" />
-                                <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-
-                            </h:panelGroup >
 
                         </h:panelGrid>
 
@@ -84,9 +82,8 @@
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyBilled data="#{commonReport.userBillsOwnPh}"/>
+                        <ca:pharmacyBilled data="#{commonReport.userBillsOwnPh}"/>                        
 
-                        
                         <p:spacer height="30"/>
 
                         <ca:pharmacyCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
@@ -94,6 +91,30 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyWholeBilled data="#{commonReport.billedPhWholeSale}"/>                        
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyWholeCancelled data="#{commonReport.cancelledPhWholeSale}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyWholeRefunded data="#{commonReport.refundedPhWholeSale}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPaymentCancell data="#{commonReport.grnPaymentCancell}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnPaymentRefund data="#{commonReport.grnPaymentReturn}"/>
 
                         <p:spacer height="30"/>
 
@@ -141,46 +162,46 @@
                         <ca:inwrdRefundBill data="#{commonReport.inwardRefunds}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelBilledBill data="#{commonReport.channelBilled}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelCancelBill data="#{commonReport.channelCancells}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelRefundBill data="#{commonReport.channelRefunds}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelBilledBillProPay data="#{commonReport.channelBilledProPayment}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelCancelBillProPay data="#{commonReport.channelCancellProPayment}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelRefundBillProPay data="#{commonReport.channelRefundsProPayment}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelBilledBillAgentCommission data="#{commonReport.channelBilledAgnPayment}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelCancelBillAgentCommission data="#{commonReport.channelCancellAgnPayment}"/>
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:channelRefundBillAgentCommission data="#{commonReport.channelRefundAgnPayment}"/>
 
                         <p:spacer height="30"/>
 
                         <p:dataTable id="sum1" value="#{commonReport.creditSlipSum}"  var="i" >
                             <f:facet name="header">
-                                Credit Summery
+                                Credit Summary
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -196,7 +217,7 @@
 
                         <p:dataTable id="sum2" value="#{commonReport.cashChequeSum}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Cash Summery"/>
+                                <h:outputLabel value="Cash Summary"/>
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -518,7 +539,7 @@
 
                         <p:dataTable id="sum3" value="#{commonReport.creditSlipSumAfter}"  var="i" >
                             <f:facet name="header">
-                                Credit Summery
+                                Credit Summary
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -535,7 +556,7 @@
 
                         <p:dataTable id="sum5" value="#{commonReport.creditSlipSumAfter}"  var="i" >
                             <f:facet name="header">
-                                Credit Summery
+                                Credit Summary
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -551,7 +572,7 @@
 
                         <p:dataTable id="sum4" value="#{commonReport.cashChequeSumAfter}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Cash Summery"/>
+                                <h:outputLabel value="Cash Summary"/>
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>

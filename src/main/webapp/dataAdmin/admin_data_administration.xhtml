@@ -30,16 +30,21 @@
                                         return false"/>
                             <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))
                                         return false"/>
-                            <p:commandLink ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (!confirm('Really want to do that?'))
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (!confirm('Really want to do that?'))
                                         return false"/>
-                            <p:commandLink ajax="false"  action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (!confirm('Really want to do that?'))
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (!confirm('Really want to do that?'))
                                         return false"/>
-                            <p:commandLink ajax="false"  action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" value="5. Remove Unused Pharmaceutical Categories" onclick="if (!confirm('Really want to do that?'))
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" value="5. Remove Unused Pharmaceutical Categories" onclick="if (!confirm('Really want to do that?'))
                                         return false"/>
-                            
-                            
-                            
-                            
+                            <p:commandLink ajax="false" action="/dataAdmin/change_categories" value="6. Change Categories of Items" ></p:commandLink>
+
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.addWholesalePrices()}" value="7. Add Wholesale Prices" ></p:commandLink>
+
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.detectWholeSaleBills}" 
+                                           value="8. Convert Sale Bils to Wholesale Bills if saled from Wholesale Rate" ></p:commandLink>
+
+
+
                         </p:panelGrid>
 
 

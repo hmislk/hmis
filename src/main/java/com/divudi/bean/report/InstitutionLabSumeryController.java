@@ -40,15 +40,19 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class LabReportSearchByInstitutionController implements Serializable {
+public class InstitutionLabSumeryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    
     String txtSearch;
+    
     Date fromDate;
     Date toDate;
+    
     @EJB
     CommonFunctions commonFunctions;
+    
     List<Bill> labBills;
     List<Bill> billedBills;
     List<Bill> billBills;
@@ -86,6 +90,12 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     List<PatientInvestigation> searchedPatientInvestigations;
 
+    
+    
+    public void createDailyFeeTypeSummery(){
+        
+    }
+    
     public List<PatientInvestigation> getSearchedPatientInvestigations() {
         return searchedPatientInvestigations;
     }
@@ -575,9 +585,9 @@ public class LabReportSearchByInstitutionController implements Serializable {
         totalBill = fetchOPDBillTotal(new BilledBill());
         totalCan = fetchOPDBillTotal(new CancelledBill());
         totalRef = fetchOPDBillTotal(new RefundBill());
-        System.out.println("billBills = " + billBills);
-        System.out.println("canBills = " + canBills);
-        System.out.println("refBills = " + refBills);
+        //System.out.println("billBills = " + billBills);
+        //System.out.println("canBills = " + canBills);
+        //System.out.println("refBills = " + refBills);
 
     }
 
@@ -605,9 +615,9 @@ public class LabReportSearchByInstitutionController implements Serializable {
         m.put("ins", institution);
         m.put("pm", paymentMethod);
         m.put("dt", bill.getClass());
-        System.out.println("institution = " + institution);
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("bill.getClass() = " + bill.getClass());
+        //System.out.println("institution = " + institution);
+        //System.out.println("paymentMethod = " + paymentMethod);
+        //System.out.println("bill.getClass() = " + bill.getClass());
 
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
@@ -631,9 +641,9 @@ public class LabReportSearchByInstitutionController implements Serializable {
         m.put("ins", institution);
         m.put("pm", paymentMethod);
         m.put("dt", bill.getClass());
-        System.out.println("institution = " + institution);
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("bill.getClass() = " + bill.getClass());
+        //System.out.println("institution = " + institution);
+        //System.out.println("paymentMethod = " + paymentMethod);
+        //System.out.println("bill.getClass() = " + bill.getClass());
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -867,7 +877,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
 //    public double calPaidTotal(List<Bill> bills) {
 //        double bhtTotal = 0.0;
-//        System.out.println("Items = " + bills);
+//        //System.out.println("Items = " + bills);
 //        for (Bill billsOwn : bills) {
 //            bhtTotal += billsOwn.get;
 //        }
@@ -1204,7 +1214,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1217,7 +1227,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1307,8 +1317,8 @@ public class LabReportSearchByInstitutionController implements Serializable {
         sql = "select pi from PatientInvestigation pi join pi.investigation i "
                 + "join pi.billItem.bill b join b.patient.person p where b.createdAt"
                 + " between :fromDate and :toDate order by pi.id desc";
-        //System.out.println("m = " + m);
-        //System.out.println("sql = " + sql);
+        ////System.out.println("m = " + m);
+        ////System.out.println("sql = " + sql);
         patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -1320,7 +1330,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
     /**
      * Creates a new instance of LabReportSearchController
      */
-    public LabReportSearchByInstitutionController() {
+    public InstitutionLabSumeryController() {
     }
 
     public Department getDepartment() {

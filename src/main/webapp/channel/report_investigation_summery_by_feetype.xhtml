@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:lab="http://java.sun.com/jsf/composite/lab" 
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Investigation Summary"  styleClass="noPrintButton" />
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                    action="#{channelReportController.createOPdLabListWithProDayEndTable}"/>
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <pe:exporter type="xlsx" target="opd_new:opd_new"
+                                     fileName="Book_Keeping_Summery_without_pro_day"
+                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton>
+
+                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Select Institution"/>
+                        <p:inputText value="#{sessionController.loggedUser.institution.name}"></p:inputText>
+                    </h:panelGrid>
+
+                </f:facet>
+            </p:panel>
+            <!--            <p:spacer height="30" />-->
+
+            <!--<lab:opd_new id="opd_new" professional="true" reagent="true" hospital="true"/>-->
+
+            <p:dataTable id="tbl1" value="#{channelReportController.bookKeepingSummeryRows}" var="sr" >
+
+                <f:facet name="header">
+                    <h:outputLabel value="#{channelReportController.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="#{channelReportController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+
+                <p:column  headerText="Category">
+                    <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
+                </p:column>
+                <p:column headerText="Item/Service" >
+                    <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
+                </p:column>
+                <p:column headerText="Count" >
+                    <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+
+
+                </p:column>
+                <p:column headerText="Hospital Fee" styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                    <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdHospitalTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+
+                </p:column>
+                <p:column headerText="Professional Fee"  styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                    <p:outputLabel value="#{sr.proFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdStaffTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+                <p:column headerText="Service Fee"  styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                    <p:outputLabel value="#{sr.serviceFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdRegentTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+                <p:column headerText="Service Fee"  styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                    <p:outputLabel value="#{sr.serviceFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdRegentTotalByPayMethod}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+                <p:column headerText="Reagent Fee with Creit"  styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                    <p:outputLabel value="#{sr.serviceFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdRegentTotalWithCredit}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+
+                <p:column  headerText="Total Fee"  styleClass="numberCol">
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" />
+                    <p:outputLabel value="#{sr.hosFee+sr.proFee+sr.serviceFee}" rendered="#{!sr.catRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{channelReportController.opdHospitalTotal - channelReportController.opdRegentTotal - channelReportController.opdStaffTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+            </p:dataTable>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

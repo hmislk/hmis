@@ -47,7 +47,7 @@
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createGrnDetailTable()}"
+                                        actionListener="#{commonReport.createGrnDetailTable()}"
                                          style="float: right;" />  
 
                         <p:commandButton actionListener="#{commonReport.createGrnDetailTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -85,6 +85,14 @@
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" sortBy="#{b.billType}">
 
                         <f:facet name="header">  
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel><br/>
                             <h:outputLabel value="GRN"/>
                         </f:facet>
 
@@ -495,7 +503,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.grnTotal}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>

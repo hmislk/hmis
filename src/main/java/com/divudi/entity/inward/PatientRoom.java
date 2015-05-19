@@ -78,6 +78,7 @@ public class PatientRoom implements Serializable {
     private double currentMaintananceCharge = 0.0;
     private double currentNursingCharge = 0.0;
     private double currentMoCharge = 0.0;
+    private double currentMoChargeForAfterDuration = 0.0;
     private double currentRoomCharge;
     private double currentLinenCharge = 0.0;
     double currentAdministrationCharge;
@@ -676,5 +677,13 @@ public class PatientRoom implements Serializable {
 
     public void setAjdustedNursingCharge(double ajdustedNursingCharge) {
         this.ajdustedNursingCharge = ajdustedNursingCharge;
+    }
+
+    public double getCurrentMoChargeForAfterDuration() {
+        return currentMoChargeForAfterDuration;
+    }
+
+    public void setCurrentMoChargeForAfterDuration(double currentMoChargeForAfterDuration) {
+        this.currentMoChargeForAfterDuration = currentMoChargeForAfterDuration;
     }
 }

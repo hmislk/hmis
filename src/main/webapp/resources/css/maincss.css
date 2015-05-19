@@ -32,6 +32,7 @@ body {
     padding: 0px;
     margin: 0px;
     border: 0px;
+
 }
 
 @media screen{
@@ -91,7 +92,6 @@ ul, ol {
 }
 
 a {
-    text-decoration: none;
     color: #107710;
 }
 
@@ -594,12 +594,12 @@ a:hover {
 
 
 .opdPanel .ui-panel-titlebar {
-    color: #008000;
-    border-color: #008000;
+    /*    color: #008000;
+        border-color: #008000;*/
 }
 
-.dateTimePicker{
-    width: 350px;
+.dateTimePicker input{
+    width: 280px;
 }
 
 
@@ -722,7 +722,7 @@ a:hover {
 
 .autoComplete75px .ui-autocomplete-input.ui-inputfield{
     width : 75px !important;
-    
+
 }
 
 
@@ -766,7 +766,7 @@ a:hover {
 
 .fonts{
     font-size: 11px!important;
-    
+
 }
 
 .greentext{
@@ -814,7 +814,7 @@ a:hover {
     position: absolute;
     top: 57.5px;
     right: 200px;
-    
+
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
@@ -852,7 +852,7 @@ a:hover {
 .shortinput .ui-inputfield, .shortinput  .ui-widget-content .ui-inputfield {
     width: 100px!important;
 }
-    
+
 
 
 .standardList{
@@ -867,25 +867,36 @@ a:hover {
 
 
 table.standardTable {
-	font-family: verdana,arial,sans-serif;
-	font-size:11px;
-	color:#333333;
-	border-width: 1px;
-	border-color: #999999;
-	border-collapse: collapse;
+    font-family: verdana,arial,sans-serif;
+    font-size:11px;
+    color:#333333;
+    border-width: 1px;
+    border-color: #999999;
+    border-collapse: collapse;
 }
 table.standardTable th {
-	background:#b5cfd2;
-	border-width: 1px;
-	padding: 8px;
-	border-style: solid;
-	border-color: #999999;
+    background:#b5cfd2;
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #999999;
 }
 table.standardTable td {
-	background:#dcddc0;
-	border-width: 1px;
-	padding: 8px;
-	border-style: solid;
-	border-color: #999999;
+    background:#dcddc0;
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #999999;
+}
+
+.averageNumericColumn{
+    text-align: right;
+    width: 80px;
+    padding-right: 5px;
+}
+
+.averateNumericText{
+    text-align: right;
+    width: 70px;
 }
 

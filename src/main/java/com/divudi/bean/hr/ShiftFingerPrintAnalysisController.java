@@ -150,7 +150,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         Long daycount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
 
-        System.out.println("daycount = " + daycount);
+        //System.out.println("daycount = " + daycount);
 
         if (daycount > 2) {
             UtilityController.addErrorMessage("Date Must Be less Than 2 Days");
@@ -381,6 +381,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void fetchAndSetDayType(StaffShift ss) {
+        if (ss.getDayType() == DayType.Extra) {
+            return;
+        }
+
         ss.setDayType(null);
 
         DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
@@ -415,12 +419,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -482,12 +486,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -698,12 +702,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -765,12 +769,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -832,12 +836,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -899,12 +903,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-//        System.out.println("Line1 = " + new Date());
+//        //System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-//        System.out.println("Line2 = " + new Date());
+//        //System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -1065,11 +1069,28 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         String code = ss.getStaff().getCode();
 
         if (ss.getShift().getDayType() != DayType.Normal) {
+            System.err.println("return 1 >>> ");
             return false;
         }
 
         if (ss.getLeaveType() != null) {
-            return false;
+            if (ss.getLeaveType().isFullDayLeave()) {
+                System.err.println("return 2 >>> ");
+                return false;
+            }
+
+            if (!ss.getLeaveType().isFullDayLeave()) {
+                List<StaffLeave> staffLeave = getHumanResourceBean().fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+                if (staffLeave.size() > 1) {
+                    System.err.println("return 3 >>> ");
+                    return false;
+                }
+            }
+
+            if (ss.getShift().isHalfShift()) {
+                System.err.println("return 4 >>> ");
+                return false;
+            }
         }
 //        if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave() && !ss.getShift().isHalfShift()) {
 //            return false;
@@ -1083,6 +1104,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        }
         if (ss.getPreviousStaffShift() == null) {
             if (ss.getStartRecord() == null) {
+
+                //System.out.println("ss.getLeaveType() = " + ss.getLeaveType());
+                //System.out.println("ss.getShift().isHalfShift() = " + ss.getShift().isHalfShift());
+
+//                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
                 message = date
                         + " -> " + code
                         + "  Has No Starting Record";
@@ -1091,8 +1117,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                    UtilityController.addErrorMessage(errorMessage);
                 shiftTable.getStaffShift().add(ss);
                 return true;
+
+//                }
             }
             if (ss.getStartRecord().getRecordTimeStamp() == null) {
+//                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
                 message = date
                         + " -> " + code
                         + " Some Starting Records Has No Time \r ";
@@ -1100,11 +1129,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                    UtilityController.addErrorMessage(errorMessage);
                 shiftTable.getStaffShift().add(ss);
                 return true;
+//                }
+
             }
         }
 
         if (ss.getNextStaffShift() == null) {
             if (ss.getEndRecord() == null) {
+//                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
                 message = date
                         + " -> " + code
                         + " Some End Records Has No Starting Record \r";
@@ -1112,8 +1144,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 shiftTable.getStaffShift().add(ss);
 //                    UtilityController.addErrorMessage(errorMessage);
                 return true;
+//                }
             }
             if (ss.getEndRecord().getRecordTimeStamp() == null) {
+//                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
                 message = date
                         + " -> " + code
                         + " Some End Records Has No Time \r ";
@@ -1121,6 +1155,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 shiftTable.getStaffShift().add(ss);
 //                    UtilityController.addErrorMessage(errorMessage);
                 return true;
+//                }
             }
         }
 
@@ -1132,6 +1167,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                    + " Check Start Time and End Time \r ";
 //            return true;
 //        }
+        System.err.println("return 5 >>> ");
         return false;
     }
 

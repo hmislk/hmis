@@ -17,9 +17,9 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
 
                     <f:facet name="header" >
-                        <p:commandButton  id="btnRefresh"  ajax="false" value="Process"
+                        <p:commandButton  id="btnRefresh" ajax="false" value="Process"
                                           styleClass="noPrintButton" 
-                                          actionListener="#{commonReport.fillInstitutionReferralBillItems()}" 
+                                         actionListener="#{commonReport.fillInstitutionReferralBillItems()}" 
                                           style="float: right;" />  
                         <p:defaultCommand target="btnRefresh"/>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >

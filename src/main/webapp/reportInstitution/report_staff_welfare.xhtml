@@ -18,7 +18,7 @@
                     <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
                     <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
                                      styleClass="noPrintButton" 
-                                     action="#{serviceSummery.createStaffWelfare()}"/>
+                                    action="#{serviceSummery.createStaffWelfare()}"/>
                     <p:commandButton ajax="false" value="Print"  
                                      styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />
@@ -35,7 +35,7 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          value="#{serviceSummery.staffs}" var="s">                   
                 <f:facet name="header">
-                    <h:outputLabel value="Staff Welfare Summery"/>
+                    <h:outputLabel value="Staff Welfare Summary"/>
                 </f:facet>
                
                 <p:column headerText="No">

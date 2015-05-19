@@ -14,20 +14,20 @@
                         <h:panelGrid columns="1" >
                             <h:panelGroup >
                                 <p:panelGrid columns="7" >
-                                    <p:commandButton ajax="false" value="List All" actionListener="#{labReportSearchByInstitutionController.listAllPatientInvestigations}" onclick="onSubmitButton();"  ></p:commandButton>
+                                    <p:commandButton ajax="false" value="List All" actionListener="#{institutionLabSumeryController.listAllPatientInvestigations}" onclick="onSubmitButton();"  ></p:commandButton>
                                     
-                                    <h:inputText autocomplete="off"  style="width: 600px;" id="txtSearch" value="#{labReportSearchByInstitutionController.txtSearch}"  >
-                                        <f:ajax render="tblBills" execute="txtSearch fromDate toDate" event="keyup" listener="#{labReportSearchByInstitutionController.createPatientInvestigaationList()}" />
+                                    <h:inputText autocomplete="off"  style="width: 600px;" id="txtSearch" value="#{institutionLabSumeryController.txtSearch}"  >
+                                        <f:ajax render="tblBills" execute="txtSearch fromDate toDate" event="keyup" listener="#{institutionLabSumeryController.createPatientInvestigaationList()}" />
                                     </h:inputText>
 
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar  id="fromDate" value="#{labReportSearchByInstitutionController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
-                                        <p:ajax event="dateSelect" process="txtSearch fromDate toDate"  update="tblBills" listener="#{labReportSearchByInstitutionController.createPatientInvestigaationList()}"/>
+                                    <p:calendar  id="fromDate" value="#{institutionLabSumeryController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                                        <p:ajax event="dateSelect" process="txtSearch fromDate toDate"  update="tblBills" listener="#{institutionLabSumeryController.createPatientInvestigaationList()}"/>
                                     </p:calendar>
 
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{labReportSearchByInstitutionController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
-                                        <p:ajax event="dateSelect" process="txtSearch fromDate toDate"  update="tblBills" listener="#{labReportSearchByInstitutionController.createPatientInvestigaationList()}"/>
+                                    <p:calendar id="toDate" value="#{institutionLabSumeryController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                        <p:ajax event="dateSelect" process="txtSearch fromDate toDate"  update="tblBills" listener="#{institutionLabSumeryController.createPatientInvestigaationList()}"/>
                                     </p:calendar>
 
 
@@ -35,7 +35,7 @@
 
                                 </p:panelGrid>
 
-                                <p:dataTable  id="tblBills" value="#{labReportSearchByInstitutionController.patientInvestigations}" var="pi"  >
+                                <p:dataTable  id="tblBills" value="#{institutionLabSumeryController.patientInvestigations}" var="pi"  >
 
                                     <p:column headerText="Billing" styleClass="alignTop" >
                                         <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
@@ -106,7 +106,7 @@
                                             <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}" onclick="onSubmitButton();" >
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();"  >
+                                            <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();"  >
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                             </p:commandButton>
 

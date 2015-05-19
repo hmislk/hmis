@@ -13,7 +13,7 @@
                     <p:panel  >
                         <f:facet name="header" >
                             <h:outputLabel value="OPD BILL ITEM "/>                                                         
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="6" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -21,8 +21,10 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
+                                <p:commandButton id="btnSearchAll" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                                </h:panelGrid>
+                                <h:panelGrid columns="5" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Item Name"/>
                                 <h:outputLabel value="Patient Name"/>
@@ -61,7 +63,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
-
+                            
                             <p:column headerText="Patient"  styleClass="alignTop"  >
                                 <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                 </h:outputLabel>
@@ -110,7 +112,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Payment Scheme" >
+                            <p:column headerText="Discount Scheme" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentScheme.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>

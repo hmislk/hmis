@@ -23,9 +23,9 @@
                             <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill_retail" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale" 
+                                           ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
-                                             actionListener="#{pharmacySaleController.resetAll()}" 
+                                            actionListener="#{pharmacySaleController.resetAll()}" 
                                              style="font-size: 18px!important; font-weight: bold!important; float: right"></p:commandButton>
 
                         </f:facet>
@@ -35,22 +35,13 @@
 
 
 
-                    <!--                    <h:panelGroup id="gpBillPreview" >
-                                            <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                                            <div >
-                                                <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
-                                                    <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_prabodha>
-                                                </h:panelGroup>
-                                            </div>
-                                        </h:panelGroup>-->
-
                     <h:panelGroup   id="gpBillPreview"  > 
 
                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
 
                             <div >
                                 <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                    <ph:saleBill bill="#{pharmacyBillSearch.bill}"></ph:saleBill>
+                                    <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill>
                                 </h:panelGroup>
                             </div>
 
@@ -59,7 +50,7 @@
                         <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
 
                             <div >
-                                <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                     <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></ph:saleBill_prabodha>
                                 </h:panelGroup>
                             </div>

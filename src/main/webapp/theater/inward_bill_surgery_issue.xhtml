@@ -38,16 +38,16 @@
                                     <f:facet name="header" >
                                         <h:panelGrid columns="20"  >
                                             <p:commandButton ajax= "false" accesskey="s" value="Settle" 
-                                                             action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}" 
-                                                             update=":#{p:component('tblBillItem')} :#{p:component('txtQty')} "   actionListener="#{pharmacySaleBhtController.calculateAllRates}" onclick="onSubmitButton();">
+                                                            action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}" 
+                                                             update=":#{p:component('tblBillItem')} :#{p:component('txtQty')} "  actionListener="#{pharmacySaleBhtController.calculateAllRates}" onclick="onSubmitButton();">
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
                                                 </f:facet>
                                             </p:commandButton>
-                                            <p:commandButton accesskey="n" value="New Surgery Issue"  ajax="false"
-                                                             action="inward_bill_surgery_issue"
-                                                             actionListener="#{pharmacySaleBhtController.resetAll}" onclick="onSubmitButton();"  ></p:commandButton>
+                                            <p:commandButton accesskey="n" value="New Surgery Issue" ajax="false"
+                                                            action="inward_bill_surgery_issue"
+                                                            actionListener="#{pharmacySaleBhtController.resetAll}" onclick="onSubmitButton();"  ></p:commandButton>
 
 
                                         </h:panelGrid>
@@ -120,7 +120,7 @@
                                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column headerText="Expiary">
+                                                    <p:column headerText="Expiry">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                             <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                         </h:outputLabel>
@@ -142,7 +142,7 @@
                                             </h:panelGrid>
 
                                             <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                              action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
+                                                             action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -199,7 +199,7 @@
 
 
 
-                                                            <p:column headerText="Expiary">
+                                                            <p:column headerText="Expiry">
                                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                                 </h:outputLabel>
@@ -249,9 +249,9 @@
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" 
-                                             action="inward_bill_surgery_issue"
-                                             actionListener="#{pharmacySaleBhtController.resetAll()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" 
+                                            action="inward_bill_surgery_issue"
+                                            actionListener="#{pharmacySaleBhtController.resetAll()}" onclick="onSubmitButton();" ></p:commandButton>
 
                         </div>
                         <div >

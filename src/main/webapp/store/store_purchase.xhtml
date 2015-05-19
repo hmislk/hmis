@@ -97,7 +97,7 @@
 
 
                         <p:commandButton id="btnAdd" value="Add Item" 
-                                         action="#{storePurchaseController.addItem}" 
+                                        action="#{storePurchaseController.addItem}" 
                                          process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
 
                     </p:panelGrid>
@@ -301,7 +301,7 @@
                                      value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
                         <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
                         <p:commandButton id="btnAddExpense" value="Add Expense" 
-                                         action="#{storePurchaseController.addExpense()}" 
+                                        action="#{storePurchaseController.addExpense()}" 
                                          process="billExpenseGrid" 
                                          update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
                     </h:panelGrid>

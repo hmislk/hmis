@@ -12,7 +12,7 @@
             <p:panel>
               
                 <p:commandButton ajax="false" value="Process" 
-                                 action="#{reportMemberShip.createPaymentMethodInwardPriceAdjustments()}"/>
+                                action="#{reportMemberShip.createPaymentMethodInwardPriceAdjustments()}"/>
 
                 <p:dataTable value="#{reportMemberShip.ipaPaymentMethods}" var="pI">
                     <p:subTable value="#{pI.priceMatrixs}" var="inw">

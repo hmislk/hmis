@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="can" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div class="posbill noBorder summeryBorder">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+            </div>
+            <div class="institutionContact" >
+                <div >
+                    <h:outputLabel value="Telephone : #{cc.attrs.bill.institution.phone} / #{cc.attrs.bill.department.telephone1}"/>
+
+                </div>
+                <!--                <div >
+                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.department.telephone1} "/>
+                                </div>-->
+                <div >
+                    <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.institution.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="Email : "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/> 
+                <h:outputLabel value="**Cancel**" style="text-decoration: underline;" rendered="#{cc.attrs.can}"/> 
+            </div>
+
+            <div  >
+
+
+                <h:outputLabel value="Supplier Name : "/>
+                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"   /> 
+                <br></br>
+                <h:outputLabel value="P.O.Req.No : #{cc.attrs.bill.billedBill.deptId}"/>
+                <br></br>
+                <h:outputLabel value="P.O.Req.Can.No : #{cc.attrs.bill.deptId}"/>
+                <br></br>
+                <h:outputLabel value="Payment Type : "/>
+                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                <br></br>
+                <h:outputLabel value="P.O.Date : "/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="dd MM yyyy"/>
+                </h:outputLabel>
+                <br></br>
+                <h:outputLabel value="P.O.Time : "/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="hh mm a"/>
+                </h:outputLabel>
+
+                <!--</h:panelGrid>-->
+            </div>
+
+            <p:spacer height="30"/>
+
+            <div >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
+
+                    <p:column style="width: 50px!important; text-align: right!important; padding-right: 20px;">
+                        <f:facet name="header">
+                            <h:outputLabel value="No"/>
+                        </f:facet>
+                        <h:outputLabel value="#{rowIndex+1}"/>
+                    </p:column>
+
+                    <p:column style="text-align: left!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.name}"/>
+                    </p:column>
+
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Free QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                        <f:facet name="header">
+                            <h:outputLabel value="QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+
+            <div class="preparedBy" style="padding: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
+                <h:outputLabel value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+
+            </div>
+
+            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
+                <h:outputLabel value="Authorized By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+
+            </div>
+
+            <div>
+                <p>
+                    <h4 style="color: #000000;">
+                        Important Note :
+                    </h4>
+
+                    <ol type="1">
+                        <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
+                        <li>please be kind enough to supply above goods within 3 days.</li>
+                        <li>If unable to supply above goods within above period 10% penalty will be claimed on invoice value.</li>
+                    </ol>
+
+                    <h5 style="color: #000000;">
+                        Good Receiving time - Monday to Friday 9.00 A.M to 3.30 P.M
+                    </h5>
+
+                </p>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

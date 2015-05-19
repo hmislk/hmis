@@ -26,29 +26,34 @@
 
             </h:panelGrid>
 
-            <h:panelGrid columns="6">                
+            <h:panelGrid columns="4">                
                 <p:commandButton ajax="false" value="Fill New"
-                                 actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.createShiftTable()}"
+                                actionListener="#{shiftTableController.makeTableNull()}"
+                                action="#{shiftTableController.createShiftTable()}"
                                  onclick="onSubmitButton();" />   
                 <p:commandButton ajax="false" value="Fill Old Roster"
-                                 actionListener="#{shiftTableController.makeTableNull()}"
-                                 action="#{shiftTableController.fetchShiftTable()}"
+                                actionListener="#{shiftTableController.makeTableNull()}"
+                                action="#{shiftTableController.fetchShiftTable()}"
                                  onclick="onSubmitButton();" />   
                 <p:commandButton ajax="false" value="Hide" 
-                                 action="#{shiftTableController.hide}" onclick="onSubmitButton();" />
+                                action="#{shiftTableController.hide}" onclick="onSubmitButton();" />
                 <p:commandButton ajax="false" value="Visible" 
-                                 action="#{shiftTableController.visible}" onclick="onSubmitButton();" />
+                                action="#{shiftTableController.visible}" onclick="onSubmitButton();" />
                 <p:commandButton ajax="false" value="Save"
-                                 action="#{shiftTableController.save}" onclick="onSubmitButton();"/>
+                                action="#{shiftTableController.save}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" 
-                                 action="#{shiftTableController.makeNull()}" onclick="onSubmitButton();" />
+                                action="#{shiftTableController.makeNull()}" onclick="onSubmitButton();" />
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print" ></p:printer>
                 </p:commandButton>
+                <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
+                    <p:printer target="print2" ></p:printer>
+                </p:commandButton>
+                <p:commandButton value="Go to Individual Roster Table" ajax="false" action="hr_shift_table_by_staff" actionListener="#{shiftTableController.makeNull()}"  >
+                </p:commandButton>
             </h:panelGrid>
 
-            <p:panel>
+            <p:panel id="print2">
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">

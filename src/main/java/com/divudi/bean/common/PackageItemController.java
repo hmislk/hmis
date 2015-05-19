@@ -140,7 +140,7 @@ public class PackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
+            ////System.out.println(e.getMessage());
         }
     }
 

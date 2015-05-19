@@ -15,7 +15,7 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Reagent Summery - All Bills"  styleClass="noPrintButton" />
+                    <h:outputLabel value="Investigation Summary Inward"  styleClass="noPrintButton" />
 
 
                     <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
@@ -39,8 +39,8 @@
 
                     </h:panelGrid>
                     <h:panelGroup style="float: right">
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createInwardFee()}"/>
+                        <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                        action="#{bookKeepingSummery.createInwardFee()}"/>
 
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
@@ -56,16 +56,41 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
-            <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr">
+            <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr"
+                        rows="20"
+                        paginator="true"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="20, 50, 100" 
+                        >
 
-                <p:column headerText="Item/Service" >
+                <f:facet name="header">
+                    <h:outputLabel value="#{bookKeepingSummery.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="#{bookKeepingSummery.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+
+                <p:column headerText="Item/Service" 
+                    sortBy="#{sr.itemName}" 
+                    filterBy="#{sr.itemName}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                        <h:outputLabel value="Item/Service"/>
+                    </f:facet>
                     <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
                 </p:column>
 
-                <p:column headerText="Count" >
+                <p:column headerText="Count"
+                    sortBy="#{sr.catCount}" 
+                    filterBy="#{sr.catCount}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                        <h:outputLabel value="Count"/>
+                    </f:facet>
                     <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
-
-
                 </p:column>
 
                 <p:column headerText="Reagent Fee">

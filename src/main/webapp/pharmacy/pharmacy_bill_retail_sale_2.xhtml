@@ -78,7 +78,7 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiary">
+                                                <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
                                                                    style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
@@ -99,7 +99,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleController2.addBillItemNew()}" 
+                                                         action="#{pharmacySaleController2.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
@@ -160,7 +160,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiary">
+                                            <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
@@ -237,7 +237,7 @@
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </p:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiary">
+                                            <p:column headerText="Expiry">
                                                 <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
                                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -293,7 +293,7 @@
                                         </p:selectOneMenu>
 
                                         <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController2.paymentScheme}">   
-                                            <f:selectItem itemLabel="Payment Scheme"/>
+                                            <f:selectItem itemLabel="Discount Scheme"/>
                                             <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                             <p:ajax process="@this pay " 
                                                     update="pBillDetails creditCard cheque slip" 
@@ -317,16 +317,16 @@
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                         action="#{pharmacySaleController2.settleBillWithPay}" >
+                                                        action="#{pharmacySaleController2.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                                         ajax="false" action="pharmacy_bill_retail_sale"
+                                                       ajax="false" action="pharmacy_bill_retail_sale_2"
                                                          onclick="onSubmitButton();"
-                                                         actionListener="#{pharmacySaleController2.resetAll()}"  ></p:commandButton>
+                                                        actionListener="#{pharmacySaleController2.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -491,7 +491,7 @@
 
 
                         <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
+                                        action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -499,9 +499,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale_2" 
+                                           ajax="false" action="pharmacy_bill_retail_sale_2" 
                                              onclick="onSubmitButton();"
-                                             actionListener="#{pharmacySaleController2.resetAll()}" ></p:commandButton>
+                                            actionListener="#{pharmacySaleController2.resetAll()}" ></p:commandButton>
                             <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />

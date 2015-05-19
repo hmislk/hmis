@@ -31,7 +31,7 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{consultantController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{consultantController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -53,7 +53,7 @@
                                     <h:inputText autocomplete="off" id="txtMobile"  class="pdInputText" value="#{consultantController.current.person.mobile }"  ></h:inputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{consultantController.saveSelected()}" styleClass="buttons">
+                                    <h:commandButton id="btnSave" value="Save" action="#{consultantController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </h:commandButton>

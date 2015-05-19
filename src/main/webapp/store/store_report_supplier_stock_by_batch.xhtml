@@ -17,7 +17,7 @@
 
                     <p:panel header="Department Stock Report by Batch" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
 
                             <p:autoComplete style="position: relative; width: " completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
@@ -25,6 +25,9 @@
                             <h:outputLabel value="DEALER" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.institution}" >
                             </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="4" >
+                            <p:spacer width="80" height="1"/>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDistributorStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" >
@@ -44,8 +47,8 @@
                             <p:dataTable id="tbl" style="min-width: 100%;"  rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
 
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock in #{storeReportsStock.department.name} "/>   <br/>                                 
-                                    <h:outputLabel value="Supplied By #{storeReportsStock.institution.name}"/>                                    
+                                    <h:outputLabel value="Suppliers' Stock : #{storeReportsStock.department.name} "/>                                   
+                                    <h:outputLabel value="Supplied By : #{storeReportsStock.institution.name}" style=" white-space:pre-line;"/>                                    
                                 </f:facet>
 
                                 <p:column headerText="Item">
@@ -54,7 +57,7 @@
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
@@ -71,7 +74,7 @@
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Expiary">
+                                <p:column headerText="Expiry">
                                     <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>    
                                     </f:facet>
@@ -125,6 +128,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:pe="http://primefaces.org/ui/extensions"
-               xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
     <ui:define name="content">
@@ -17,38 +17,373 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill Fees">
-                    
-                </p:panel>
-                <p:panel >
-                    <h:outputLabel value="Bill Fee Report - "/>
-                    <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
-                        
-                    </p:commandButton>
-                    <p:commandButton id="btnRefresh" value="Process">
-                        
-                    </p:commandButton>
-                    <p:commandButton value="Cancel">
-                        
-                    </p:commandButton>
-               </p:panel>
-                    <h:panelGrid columns="6" styleClass="noPrintButton"> 
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                </p:panel>
+                <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+                    <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                    <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                     forceSelection="true"
                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                    value="#{commonReport.webUser}" >
-                        </p:autoComplete>
-                    </h:panelGrid>
-                
+                                    value="#{channelReportController.webUser}" >
+                    </p:autoComplete>
+                    <h:outputLabel/>
+                    <p:commandButton id="btnRefresh" ajax="false" value="Process" action="#{channelReportController.createFeeTypeBillFeeList()}">
+                    </p:commandButton>
+                </h:panelGrid>
+
                 <p:panel id="billFeeData">
-                    
+
+                    <p:spacer width="30px"></p:spacer>
+
+                    <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <f:facet name="header">
+                            <p:outputLabel value="BILL FEES  &emsp; #{channelReportController.webUser.webUserPerson.name}" ></p:outputLabel>
+                            <p:outputLabel value="Billed Bill Total - #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Booking ID"/>
+                                <p:column headerText="User"/>
+                                <p:column headerText="Staff"/>
+                                <p:column headerText="App. Number"/>
+                                <p:column headerText="App. Date"/>
+                                <p:column headerText="Patient Name"/>
+                                <p:column headerText="Cunsultant Name"/>
+                                <p:column headerText="Billed at"/>
+                                <p:column headerText="Billed by"/>
+                                <p:column headerText="Paymentmethod"/>
+                                <p:column headerText="Channel Fee"/>
+                                <p:column headerText="Paid Value"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{ftf.billedBillFees}" var="bf"  rendered="#{ftf.billedBillFees.size()>0}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.billedBillFeeTypeTotal}" style="float: right"></p:outputLabel>
+                            </f:facet>
+                            <p:column headerText="Booking ID" >                                
+                                <h:outputLabel   value="#{bf.bill.bookingId}"/>
+                            </p:column>
+                            <p:column headerText="User">
+                                <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{bf.staff.person.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="App. Number" style="text-align: right;">                                
+                                <h:outputLabel   value="#{bf.bill.singleBillSession.serialNo}"/>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="App. Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bf.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bf.bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bf.bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.refunded}" value="#{bf.bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Payment Method" >                                
+                                <h:outputLabel value="#{bf.bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
+                            </p:column>
+
+                            <p:column headerText="Channel Fee">
+                                <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Paid Value"  >
+
+                                <h:outputLabel value="#{bf.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+
+                    <p:spacer width="50px"></p:spacer>
+
+                    <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <f:facet name="header">
+                            <p:outputLabel value="Canceled Bill List"></p:outputLabel>
+                            <p:outputLabel value="Canceled Bill Total - #{channelReportController.canceledBillTotl}" style="float: right"></p:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Booking ID"/>
+                                <p:column headerText="User"/>
+                                <p:column headerText="Staff"/>
+                                <p:column headerText="App. Number"/>
+                                <p:column headerText="App. Date"/>
+                                <p:column headerText="Patient Name"/>
+                                <p:column headerText="Cunsultant Name"/>
+                                <p:column headerText="Billed at"/>
+                                <p:column headerText="Billed by"/>
+                                <p:column headerText="Paymentmethod"/>
+                                <p:column headerText="Channel Fee"/>
+                                <p:column headerText="Paid Value"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{ftf.canceledBillFees}" var="bf"  rendered="#{ftf.canceledBillFees.size()>0}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.canceledBillFeeTypeTotal}" style="float: right"></p:outputLabel>
+                            </f:facet>
+                            <p:column headerText="Booking ID" >                                
+                                <h:outputLabel   value="#{bf.bill.bookingId}"/>
+                            </p:column>
+                            <p:column headerText="User">
+                                <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{bf.staff.person.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="App. Number" style="text-align: right;">                                
+                                <h:outputLabel   value="#{bf.bill.singleBillSession.serialNo}"/>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="App. Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bf.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bf.bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bf.bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.refunded}" value="#{bf.bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Payment Method" >                                
+                                <h:outputLabel value="#{bf.bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
+                            </p:column>
+
+                            <p:column headerText="Channel Fee">
+                                <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Paid Value"  >
+
+                                <h:outputLabel value="#{bf.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+
+                    <p:spacer width="50px"></p:spacer>
+
+                    <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <f:facet name="header">
+                            <p:outputLabel value="Refund Bill List"></p:outputLabel>
+                            <p:outputLabel value="Refund Bill Total - #{channelReportController.refundBillTotal}" style="float: right"></p:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Booking ID"/>
+                                <p:column headerText="User"/>
+                                <p:column headerText="Staff"/>
+                                <p:column headerText="App. Number"/>
+                                <p:column headerText="App. Date"/>
+                                <p:column headerText="Patient Name"/>
+                                <p:column headerText="Cunsultant Name"/>
+                                <p:column headerText="Billed at"/>
+                                <p:column headerText="Billed by"/>
+                                <p:column headerText="Paymentmethod"/>
+                                <p:column headerText="Channel Fee"/>
+                                <p:column headerText="Paid Value"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{ftf.refunBillFees}" var="bf"  rendered="#{ftf.refunBillFees.size()>0}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Fee Type - #{ftf.feeType.label}"></p:outputLabel>
+                                <p:outputLabel value="#{ftf.feeType.label} Total - #{ftf.refundBillFeeTypeTotal}" style="float: right"></p:outputLabel>
+                            </f:facet>
+                            <p:column headerText="Booking ID" >                                
+                                <h:outputLabel   value="#{bf.bill.bookingId}"/>
+                            </p:column>
+                            <p:column headerText="User">
+                                <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{bf.staff.person.nameWithTitle}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="App. Number" style="text-align: right;">                                
+                                <h:outputLabel   value="#{bf.bill.singleBillSession.serialNo}"/>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="App. Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{bf.bill.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bf.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bf.bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bf.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bf.bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bf.bill.refunded}" value="#{bf.bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Payment Method" >                                
+                                <h:outputLabel value="#{bf.bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
+                            </p:column>
+
+                            <p:column headerText="Channel Fee">
+                                <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Paid Value"  >
+
+                                <h:outputLabel value="#{bf.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+
+                    <p:spacer width="50px"></p:spacer>
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Billed Bill Total"></p:outputLabel>
+                        <p:outputLabel value="#{channelReportController.billedBillTotal}"></p:outputLabel>
+                        <p:outputLabel value="Canceled Bill total"></p:outputLabel>
+                        <p:outputLabel value="#{channelReportController.canceledBillTotl}"></p:outputLabel>
+                        <p:outputLabel value="Refund Bill Total"></p:outputLabel>
+                        <p:outputLabel value="#{channelReportController.refundBillTotal}"></p:outputLabel>
+                    </p:panelGrid>
+                    <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                 </p:panel>
             </h:form>
         </h:panelGroup>

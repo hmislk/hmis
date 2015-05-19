@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -29,7 +28,6 @@ import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,7 +38,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -228,7 +225,7 @@ public class CreditSummeryController implements Serializable {
     
 
     public List<DailyCash> getDailyCredit() {
-        // //System.out.println("Starting : ");
+        // ////System.out.println("Starting : ");
         if (dailyCash == null) {
             dailyCash = new ArrayList<>();
 
@@ -346,7 +343,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     public List<DailyCredit> getDailyCreditByBill() {
-        // //System.out.println("Starting : ");
+        // ////System.out.println("Starting : ");
         if (dailyCredit == null) {
             dailyCredit = new ArrayList<>();
 

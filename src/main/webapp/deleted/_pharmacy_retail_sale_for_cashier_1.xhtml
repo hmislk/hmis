@@ -60,7 +60,7 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiary">
+                                                <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
@@ -90,7 +90,7 @@
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:component('cmbPs')}" update=":#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
+                                                         action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:component('cmbPs')}" update=":#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -157,7 +157,7 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Expiary">
+                                                        <p:column headerText="Expiry">
                                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                                 <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                             </h:outputLabel>
@@ -225,7 +225,7 @@
                                         <p:calendar id="slipDate"  value="#{pharmacySaleController.slipDate}" pattern="dd MMMM yyyy" style="display: #{pharmacySaleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; ">                            
                                         </p:calendar>
                                         <p:commandButton accesskey="c" ajax= "false" value="For Cashier" action="#{pharmacySaleController.settlePreBill()}" update="tblBillItem txtRate txtQty acStock" process="cmbPs" actionListener="#{pharmacySaleController.calculateAllRates}" ></p:commandButton>
-                                        <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" action="#{pharmacySaleController.newSaleBillForCashier}"  ></p:commandButton>
+                                        <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" action="#{pharmacySaleController.newSaleBillForCashier}"  ></p:commandButton>
                                         <p:watermark id="wcd" value="Cheque Date" for="chequeDate"/>
                                         <p:watermark id="wsd" value="Slip Date" for="slipDate"/>
                                     </h:panelGrid>
@@ -301,7 +301,7 @@
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" action="#{pharmacySaleController.newSaleBillWithoutReduceStockForCashier()}" ></p:commandButton>
+                            <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" action="#{pharmacySaleController.newSaleBillWithoutReduceStockForCashier()}" ></p:commandButton>
 
                         </div>
                         <div >

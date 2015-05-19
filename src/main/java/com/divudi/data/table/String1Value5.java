@@ -4,6 +4,7 @@
  */
 package com.divudi.data.table;
 
+import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 public class String1Value5 {
 
     private String string;
+    Institution institution;
     private double value1;
     List<PatientEncounter> value1PatientEncounters;
     private double value2;
@@ -123,6 +125,14 @@ public class String1Value5 {
 
     public void setValue5(double value5) {
         this.value5 = value5;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
 }

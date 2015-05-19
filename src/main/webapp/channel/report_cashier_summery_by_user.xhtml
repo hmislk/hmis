@@ -16,29 +16,14 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
+                <p:panel  header="Casheir Session Report Detail">
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="#{channelReportController.webUser.institution.name}"/> <br/>
-
-                            <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
-
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
-                            <p:defaultCommand target="btnRefresh"/>
-
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
-
-                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton> 
-
-
+                            <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
                         </f:facet>
 
-
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -53,27 +38,32 @@
                                             value="#{channelReportController.webUser}" ></p:autoComplete>
 
                         </h:panelGrid>
+                        <h:panelGrid columns="5">
+                            <p:spacer width="70" height="1"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                            <p:defaultCommand target="btnRefresh"/>
 
-                        <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
 
-                            <h:panelGroup >
-
-                                <h:outputLabel value="From" />
-                                <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="To" />
-                                <h:outputLabel  value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
-                                </h:outputLabel>
-
-                            </h:panelGroup >
-
+                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="sum3" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton>
                         </h:panelGrid>
-
+                    </p:panel>
+                    <p:panel id="reportPrint">
                         <p:dataTable id="sum3" value="#{channelReportController.channelSummary}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Channel Cashier Summary"/>
+                                <h:outputLabel value=" Cashier Summary &emsp; #{channelReportController.webUser.webUserPerson.name}"/>
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -127,6 +117,9 @@
                         </h:panelGrid>
 
                     </p:panel>
+                    <f:facet name="footer" >
+                        <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    </f:facet>
 
                 </p:panel>
             </h:form>

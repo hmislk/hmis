@@ -27,7 +27,7 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{timedItemController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{timedItemController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -45,8 +45,8 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
 
-                                <p:commandButton style="float:right;" id="btnSave" value="Save"   action="#{timedItemController.saveSelected()}" styleClass="buttons" 
-                                                 ajax="false" onclick="onSubmitButton();"  >
+                                <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{timedItemController.saveSelected()}" styleClass="buttons" 
+                                               ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
@@ -75,7 +75,7 @@
                                     <h:outputText value="Institution" ></h:outputText>
                                     <h:selectOneListbox id="cmbIns" size="1" value="#{timedItemController.current.institution}" >
                                         <f:selectItem itemLabel="Please select a Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>   
                                     </h:selectOneListbox>
                                     <h:outputText value="Department" ></h:outputText>

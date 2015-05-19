@@ -14,10 +14,10 @@
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Service Detail OPD"/>
-                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
+                    <h:outputLabel value="Daily Summary"/>
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;" 
-                                     action="#{serviceSummery.createServiceSummeryLab()}"/>
+                                    action="#{serviceSummery.createServiceSummeryLab()}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton ajax="false" value="Print"  
@@ -25,7 +25,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
 
-                    <p:commandButton value="Excel2" ajax="false" style="float: right;">
+                    <p:commandButton value="Excel" ajax="false" style="float: right;">
                         <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
                     </p:commandButton>
 
@@ -70,6 +70,10 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          value="#{serviceSummery.serviceSummery}" var="d"
+                         rows="20"
+                        paginator="true"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="20, 50, 100" 
                          >                   
 
                 <f:facet name="header">
@@ -87,15 +91,33 @@
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
 
-                <p:column headerText="Bill No">
+                <p:column headerText="Bill No"
+                    sortBy="#{d.billItem.bill.insId}" 
+                    filterBy="#{d.billItem.bill.insId}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                      <h:outputLabel value="Bill No"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.insId}" />
                 </p:column>
 
-                <p:column headerText="Billed Bill No">
+                <p:column headerText="Billed Bill No"
+                    sortBy="#{d.billItem.bill.billedBill.insId}" 
+                    filterBy="#{d.billItem.bill.billedBill.insId}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                      <h:outputLabel value="Billed Bill No"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
                 
-                <p:column headerText="Item Name">
+                <p:column headerText="Item Name"
+                    sortBy="#{d.billItem.item.name}" 
+                    filterBy="#{d.billItem.item.name}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                      <h:outputLabel value="Item Name"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.billItem.item.name}" />
                 </p:column>
 
@@ -110,7 +132,13 @@
                     </f:facet>-->
                 </p:column>
 
-                <p:column headerText="Date">
+                <p:column headerText="Date"
+                    sortBy="#{d.billItem.createdAt}" 
+                    filterBy="#{d.billItem.createdAt}"
+                    filterMatchMode="contains">
+                    <f:facet name="header">
+                      <h:outputLabel value="Date"/>
+                    </f:facet>
                     <h:outputLabel value="#{d.billItem.createdAt}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>

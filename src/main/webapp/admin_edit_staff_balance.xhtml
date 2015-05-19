@@ -18,8 +18,8 @@
                         <f:ajax event="keyup" execute="txtBalance" render="cmbReset" ></f:ajax>
                     </p:inputText>
                     <p:commandButton id="cmbReset" value="Reset Selected Staff Balance to #{staffController.resetStaffBalance}" 
-                                     ajax="false"
-                                     action="#{staffController.resetStaffBalance}"></p:commandButton>
+                                   ajax="false"
+                                    action="#{staffController.resetStaffBalance}"></p:commandButton>
                     <p:panel id="printer1" header="Staff Signature" >
                         <p:dataTable value="#{staffController.items}" var="s" 
                                      rowKey="#{s.id}"

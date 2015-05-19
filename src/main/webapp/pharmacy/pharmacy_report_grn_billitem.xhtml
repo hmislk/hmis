@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="GRN Bill Item Report">
                 <h:panelGrid columns="4" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
@@ -32,7 +32,7 @@
                     <p:outputLabel></p:outputLabel>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createGRNBillItemTable()}"/>
-                        <p:commandButton  actionListener="#{pharmacySaleReport.createPharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton actionListener="#{pharmacySaleReport.createPharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
@@ -45,6 +45,14 @@
                 <p:spacer height="30"/>
                 <p:dataTable value="#{pharmacySaleReport.billItems}" var="i" >
                     <f:facet name="header">
+                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel><br/>                   
                         <h:outputLabel value="Pharmacy GRN Bill Item Table"/>
                     </f:facet>
                     <p:column headerText="PO Number">

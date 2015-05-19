@@ -14,9 +14,9 @@
 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Inward Servcie Summery By Discharged Date"/><br/>
+                    <h:outputLabel value="Inward Servcie Summary By Discharged Date"/><br/>
                     <p:commandButton value="Refresh" ajax="false" id="btnRefresh"  
-                                     actionListener="#{serviceSummery.createServiceCategorySummeryInwardDischargedDetail()}"
+                                    actionListener="#{serviceSummery.createServiceCategorySummeryInwardDischargedDetail()}"
                                      styleClass="noPrintButton" style="float: right;" />
                     <p:defaultCommand target="btnRefresh"/>
 
@@ -85,6 +85,13 @@
                         <h:outputLabel value="BHT No" />
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
+                </p:column>
+                
+                <p:column headerText="Surgery Name">
+                    <f:facet name="header">
+                        <h:outputLabel value="Surgery Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.forwardReferenceBill.procedure.item.name}" />
                 </p:column>
                 
                 <p:column headerText="Discharged Date">

@@ -32,7 +32,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton ajax="false" value="Fill " action="#{salaryCycleController.listAllSalaryCycles()}"/>
-                                    <p:commandButton id="btnAdd" value="Add"  ajax="false"  action="#{salaryCycleController.prepareAdd()}" styleClass="buttons" >
+                                    <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{salaryCycleController.prepareAdd()}" styleClass="buttons" >
                                       
                                     </p:commandButton>
                                     <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -67,7 +67,7 @@
                                                 pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton  ajax="false" id="btnSave" value="Save"  action="#{salaryCycleController.saveSelected()}" styleClass="buttons">
+                                    <p:commandButton ajax="false" id="btnSave" value="Save" action="#{salaryCycleController.saveSelected()}" styleClass="buttons">
                                       
                                     </p:commandButton>
 

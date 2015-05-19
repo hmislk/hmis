@@ -79,11 +79,11 @@
                     </h:panelGrid>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Added Date" 
-                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+                                        action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="reportPrint"/>
                         </p:commandButton>
@@ -91,13 +91,23 @@
 
                 </p:panel>   
 
-                <p:panel id="reportPrint">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
                     <p:dataTable id="tbl" value="#{mdInwardReportController.billWithBillFeeses}" var="bwf">
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Service Details - " />
+                            <h:outputLabel value="From Date - " />
+                            <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="  To Date - " />
+                            <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value=" - Institution - #{mdInwardReportController.institution.name}" rendered="#{mdInwardReportController.institution ne null}"/>
+                        </f:facet>
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column headerText="BHT No">                                    
-                                </p:column>
-                                <p:column headerText="Institution">                                    
                                 </p:column>
                                 <p:column headerText="Department">                                    
                                 </p:column>
@@ -124,12 +134,6 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.bill.patientEncounter.bhtNo}"/>
                             </p:column>
-                            <p:column headerText="Institution" >
-                                <f:facet name="header">
-                                    <p:outputLabel value="Institution" />
-                                </f:facet>
-                                <h:outputLabel value="#{i.billItem.item.institution.name}"/>
-                            </p:column>
                             <p:column headerText="Department" >
                                 <f:facet name="header">
                                     <p:outputLabel value="Department" />
@@ -141,7 +145,7 @@
                                     <p:outputLabel value="Bill Time" />
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.billTime}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputLabel>
                             </p:column>   
                             <p:column headerText="Categoy" >
@@ -174,7 +178,7 @@
                         </p:subTable>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column footerText="Total" colspan="7" />
+                                <p:column footerText="Total" colspan="6" />
                                 <p:column style="text-align: right;" >
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{mdInwardReportController.total}">

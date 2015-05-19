@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -37,16 +38,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.ItemFacade;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
-import org.eclipse.persistence.internal.core.helper.CoreClassConstants;
 
 /**
  *
@@ -84,7 +82,8 @@ public class ReportsStock implements Serializable {
      */
     @Inject
     DealerController dealerController;
-
+    @Inject
+    SessionController sessionController;
     /**
      * EJBs
      */
@@ -167,9 +166,9 @@ public class ReportsStock implements Serializable {
             m.put("d", department);
             m.put("z", 0.0);
         }
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("m = " + m);
-//        //System.out.println("getStockFacade().findObjects(sql, m) = " + getStockFacade().findObjects(sql, m));
+//        ////System.out.println("sql = " + sql);
+//        ////System.out.println("m = " + m);
+//        ////System.out.println("getStockFacade().findObjects(sql, m) = " + getStockFacade().findObjects(sql, m));
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -311,7 +310,7 @@ public class ReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-                //   System.out.println("Previuos Stock " + sh.getStockQty());
+                //   //System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -319,13 +318,13 @@ public class ReportsStock implements Serializable {
                 flg = true;
             }
 
-            //   System.out.println("calculated History Qty " + calculatedStk);
+            //   //System.out.println("calculated History Qty " + calculatedStk);
             if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-                //   System.out.println("TRUE");
+                //   //System.out.println("TRUE");
             }
 
-            //   System.out.println("#########");
+            //   //System.out.println("#########");
         }
 
         stocks = new ArrayList<>();
@@ -429,12 +428,12 @@ public class ReportsStock implements Serializable {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
-                    //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                    //   System.out.println("Prv History Qty " + preHistoryQty);
-                    //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                    //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                    //   System.out.println("History " + curHistory);
-                    //   System.out.println("######");
+                    //   //System.out.println("Itm " + ph.getBillItem().getItem().getName());
+                    //   //System.out.println("Prv History Qty " + preHistoryQty);
+                    //   //System.out.println("Prv Qty " + previousPh.getQtyInUnit());
+                    //   //System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
+                    //   //System.out.println("History " + curHistory);
+                    //   //System.out.println("######");
                 }
 
                 previousPh = ph;
@@ -460,15 +459,21 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d and s.itemBatch.dateOfExpire between :fd and :td order by s.itemBatch.dateOfExpire";
+        sql = "select s "
+                + " from Stock s "
+                + " where s.stock > :st "
+                + " and s.department=:d "
+                + " and s.itemBatch.dateOfExpire "
+                + " between :fd and :td "
+                + " order by s.itemBatch.dateOfExpire";
         m.put("d", department);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+        m.put("st", 0.0);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
-//            ts.getItemBatch().getDateOfExpire()
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
@@ -530,8 +535,8 @@ public class ReportsStock implements Serializable {
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
 
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
 
         Set<Item> bis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
@@ -541,8 +546,8 @@ public class ReportsStock implements Serializable {
                 + " AND s.stock > 0 ";
         m = new HashMap();
         m.put("d", department);
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
         if (category != null) {
             sql += " AND s.itemBatch.item.category=:cat ";
             m.put("cat", category);
@@ -552,11 +557,11 @@ public class ReportsStock implements Serializable {
 
         Set<Item> sis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
-        System.out.println("bis.size() before removing = " + bis.size());
-        System.out.println("sis.size() before removing " + sis.size());
+        //System.out.println("bis.size() before removing = " + bis.size());
+        //System.out.println("sis.size() before removing " + sis.size());
 
         sis.removeAll(bis);
-        System.out.println("sis.size() after removing " + sis.size());
+        //System.out.println("sis.size() after removing " + sis.size());
         items = new ArrayList<>(sis);
 
         Collections.sort(items);
@@ -580,10 +585,10 @@ public class ReportsStock implements Serializable {
         }
     }
 
-    public void fillDistributorStocks() {
+    public String fillDistributorStocks() {
         if (department == null || institution == null) {
             UtilityController.addErrorMessage("Please select a department && Dealor");
-            return;
+            return "";
         }
         Map m;
         String sql;
@@ -592,17 +597,24 @@ public class ReportsStock implements Serializable {
         m = new HashMap();
         m.put("ins", institution);
         m.put("dep", department);
-        sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.id in "
-                + "(select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)";
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " and s.itemBatch.item.id in "
+                + "(select item.id "
+                + " from ItemsDistributors id join id.item as item "
+                + " where id.retired=false "
+                + " and id.institution=:ins)";
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
-
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-
+        return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
     }
 
     public void fillCategoryStocks() {
@@ -617,7 +629,13 @@ public class ReportsStock implements Serializable {
         m = new HashMap();
         m.put("cat", category);
         m.put("dep", department);
-        sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.category=:cat order by s.itemBatch.item.name";
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " and s.itemBatch.item.category=:cat "
+                + " order by s.itemBatch.item.name";
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -645,16 +663,22 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillCategoryStocksByCatagory() {
-
         Map m;
         String sql;
         records = new ArrayList<>();
 
         m = new HashMap();
         m.put("dep", department);
-        sql = "select sum(s.stock * s.itemBatch.purcahseRate), s.itemBatch.item.category from Stock s where s.department=:dep group by s.itemBatch.item.category";
+        m.put("st", 0.0);
+        sql = "select sum(s.stock * s.itemBatch.purcahseRate), "
+                + " s.itemBatch.item.category "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " group by s.itemBatch.item.category "
+                + " order by s.itemBatch.item.category.name";
         List<Object[]> objs = getStockFacade().findAggregates(sql, m);
-
+        //System.out.println("sql = " + sql);
         totalPurchaseValue = 0.0;
         stockRecords = new ArrayList<>();
 
@@ -679,16 +703,21 @@ public class ReportsStock implements Serializable {
         String sql;
         records = new ArrayList<>();
         List<Institution> dealers = getDealerController().getItems();
+        stockSaleValue = 0.0;
+        stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            //System.out.println("i = " + i);
+            //////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
+            m.put("d", department);
             sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
-                    + " from Stock s where s.department=:d and s.itemBatch.item.id in (select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)";
+                    + " from Stock s where s.department=:d and s.itemBatch.item.id in (select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)"
+                    + " ";
             Object[] objs = getStockFacade().findSingleAggregate(sql, m);
+
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                //System.out.println("objs = " + objs);
+                //////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -707,6 +736,9 @@ public class ReportsStock implements Serializable {
      * @return
      */
     public Department getDepartment() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
         return department;
     }
 
@@ -966,6 +998,14 @@ public class ReportsStock implements Serializable {
 
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
     }
 
 }

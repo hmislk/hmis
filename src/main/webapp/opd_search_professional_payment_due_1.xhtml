@@ -12,21 +12,15 @@
             <ui:define name="content">
                 <h:form>
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
-                    <p:panel header="Search Bills" >
-                        <f:facet name="header">
-                            <h:panelGrid columns="6" >
+                    <p:panel header="OPD Doctor Payments And Due" >
+                        
+                            <h:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
-                                <h:outputLabel/>
-
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
-
                                 <h:outputLabel value="Speciality"/> 
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -58,6 +52,10 @@
                                         #{ix.total}
                                     </p:column>
                                 </p:autoComplete>
+                            </h:panelGrid>
+                                <h:panelGrid columns="4"> 
+                                    <p:spacer width="90" height="0"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                     <pe:exporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
                                 </p:commandButton>
@@ -69,27 +67,25 @@
                                 <p:watermark for="scStaff" value="Staff / Doctor" />
 
                             </h:panelGrid>
-
-                        </f:facet>
                         <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-
-
-                            <p:panel header="OPD Professional Payment Details">
+                            <p:panel header="OPD Doctor Payments And Due">
 
                                 <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                                     <f:facet name="header">
-                                        <h:outputLabel value="From - "/>
+                                         <p:outputLabel value="Due Payments" /><br/>
+                                        <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
                                         </p:outputLabel>
-                                        <h:outputLabel value=" - To - "/>
+                                        <p:spacer width="30" height="10"/>
+                                        <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                        </h:outputLabel>
-                                        <p:outputLabel value=" - Due Payments" />
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                        </h:outputLabel><p:spacer width="30" height="10"/>
+                                       
                                     </f:facet>
                                     <p:column headerText="No" styleClass="alignTop">
                                         <f:facet name="No">
@@ -168,14 +164,18 @@
 
                                 <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
                                     <f:facet name="header">
+                                         <p:outputLabel value="Done Payments" /><br/>
+                                        <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
                                         </p:outputLabel>
-                                        <h:outputLabel value=" - To - "/>
+                                        <p:spacer width="30" height="1"/>
+                                        <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
                                         </h:outputLabel>
-                                        <p:outputLabel value=" - Done Payments" />
+                                        <p:spacer width="30" height="1"/>
+                                       
                                     </f:facet>
                                     <p:column headerText="No" styleClass="alignTop">
                                         <f:facet name="No">
@@ -245,7 +245,9 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-
+                                <f:facet name="footer">
+                                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                </f:facet>
                                 </p:dataTable>
                             </p:panel>
                         </p:panel>

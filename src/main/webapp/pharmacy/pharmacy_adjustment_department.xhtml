@@ -38,7 +38,7 @@
                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Expiary">
+                                    <p:column headerText="Expiry">
                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                             <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                         </h:outputLabel>
@@ -51,7 +51,7 @@
                                 <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" ></p:inputTextarea>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false" 
-                                                 action="#{pharmacyAdjustmentController.adjustDepartmentStock()}" ></p:commandButton>
+                                                action="#{pharmacyAdjustmentController.adjustDepartmentStock()}" ></p:commandButton>
                                 <p:defaultCommand target="btnAdjust"/>
                             </h:panelGrid>
 
@@ -84,7 +84,7 @@
                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                 </h:outputLabel>
 
-                                <h:outputLabel value="Expiary"/>
+                                <h:outputLabel value="Expiry"/>
                                 <h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                 </h:outputLabel>

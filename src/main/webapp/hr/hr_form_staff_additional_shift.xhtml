@@ -17,7 +17,7 @@
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                           
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                            
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         navigator="true"
@@ -49,7 +49,7 @@
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
-                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
+                                            action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
@@ -82,6 +82,9 @@
                                      scrollHeight="300" >
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"></p:commandButton>
+                            </p:column>
+                            <p:column headerText="ForNo">
+                                <p:outputLabel value="#{add.code}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>

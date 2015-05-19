@@ -53,7 +53,7 @@
                                            process="@this" 
                                            update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;" 
-                                           actionListener="#{storeGrnController.addDetailItemListener(bi)}"
+                                          actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
                         </p:commandButton>
                     </p:column>
@@ -62,7 +62,7 @@
                         <p:commandButton   value="Add Accessories" process="@this" 
                                            update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;"                                            
-                                           actionListener="#{storeGrnController.addChildItemListener(bi)}"
+                                          actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
                     </p:column>
@@ -231,7 +231,7 @@
                                              value="#{storeGrnController.currentExpense.rate}" style="width:100%" />  
                                 <p:inputText maxlength="250" value="#{storeGrnController.currentExpense.descreption}" ></p:inputText>
                                 <p:commandButton id="btnAddExpense" value="Add Expense" 
-                                                 action="#{storeGrnController.addExpense()}" 
+                                                action="#{storeGrnController.addExpense()}" 
                                                  process="billExpenseGrid" 
                                                  update="tblExpenses billExpenseGrid tot focusExpense "/>
                             </h:panelGrid>
@@ -391,8 +391,8 @@
                                 </p:inputTextarea>
 
                                 <p:commandButton id="btnAdd" value="Add Item" 
-                                                 action="#{storeGrnController.addItem}" 
-                                                 ajax="false"/>
+                                                action="#{storeGrnController.addItem}" 
+                                               ajax="false"/>
 
 
                             </p:panelGrid>

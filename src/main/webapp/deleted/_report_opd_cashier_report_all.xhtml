@@ -12,7 +12,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="All Cashier Summery" styleClass="reportFont">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="All Cashier Summary" styleClass="reportFont">
                     <f:facet name="header">
                         <h:outputLabel value="#{labels.company_name}"/><Br/>
                         <h:outputLabel value="Cashier-Wice Session Report"/>
@@ -43,7 +43,7 @@
                         </p:commandButton> 
 
                         <p:commandButton 
-                            ajax="false" 
+                          ajax="false" 
                             value="Excel"  
                             styleClass="noPrintButton" 
                             style="float: right;" >
@@ -58,7 +58,7 @@
 
                     <p:dataTable id="tbl" value="#{cashierReportController.cashierDatas}" var="csh">
                         <f:facet name="header">
-                            <h:outputLabel value="All Cashier Summery"/>
+                            <h:outputLabel value="All Cashier Summary"/>
 
 
 

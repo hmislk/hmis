@@ -11,22 +11,37 @@
 
             <ui:define name="content" >
                 <h:form >
-                    <p:panel header="Store Reports" >
-                        <p:panelGrid columns="4" styleClass="alignTop">
-                            <p:panel header="Stock Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
+                    <p:panel header="Store Reports" style="width: 1310px;">
+                        <p:panelGrid columns="4" styleClass="alignTop" >
+                            <h:panelGrid columns="1">
+                            <p:panel header="1) Stock Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1">
                                     <p:commandButton value="Department Stock By Batch" action="store_report_department_stock_by_batch" ajax="false"></p:commandButton>                            
-                                    <p:commandButton value="Department Stock By Expiary" action="store_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
+                                    <p:commandButton value="Department Stock By Expiry" action="store_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
                                     <p:commandButton value="Staff Stock By Batch" action="store_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Suppliers' Stock" action="store_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
                                     <p:commandButton value="Category Stock" action="store_report_category_stock_by_batch" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="All Suppliers' Stock" action="store_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Department Stock By Batch minus" action="store_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>                            
                                 </p:panelGrid>
+                                  </p:panel>
+                                <p:panel header="5) Sale Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
+                                    <p:commandButton value="Institution Item Movement" action="store_report_institution_movement" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Fast Moving" action="store_report_department_fast_moving" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Slow Moving" action="store_report_department_slow_moving" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Non Moving" action="store_report_department_non_moving" ajax="false" ></p:commandButton>                            
+                                </p:panelGrid>
                             </p:panel>
-
-                            <p:panel header="Transfer Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
+                                <p:panel header="9) Asset Registry" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
+                                    <p:commandButton value="Department Asset Registry" action="store_asset_registry" ajax="false" ></p:commandButton>                            
+                                </p:panelGrid>
+                            </p:panel>
+                            </h:panelGrid>
+                             <h:panelGrid columns="1">
+                            <p:panel header="2) Transfer Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
                                     <p:commandButton value="Transfer Issue By Bill Item" action="store_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Transfer Receive By Bill Item" action="store_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Transfer Issue by Bill" action="store_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
@@ -35,55 +50,42 @@
                                     <p:commandButton value="Transfer Issue Not Recieved" action="store_transfer_issued_list_report" ajax="false" ></p:commandButton> 
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Inventory Report" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
+                                  <p:panel header="6) Item Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
+                                    <p:commandButton value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
+                                </p:panelGrid>
+                            </p:panel>
+                             </h:panelGrid>
+                              <h:panelGrid columns="1">
+                            <p:panel header="3) Inventory Report" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
                                     <p:commandButton value="Department Assets" action="inventory_report_department_assets" ajax="false" ></p:commandButton>
                                     <p:commandButton value="Department Assets By Bill Item" action="store_report_grn_billitem" ajax="false" ></p:commandButton>
                                 </p:panelGrid>
                             </p:panel>
-
-
-                            <p:panel header="Purchase Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
+                                  <p:panel header="7) Item Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
+                                    <p:commandButton value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
+                                </p:panelGrid>
+                            </p:panel>
+                              </h:panelGrid>
+                            <h:panelGrid columns="1">
+                            <p:panel header="4) Purchase Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
                                     <p:commandButton value="Department Stock By Batch" action="store_department_stock_report_by_batch" ajax="false" ></p:commandButton>
                                     <p:commandButton value="Expencess Report" action="store_report_purchase_expenses" ajax="false" ></p:commandButton>
                                     <p:commandButton value="Purchase Request Not Approved" action="store_transfer_issued_list_not_approve_report" ajax="false" ></p:commandButton> 
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Sale Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Institution Item Movement" action="store_report_institution_movement" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Fast Moving" action="store_report_department_fast_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Slow Moving" action="store_report_department_slow_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Non Moving" action="store_report_department_non_moving" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-
-                            <p:panel header="Item Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Item Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Stock Taking Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
+                            <p:panel header="8) Stock Taking Reports" style="width: 270px; height: auto" collapsed="true" toggleable="true">
+                                <p:panelGrid columns="1" >
                                     <p:commandButton value="Before Stock Taking Report" action="store_report_before_stock_taking" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="After Stock Taking Report" action="store_report_after_stock_taking" ajax="false" ></p:commandButton>                            
                                 </p:panelGrid>
                             </p:panel>
-
-                            <p:panel header="Asset Registry" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Department Asset Registry" action="store_asset_registry" ajax="false" ></p:commandButton>                            
-                                </p:panelGrid>
-                            </p:panel>
-
+                            </h:panelGrid>
                         </p:panelGrid>
 
                     </p:panel>

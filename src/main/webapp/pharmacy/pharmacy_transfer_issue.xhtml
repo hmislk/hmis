@@ -45,11 +45,18 @@
                         </h:outputText>
                     </p:column>  
 
-                    <p:column headerText="Batch No"  style="width:50px!important;">  
+                    <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
-                    </p:column>  
-                    <p:column headerText="Cost Rate"  style="width:50px!important;">  
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">                        
+                    </p:column>
+                    
+                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>  
@@ -58,7 +65,8 @@
                         <p:rowEditor />  
                     </p:column>
 
-                    <p:column headerText="Qty" style="width:25px!important;">                   
+                    <p:column headerText="Qty" style="width:25px!important; text-align: right;
+                              ">                   
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
@@ -72,7 +80,7 @@
                     </p:column>              
 
                     <p:column style="width: 10px!important;">
-                        <p:commandButton value="Remove"  ajax="false" action="#{transferIssueController.remove(bItm)}">
+                        <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.remove(bItm)}">
                         </p:commandButton>
                     </p:column>
                 </p:dataTable>  

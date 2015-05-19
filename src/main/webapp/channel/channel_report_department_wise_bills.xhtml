@@ -17,19 +17,32 @@
             <h:form>
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputLabel value="Department wise Bill report"/>                          
-                        <h:panelGrid columns="5" >
+                        <h:outputLabel value="Department wise Bill report"/> 
+                        </f:facet>
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            <p:calendar  id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                             </p:calendar>
+                            <h:outputLabel/>
                             <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportController.createDepartmentBills()}"/>
                         </h:panelGrid>
-                    </f:facet>
+                    
 
                     <p:dataTable value="#{channelReportController.depBills}" var="db" >
+                        <f:facet name="header">
+                            <h:outputLabel value="All Department Bill Summary"/>
+                             <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                        </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
                                 <p:column headerText="Bill No"/>
@@ -46,6 +59,7 @@
                         <p:subTable value="#{db.bills}" var="b"  rendered="#{db.bills.size()>0}">
                             <f:facet name="header">
                                 <p:outputLabel value="Billed Department - #{db.billDepartment.name}"></p:outputLabel>
+                                <p:outputLabel value="Total - #{db.departmentBillTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel   value="#{b.insId}"/>

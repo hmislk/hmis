@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Summary By Payment Method">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
@@ -57,8 +57,19 @@
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedPaymentSummery.bills}" var="i">
                     <f:facet name="header">  
-                        <h:outputLabel value="Report Pharmacy Sale By Date Summery Payment Method"/>
+                        <h:outputLabel value="Report Pharmacy Sale By Date Summary Payment Method"/>
+                        <br/>
+                        <h:outputLabel value="From  "/>
+                        <h:outputLabel value="#{pharmacySaleReport.fromDate}">
+                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
+                        <p:spacer width="10" height="1"/>
+                        <h:outputLabel value="To  "/>
+                        <h:outputLabel value="#{pharmacySaleReport.toDate}">
+                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
                     </f:facet>
+                    
 
                     <p:column headerText="Date">
                         <f:facet name="header">

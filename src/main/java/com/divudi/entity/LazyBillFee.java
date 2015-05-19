@@ -52,9 +52,9 @@ public class LazyBillFee extends LazyDataModel<BillFee> {
 
                     String[] arr = property.split("\\.");
 
-                    //System.out.println("Property " + property);
-                    //System.out.println("String Value " + stringValue);
-                    //System.out.println("Arr Size: " + arr.length);
+                    ////System.out.println("Property " + property);
+                    ////System.out.println("String Value " + stringValue);
+                    ////System.out.println("Arr Size: " + arr.length);
                     if (arr.length == 1) {
                         fieldValue = String.valueOf(billFee.getClass().getDeclaredField(property).get(billFee));
                     } else if (arr.length == 2) {

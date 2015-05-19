@@ -59,7 +59,7 @@
 
 
                         <h:panelGroup>
-                            <p:panel header="Summery" id="tot">
+                            <p:panel header="Summary" id="tot">
 
                                 <h:panelGroup id="crd" style="display: #{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
                                     <credit:outputCredit  patientEncounter="#{bhtSummeryController.patientEncounter}"/>
@@ -179,14 +179,14 @@
                                 </p:column>                                
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update Room"
-                                                     action="#{roomChangeController.dischargeWithCurrentTime(rm)}"
-                                                     actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
+                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}"
+                                                    actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
                                                      onclick="onSubmitButton();"/>
                                 </p:column> 
                                 <p:column>
                                     <p:commandButton ajax="false" value="Cancel Discharge"
-                                                     action="#{roomChangeController.dischargeCancel(rm)}"
-                                                     actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
+                                                    action="#{roomChangeController.dischargeCancel(rm)}"
+                                                    actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
                                                      onclick="onSubmitButton();"/>
                                 </p:column> 
 
@@ -230,11 +230,11 @@
                                 </p:column>   
                                 <p:column >
                                     <p:commandButton ajax="false" value="Update" 
-                                                     action="#{bhtSummeryController.updatePatientItem(pt)}" onclick="onSubmitButton();"/>
+                                                    action="#{bhtSummeryController.updatePatientItem(pt)}" onclick="onSubmitButton();"/>
                                 </p:column>
                                 <p:column>
                                     <p:commandButton ajax="false" value="Remove "  
-                                                     action="#{inwardTimedItemController.removePatientItem(ti)}" onclick="onSubmitButton();"/>
+                                                    action="#{inwardTimedItemController.removePatientItem(ti)}" onclick="onSubmitButton();"/>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
@@ -293,7 +293,7 @@
                                     </p:column>
                                     <p:column>
                                         <p:commandButton ajax="false" rendered="#{ser.transBillItemCount ne 0}"
-                                                         action="inward_edit_bill_item_view"   
+                                                        action="inward_edit_bill_item_view"   
                                                          value="View Bill Items" onclick="onSubmitButton();" > 
                                             <f:setPropertyActionListener value="#{ser}" target="#{bhtSummeryController.item}"/>
                                         </p:commandButton>

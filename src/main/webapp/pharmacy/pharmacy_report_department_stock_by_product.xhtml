@@ -13,14 +13,14 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Department Stock Report by Product" >
+                    <p:panel header="Stock Report by Product" >
 
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
-                                             actionListener="#{reportsStock.fillDepartmentNonEmptyProductStocks()}" ></p:commandButton>
+                                            actionListener="#{reportsStock.fillDepartmentNonEmptyProductStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -37,29 +37,33 @@
                                          value="#{reportsStock.pharmacyStockRows}" var="i"  
 
                                          rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
-                                         rows="50"
+                                         rows="20"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Department Stock by Product - #{reportsStock.department.name}"/>                                     
+                                    <h:outputLabel value="Stock Report by Product - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 
 
                                 <p:column width="40px;" headerText="No" sortBy="#{ii}">
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
 
-                                <p:column headerText="Product" width="300px;" sortBy="#{i.item.name}" filterBy="#{i.item.name}"
-                                          filterMatchMode="contains">
+                                <p:column headerText="Product" 
+                                          sortBy="#{i.item.name}" >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item"/>
+                                        <h:outputLabel value="Product"/>
                                     </f:facet>
-                                    <h:commandLink value="#{i.item.name}" action="#{reportsStock.fillDepartmentNonEmptyStocksByVmp()}">
+                                    <h:commandLink value="#{i.item.name}" 
+                                                  action="#{reportsStock.fillDepartmentNonEmptyStocksByVmp()}">
                                         <f:setPropertyActionListener value="#{i.item}" target="#{reportsStock.vmp}" ></f:setPropertyActionListener>
                                     </h:commandLink>
                                 </p:column>
 
-                                <p:column headerText="Quantity" style="text-align: right;" sortBy="#{i.qty}">
+                                <p:column headerText="Quantity" 
+                                          style="text-align: right;" 
+                                          sortBy="#{i.qty}"
+                                          styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>                                     
                                     </f:facet>
@@ -69,7 +73,8 @@
                                 </p:column>
 
 
-                                <p:column headerText="Purchase Value" style="text-align: right;" sortBy="#{i.purchaseValue}">
+                                <p:column headerText="Purchase Value" styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.purchaseValue}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>                                     
                                     </f:facet>
@@ -79,7 +84,10 @@
                                 </p:column>
 
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;" sortBy="#{i.saleValue}">
+                                <p:column headerText="Sale Value" 
+                                          style="text-align: right;" 
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.saleValue}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>                                     
                                     </f:facet>
@@ -102,7 +110,10 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
+                                        <p:column
+                                            style="text-align: right;"
+                                            footerText="#{reportsStock.stockSaleValue}"
+                                            >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
