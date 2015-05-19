@@ -385,7 +385,7 @@ public class BookingController implements Serializable {
     private double fetchForiegnFee(Item item) {
         String jpql;
         Map m = new HashMap();
-        jpql = "Select sum(f.fee)"
+        jpql = "Select sum(f.ffee)"
                 + " from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:ses ";
@@ -494,11 +494,17 @@ public class BookingController implements Serializable {
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
+        System.out.println("bts = " + bts);     
         hh.put("bt", bts);
+        System.out.println("BilledBill.class = " + BilledBill.class);
         hh.put("class", BilledBill.class);
+        System.out.println("getSelectedServiceSession().getSessionAt()= " + getSelectedServiceSession().getSessionAt());
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        System.out.println("getSelectedServiceSession()" + getSelectedServiceSession());
         hh.put("ss", getSelectedServiceSession());
+        System.out.println("billSessions" + billSessions);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("billSessions" + billSessions);
 
     }
 

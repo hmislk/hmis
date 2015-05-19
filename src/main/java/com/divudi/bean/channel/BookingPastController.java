@@ -8,9 +8,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.Title;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
@@ -67,6 +69,7 @@ public class BookingPastController implements Serializable {
     private double hospitalTotalR;
     private double agentTotalR;
     private double taxTotalR;
+    int serialNo;
     ////////////////////
     private List<ServiceSession> serviceSessions;
     private List<BillSession> billSessions;
@@ -184,11 +187,8 @@ public class BookingPastController implements Serializable {
         }
     }
 
-    public void updatePatient() {
-        getBillSessionFacade().edit(getSelectedBillSession());
-
-        getPatientFacade().edit(getSelectedBillSession().getBill().getPatient());
-        UtilityController.addSuccessMessage("Patient Updated");
+    public Title[] getTitle() {
+        return Title.values();
     }
 
     public void makeNull() {
@@ -234,16 +234,100 @@ public class BookingPastController implements Serializable {
         setStaff(null);
     }
 
-    public void fillBillSessions(SelectEvent event) {
-        System.out.println("inside = ");
-        selectedServiceSession = null;
-        selectedBillSession = null;
-        try {
-            selectedServiceSession = ((ServiceSession) event.getObject());
-        } catch (Exception e) {
-            e.printStackTrace();
+    public int getSerialNo() {
+        return serialNo;
+    }
+
+    public void setSerialNo(int serialNo) {
+        this.serialNo = serialNo;
+    }
+
+    public boolean errorCheckForSerial() {
+        boolean alreadyExists = false;
+        for (BillSession bs : billSessions) {
+            //System.out.println("billSessions" + bs.getId());
+
+            if (selectedBillSession.equals(bs)) {
+
+            } else {
+                if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
+                    alreadyExists = true;
+                }
+            }
+            System.out.println("bs = " + bs);
+            System.out.println("selectedBillSession = " + selectedBillSession);
+            if (!bs.equals(selectedBillSession)) {
+                for (BillItem bi : bs.getBill().getBillItems()) {
+                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
+                    System.out.println("serealNo = " + serialNo);
+                    if (serialNo == bi.getBillSession().getSerialNo()) {
+                        System.err.println("Equals");
+                        alreadyExists = true;
+                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                    }
+                }
+            }
+
         }
-        billSessions = new ArrayList<>();
+
+        return alreadyExists;
+    }
+
+    public boolean errorCheck() {
+        boolean flag = false;
+        if (serialNo == 0) {
+            UtilityController.addErrorMessage("Cant Add This Number");
+            return true;
+        }
+        for (BillSession bs : billSessions) {
+            System.out.println("bs = " + bs);
+            System.out.println("selectedBillSession = " + selectedBillSession);
+            if (!bs.equals(selectedBillSession)) {
+                for (BillItem bi : bs.getBill().getBillItems()) {
+                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
+                    System.out.println("serealNo = " + serialNo);
+                    if (serialNo == bi.getBillSession().getSerialNo()) {
+                        System.err.println("Equals");
+                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        flag = true;
+                    }
+                }
+            }
+
+        }
+
+        return flag;
+    }
+
+    public void updateSerial() {
+        if (errorCheckForSerial()) {
+            return;
+        }
+        if (errorCheck()) {
+            return;
+        }
+
+        for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
+            bi.getBillSession().setSerialNo(serialNo);
+            System.out.println("bi = " + bi.getBillSession().getSerialNo());
+            System.out.println("serealNo = " + serialNo);
+            getBillItemFacade().edit(bi);
+        }
+
+        getBillSessionFacade().edit(getSelectedBillSession());
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        UtilityController.addSuccessMessage("Serial Updated");
+    }
+
+    public void updatePatient() {
+        getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
+        UtilityController.addSuccessMessage("Patient Updated");
+    }
+
+    public void fillBillSessions(SelectEvent event) {
+        selectedBillSession = null;
+        selectedServiceSession = null;
+        selectedServiceSession = ((ServiceSession) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -256,14 +340,17 @@ public class BookingPastController implements Serializable {
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
+        System.out.println("bts = " + bts);
         hh.put("bt", bts);
+        System.out.println("BilledBill.class = " + BilledBill.class);
         hh.put("class", BilledBill.class);
-        System.out.println("getSelectedServiceSession = " + getSelectedServiceSession());
-        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-        hh.put("ss", getSelectedServiceSession());        
-        System.out.println("billSessions = " + billSessions);
+        System.out.println("getDate()= " + getDate());
+        hh.put("ssDate", getDate());
+        System.out.println("getSelectedServiceSession()" + getSelectedServiceSession());
+        hh.put("ss", getSelectedServiceSession());
+        System.out.println("billSessions" + billSessions);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        System.out.println("billSessions = " + billSessions);
+        System.out.println("billSessions" + billSessions);
     }
 
     public void generateSessions(SelectEvent event) {
@@ -287,6 +374,7 @@ public class BookingPastController implements Serializable {
             sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
             serviceSessions = getServiceSessionFacade().findBySQL(sql);
         }
+        setSelectedServiceSession(null);
 
     }
 
@@ -462,7 +550,7 @@ public class BookingPastController implements Serializable {
     }
 
     public ServiceSession getSelectedServiceSession() {
-       return selectedServiceSession;
+        return selectedServiceSession;
     }
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
