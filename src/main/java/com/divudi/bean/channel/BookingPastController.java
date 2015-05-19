@@ -374,7 +374,7 @@ public class BookingPastController implements Serializable {
             sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
             serviceSessions = getServiceSessionFacade().findBySQL(sql);
         }
-        //setSelectedServiceSession(null);
+        setSelectedServiceSession(null);
 
     }
 

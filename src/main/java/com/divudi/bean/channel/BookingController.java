@@ -384,7 +384,7 @@ public class BookingController implements Serializable {
     private double fetchForiegnFee(Item item) {
         String jpql;
         Map m = new HashMap();
-        jpql = "Select sum(f.fee)"
+        jpql = "Select sum(f.ffee)"
                 + " from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:ses ";
