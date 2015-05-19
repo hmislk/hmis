@@ -480,7 +480,9 @@ public class BookingController implements Serializable {
 
     public void fillBillSessions(SelectEvent event) {
         selectedBillSession = null;
+        System.out.println("getSelectedServiceSession() before assign = " + getSelectedServiceSession());
         selectedServiceSession = ((ServiceSession) event.getObject());
+        System.out.println("getSelectedServiceSession() after assign = " + getSelectedServiceSession());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
