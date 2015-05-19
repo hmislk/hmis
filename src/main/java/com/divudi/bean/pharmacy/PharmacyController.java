@@ -16,6 +16,7 @@ import com.divudi.data.dataStructure.DepartmentSale;
 import com.divudi.data.dataStructure.DepartmentStock;
 import com.divudi.data.dataStructure.InstitutionSale;
 import com.divudi.data.dataStructure.InstitutionStock;
+import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
 import com.divudi.ejb.CommonFunctions;
@@ -156,14 +157,33 @@ public class PharmacyController implements Serializable {
     public void createAllItemTransactionSummery() {
         List<Amp> allAmps = ampController.getItems();
         itemTransactionSummeryRows = new ArrayList<>();
+        Map<Long,ItemTransactionSummeryRow> m= new HashMap();
+        
+        for(Amp a:allAmps){
+            ItemTransactionSummeryRow r  = new ItemTransactionSummeryRow();
+            r.setItem(a);
+            m.put(a.getId(), r);
+        }
+        
+        List<ItemQuantityAndValues> rs = findPharmacyTrnasactionQuantityAndValues(fromDate, toDate, institution, department, pharmacyItem, billTypes, referenceBillTypes);
+        
+        for(ItemQuantityAndValues v:rs){
+            ItemTransactionSummeryRow r  = m.get(v.getItem().getId());
+            if(r!=null){
+                r.setRetailSaleQty(v.getQuantity());
+                
+            }
+        }
+        
         for (Amp a : allAmps) {
             ItemTransactionSummeryRow r = new ItemTransactionSummeryRow();
             r.setItem(a);
+            ItemQuantityAndValues v = fi;
 
         }
     }
 
-    public double findPharmacyTrnasactionQuantityAndValues(Date fromDate,
+    public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
             Date toDate,
             Institution ins,
             Department department,
@@ -171,17 +191,24 @@ public class PharmacyController implements Serializable {
             BillType[] billTypes,
             BillType[] referenceBillTypes) {
 
-        if (item instanceof Ampp) {
-            item = ((Ampp) pharmacyItem).getAmp();
+        if (false) {
+            BillItem bi = new BillItem();
+            bi.getNetValue();
+            bi.getPharmaceuticalBillItem().getQty();
+            System.out.println("bi = " + bi.getDeptId());
         }
 
+        
+        List<ItemQuantityAndValues> lst ;
         
         String sql;
         Map m = new HashMap();
         m.put("frm", getFromDate());
         m.put("to", getToDate());
 
-        sql = "select sum(i.pharmaceuticalBillItem.qty) "
+        sql = "select new com.divudi.data.dataStructure.ItemQuantityAndValues(i.item, "
+                + "i.pharmaceuticalBillItem.qty, "
+                + "i.netValue) "
                 + " from BillItem i "
                 + " where i.bill.createdAt between :frm and :to  ";
         
@@ -214,7 +241,7 @@ public class PharmacyController implements Serializable {
         sql+=" group by i.item";
         sql+=" order by i.item.name";
         
-        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findObjectBySQL(sql, m, TemporalType.DATE);
 
     }
 
