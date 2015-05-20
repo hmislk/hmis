@@ -76,6 +76,7 @@ public class BookKeepingSummery implements Serializable {
     private List<String1Value3> opdList;
     List<String1Value2> outSideFees;
     private List<String1Value2> pharmacySales;
+    private List<String1Value2> channelBills;
     List<String1Value2> collections2Hos;
     List<String1Value2> finalValues;
     List<String3Value2> inwardCollections;
@@ -109,6 +110,7 @@ public class BookKeepingSummery implements Serializable {
     double chequeTotal;
     double slipTotal;
     double grantTotal;
+    double channelTotal;
     @Inject
     SessionController sessionController;
 
@@ -117,6 +119,7 @@ public class BookKeepingSummery implements Serializable {
         opdList = null;
         outSideFees = null;
         pharmacySales = null;
+        channelBills = null;
         collections2Hos = null;
         finalValues = null;
         inwardCollections = null;
@@ -145,6 +148,7 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = 0;
         slipTotal = 0;
         grantTotal = 0;
+        channelTotal = 0;
 
     }
 
@@ -325,6 +329,14 @@ public class BookKeepingSummery implements Serializable {
         this.grantTotal = grantTotal;
     }
 
+    public double getChannelTotal() {
+        return channelTotal;
+    }
+
+    public void setChannelTotal(double channelTotal) {
+        this.channelTotal = channelTotal;
+    }
+
     public double getOpdRegentTotal() {
         return opdRegentTotal;
     }
@@ -406,6 +418,19 @@ public class BookKeepingSummery implements Serializable {
     public void setPharmacySales(List<String1Value2> pharmacySales) {
         this.pharmacySales = pharmacySales;
     }
+
+    public List<String1Value2> getChannelBills() {
+        if(channelBills==null){
+            channelBills=new ArrayList<>();
+        }
+        return channelBills;
+    }
+
+    public void setChannelBills(List<String1Value2> channelBills) {
+        this.channelBills = channelBills;
+    }
+    
+    
 
     public double getOpdHospitalTotal() {
         return opdHospitalTotal;
@@ -2479,6 +2504,33 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    private void createChannelBill() {
+        System.err.println("createChannellBill");
+        channelBills = new ArrayList<>();
+
+        //System.err.println("DEP " + d.getName());
+        List<Object[]> list = getBillBean().fetchChannelBills(getFromDate(), getToDate(), getInstitution());
+
+        for (Object[] obj : list) {
+            String1Value2 newRow = new String1Value2();
+            Department department = ((Department) obj[0]);
+            Double value = (Double) obj[1];
+
+            if (department != null) {
+                newRow.setString(department.getName());
+            }
+
+            if (value != null) {
+                newRow.setValue1(value);
+            }
+
+            if (value != null) {
+                getChannelBills().add(newRow);
+            }
+        }
+
+    }
+
     @Inject
     AdmissionTypeController admissionTypeController;
 
@@ -2609,6 +2661,7 @@ public class BookKeepingSummery implements Serializable {
                 + opdStaffTotal
                 + outSideFeeTotal
                 + pharmacyTotal
+                + channelTotal
                 + inwardPaymentTotal
                 + agentPaymentTotal
                 + creditCompanyTotal
@@ -2731,7 +2784,6 @@ public class BookKeepingSummery implements Serializable {
         for (Object[] obj : list) {
 
             //System.out.println("obj = " + obj);
-
             Department department = (Department) obj[0];
             double dbl = (Double) obj[1];
 
@@ -2740,7 +2792,6 @@ public class BookKeepingSummery implements Serializable {
             newRow.setTotalPayment(dbl);
 
             //System.out.println("newRow = " + newRow);
-
             if (dbl != 0) {
                 channellingProfessionalPayments.add(newRow);
             }
@@ -2990,6 +3041,7 @@ public class BookKeepingSummery implements Serializable {
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOutSideFeeWithPro();
         createPharmacySale();
+        createChannelBill();
         createInwardCollection();
         agentCollections = agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
@@ -3003,6 +3055,7 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
+        channelTotal = getBillBean().calChannelTotal(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
