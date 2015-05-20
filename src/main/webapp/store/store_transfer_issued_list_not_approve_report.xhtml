@@ -11,15 +11,27 @@
         <h:form>
             <p:panel>
                 <f:facet name="header">
-                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>                   
-                    <h:panelGrid columns="6" >
+                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>
+                      </f:facet> 
+                    <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                        <p:calendar  id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
-                        <h:panelGrid columns="3" style="float : right!important;">
+                          <h:outputLabel value="Staff "/>                           
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                        
+                        <h:outputLabel  value="From Department"/>
+                        <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept1"
+                                         itemValue="#{dept1}" itemLabel="#{dept1.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
+                         </h:panelGrid>
+                        <h:panelGrid columns="4">
+                            <p:spacer width="115" height="1"/>
                             <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPoNotStoreApproveReport()}"/>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="datatable"  />
@@ -29,25 +41,21 @@
                                 <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_PurchaseOrder_Not_Approved"  />
                             </p:commandButton>
                         </h:panelGrid>
-
-                    </h:panelGrid>
-                    <h:panelGrid columns="6">
-                        <h:outputLabel value="Staff "/>                           
-                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                        
-                        <h:outputLabel  value="From Department"></h:outputLabel>
-                        <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
-                                         completeMethod="#{departmentController.completeDept}" var="dept1"
-                                         itemValue="#{dept1}" itemLabel="#{dept1.name}" 
-                                         forceSelection="true" rendered="true">
-                        </p:autoComplete>
-                        
-                        
-                    </h:panelGrid>
-                </f:facet>              
-
+                <p:panel>
+                    
                 <p:panel id="datatable">
-                <p:dataTable id="tbl1" value="#{searchController.bills}" var="p">                       
+                <p:dataTable id="tbl1" value="#{searchController.bills}" var="p"> 
+                    <f:facet name="header">
+                        <h:outputLabel value="#{sessionController.department.name} : &emsp;Purchase Request Not Approved"/>
+                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                            <h:outputLabel  value="#{searchController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel  value="#{searchController.toDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                            </h:outputLabel>
+                    </f:facet>
 
                     <p:column headerText="Issue No">                        
                         <h:outputLabel value="#{p.deptId}"/>                          
@@ -72,6 +80,9 @@
                         </f:facet>
                     </p:column>
                     
+                        <f:facet name="footer" >
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
 <!--                    <p:column headerText="Received">                   
                         <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
                             <p:column  >                                                               
@@ -82,7 +93,7 @@
 
                 </p:dataTable>
                 </p:panel>
-
+</p:panel>
             </p:panel>
         </h:form>
     </ui:define>  

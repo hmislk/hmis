@@ -326,7 +326,7 @@ public class BookingPastController implements Serializable {
 
     public void fillBillSessions(SelectEvent event) {
         selectedBillSession = null;
-        selectedServiceSession = null;
+        setSelectedServiceSession(null);
         selectedServiceSession = ((ServiceSession) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -340,17 +340,12 @@ public class BookingPastController implements Serializable {
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
-        System.out.println("bts = " + bts);
         hh.put("bt", bts);
-        System.out.println("BilledBill.class = " + BilledBill.class);
         hh.put("class", BilledBill.class);
-        System.out.println("getDate()= " + getDate());
         hh.put("ssDate", getDate());
         System.out.println("getSelectedServiceSession()" + getSelectedServiceSession());
         hh.put("ss", getSelectedServiceSession());
-        System.out.println("billSessions" + billSessions);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        System.out.println("billSessions" + billSessions);
     }
 
     public void generateSessions(SelectEvent event) {
@@ -374,7 +369,9 @@ public class BookingPastController implements Serializable {
             sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
             serviceSessions = getServiceSessionFacade().findBySQL(sql);
         }
-        //setSelectedServiceSession(null);
+
+        billSessions = new ArrayList<>();
+        setSelectedServiceSession(null);
 
     }
 
@@ -464,13 +461,13 @@ public class BookingPastController implements Serializable {
         return dbl;
     }
 
-    public Staff getStaff() {
-        makeBillSessionNull();
+    public Staff getStaff() {        
         return staff;
     }
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+        makeBillSessionNull();        
     }
 
     public StaffFacade getStaffFacade() {
@@ -711,9 +708,10 @@ public class BookingPastController implements Serializable {
         return date;
     }
 
-    public void setDate(Date date) {
-        makeBillSessionNull();
+    public void setDate(Date date) {        
         this.date = date;
+        makeBillSessionNull();
+        serviceSessions = new ArrayList<>();
 
     }
 

@@ -38,7 +38,7 @@
                     </p:calendar>
 
 
-                    <p:dataTable value="#{bookingPastController.serviceSessions}" rowKey="#{ses.roomNo}"
+                    <p:dataTable value="#{bookingPastController.serviceSessions}" rowKey="#{ses.id}"
                                  id="tblBookingsOfSelectedSession" var="ses"
                                  selectionMode="single" 
                                  selection="#{bookingPastController.selectedServiceSession}" scrollable="true" scrollHeight="300">
@@ -47,6 +47,9 @@
                                 update=":#{p:component('lblSessionTotal')} :#{p:component('tableBillSession')}"
                                 listener="#{bookingPastController.fillBillSessions}" />
 
+<!--                        <p:column headerText="ID">
+                            #{ses.id}
+                        </p:column>-->
                         <p:column headerText="Session">
                             #{ses.name}
                         </p:column>
