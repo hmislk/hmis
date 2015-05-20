@@ -164,23 +164,20 @@ public class PharmacyController implements Serializable {
             r.setItem(a);
             m.put(a.getId(), r);
         }
-        
-        List<ItemQuantityAndValues> rs = findPharmacyTrnasactionQuantityAndValues(fromDate, toDate, institution, department, pharmacyItem, billTypes, referenceBillTypes);
+        BillType[] bts = new BillType[]{BillType.PharmacySale};
+        BillType[] rbts = new BillType[]{BillType.PharmacyPre};
+        List<ItemQuantityAndValues> rs = findPharmacyTrnasactionQuantityAndValues(fromDate, 
+                toDate, null, department, null, bts, rbts);
         
         for(ItemQuantityAndValues v:rs){
             ItemTransactionSummeryRow r  = m.get(v.getItem().getId());
             if(r!=null){
                 r.setRetailSaleQty(v.getQuantity());
-                
+                r.setRetailSaleVal(v.getValue());
             }
         }
         
-        for (Amp a : allAmps) {
-            ItemTransactionSummeryRow r = new ItemTransactionSummeryRow();
-            r.setItem(a);
-            ItemQuantityAndValues v = fi;
-
-        }
+        
     }
 
     public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
@@ -240,7 +237,8 @@ public class PharmacyController implements Serializable {
         }
         sql+=" group by i.item";
         sql+=" order by i.item.name";
-        
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         return getBillItemFacade().findObjectBySQL(sql, m, TemporalType.DATE);
 
     }
