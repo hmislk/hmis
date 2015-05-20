@@ -20,7 +20,7 @@
                 </h:inputText>
                 <p:commandButton ajax="false" value="Process" action="#{webUserController.createTable()}"/>
                 
-                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u">
+                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u" >
                     <f:facet name="header" >
                         <h:outputLabel value="List of All Users" />
                     </f:facet>
@@ -37,7 +37,7 @@
                     </p:column>
                     
                     <p:column headerText="Staff Code">
-                        <h:inputText value="#{u.staff.code}"/>
+                        <h:inputText value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
                     </p:column>
                     
                     <p:column headerText="Staff Name">

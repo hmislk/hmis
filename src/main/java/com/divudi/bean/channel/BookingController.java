@@ -493,16 +493,35 @@ public class BookingController implements Serializable {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
-        HashMap hh = new HashMap();
-        System.out.println("bts = " + bts);     
+        HashMap hh = new HashMap();     
         hh.put("bt", bts);
-        System.out.println("BilledBill.class = " + BilledBill.class);
         hh.put("class", BilledBill.class);
-        System.out.println("getSelectedServiceSession().getSessionAt()= " + getSelectedServiceSession().getSessionAt());
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-        System.out.println("getSelectedServiceSession()" + getSelectedServiceSession());
         hh.put("ss", getSelectedServiceSession());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
         System.out.println("billSessions" + billSessions);
+
+    }
+    
+    public void fillBillSessions() {
+        selectedBillSession = null;
+//        selectedServiceSession = ((ServiceSession) event.getObject());
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        HashMap hh = new HashMap();     
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
         System.out.println("billSessions" + billSessions);
 

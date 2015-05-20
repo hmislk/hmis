@@ -178,7 +178,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
 
 //        editBillSession(b, bi);
-        UtilityController.addSuccessMessage("Channel Booking Added");        
+        UtilityController.addSuccessMessage("Channel Booking Added");
 
     }
 
@@ -314,6 +314,55 @@ public class ChannelBillController implements Serializable {
         if (getBillSession().getPaidBillSession().getBill().isRefunded()) {
             UtilityController.addErrorMessage("Already Refunded");
             return;
+        }
+
+        if (getBillSession().getBill().getBillFees() != null) {
+            
+            System.out.println("getBillSession().getBill().getBillFees() = " + getBillSession().getBill().getBillFees().size());
+
+            for (BillFee bf : getBillSession().getBill().getBillFees()) {
+                
+                if(bf.getTmpChangedValue()==null){
+                    continue;
+                }
+                
+                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
+
+                switch (bf.getFee().getFeeType()) {
+                    case OtherInstitution:
+                        if (bf.getFeeValue() < bf.getTmpChangedValue()) {
+                            UtilityController.addErrorMessage("Enter Lesser Amount for Agency Fee");
+                            return;
+                        }
+                        break;
+                    case Staff:
+                        if (bf.getFeeValue() < bf.getTmpChangedValue()) {
+                            UtilityController.addErrorMessage("Enter Lesser Amount for Doctor Fee");
+                            return;
+                        }
+                        break;
+
+                    case Service:
+                        if (bf.getFeeValue() < bf.getTmpChangedValue()) {
+                            UtilityController.addErrorMessage("Enter Lesser Amount for Scan Fee");
+                            return;
+                        }
+                        break;
+
+                    case OwnInstitution:
+                        if (bf.getFeeValue() < bf.getTmpChangedValue()) {
+                            UtilityController.addErrorMessage("Enter Lesser Amount for Hospital Fee");
+                            return;
+                        }
+                        break;
+
+                    default:
+                        UtilityController.addErrorMessage("Enter Refund Amount");
+                        break;
+
+                }
+            }
+
         }
 
         refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
@@ -555,7 +604,7 @@ public class ChannelBillController implements Serializable {
 
 //        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
         String insId = generateBillNumberInsId(cb);
-        
+
         if (insId.equals("")) {
             return null;
         }
@@ -686,9 +735,9 @@ public class ChannelBillController implements Serializable {
         rb.setNetTotal(0 - getRefundableTotal());
         rb.setTotal(0 - getRefundableTotal());
         rb.setPaidAmount(0 - getRefundableTotal());
-        
+
         String insId = generateBillNumberInsId(rb);
-        
+
         if (insId.equals("")) {
             return null;
         }
@@ -920,6 +969,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
 
         printingBill = getBillFacade().find(printingBill.getId());
+        bookingController.fillBillSessions();
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
 
@@ -1134,7 +1184,7 @@ public class ChannelBillController implements Serializable {
 
 //        bill.setInsId(getBillNumberBean().institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
         String insId = generateBillNumberInsId(bill);
-        
+
         if (insId.equals("")) {
             return null;
         }
@@ -1209,25 +1259,25 @@ public class ChannelBillController implements Serializable {
         BillClassType billClassType = null;
         if (bill instanceof BilledBill) {
             suffix = "CHANN";
-            billClassType=BillClassType.BilledBill;
+            billClassType = BillClassType.BilledBill;
         }
 
         if (bill instanceof CancelledBill) {
             suffix = "CHANNCAN";
-            billClassType=BillClassType.CancelledBill;
+            billClassType = BillClassType.CancelledBill;
         }
 
         if (bill instanceof RefundBill) {
             suffix = "CHANNREF";
-            billClassType=BillClassType.RefundBill;
+            billClassType = BillClassType.RefundBill;
         }
-        
+
         System.out.println("billClassType = " + billClassType);
-        
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
-        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType,suffix);
+        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         System.out.println("insId = " + insId);
         return insId;
     }
