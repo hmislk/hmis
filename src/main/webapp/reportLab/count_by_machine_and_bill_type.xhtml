@@ -20,86 +20,69 @@
                     <f:facet name="header" >
                         <p:outputLabel value="Investigation Count With Machine(By Item)" styleClass="noPrintButton"/>
 
+
+                        <h:panelGrid columns="2" styleClass="noPrintButton">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel  value="Institution"  ></h:outputLabel>
+                            <p:autoComplete  value="#{investigationMonthSummeryOwnController.institution}" 
+                                             completeMethod="#{institutionController.completeIns}" 
+                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                            </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="5" styleClass="noPrintButton">
+                            <p:spacer width="70" height="1"/>
+                            <p:commandButton ajax="false"  value="Refresh" action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType()}"
+                                             styleClass="noPrintButton" style="float: right;" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Investigation Count With Machine(By Item) From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>      
+                        </h:panelGrid>
                     </f:facet>
-
-                    <p:panelGrid columns="2" >
-
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-
-                        <h:outputLabel  value="Institution"  ></h:outputLabel>
-                        <p:autoComplete  value="#{investigationMonthSummeryOwnController.institution}" 
-                                         completeMethod="#{institutionController.completeIns}" 
-                                         var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
-                        </p:autoComplete>
-
-                    </p:panelGrid>
-
-
-                    <p:panelGrid columns="3" >
-
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation Count With Machine(By Item) From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
-                                         facetBackground="#008000" facetFontSize="15" 
-                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
-                        </p:commandButton>      
-
-                        <p:commandButton ajax="false"  value="Refresh" action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType()}"
-                                         styleClass="noPrintButton" style="float: right;" />
-
-
-
-                    </p:panelGrid>
-
                     <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.investigationCountWithMachines}" var="c" >
-
                         <f:facet name="header">
-
                             <h:outputLabel value="Investigation Month End Summary "/>
-                            <br/>
-                            <h:panelGrid columns="4" >
-                                <h:outputLabel value="FROM : "/>
+                            <h:outputLabel value="#{investigationMonthSummeryOwnController.institution.name}" style="white-space: pre-line"/>
+                            <h:outputLabel value="From : " style="white-space: pre-line"/>
                                 <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
                                     <f:convertDateTime pattern="dd MMMM yyyy" />
                                 </h:outputLabel>
-                                <h:outputLabel value="TO : "/>
+                            <h:outputLabel value="&emsp;&emsp;To : "/>
                                 <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
                                     <f:convertDateTime pattern="dd MMMM yyyy" />
                                 </h:outputLabel>
-                            </h:panelGrid>
                         </f:facet>
 
                         <p:column headerText="Machine Name" >
                             <h:outputLabel value="#{c.machine.name}"  />
                         </p:column>
-                        
+
                         <p:column headerText="OPD" style="text-align:right" >
                             <h:outputLabel value="#{c.opdCount}" />
                         </p:column>
-                        
+
                         <p:column headerText="Iward" style="text-align:right" >
                             <h:outputLabel value="#{c.inwardCount}" />
                         </p:column>
-                        
+
                         <p:column headerText="Collecting Centre" style="text-align:right" >
                             <h:outputLabel value="#{c.ccCount}" />
                         </p:column>
-                        
+
                         <p:column headerText="Total" style="text-align:right" >
                             <h:outputLabel value="#{c.count}" />
                         </p:column>
-                        
+
                         <p:columnGroup type="footer">  
                             <p:row>                              
                                 <p:column footerText="Total" colspan="4"/>
@@ -110,7 +93,10 @@
                                     </f:facet>
                                 </p:column>                             
                             </p:row>  
-                        </p:columnGroup> 
+                        </p:columnGroup>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet> 
 
                     </p:dataTable>
 
