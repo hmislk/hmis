@@ -20,7 +20,7 @@
                     
                     
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  styleClass="noPrintButton"  >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -37,7 +37,8 @@
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
-                    <h:panelGrid columns="3">
+                    <h:panelGrid columns="5">
+                        <p:spacer width="110" height="1"/>
                     <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                     action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
@@ -130,6 +131,9 @@
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="......................." />
                 </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
             </p:dataTable>
 
 

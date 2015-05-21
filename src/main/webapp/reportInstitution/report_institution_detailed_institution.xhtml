@@ -17,75 +17,71 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
 
                     <f:facet name="header" >
-                        
-                     <h:outputLabel value="Day-End Detailed Report"/>
+
+                        <h:outputLabel value="Day-End Detailed Report"/>
 
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
 
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" actionListener="#{commonReport.recreteModal()}" style="float: right;" />  
-                        <p:defaultCommand target="btnRefresh"/>
-
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="reportPrint"/>
-                        </p:commandButton>  
-                        <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" 
-                                         target="#{commonReport.institutionBilledBillsOwn.bills.size() ne 0 ?'billed,':''}
-                                         #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 ?'cancelled,':''}
-                                         #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 ?'refund,':''}
-                                         #{commonReport.institutionBilledBillsOwnPh.bills.size() ne 0 ?'billedPh,':''}
-                                         #{commonReport.institutionCancelledBillsOwnPh.bills.size() ne 0 ?'cancelledPh,':''}
-                                         #{commonReport.institutionRefundedBillsOwnPh.bills.size() ne 0 ?'refundPh,':''}
-                                         #{commonReport.institutionPaymentBillsOwn.bills.size() ne 0 ?'payment,':''}
-                                         #{commonReport.institutionPaymentCancelBillsOwn.bills.size() ne 0 ?'paymentCancel,':''}
-                                         #{commonReport.institutionPettyPaymentBillsOwn.bills.size() ne 0 ?'petty,':''}
-                                         #{commonReport.institutionPettyCancellBillsOwn.bills.size() ne 0 ?'pettyCancel,':''}
-                                         #{commonReport.institutionCashRecieveBillsOwn.bills.size() ne 0 ?'companyPay,':''}
-                                         #{commonReport.institutionCashRecieveCancellBillsOwn.bills.size() ne 0 ?'companyCancel,':''}
-                                         #{commonReport.institutionAgentBillsOwn.bills.size() ne 0 ?'agent,':''}
-                                         #{commonReport.institutionAgentCancellBillsOwn.bills.size() ne 0 ?'agentCancel,':''}
-                                         #{commonReport.institutionInwardPaymentBillsOwn.bills.size() ne 0 ?'inward,':''}
-                                         #{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size() ne 0 ?'inwardCancel,':''}
-                                         sum"  fileName="Cashier_Detailed_Reports" />
-                        </p:commandButton> 
-                        <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
-
-                            <h:outputLabel value="Cashier Day End Detailed Report "/>
-                            <p:spacer width="20" height="0"/>
-                            <h:outputLabel value="From" />
-                            <h:outputLabel  value="#{cashierReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                            <p:spacer width="10" height="0"/>
-                            <h:outputLabel value="To"/>
-                            <h:outputLabel  value="#{cashierReportController.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
                         </h:panelGrid>
+                        <h:panelGrid columns="5" styleClass="noPrintButton" >
+                            <p:spacer width="65" height="1"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" actionListener="#{commonReport.recreteModal()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                                <p:printer target="reportPrint"/>
+                            </p:commandButton>  
+                            <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton"  >
+                                <pe:exporter type="xlsx" 
+                                             target="#{commonReport.institutionBilledBillsOwn.bills.size() ne 0 ?'billed,':''}
+                                             #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 ?'cancelled,':''}
+                                             #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 ?'refund,':''}
+                                             #{commonReport.institutionBilledBillsOwnPh.bills.size() ne 0 ?'billedPh,':''}
+                                             #{commonReport.institutionCancelledBillsOwnPh.bills.size() ne 0 ?'cancelledPh,':''}
+                                             #{commonReport.institutionRefundedBillsOwnPh.bills.size() ne 0 ?'refundPh,':''}
+                                             #{commonReport.institutionPaymentBillsOwn.bills.size() ne 0 ?'payment,':''}
+                                             #{commonReport.institutionPaymentCancelBillsOwn.bills.size() ne 0 ?'paymentCancel,':''}
+                                             #{commonReport.institutionPettyPaymentBillsOwn.bills.size() ne 0 ?'petty,':''}
+                                             #{commonReport.institutionPettyCancellBillsOwn.bills.size() ne 0 ?'pettyCancel,':''}
+                                             #{commonReport.institutionCashRecieveBillsOwn.bills.size() ne 0 ?'companyPay,':''}
+                                             #{commonReport.institutionCashRecieveCancellBillsOwn.bills.size() ne 0 ?'companyCancel,':''}
+                                             #{commonReport.institutionAgentBillsOwn.bills.size() ne 0 ?'agent,':''}
+                                             #{commonReport.institutionAgentCancellBillsOwn.bills.size() ne 0 ?'agentCancel,':''}
+                                             #{commonReport.institutionInwardPaymentBillsOwn.bills.size() ne 0 ?'inward,':''}
+                                             #{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size() ne 0 ?'inwardCancel,':''}
+                                             sum"  fileName="Cashier_Detailed_Reports" />
+                            </p:commandButton> 
+                            </h:panelGrid>
+                       
+                            <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
+                                <h:outputLabel value="Cashier Day End Detailed Report "/>
+                                <p:spacer width="20" height="0"/>
+                                <h:outputLabel value="From" />
+                                <h:outputLabel  value="#{cashierReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <p:spacer width="10" height="0"/>
+                                <h:outputLabel value="To"/>
+                                <h:outputLabel  value="#{cashierReportController.toDate}" style="float: right" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                            </h:panelGrid>
                     </f:facet>
-
-
-                    <h:panelGrid columns="6" styleClass="noPrintButton" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-
-                    </h:panelGrid>
-
-
                     <p:dataTable id="billed"  value="#{commonReport.institutionBilledBillsOwn.bills}" var="b" 
                                  rendered="#{commonReport.institutionBilledBillsOwn.bills.size()>0}" sortBy="#{b.billType}"  
                                  paginator="false"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15,20">
-                       
+
                         <f:facet name="header">
-                              <h:outputLabel value="Day-End Detailed Report"/>
+                            <h:outputLabel value="Day-End Detailed Report"/>
                             <h:outputLabel value="Opd Bills"/>
                         </f:facet>
 
