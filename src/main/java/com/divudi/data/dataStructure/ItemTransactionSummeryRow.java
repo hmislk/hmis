@@ -17,6 +17,7 @@ public class ItemTransactionSummeryRow {
     Double wholeSaleQty;
     Double bhtSaleQty;
     Double transferOutQty;
+    Double issueQty;
     Double totalOutQty;
     Double transferInQty;
     Double purchaseQty;
@@ -24,6 +25,7 @@ public class ItemTransactionSummeryRow {
     
     Double retailSaleVal;
     Double wholeSaleVal;
+    Double issueVal;
     Double bhtSaleVal;
     Double transferOutVal;
     Double totalOutVal;
@@ -31,6 +33,24 @@ public class ItemTransactionSummeryRow {
     Double purchaseVal;
     Double totalInVal;
 
+    public Double getIssueQty() {
+        return issueQty;
+    }
+
+    public void setIssueQty(Double issueQty) {
+        this.issueQty = issueQty;
+    }
+
+    public Double getIssueVal() {
+        return issueVal;
+    }
+
+    public void setIssueVal(Double issueVal) {
+        this.issueVal = issueVal;
+    }
+
+    
+    
     public Item getItem() {
         return item;
     }

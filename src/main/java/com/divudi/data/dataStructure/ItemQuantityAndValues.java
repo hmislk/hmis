@@ -36,6 +36,12 @@ public class ItemQuantityAndValues {
         this.value = value;
     }
 
+    public ItemQuantityAndValues(Item item, double quantity, double value) {
+        this.item = item;
+        this.quantity = quantity;
+        this.value = value;
+    }
+
     
     
     public Double getQuantity() {
