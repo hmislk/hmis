@@ -13,99 +13,67 @@
             <ui:define name="content">
 
                 <h:form>
+                    <p:panel header="Institution Reports">
+                        <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
 
-                    <h:panelGrid columns="3"  >
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Book Keeping Summary(With Professional)"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Book Keeping Summary(Witout Professional)"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_without_pro_month"/>                             
-                        </h:panelGrid>
-
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Day End"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Summary By Service Opd"/>
-                            </f:facet>
-                            <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category" action="report_opd_service_summery_by_category" /> 
+                            <h:panelGrid columns="1" >                               
+                                <p:panel header="Book Keeping Summary(With Professional)" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
+                                </p:panel>
+                                <p:panel header="Summary By Service Opd" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category" action="report_opd_service_summery_by_category" /> 
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="Credit Company" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
 
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Summary By Service Inward"/>
-                            </f:facet>
-                            <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Added Date" action="report_inward_service_detail_added" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Discharged Date" action="report_inward_service_detail_discharged" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Added Date" action="report_inward_service_summery_by_category_added" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Discharge Date" action="report_inward_service_summery_by_category_discharged" /> 
-
-                            </h:panelGrid>
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Managing Director"/>
-                            </f:facet>
-                            <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill(Opd)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
-                            </h:panelGrid>
-
-                        </h:panelGrid>
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Credit Company "/>
-                            </f:facet>
-                            <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
-
+                            <h:panelGrid columns="1" >
+                                <p:panel header="Book Keeping Summary(Witout Professional)" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_without_pro_month"/>                             
+                                </p:panel>
+                                <p:panel header="Summary By Service Inward" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Added Date" action="report_inward_service_detail_added" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Discharged Date" action="report_inward_service_detail_discharged" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Added Date" action="report_inward_service_summery_by_category_added" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Discharge Date" action="report_inward_service_summery_by_category_discharged" /> 
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="Staff Credit" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare Balance" action="report_staff_welfare" />
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
 
 
-                        </h:panelGrid>
-                        
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Staff Credit"/>
-                            </f:facet>
-                            <h:panelGrid >                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" /> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare Balance" action="report_staff_welfare" />
+                            <h:panelGrid columns="1" >
+                                <p:panel header="Day End" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                </p:panel>
+                                <p:panel header="Managing Director" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill(Opd)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
+                                    </h:panelGrid>
+                                </p:panel>
+                                
                             </h:panelGrid>
-
-
                         </h:panelGrid>
-
-                    </h:panelGrid>
-
+                    </p:panel>
                 </h:form>
             </ui:define>
 
