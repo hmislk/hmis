@@ -63,7 +63,10 @@
                                 </p:commandButton>
                                 <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true )}"   value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
-                                <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}"/>
+                                <p:commandButton styleClass="nonPrintBlock" 
+                                                 ajax="false" value="Print" 
+                                                 onclick="window.print();" disabled="#{patientReportController.currentPatientReport.printed and !webUserController.hasPrivilege('LabReprinting')}"
+                                                 actionListener="#{patientReportController.printPatientReport()}"/>
                                 <p:spacer width="30" ></p:spacer>
                                 <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                 </p:commandButton>
@@ -239,9 +242,10 @@
 
                     </h:panelGroup>
 
-
-
-                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" />
+                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" 
+                                     disabled="#{patientReportController.currentPatientReport.printed and !webUserController.hasPrivilege('LabReprinting')}"
+                                     onclick="window.print();" 
+                                     actionListener="#{patientReportController.printPatientReport()}" />
 
                     <p:panel styleClass="myDivToPrint" id="divPrint" style="border: 0px; margin: 0px; padding: 0px; background-color: white!important;" >
 
