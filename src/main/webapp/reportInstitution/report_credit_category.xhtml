@@ -10,32 +10,14 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        
+
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary With Pro (DAY)"  styleClass="noPrintButton" />
-                    <p:commandButton value="Process Credit Items" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;"
-                                    action="#{bookKeepingSummery.processCreditItems()}"/>
-                    
-                    <p:commandButton value="Process Credit Items Paid" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;"
-                                    action="#{bookKeepingSummery.processCreditPaidItems()}"/>
-
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new"
-                                     fileName="Book_Keeping_Summery_with_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
-
-                    <h:panelGrid columns="2"  styleClass="noPrintButton" style="min-width: 100%;" >
+                   
+                    <h:panelGrid columns="2"  styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -50,20 +32,41 @@
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-                        
-                         <h:outputLabel value="Select Income Institution"/>
+
+                        <h:outputLabel value="Select Income Institution"/>
 
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}"
                                         forceSelection="true"
-                                         value="#{bookKeepingSummery.incomeInstitution}"
+                                        value="#{bookKeepingSummery.incomeInstitution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-                        
-                         <h:outputLabel value="Select Credit Company"/>
 
-                         <p:autoComplete completeMethod="#{institutionController.completeCredit}" 
+                        <h:outputLabel value="Select Credit Company"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCredit}" 
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.creditCompany}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                    </h:panelGrid>
+                     <h:panelGrid columns="5"  styleClass="noPrintButton">
+                         <p:spacer width="160" height="1"/>
+                        <p:commandButton value="Process Credit Items" ajax="false" 
+                                         styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.processCreditItems()}"/>
+
+                        <p:commandButton value="Process Credit Items Paid" ajax="false" 
+                                         styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.processCreditPaidItems()}"/>
+
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new"
+                                         fileName="Book_Keeping_Summery_with_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
                     </h:panelGrid>
 
                 </f:facet>

@@ -14,21 +14,8 @@
 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Inward Servcie Summary By Discharged Date"/><br/>
-                    <p:commandButton value="Refresh" ajax="false" id="btnRefresh"  
-                                    actionListener="#{serviceSummery.createServiceCategorySummeryInwardDischargedDetail()}"
-                                     styleClass="noPrintButton" style="float: right;" />
-                    <p:defaultCommand target="btnRefresh"/>
-
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-
-                    <p:commandButton value="Excel" ajax="false" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd" fileName="Service_Summery_By_Category"  />
-                    </p:commandButton>
-
-                    <h:panelGrid columns="2" style="min-width: 100%;border: none;">
+                    <h:outputLabel value="Inward Servcie Summary By Discharged Date"/>
+                    <h:panelGrid columns="2" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
                         </p:calendar>
@@ -45,6 +32,22 @@
                             <p:column>#{pta.parentCategory}</p:column>                                        
                         </p:autoComplete>
                     </h:panelGrid>
+                    <h:panelGrid columns="5" styleClass="noPrintButton">
+                        <p:spacer width="195" height="1"/>
+                        <p:commandButton value="Refresh" ajax="false" id="btnRefresh"  
+                                         actionListener="#{serviceSummery.createServiceCategorySummeryInwardDischargedDetail()}"
+                                         styleClass="noPrintButton" />
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel" ajax="false">
+                            <pe:exporter type="xlsx" target="opd" fileName="Service_Summery_By_Category"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                    
                 </f:facet>
             </p:panel>
             <p:spacer height="30"/>
@@ -55,12 +58,13 @@
                          rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
-                    <h:outputLabel value="#{serviceSummery.category.name}"/>
-                    <h:outputLabel value=" : "/>
+                    <h:outputLabel value="Summary By Service Category - Discharged Date"/>
+                    <h:outputLabel value="#{serviceSummery.category.name}" style="white-space: pre-line"/>
+                    <h:outputLabel value=" &emsp;&emsp;From : "/>
                     <h:outputLabel value="#{serviceSummery.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
-                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="&emsp;&emsp;To"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -86,14 +90,14 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
                 </p:column>
-                
+
                 <p:column headerText="Surgery Name">
                     <f:facet name="header">
                         <h:outputLabel value="Surgery Name" />
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.forwardReferenceBill.procedure.item.name}" />
                 </p:column>
-                
+
                 <p:column headerText="Discharged Date">
                     <f:facet name="header">
                         <h:outputLabel value="Discharged Date" />
@@ -159,7 +163,7 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
-                
+
                 <p:column headerText="Hospital Fee Gross" style="text-align: right;">
                     <f:facet name="header">
                         <h:outputLabel value="Hospital Fee Gross" />
@@ -173,7 +177,7 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
-                
+
                 <p:column headerText="Hospital Fee Discount" style="text-align: right;">
                     <f:facet name="header">
                         <h:outputLabel value="Hospital Fee Discount" />
@@ -187,7 +191,7 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
-                
+
                 <p:column headerText="Hospital Fee Margin" style="text-align: right;">
                     <f:facet name="header">
                         <h:outputLabel value="Hospital Fee Margin" />
@@ -228,7 +232,14 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
+
+                    <f:facet name="footer" >
+                        <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    </f:facet>
                 </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
             </p:dataTable> 
 

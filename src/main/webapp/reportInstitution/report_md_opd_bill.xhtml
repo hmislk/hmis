@@ -12,23 +12,29 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
             <p:panel id="gpBillPreview">
+                <f:facet name="header">
+                    <h:outputLabel value="6) Managing Director"/>
+                </f:facet>
 
-                <h:panelGrid columns="6" style="min-width: 100%;">                    
-                    <h:outputLabel value="From"/>
+                <h:panelGrid columns="2" styleClass="noPrintButton">                    
+                    <h:outputLabel value="From Date"/>
                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
-                    <h:outputLabel value="To"/>
+                    <h:outputLabel value="To Date"/>
                     <p:calendar id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
-                    
-                    
-                    <h:panelGrid columns="4">
+
+                </h:panelGrid>   
+                <h:panelGrid columns="5" styleClass="noPrintButton">
+                    <p:spacer width="60" height="1"/>
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
                     <p:defaultCommand target="btnRefresh"/>
-
+                    <p:commandButton value="Print" ajax="false" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float:right;">
                         <pe:exporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
                                      facetBackground="#008000" facetFontSize="15" 
@@ -36,29 +42,27 @@
                                      fontName="Courier New"  />
                     </p:commandButton>
 
-                    <p:commandButton value="Print" ajax="false" >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
-                    </h:panelGrid>
 
-                </h:panelGrid>   
+                </h:panelGrid>
+
+
 
                 <p:dataTable id="tbl" value="#{mdReportController.bills}"  
                              rowIndexVar="i" var="bill" 
                              filteredValue="#{mdReportController.fillterBill}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                             paginator="false"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15,20">
 
 
 
                     <f:facet name="header">
-                        <h:outputLabel value="Report by Bill OPD From &nbsp;&nbsp; : "/>
-
+                        <h:outputLabel value="REPORT BY BILL(OPD)"/>
+                        <h:outputLabel value=" From : " style="white-space: pre-line"/>
                         <h:outputLabel  value="#{mdReportController.fromDate}">
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel>
-                        <h:outputLabel value=" - " />
+                        <h:outputLabel value="&emsp;&emsp;To :"/>
                         <h:outputLabel  value="#{mdReportController.toDate}" >
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel>
@@ -146,6 +150,9 @@
                             </p:column>
                         </p:row>
                     </p:columnGroup>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
                 </p:dataTable>
 
