@@ -13,30 +13,29 @@
             <ui:define name="content">
 
                 <h:form>
-                    <p:panel header="Inward Dues and Access">
-                        <h:panelGrid columns="2" styleClass="alignTop" style="margin: auto;" >
-                            <p:panel header="Dues" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
-                                <h:panelGrid columns="1">
-                                    <p:commandButton action="/credit/inward_due_search" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
-                                    <p:commandButton action="/credit/inward_due_search_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search(Credit Company)" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
-                                    <p:commandButton  action="/credit/inward_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
-                                     <p:commandButton  action="/credit/inward_due_age_credit_company_detail" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age Detail" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
-                                    <p:commandButton  action="/credit/inward_due_age_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age(Credit Company)" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>                            
+                    <p:panel header="Inward Dues And Access">
+                        <h:panelGrid columns="2" styleClass="alignTop" style="margin: auto;" > 
+                            <h:panelGrid columns="2"  >
+                            <p:panel header="Dues" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"  >
+                                <p:commandButton action="/credit/inward_due_search" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
+                                <p:commandButton action="/credit/inward_due_search_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search(Credit Company)" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
+                                <p:commandButton  action="/credit/inward_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
+                                <p:commandButton  action="/credit/inward_due_age_credit_company_detail" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age Detail" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
+                                <p:commandButton  action="/credit/inward_due_age_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age(Credit Company)" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>                            
+
+                            </p:panel>
                                 </h:panelGrid>
+                        <h:panelGrid columns="2"  >
+                            <p:panel header="Excess" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"  >
+                                <p:commandButton action="/credit/credit_company_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
+                                <p:commandButton   action="/credit/credit_company_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
+                                <p:commandButton action="/credit/cash_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
+                                <p:commandButton   action="/credit/cash_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
                             </p:panel>
 
-                            <p:panel header="Excess" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
-                                <h:panelGrid columns="1">
-                                    <p:commandButton action="/credit/credit_company_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
-                                    <p:commandButton   action="/credit/credit_company_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
-                                    <p:commandButton action="/credit/cash_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
-                                    <p:commandButton   action="/credit/cash_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
-                                </h:panelGrid>
-                            </p:panel>
                         </h:panelGrid>
-
+                        </h:panelGrid>
                     </p:panel>
-
                 </h:form>
             </ui:define>
 
