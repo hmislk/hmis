@@ -49,11 +49,11 @@
                         <h:outputLabel value="#{sessionController.department.name} : &emsp;Purchase Request Not Approved"/>
                         <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                             <h:outputLabel  value="#{searchController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>                          
                             <h:outputLabel value="&emsp;&emsp;To :"/>
                             <h:outputLabel  value="#{searchController.toDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                     </f:facet>
 
@@ -79,10 +79,9 @@
                             <h:outputLabel value="#{searchController.netTotalValue}"/>
                         </f:facet>
                     </p:column>
-                    
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 <!--                    <p:column headerText="Received">                   
                         <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
                             <p:column  >                                                               

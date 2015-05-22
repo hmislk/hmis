@@ -51,11 +51,11 @@
                                     <h:outputLabel value="#{commonReport.department.name}"/>
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                     <h:outputLabel  value="#{storePurchaseController.frmDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
                                     <h:outputLabel  value="#{storePurchaseController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </f:facet>
 
@@ -123,7 +123,7 @@
                                     </p:row>
                                 </p:columnGroup>
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
                             </p:dataTable>
                         </p:panel>
