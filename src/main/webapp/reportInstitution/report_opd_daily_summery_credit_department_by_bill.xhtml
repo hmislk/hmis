@@ -14,11 +14,27 @@
 
             <p:panel  style="border: none;">
                 <f:facet name="header" >
-                    <p:outputLabel value="#{creditSummeryController.institution.name} "/> <p:outputLabel value=" Credit Summary - Detail"/><br/>
-                    <p:autoComplete styleClass="noPrintButton" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
+                   
+                    <p:outputLabel value="#{creditSummeryController.institution.name} "/> 
+                    <p:outputLabel value=" Credit Summary - Detail"/><br/>
+                    
+                    <h:panelGrid columns="2" styleClass="noPrintButton">
+
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <h:outputLabel value="Credit Company"/>
+                        <p:autoComplete styleClass="noPrintButton" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
                                     completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                      
                     </p:autoComplete>  
+                    </h:panelGrid>
+                    <h:panelGrid columns="5" styleClass="noPrintButton">
+                        <p:spacer width="100" height="1"/>   
                     <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" actionListener="#{creditSummeryController.makeNull}" />
                     <p:defaultCommand target="btnRefresh"/>
 
@@ -30,25 +46,28 @@
                         <pe:exporter subTable="true" type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
                     </p:commandButton>
 
-                  
-
-                    <h:panelGrid columns="5" style="min-width: 100%;border: none;">
-
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-                    </h:panelGrid>
+                  </h:panelGrid>
                 </f:facet>
 
             </p:panel>            
             <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">                       
+                         rowsPerPageTemplate="5,10,15,20">  
+                <f:facet name="header">
+                    <h:outputLabel value="Report By Bill"/>
+                    <h:outputLabel value="#{creditSummeryController.institution.name}" style="white-space: pre-line"/>
+                        <br/>
+                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="#{creditSummeryController.fromDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+                        <p:spacer width="30" height="1"/>
+                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel value="#{creditSummeryController.toDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+                </f:facet>
                 <p:columnGroup type="header">
                     <p:row>
 
@@ -132,6 +151,9 @@
                         </p:column>
                     </p:row>
                 </p:columnGroup>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
                 <!--                <f:facet name="footer">
                                     <h:outputLabel value="Total Collection" />

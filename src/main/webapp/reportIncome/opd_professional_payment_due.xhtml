@@ -14,53 +14,63 @@
 
                 <h:form>
                     <p:panel header="Search Bills" >
+                        <f:facet name="header">
+                            <h:outputLabel value=" Doctor Payments"/>
 
-                        <h:panelGrid columns="8" >
-                            <h:outputLabel value="From Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
-                            </p:calendar>
-                            <p:spacer width="70"/>
-                            <h:outputLabel value="To Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
-                            </p:calendar>
-                        </h:panelGrid>
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar  id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                            </h:panelGrid>
 
-                        <h:panelGrid columns="6">
-                            <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                            <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
-                            <h:outputLabel value="Opd Bill No"/>
-                            <h:outputLabel value="Patient Name"/>
-                            <h:outputLabel value="Speciality"/> 
-                            <h:outputLabel value="Doctor Name"/>      
-                            <h:outputLabel value="Service Name"/>  
-                            <h:outputLabel value="Charges"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+                            <h:panelGrid columns="7">
+                                <p:spacer height="30" width="70"/>
+                                <h:outputLabel value="Opd Bill No"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <h:outputLabel value="Speciality"/> 
+                                <h:outputLabel value="Doctor Name"/>      
+                                <h:outputLabel value="Service Name"/>  
+                                <h:outputLabel value="Charges"/>
+                                <p:spacer height="30" width="70"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
 
-                        </h:panelGrid>
-                        <h:panelGrid columns="3">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="tblFee" ></p:printer>
-                            </p:commandButton>
+                            </h:panelGrid>
+                            <h:panelGrid columns="5">
+                                <p:spacer height="30" width="70"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="tblFee" ></p:printer>
+                                </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableAll()}">
-                                <pe:exporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
-                            </p:commandButton> 
-                        </h:panelGrid>
-
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableAll()}">
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
+                                </p:commandButton> 
+                            </h:panelGrid>
+                        </f:facet>
 
                         <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
-
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                            <f:facet name="header">
+                                <h:outputLabel value="Doctor Payment Due Report OPD"/>
+                                <h:outputLabel value="From : " style="white-space: pre-line"/>
+                                <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
+                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                </h:outputLabel>
+                                <h:outputLabel value="&emsp; &emsp;To : "  />
+                                <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                </h:outputLabel>
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
@@ -127,6 +137,9 @@
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
                             </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
                         </p:dataTable>
 

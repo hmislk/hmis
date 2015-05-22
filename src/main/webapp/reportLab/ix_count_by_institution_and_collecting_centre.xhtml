@@ -13,80 +13,81 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
 
-            <p:panel id="panelPrint"  styleClass="noBorder summeryBorder" header="Investigation Count By Institution and Collecting Centre">
+            <p:panel id="panelPrint"  styleClass="noBorder summeryBorder" >
+                <f:facet name="header">
+                    <h:outputLabel value="3) Investigation Counts"/>
+                    <h:panelGrid columns="2"  styleClass="noPrintButton">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}"  pattern="dd MMMM yyyy hh:mm a" >
+                        </p:calendar>
 
-                <p:panelGrid columns="2"  >
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy  hh:mm a" >
+                        </p:calendar>
 
-                    <h:outputLabel value="From Date"/>
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete 
+                            forceSelection="true" 
+                            value="#{investigationMonthSummeryOwnControllerSession.institution}" 
+                            completeMethod="#{institutionController.completeIns}"
+                            var="ins"
+                            itemLabel="#{ins.name}"
+                            itemValue="#{ins}"
+                            >
 
-                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}"  pattern="dd MMMM yyyy hh:mm a" >
-                    </p:calendar>
+                            <p:column>
+                                #{ins.name}
+                            </p:column>
+                            <p:column>
+                                #{ins.institutionCode}
+                            </p:column>
+                        </p:autoComplete>
 
-                    <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy  hh:mm a" >
-                    </p:calendar>
+                        <h:outputLabel value="Collecting Centre"/>
+                        <p:autoComplete 
+                            forceSelection="true" 
+                            value="#{investigationMonthSummeryOwnControllerSession.collectingCentre}" 
+                            completeMethod="#{collectingCentreController.completeCollecting}"
+                            var="coc"
+                            itemLabel="#{coc.name}"
+                            itemValue="#{coc}"
+                            >
+                            <p:column>
+                                #{coc.name}
+                            </p:column>
+                            <p:column>
+                                #{coc.institutionCode}
+                            </p:column>
+                        </p:autoComplete>
 
-                    <h:outputLabel value="Institution"/>
-                    <p:autoComplete 
-                        forceSelection="true" 
-                        value="#{investigationMonthSummeryOwnControllerSession.institution}" 
-                        completeMethod="#{institutionController.completeIns}"
-                        var="ins"
-                        itemLabel="#{ins.name}"
-                        itemValue="#{ins}"
-                        >
+                        <h:outputLabel value="Investigation"/>
+                        <p:autoComplete 
+                            forceSelection="true" 
+                            value="#{investigationMonthSummeryOwnControllerSession.item}" 
+                            completeMethod="#{investigationController.completeInvest}"
+                            var="ix" converter="ixcon"
+                            itemLabel="#{ix.name}"
+                            itemValue="#{ix}"
+                            >
+                        </p:autoComplete>
 
-                        <p:column>
-                            #{ins.name}
-                        </p:column>
-                        <p:column>
-                            #{ins.institutionCode}
-                        </p:column>
-                    </p:autoComplete>
-
-                    <h:outputLabel value="Collecting Centre"/>
-                    <p:autoComplete 
-                        forceSelection="true" 
-                        value="#{investigationMonthSummeryOwnControllerSession.collectingCentre}" 
-                        completeMethod="#{collectingCentreController.completeCollecting}"
-                        var="coc"
-                        itemLabel="#{coc.name}"
-                        itemValue="#{coc}"
-                        >
-                        <p:column>
-                            #{coc.name}
-                        </p:column>
-                        <p:column>
-                            #{coc.institutionCode}
-                        </p:column>
-                    </p:autoComplete>
-
-                    <h:outputLabel value="Investigation"/>
-                    <p:autoComplete 
-                        forceSelection="true" 
-                        value="#{investigationMonthSummeryOwnControllerSession.item}" 
-                        completeMethod="#{investigationController.completeInvest}"
-                        var="ix" converter="ixcon"
-                        itemLabel="#{ix.name}"
-                        itemValue="#{ix}"
-                        >
-                    </p:autoComplete>
-
-                </p:panelGrid>
-
-                <p:panelGrid columns="4"  >
-                    <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createIxCountByInstitutionAndCollectingCentre()}" ></p:commandButton>
+                    </h:panelGrid>
+                     <h:panelGrid columns="6">
+                         <p:spacer width="105" height="1"/>
+                    <p:commandButton ajax="false" styleClass="noPrintButton" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createIxCountByInstitutionAndCollectingCentre()}" ></p:commandButton>
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                     <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                         <pe:exporter  type="xlsx" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
+                    <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter  type="xlsx" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
                     </p:commandButton> 
                     <p:commandButton ajax="false" value="PDF"  styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter  type="pdf" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
                     </p:commandButton>
-                    
-                </p:panelGrid>
+
+                </h:panelGrid>
+                </f:facet>
+               
 
 
                 <p:dataTable id="tbl" 

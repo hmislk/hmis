@@ -78,12 +78,12 @@
                                          <p:outputLabel value="Due Payments" /><br/>
                                         <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <p:spacer width="30" height="10"/>
                                         <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </h:outputLabel><p:spacer width="30" height="10"/>
                                        
                                     </f:facet>
@@ -167,12 +167,12 @@
                                          <p:outputLabel value="Done Payments" /><br/>
                                         <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <p:spacer width="30" height="1"/>
                                         <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:spacer width="30" height="1"/>
                                        
@@ -246,7 +246,7 @@
                                         </f:facet>
                                     </p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                                 </f:facet>
                                 </p:dataTable>
                             </p:panel>

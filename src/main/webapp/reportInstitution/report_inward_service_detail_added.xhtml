@@ -11,27 +11,11 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-
-
-
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Service Detail Inward - Added"/>
-                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;" 
-                                    action="#{serviceSummery.createServiceSummeryInwardAdded()}"/>
-                    <p:defaultCommand target="btnRefresh"/>
-
-                    <p:commandButton ajax="false" value="Print"  
-                                     styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-
-                    <p:commandButton value="Excel2" ajax="false" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
-                    </p:commandButton>
-
-                    <h:panelGrid columns="2" style="min-width: 100%;border: none;">
+                    <h:outputLabel value="5) Summary By Service Inward"/>
+                    
+                    <h:panelGrid columns="2" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
                         </p:calendar>
@@ -54,6 +38,22 @@
                             </p:column> 
                         </p:autoComplete>
                     </h:panelGrid>
+                    <h:panelGrid columns="5" styleClass="noPrintButton">
+                        <p:spacer width="80" height="1"/>
+                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
+                                         styleClass="noPrintButton" style="float: right;" 
+                                         action="#{serviceSummery.createServiceSummeryInwardAdded()}"/>
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" value="Print"  
+                                         styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel2" ajax="false" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
+                        </p:commandButton>
+                    </h:panelGrid>
                 </f:facet>
             </p:panel>
             <p:spacer height="30"/>
@@ -67,12 +67,13 @@
                          rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
-                    <h:outputLabel value="#{serviceSummery.service.name}"/>
-                    <h:outputLabel value=" : "/>
+                    <h:outputLabel value="Summary By Service Added Date"/>
+                    <h:outputLabel value="#{serviceSummery.service.name}" style="white-space: pre-line"/>
+                    <h:outputLabel value=" From : " />
                     <h:outputLabel value="#{serviceSummery.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
-                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="&emsp;&emsp;To :"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -81,112 +82,116 @@
                 <p:column headerText="No">
                     <f:facet name="header">
                         <p:outputLabel value="No"/>
-                </f:facet>
-                <h:outputLabel value="#{i+1}"/>
-            </p:column>
+                    </f:facet>
+                    <h:outputLabel value="#{i+1}"/>
+                </p:column>
 
-            <p:column headerText="Bill No">
-                 <f:facet name="header">
+                <p:column headerText="Bill No">
+                    <f:facet name="header">
                         <p:outputLabel value="Bill No"/>
-                </f:facet>
-                <p:outputLabel value="#{d.billItem.bill.insId}" />
-            </p:column>
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.insId}" />
+                </p:column>
 
-            <p:column headerText="Billed Bill No">
-                 <f:facet name="header">
+                <p:column headerText="Billed Bill No">
+                    <f:facet name="header">
                         <p:outputLabel value="Billed Bill No"/>
-                </f:facet>
-                <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
-            </p:column>
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
+                </p:column>
 
-            <p:column headerText="BHT No">
-                <f:facet name="header">
-                    <h:outputLabel value="BHT No" />
-                </f:facet>
-                <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
-                <f:facet name="footer">
-                    <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
-                    </h:outputLabel>
-                </f:facet>
-            </p:column>
+                <p:column headerText="BHT No">
+                    <f:facet name="header">
+                        <h:outputLabel value="BHT No" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
+                    <f:facet name="footer">
+                        <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
 
-            <p:column headerText="Date">
-                 <f:facet name="header">
+                <p:column headerText="Date">
+                    <f:facet name="header">
                         <p:outputLabel value="Date"/>
-                </f:facet>
-                <h:outputLabel value="#{d.billItem.createdAt}">
-                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                </h:outputLabel>
-            </p:column>
+                    </f:facet>
+                    <h:outputLabel value="#{d.billItem.createdAt}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </p:column>
 
-            <p:column headerText="Actual Date">
-                 <f:facet name="header">
+                <p:column headerText="Actual Date">
+                    <f:facet name="header">
                         <p:outputLabel value="Actual Date"/>
-                </f:facet>
-                <h:outputLabel value="#{d.billItem.billTime}">
-                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                </h:outputLabel>
-            </p:column>
-
-            <p:column headerText="Professional Fee" style="text-align: right;">
-                <f:facet name="header">
-                    <h:outputLabel value="Professional Fee" />
-                </f:facet>
-                <p:outputLabel value="#{d.proFee}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </p:outputLabel>
-                <f:facet name="footer">
-                    <h:outputLabel value="#{serviceSummery.proFeeTotal}">
-                        <f:convertNumber pattern="#,##0.00"/>
+                    </f:facet>
+                    <h:outputLabel value="#{d.billItem.billTime}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
-                </f:facet>
-            </p:column>
+                </p:column>
 
-            <p:column headerText="Hospital Fee" style="text-align: right;">
-                 <f:facet name="header">
+                <p:column headerText="Professional Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Professional Fee" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.proFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+
+                <p:column headerText="Hospital Fee" style="text-align: right;">
+                    <f:facet name="header">
                         <p:outputLabel value="Hospital Fee"/>
-                </f:facet>
-                <p:outputLabel value="#{d.hospitalFee}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </p:outputLabel>
-                <f:facet name="footer">
-                    <h:outputLabel value="#{serviceSummery.hosFeeTotal}">
+                    </f:facet>
+                    <p:outputLabel value="#{d.hospitalFee}">
                         <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </f:facet>
-            </p:column>     
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.hosFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>     
 
-            <p:column headerText="Out Fee" style="text-align: right;">
-                 <f:facet name="header">
+                <p:column headerText="Out Fee" style="text-align: right;">
+                    <f:facet name="header">
                         <p:outputLabel value="Out Fee"/>
-                </f:facet>
-                <p:outputLabel value="#{d.outSideFee}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </p:outputLabel>
-                <f:facet name="footer">
-                    <h:outputLabel value="#{serviceSummery.outSideFeeTotoal}">
+                    </f:facet>
+                    <p:outputLabel value="#{d.outSideFee}">
                         <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </f:facet>
-            </p:column>    
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.outSideFeeTotoal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>    
 
-            <p:column headerText="Total Fee" style="text-align: right;">
-                 <f:facet name="header">
+                <p:column headerText="Total Fee" style="text-align: right;">
+                    <f:facet name="header">
                         <p:outputLabel value="Total Fee"/>
-                </f:facet>
-                <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
-                    <f:convertNumber pattern="#,##0.00"/>
-                </p:outputLabel>
-                <f:facet name="footer">
-                    <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
+                    </f:facet>
+                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
                         <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>    
+                
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
-            </p:column>              
-        </p:dataTable> 
+            </p:dataTable> 
 
-    </h:form>
-</ui:define>
+        </h:form>
+    </ui:define>
 
 
 </ui:composition>
