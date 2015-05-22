@@ -58,14 +58,14 @@
                     <h:outputLabel value="Report By Bill"/>
                     <h:outputLabel value="#{creditSummeryController.institution.name}" style="white-space: pre-line"/>
                         <br/>
-                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="From  :  "/>
                         <h:outputLabel value="#{creditSummeryController.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </h:outputLabel>
                         <p:spacer width="30" height="1"/>
-                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel value="To "/>
                         <h:outputLabel value="#{creditSummeryController.toDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </h:outputLabel>
                 </f:facet>
                 <p:columnGroup type="header">
@@ -152,7 +152,7 @@
                     </p:row>
                 </p:columnGroup>
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
 
                 <!--                <f:facet name="footer">

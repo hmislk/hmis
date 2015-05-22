@@ -69,13 +69,13 @@
                 <f:facet name="header">
                     <h:outputLabel value="Summary By Service Added Date"/>
                     <h:outputLabel value="#{serviceSummery.service.name}" style="white-space: pre-line"/>
-                    <h:outputLabel value=" From : " />
+                    <h:outputLabel value="&emsp;&emsp; From : " />
                     <h:outputLabel value="#{serviceSummery.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                     </h:outputLabel>
                     <h:outputLabel value="&emsp;&emsp;To :"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                     </h:outputLabel>
                 </f:facet>
 
@@ -183,10 +183,9 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
-                </p:column>    
-                
+                </p:column>
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
             </p:dataTable> 
 

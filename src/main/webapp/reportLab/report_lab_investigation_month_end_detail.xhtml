@@ -46,11 +46,11 @@
                             <h:outputLabel value="Investigation Month End Detail" />
                             <h:outputLabel value=" From : " style="white-space: pre-line"/>
                             <h:outputLabel  value="#{investigationMonthSummeryOwnController.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
                         <h:outputLabel  value="#{investigationMonthSummeryOwnController.toDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         </f:facet>
                         <p:subTable value="#{c.billItems}" var="bc">
@@ -76,9 +76,8 @@
                                 <h:outputLabel value="#{bc.netValue}"/>
                             </p:column>
                         </p:subTable>
-                        
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
                     </p:dataTable>
 
