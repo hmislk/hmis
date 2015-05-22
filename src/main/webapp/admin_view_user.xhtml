@@ -37,7 +37,7 @@
                     </p:column>
                     
                     <p:column headerText="Staff Code">
-                        <h:inputText value="#{u.staff.code}"/>
+                        <h:inputText value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
                     </p:column>
                     
                     <p:column headerText="Staff Name">

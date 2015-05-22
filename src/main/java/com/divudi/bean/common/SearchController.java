@@ -2560,8 +2560,12 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 + " and type(b.bill)=:billClass "
+                //Starting of newly added code 
+                + " and b.bill.refunded=false "
+                //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
-                + " and  b.bill.billDate between :fromDate and :toDate ";
+                //                + " and  b.bill.billTime between :fromDate and :toDate ";
+                + " and  b.bill.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(b.bill.patientEncounter.patient.person.name) like :patientName )";

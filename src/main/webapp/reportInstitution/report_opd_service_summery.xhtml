@@ -50,7 +50,12 @@
                             </p:column>  
                             <p:column>
                                 #{ix.category.name}
+                            </p:column>
+                            
+                            <p:column>
+                                #{ix.category.parentCategory.name}
                             </p:column> 
+                            
                         </p:autoComplete>
 
                         <h:outputText value="Service Category/Sub Category" ></h:outputText>
