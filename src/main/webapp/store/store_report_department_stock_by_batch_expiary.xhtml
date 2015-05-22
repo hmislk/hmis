@@ -147,7 +147,9 @@
                                     </f:facet>
 
                                 </p:column>
-
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

@@ -14,7 +14,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Detail">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Pharmacy Return without Traising">
 
 
                     <h:panelGrid columns="8" style="noPrintButton">
@@ -62,29 +62,19 @@
 
 
 
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
-
-                        <h:outputLabel value="GRN Detailed Report "/>
-                        <h:outputLabel/>
-                        <h:outputLabel value="Institution "/>
-                        <h:outputLabel value="#{commonReport.department.institution.name}"/>
-                        <h:outputLabel value="Department "/>
-                        <h:outputLabel value="#{commonReport.department.name}"/>
-                        <h:outputLabel value="From" />
-                        <h:outputLabel  value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                        </h:outputLabel>                          
-                        <h:outputLabel value="To"/>
-                        <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                        </h:outputLabel>
-                    </h:panelGrid>
-
 
                     <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" sortBy="#{b.billType}">
 
                         <f:facet name="header">  
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel><br/>
                             <h:outputLabel value="GRN"/>
                         </f:facet>
 

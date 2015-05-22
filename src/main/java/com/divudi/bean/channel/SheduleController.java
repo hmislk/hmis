@@ -412,12 +412,14 @@ public class SheduleController implements Serializable {
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
+            System.out.println("getCurrent().getId() = " + getCurrent().getId());
             System.err.println("edit Ses");
             UtilityController.addSuccessMessage("savedOldSuccessfully");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            System.out.println("getCurrent().getId() = " + getCurrent().getId());
             System.err.println("cre Ses");
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }

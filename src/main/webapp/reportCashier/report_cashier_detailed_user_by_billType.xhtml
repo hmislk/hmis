@@ -83,11 +83,11 @@
                            <h:outputLabel value="Summary By Bill Type"/><br/> 
                            <h:outputLabel value="From : "/>
                            <h:outputLabel value="#{searchController.fromDate}">
-                               <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss"/>
+                               <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                            </h:outputLabel><p:spacer width="30" height="1"/>
                             <h:outputLabel value="To : "/>
                             <h:outputLabel value="#{searchController.toDate}">
-                               <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss"/>
+                               <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                            </h:outputLabel>
                             <h:outputLabel value="Bill Type : #{commonReport.billType} " style="float: left"/>
                             </f:facet>
@@ -2018,7 +2018,7 @@
                             </h:outputLabel>
                         </p:column>
                         <f:facet name="footer">
-                                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                                 </f:facet>
                     </p:dataTable>
 
