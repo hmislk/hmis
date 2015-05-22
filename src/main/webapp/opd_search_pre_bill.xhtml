@@ -12,16 +12,16 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="PHARMACY BILL SEARCH TO PAY "/>
+                            <h:outputLabel value="OPD BILL SEARCH TO PAY "/>
 
                             <h:panelGrid columns="5" >
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createPharmacyPreTable}"/>
-                                <p:commandButton ajax="false" value="Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
-                                <p:commandButton ajax="false" value="Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdPreTable}"/>
+                                <p:commandButton ajax="false" value="Not Paid Only" action="#{searchController.createOpdPreTableNotPaid}"/>
+                                <p:commandButton ajax="false" value="Paid Only" action="#{searchController.createOpdPreTablePaid}"/>
 
 
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
@@ -97,13 +97,13 @@
 
                             <p:column>
                                 <p:commandButton ajax="false"  value="AcceptPayment" 
-                                                action="#{pharmacyPreSettleController.toSettle(bill)}" 
+                                                action="#{opdPreSettleController.toSettle(bill)}" 
                                                  disabled="#{bill.referenceBill ne null or bill.cancelled}">   
                                 </p:commandButton>
                             </p:column>
 
                             <p:column>
-                                <p:dataTable value="#{bill.cashBillsPre}" var="rb">
+                                <p:dataTable value="#{bill.cashBillsOpdPre}" var="rb">
                                     <p:column  >                                                               
                                         <h:outputLabel  value="#{rb.deptId}"/>                                   
                                     </p:column>
@@ -137,8 +137,8 @@
                                         </h:outputLabel>                                  
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton ajax="false" value="View Payment Bill" action="pharmacy_reprint_bill_sale_cashier" disabled="#{bill.referenceBill eq null}">
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
+                                        <p:commandButton ajax="false" value="View Payment Bill" action="bill_reprint" disabled="#{bill.referenceBill eq null}">
+                                            <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
