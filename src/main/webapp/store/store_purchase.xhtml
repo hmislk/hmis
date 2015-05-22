@@ -64,18 +64,6 @@
                             <p:column headerText="Code" >
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
                             <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode panelInventoryItemDetails" listener="#{storePurchaseController.createSerialNumber()}" ></f:ajax>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{storePurchaseController.currentBillItem.tmpQty}" style="width:100%" />  

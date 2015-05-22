@@ -59,11 +59,11 @@
                                 <h:outputLabel value="#{labReportSearchByDepartmentController.department.name}"  />
                                 <h:outputLabel value="From : " style="white-space: pre-line"/>
                                 <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:outputLabel>
                                 <h:outputLabel value="&emsp; &emsp;To : "  />
                                 <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -231,7 +231,7 @@
                                 </p:panelGrid>
                             </f:facet>
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
                         </p:dataTable>
 

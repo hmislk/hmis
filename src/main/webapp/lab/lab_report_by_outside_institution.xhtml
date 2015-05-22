@@ -59,11 +59,11 @@
                         <h:outputLabel value="Fees For Outside Institution" style="white-space: pre-line"/>
                         <h:outputLabel value=" From : " style="white-space: pre-line"/>
                         <h:outputLabel  value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
                         <h:outputLabel  value="#{commonReport.toDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                     </f:facet>
 
@@ -109,9 +109,8 @@
                         </h:outputLabel>
                     </p:column>
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
-
                 </p:dataTable>
             </p:panel>   
 

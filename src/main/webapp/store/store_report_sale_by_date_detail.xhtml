@@ -42,11 +42,11 @@
                         <h:outputLabel value="From :  "/>
                         <h:outputLabel value="#{storeSaleReport.fromDate}"  >
                             <p:spacer width="30" height="1"/>
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </h:outputLabel>
                         <h:outputLabel value="To : "/>
                         <h:outputLabel value="#{storeSaleReport.toDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </h:outputLabel><br/>
                         <h:outputLabel value="BILLED"/>
                     </f:facet>
@@ -449,7 +449,7 @@
 
                 </h:panelGrid>
                 <f:facet name="footer" >
-                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>
 
             </p:panel>         

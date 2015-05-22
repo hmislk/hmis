@@ -104,13 +104,13 @@
                         <h:outputLabel  value="Investigation Counts By Institution and Collecting Centre"/>
                         <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.institution ne null}" value="Institution - #{investigationMonthSummeryOwnControllerSession.institution.name} - " style="white-space:pre-line;"/>
                         <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.collectingCentre ne null}" value="Collecting Centre - #{investigationMonthSummeryOwnControllerSession.collectingCentre.name} - "  style="white-space:pre-line;"/>
-                        <h:outputLabel   value=" - From "/>
+                        <h:outputLabel   value=" From " style="white-space:pre-line;"/>
                         <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </p:outputLabel>
                         <h:outputLabel value=" - To "/>
                         <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                         </p:outputLabel>
                     </f:facet>
 
@@ -138,6 +138,9 @@
                         </f:facet>
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                 </p:dataTable>
             </p:panel>   
 
