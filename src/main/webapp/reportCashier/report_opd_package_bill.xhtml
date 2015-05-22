@@ -62,13 +62,13 @@
                     <f:facet name="header">
                         <p:outputLabel value="Package Detail Report - By Bill" /><br/>
                         <p:outputLabel value="From : "/>
-                        <p:outputLabel value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.frmDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel>
                         <p:spacer width="30" height="1"/>
                         <p:outputLabel value="To : "/>
-                        <p:outputLabel value="#{commonReport.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel><br/>
                         <p:outputLabel value="Package: #{billPackageMedicalController.serviceItem.name}" />
                         <p:spacer width="30" height="1"/>
@@ -135,7 +135,7 @@
 
                 </p:dataTable>
                 <f:facet name="footer">
-                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                 </f:facet>
             </p:panel>
             <!--</p:panel>-->
