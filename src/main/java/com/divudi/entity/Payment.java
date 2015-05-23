@@ -24,21 +24,22 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class Payment implements Serializable {
-     static final long serialVersionUID = 1L;
+
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-     Long id;
+    Long id;
 
     @ManyToOne
     Bill bill;
-    
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date writtenAt;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date toRealizeAt;
-    
+
     PaymentMethod paymentMethod;
-    
+
     //Realization Properties
     boolean realized;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -47,13 +48,13 @@ public class Payment implements Serializable {
     WebUser realiazer;
     @Lob
     String realizeComments;
-    
+
     @ManyToOne
     Institution bank;
-    
+
     @Lob
     String comments;
-    
+
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -67,7 +68,20 @@ public class Payment implements Serializable {
     Date retiredAt;
     String retireComments;
     //
+
+    //paymentMethord Details
+    private String chequeRefNo;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date chequeDate;
+    private String creditCardRefNo;
     
+    double paidValue;
+    
+    @ManyToOne
+    Institution institution;
+    @ManyToOne
+    Department department;
+
     public Long getId() {
         return id;
     }
@@ -203,9 +217,6 @@ public class Payment implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
-    
 
     @Override
     public int hashCode() {
@@ -216,7 +227,7 @@ public class Payment implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof Payment)) {
             return false;
         }
@@ -231,5 +242,53 @@ public class Payment implements Serializable {
     public String toString() {
         return "com.divudi.entity.Payment[ id=" + id + " ]";
     }
-    
+
+    public String getChequeRefNo() {
+        return chequeRefNo;
+    }
+
+    public void setChequeRefNo(String chequeRefNo) {
+        this.chequeRefNo = chequeRefNo;
+    }
+
+    public Date getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(Date chequeDate) {
+        this.chequeDate = chequeDate;
+    }
+
+    public String getCreditCardRefNo() {
+        return creditCardRefNo;
+    }
+
+    public void setCreditCardRefNo(String creditCardRefNo) {
+        this.creditCardRefNo = creditCardRefNo;
+    }
+
+    public double getPaidValue() {
+        return paidValue;
+    }
+
+    public void setPaidValue(double paidValue) {
+        this.paidValue = paidValue;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
 }

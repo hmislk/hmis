@@ -243,7 +243,7 @@ public class SpecialityController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Speciality i where i.retired=false order by i.name";
-            //System.out.println("Sql for SpacilityController.getItems is " + temSql);
+            ////System.out.println("Sql for SpacilityController.getItems is " + temSql);
             items = getFacade().findBySQL(temSql);
         }
         return items;

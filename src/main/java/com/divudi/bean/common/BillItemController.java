@@ -78,18 +78,18 @@ public class BillItemController implements Serializable {
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
-                System.out.println("value = " + value);
-//                System.out.println("value.length() = " + value.length());
+                //System.out.println("value = " + value);
+//                //System.out.println("value.length() = " + value.length());
                 return null;
             }
             BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "billItemController");
             if (controller == null) {
-                System.out.println("null controller");
+                //System.out.println("null controller");
                 return null;
             }
             if (getKey(value) == null) {
-                System.out.println("value null");
+                //System.out.println("value null");
                 return null;
             }
             return controller.findBillItemInListBySerial(getKey(value));
@@ -135,22 +135,22 @@ public class BillItemController implements Serializable {
 //        @Override
 //        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
 //            if (value == null || value.length() == 0) {
-//                System.out.println("value = " + value);
-//                System.out.println("value.length() = " + value.length());
+//                //System.out.println("value = " + value);
+//                //System.out.println("value.length() = " + value.length());
 //                return null;
 //            }
 //            BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
 //                    getValue(facesContext.getELContext(), null, "billItemController");
 //            if (controller == null) {
-//                System.out.println("null controller");
+//                //System.out.println("null controller");
 //                return null;
 //            }
 //            if (controller.getFacade() == null) {
-//                System.out.println("facade null");
+//                //System.out.println("facade null");
 //                return null;
 //            }
 //            if (getKey(value) == null) {
-//                System.out.println("value null");
+//                //System.out.println("value null");
 //                return null;
 //            }
 //            return controller.getFacade().find(getKey(value));

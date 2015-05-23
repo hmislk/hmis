@@ -13,7 +13,8 @@
 
             <ui:define name="content">
                 <h:form >
-                    <h:panelGrid columns="4" >
+                    <p:panel header="Unit Issue By Item"> 
+                        <h:panelGrid columns="4" >
                         <h:outputLabel value="From Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
@@ -80,9 +81,12 @@
                                         <f:convertNumber  pattern="#0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>
-                        </p:dataTable>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    
                     </p:panel>
+                    
                 </h:form>
             </ui:define>
         </ui:composition>

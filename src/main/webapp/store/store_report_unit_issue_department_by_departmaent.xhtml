@@ -16,20 +16,10 @@
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="6" >
-                            <h:outputLabel value="Issue From" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
-                            </p:autoComplete>
 
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                        </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="4">
+                            <p:spacer width="75" height="1"/>
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.createDepartmentIssueStore}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -47,17 +37,14 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="&emsp;&emsp;To : "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </f:facet>
 
                                 <p:column headerText="Department">
@@ -80,7 +67,9 @@
                                         </h:outputLabel>
                                     </f:facet>  
                                 </p:column>
-
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
 
 

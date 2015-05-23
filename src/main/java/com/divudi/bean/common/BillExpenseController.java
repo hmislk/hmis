@@ -60,7 +60,7 @@ public class BillExpenseController implements Serializable {
             suggestions = new ArrayList<BillExpense>();
         } else {
             sql = "select c from BillExpense c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

@@ -179,7 +179,7 @@ public class ChannelSearchController implements Serializable {
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
-//            System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+//            //System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
 //                UtilityController.addErrorMessage("Sample Already collected can't cancel");
 //                return true;

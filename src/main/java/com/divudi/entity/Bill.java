@@ -47,11 +47,6 @@ import org.eclipse.persistence.annotations.CacheType;
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b"),
     @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
-@Cache(
-  type=CacheType.NONE, 
-  expiry=0,
-  alwaysRefresh=true
-)
 public class Bill implements Serializable {
 
     @ManyToOne
@@ -72,6 +67,8 @@ public class Bill implements Serializable {
     private List<Bill> returnCashBills = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsPre = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> cashBillsOpdPre = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
@@ -536,11 +533,11 @@ public class Bill implements Serializable {
     }
 
     public double getDiscountPercentPharmacy() {
-        System.out.println("getting discount percent");
-//        System.out.println("bill item"+getBillItems());
-//        System.out.println(getBillItems().get(0).getPriceMatrix());
+        //System.out.println("getting discount percent");
+//        //System.out.println("bill item"+getBillItems());
+//        //System.out.println(getBillItems().get(0).getPriceMatrix());
         if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
-            System.out.println("sys inside");
+            //System.out.println("sys inside");
             discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
         }
 
@@ -1396,6 +1393,17 @@ public class Bill implements Serializable {
         cashBillsPre = bills;
 
         return cashBillsPre;
+    }
+
+    public List<Bill> getCashBillsOpdPre() {
+        List<Bill> bills = new ArrayList<>();
+        for (Bill b : cashBillsOpdPre) {
+            if (b instanceof BilledBill && b.getBillType() == BillType.OpdBill) {
+                bills.add(b);
+            }
+        }
+        cashBillsOpdPre = bills;
+        return cashBillsOpdPre;
     }
 
     public boolean checkActiveCashPreBill() {

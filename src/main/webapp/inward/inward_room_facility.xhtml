@@ -83,9 +83,13 @@
                                     <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.maintananceCharge}"/>
                                     <h:outputLabel value="Nursing Charge"/>
                                     <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.nursingCharge}"/>
-                                    <h:outputLabel value="MO Charge"/>
+                                    <h:outputLabel value="Duration Days For Mo Charge" rendered="#{sessionController.institutionPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.institutionPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:outputLabel value="MO Charge" />
                                     <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moCharge}"/>
-                                    <h:outputLabel value="Linen Charge Per Day"/>
+                                    <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.institutionPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.institutionPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:outputLabel value="Linen Charge Per Day" />
                                     <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.linenCharge}"/>
 
                                 </h:panelGrid>

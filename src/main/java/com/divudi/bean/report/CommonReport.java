@@ -1072,7 +1072,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            //System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
         sql += "order by b.deptId,b.fromInstitution.name ";
 
@@ -1192,8 +1192,8 @@ public class CommonReport implements Serializable {
         m.put("dt", DepartmentType.Inventry);
 
         billItems = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("billItems = " + billItems);
-        System.out.println("billItems Size = " + billItems.size());
+        //System.out.println("billItems = " + billItems);
+        //System.out.println("billItems Size = " + billItems.size());
     }
 
     public List<BillItem> getBillItems() {
@@ -1783,7 +1783,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            //System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -3272,6 +3272,9 @@ public class CommonReport implements Serializable {
         list2.add(billedBillsPh);
         list2.add(cancellededBillsPh);
         list2.add(refundedBillsPh);
+        list2.add(billedPhWholeSale);
+        list2.add(cancelledPhWholeSale);
+        list2.add(refundedPhWholeSale);
         list2.add(paymentBills);
         list2.add(paymentCancelBills);
         list2.add(pettyPayments);

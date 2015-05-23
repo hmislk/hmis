@@ -65,6 +65,8 @@
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
                                     <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdBillsAllowed}" />
+                                    <h:outputLabel value="Partial Payment of OPD For Cashier Bills" ></h:outputLabel>
+                                    <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed}" />
                                     <h:outputLabel value="Allow to Change Payment Method During Settle"></h:outputLabel>
                                     <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.allowtoChangePaymentMethodDuringPayment}" />
 
@@ -84,6 +86,12 @@
 
                                     <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
                                     <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.bhtNumberWithYear}"/>
+                                    
+                                    <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
+                                    <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    
+                                    <h:outputLabel value="Change Admission Fee in Intrim Bill"></h:outputLabel>
+                                    <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.inwardChangeAdmissionFee}"/>
 
                                 </h:panelGrid>
 

@@ -18,7 +18,27 @@ public class BillListWithTotals {
     Double grossTotal;
     Double netTotal;
     Double discount;
+    Double cancelledTotal;
+    Double refundTotal;
 
+    public Double getCancelledTotal() {
+        return cancelledTotal;
+    }
+
+    public void setCancelledTotal(Double cancelledTotal) {
+        this.cancelledTotal = cancelledTotal;
+    }
+
+    public Double getRefundTotal() {
+        return refundTotal;
+    }
+
+    public void setRefundTotal(Double refundTotal) {
+        this.refundTotal = refundTotal;
+    }
+
+    
+    
     public List<Bill> getBills() {
         return bills;
     }

@@ -638,7 +638,7 @@ public class CreditCompanyDueController implements Serializable {
 //                    + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
 //                    + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
 //                    + " like :q) ) order by c.bhtNo";
-//            //System.out.println(sql);
+//            ////System.out.println(sql);
 //            //      h.put("btp", BillType.InwardPaymentBill);
 //            h.put("q", "%" + query.toUpperCase() + "%");
 //            //suggestions = admissionFacade().findBySQL(sql, h);

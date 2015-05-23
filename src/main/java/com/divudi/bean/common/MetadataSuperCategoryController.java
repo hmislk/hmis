@@ -84,7 +84,7 @@ public class MetadataSuperCategoryController implements Serializable {
 
     public void editMetadataCategory(Category mdc) {
         if (mdc == null) {
-            System.out.println("mdc = " + mdc);
+            //System.out.println("mdc = " + mdc);
             return;
         }
         categoryFacade.edit(mdc);
@@ -212,7 +212,7 @@ public class MetadataSuperCategoryController implements Serializable {
             temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", cat);
-            //System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            ////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
             cis = getFacade().findBySQL(temSql, m);
         } else {
             cis = new ArrayList<>();

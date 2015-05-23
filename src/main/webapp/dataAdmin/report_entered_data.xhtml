@@ -13,57 +13,49 @@
             <ui:define name="content">
 
                 <h:form>
+                    <p:panel header="Check Entered Data">
+                        <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;" >
+                            <h:panelGrid columns="1">
+                                <p:panel header="Investigation" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation List" action="lab_investigation_list" onclick="onSubmitButton();"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Fee List" action="lab_investigation_list_fee" onclick="onSubmitButton();"/>
+                                    </h:panelGrid>
+                                </p:panel>
 
-                    <h:panelGrid columns="2"  >                     
+                                <p:panel header="Check Deleted data" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Dealor List" action="deleted_distributors" onclick="onSubmitButton();"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Deleted Bht List" action="deleted_admission_book" onclick="onSubmitButton();"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
+                            
+                            <h:panelGrid columns="1">
+                                <p:panel header="Service" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Service List Search " action="opd_service_department_list" onclick="onSubmitButton();"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Service List with Fee " action="opd_service_list" onclick="onSubmitButton();"/>                                
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="Update data" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Update Service/Investigation Institution And Department Data" action="opd_service_Investigation_list" onclick="onSubmitButton();"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
+                            
+                            <h:panelGrid columns="1">
+                                <p:panel header="Credit Company" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Credit Card Compaies" action="credit_companies" onclick="onSubmitButton();"/> 
+                                    </h:panelGrid>
+                                </p:panel>
 
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Investigation"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation List" action="lab_investigation_list" onclick="onSubmitButton();"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Fee List" action="lab_investigation_list_fee" onclick="onSubmitButton();"/>
-
-
+                                
+                            </h:panelGrid>
                         </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Service"/>
-                            </f:facet>
-
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Service List Search " action="opd_service_department_list" onclick="onSubmitButton();"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Service List with Fee " action="opd_service_list" onclick="onSubmitButton();"/>                                
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1">
-                            <f:facet name="header">
-                                <p:outputLabel value="Credit Company"/>
-                            </f:facet>
-
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Credit Card Compaies" action="credit_companies" onclick="onSubmitButton();"/> 
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Check Deleted data"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Dealor List" action="deleted_distributors" onclick="onSubmitButton();"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Deleted Bht List" action="deleted_admission_book" onclick="onSubmitButton();"/>
-
-                        </h:panelGrid>
-                        
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Update data"/>
-                            </f:facet>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Update Service/Investigation Institution And Department Data" action="opd_service_Investigation_list" onclick="onSubmitButton();"/>
-
-                        </h:panelGrid>
-
-                    </h:panelGrid>
-
+                    </p:panel>
                 </h:form>
             </ui:define>
 

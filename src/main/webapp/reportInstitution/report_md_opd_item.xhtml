@@ -12,24 +12,25 @@
         <h:form>
             <p:panel>
 
-                <h:panelGrid columns="7" style="min-width: 100%;">                    
-                    <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                <h:panelGrid columns="2" >                    
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
-                    <h:outputLabel value="To"/>
+                    <h:outputLabel value="To Data"/>
                     <p:calendar id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
+                    <h:outputLabel/>
                     <p:selectOneMenu id="pm"   value="#{mdReportController.paymentMethod}">
                         <f:selectItem itemLabel="Select Payment Method"/>
                         <f:selectItems value="#{mdReportController.paymentMethods}"/>
                         <f:ajax event="change"   listener="#{mdReportController.makeBillNull}"/>
                     </p:selectOneMenu>
-                    
+                    </h:panelGrid>   
                     <h:panelGrid columns="4">
-
+                        <p:spacer width="65" height="1"/>
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
                     <p:defaultCommand target="btnRefresh"/>
 
@@ -41,7 +42,7 @@
                     </p:commandButton>
                     </h:panelGrid>
 
-                </h:panelGrid>   
+                
 
                 <p:dataTable id="tbl" value="#{mdReportController.itemWithFees}"
                              rowIndexVar="i"
@@ -51,13 +52,14 @@
                          rowsPerPageTemplate="5,10,15,20">
 
                     <f:facet name="header">
-                        <h:outputLabel value="Report By Item (OPD) From &nbsp;&nbsp; : "/>
+                        <h:outputLabel value="REPORT BY ITEM(OPD)"/>
+                        <h:outputLabel value=" From : " style="white-space: pre-line"/>
                         <h:outputLabel  value="#{mdReportController.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
-                        <h:outputLabel value=" - " />
+                      <h:outputLabel value="&emsp;&emsp;To :"/>
                         <h:outputLabel  value="#{mdReportController.toDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                     </f:facet>  
 
@@ -138,6 +140,9 @@
                             </p:column>
                         </p:row>
                     </p:columnGroup>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                 </p:dataTable>
             </p:panel>
 

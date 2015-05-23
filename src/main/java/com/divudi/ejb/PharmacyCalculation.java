@@ -482,7 +482,7 @@ public class PharmacyCalculation implements Serializable {
         double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
         System.err.println("Puchase :  " + purchase);
         System.err.println("Puchase :  " + retail);
-        System.out.println("wholesale = " + wholesale);
+        //System.out.println("wholesale = " + wholesale);
         itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
         itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
         itemBatch.setPurcahseRate(purchase);
@@ -705,7 +705,7 @@ public class PharmacyCalculation implements Serializable {
 //
 //        } else {
 //            qty = (ph.getPharmaceuticalBillItem().getQty() + ph.getPharmaceuticalBillItem().getFreeQty()) * item.getDblValue();
-//            //      //System.out.println("sssssss " + qty);
+//            //      ////System.out.println("sssssss " + qty);
 //        }
 //
 //        if (itb.getId() != null) {
