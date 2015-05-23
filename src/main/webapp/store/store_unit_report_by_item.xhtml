@@ -11,94 +11,110 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:form >
-                    <h:panelGrid columns="4" >
-                        <h:outputLabel value="From Department" />
-                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                        var="dept" itemLabel="#{dept.name}"
-                                        itemValue="#{dept}" forceSelection="true" 
-                                        value="#{reportsTransfer.fromDepartment}" converter="dep" >
-                        </p:autoComplete>
+                <h:form>
+                    <p:panel header=" Issue Report">
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Department" />
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                            var="dept" itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                            </p:autoComplete>
 
-                        <h:outputLabel value="To Department" />
-                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                        var="dept" itemLabel="#{dept.name}"
-                                        itemValue="#{dept}" forceSelection="true" 
-                                        value="#{reportsTransfer.toDepartment}" converter="dep" >
-                        </p:autoComplete>
+                            <h:outputLabel value="To Department" />
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                            var="dept" itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.toDepartment}" converter="dep" >
+                            </p:autoComplete>
 
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                        <h:outputLabel value="To" ></h:outputLabel>
-                        <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                    </h:panelGrid>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        </h:panelGrid>
 
-                    <h:outputLabel value="Category" />
+                        <h:outputLabel value="Category" />
                         <p:autoComplete completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
                                         var="cat" itemLabel="#{cat.name}"
                                         itemValue="#{cat}" forceSelection="true" 
                                         value="#{reportsTransfer.category}" converter="categoryConverter" >
                         </p:autoComplete>
-                    
-                    <p:commandButton ajax="false" value="Fill" 
-                                    action="#{reportsTransfer.fillItemCountsStore}" />
+
+                        <p:commandButton ajax="false" value="Fill" 
+                                         action="#{reportsTransfer.fillItemCountsStore}" />
 
 
-                    <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
-                        <p:column headerText="Item">
-                            #{i.itemBatch.item.name}
-                        </p:column>
-                        <p:column headerText="Batch No">
-                            #{i.itemBatch.batchNo}
-                        </p:column>
-                        <p:column headerText="Purchase Rate" style="text-align: right;">
-                            <h:outputLabel value="#{i.itemBatch.purcahseRate}">
-                                 <f:convertNumber  pattern="#0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Retail Rate" style="text-align: right;">
-                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
-                                 <f:convertNumber  pattern="#0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Count" style="text-align: right;">
-                            #{i.count}
-                        </p:column>   
-                        <p:column headerText="Gross Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.gross}">
-                                <f:convertNumber  pattern="#0.00"/>
-                            </h:outputLabel>  
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.totalsValue}">
-                                    <f:convertNumber  pattern="#0.00"/>
+                        <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="DEPARTMENT UNIT ISSUE BY ITEM(BATCH)"/>
+                                <h:outputLabel value="&emsp; From : #{reportsTransfer.fromDepartment.name}"  />
+                                <h:outputLabel value="&emsp; To : #{reportsTransfer.toDepartment.name}"  />
+                                <h:outputLabel value="From :  " style="white-space:  pre-line"/>
+                                <h:outputLabel value="#{reportsTransfer.fromDate}"  >
+                                    <p:spacer width="30" height="1"/>
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                </h:outputLabel>
+                                <h:outputLabel value="To : "/>
+                                <h:outputLabel value="#{reportsTransfer.toDate}"  >
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:outputLabel>
                             </f:facet>
-                        </p:column>
-                        <p:column headerText="Margin Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.margin}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel> 
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.marginValue}">
+                            <p:column headerText="Item">
+                                #{i.itemBatch.item.name}
+                            </p:column>
+                            <p:column headerText="Batch No">
+                                #{i.itemBatch.batchNo}
+                            </p:column>
+                            <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <h:outputLabel value="#{i.itemBatch.purcahseRate}">
                                     <f:convertNumber  pattern="#0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Retail Rate" style="text-align: right;">
+                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                    <f:convertNumber  pattern="#0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Count" style="text-align: right;">
+                                #{i.count}
+                            </p:column>   
+                            <p:column headerText="Gross Value" style="text-align: right;">
+                                <h:outputLabel value="#{i.gross}">
+                                    <f:convertNumber  pattern="#0.00"/>
+                                </h:outputLabel>  
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsTransfer.totalsValue}">
+                                        <f:convertNumber  pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Margin Value" style="text-align: right;">
+                                <h:outputLabel value="#{i.margin}">
+                                    <f:convertNumber pattern="#0.00" />
                                 </h:outputLabel> 
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsTransfer.marginValue}">
+                                        <f:convertNumber  pattern="#0.00"/>
+                                    </h:outputLabel> 
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Net Value" style="text-align: right;">
+                                <h:outputLabel value="#{i.net}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputLabel>   
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsTransfer.netTotalValues}">
+                                        <f:convertNumber  pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                             </f:facet>
-                        </p:column>
-                        <p:column headerText="Net Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.net}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>   
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.netTotalValues}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
 
-                    </p:dataTable>
-
-
-
+                        </p:dataTable>
+                    </p:panel>
                 </h:form>
             </ui:define>
 

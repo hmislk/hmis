@@ -150,9 +150,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode node202 = new PrivilageNode("Search Bills", node2, Privileges.LabBillSearch);
         TreeNode node203 = new PrivilageNode("Search Bills Items", node2, Privileges.LabBillItemSearch);
         TreeNode node204 = new PrivilageNode("Patient Edit", node2, Privileges.LabEditPatient);
-        TreeNode node205 = new PrivilageNode("Reprint", node2, Privileges.LabBillReprint);
-        TreeNode node206 = new PrivilageNode("Return", node2, Privileges.LabBillReturning);
-        TreeNode node207 = new PrivilageNode("Cancel", node2, Privileges.LabBillCancelling);
+        TreeNode node205 = new PrivilageNode("Lab Bill Reprint", node2, Privileges.LabBillReprint);
+        TreeNode node206 = new PrivilageNode("Lab Bill Return", node2, Privileges.LabBillReturning);
+        TreeNode node207 = new PrivilageNode("Lab Bill Cancel", node2, Privileges.LabBillCancelling);
         TreeNode node208 = new PrivilageNode("Reactivate", node2, Privileges.LabBillReactivating);
         TreeNode node209 = new PrivilageNode("Sample Collection", node2, Privileges.LabSampleCollecting);
         TreeNode node210 = new PrivilageNode("Sample Receive", node2, Privileges.LabSampleReceiving);
@@ -160,6 +160,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node212 = new PrivilageNode("Autherize", node2, Privileges.LabAutherizing);
         TreeNode node213 = new PrivilageNode("De-Autherize", node2, Privileges.LabDeAutherizing);
         TreeNode node214 = new PrivilageNode("Report Print", node2, Privileges.LabPrinting);
+        TreeNode node214a = new PrivilageNode("Report Reprint", node2, Privileges.LabReprinting);
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2, Privileges.LabSummeriesLevel1);
         TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);

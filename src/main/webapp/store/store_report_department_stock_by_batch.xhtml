@@ -15,9 +15,9 @@
                 <h:form>
 
 
-                    <p:panel header="Department Stock Report by Batch" >
+                    <p:panel header="1) Stock Reports" >
 
-                        <h:panelGrid columns="6" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
                             </p:autoComplete>
@@ -68,7 +68,9 @@
 
                             <p:dataTable id="tbl" rowIndexVar="ii" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{storeReportsStock.department.name} Stock"/>                                     
+                                    <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Batch"/> 
+                                    <h:outputLabel value="#{storeReportsStock.category.name}"  style=" white-space:pre-line;"/> 
+                                    <h:outputLabel value="&emsp;&emsp;#{storeReportsStock.item.name} "/>
                                 </f:facet> 
 
                                 <p:column>
@@ -81,7 +83,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Item Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item code"/>
@@ -173,6 +175,10 @@
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

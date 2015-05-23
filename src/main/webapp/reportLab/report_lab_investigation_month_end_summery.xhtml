@@ -44,7 +44,12 @@
                             </p:calendar>
                         </p:panelGrid>
                     </f:facet>
-                    <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.items}" var="c" >
+                    <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.items}" var="c" 
+                                rows="20"
+                                paginator="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100"
+                                >
 
                         <f:facet name="header">
 
@@ -62,7 +67,13 @@
                             </h:panelGrid>
                         </f:facet>
 
-                        <p:column headerText="Test Name" >
+                        <p:column headerText="Test Name" 
+                            sortBy="#{c.investigation.name}" 
+                            filterBy="#{c.investigation.name}"
+                            filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Test Name"/>
+                            </f:facet>
                             <h:outputLabel value="#{c.investigation.name}"  />
                         </p:column>
                         <p:column headerText="Count" style="text-align:right" >

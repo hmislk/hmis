@@ -10,10 +10,11 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="INWARD CREDIT ACCESS"/>
                     </f:facet>
-                    <h:panelGrid columns="5" style="min-width: 100%;" >
+                    <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                             <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
@@ -22,10 +23,22 @@
                         <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                             <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                         </p:calendar>
+                        <p:spacer width="100" height="1"/>
                         <p:commandButton ajax="false" value="Process Cash ACCESS" action="#{creditCompanyDueController.createInwardCashAccess()}" onclick="onSubmitButton();"/>
                     </h:panelGrid>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
+                        <f:facet name="header">
+                                <h:outputLabel value="EXCESS SEARCH"/>
+                                <h:outputLabel value="&emsp;&emsp;From :  " style="white-space: pre-line"/>
+                                <h:outputLabel value="#{creditCompanyDueController.fromDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="&emsp;&emsp;To  :  "/>
+                                <h:outputLabel value="#{creditCompanyDueController.toDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </f:facet>
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column headerText="Patient Encounter">                                    
@@ -92,8 +105,12 @@
                                 </p:row>
                             </p:columnGroup>
                         </p:subTable>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
 
                     </p:dataTable>
+                        </p:panel>
                 </h:form>
             </ui:define>
 

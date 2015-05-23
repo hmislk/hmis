@@ -80,8 +80,9 @@ public class WebUserController implements Serializable {
     WebUser removingUser;
     private List<WebUser> webUsers;
 
-    public void updateWebUser(Person person) {
-        personFacade.edit(person);
+    public void updateWebUser(WebUser webUser) {
+        personFacade.edit(webUser.getWebUserPerson());
+        staffFacade.edit(webUser.getStaff());
     }
 
     public void createWebUserDrawers() {

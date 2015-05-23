@@ -16,8 +16,8 @@
 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Service Detail Inward - Added"/>
-                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
+                    <h:outputLabel value="Inward Lab Summary by Added Date"/>
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;" 
                                     action="#{serviceSummery.createServiceSummeryInwardAddedDate()}"/>
                     <p:defaultCommand target="btnRefresh"/>
@@ -27,8 +27,8 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
 
-                    <p:commandButton value="Excel2" ajax="false" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
+                    <p:commandButton value="Excel" ajax="false" style="float: right;">
+                        <pe:exporter type="xlsx" target="opd" fileName="Service_Lab_Summery"  />
                     </p:commandButton>
 
                     <h:panelGrid columns="2" style="min-width: 100%;border: none;">
@@ -69,12 +69,13 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="opd" rowIndexVar="i" 
-                         rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
-                         value="#{serviceSummery.serviceSummery}" var="d"
-
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">                   
+                        rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
+                        value="#{serviceSummery.serviceSummery}" var="d"
+                        rows="20"
+                        paginator="true"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="20, 50, 100" 
+                        >                   
 
                 <f:facet name="header">
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
@@ -95,21 +96,30 @@
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
 
-                <p:column headerText="Bill No">
+                <p:column headerText="Bill No"
+                    sortBy="#{d.billItem.bill.insId}" 
+                    filterBy="#{d.billItem.bill.insId}"
+                    filterMatchMode="contains">
                     <f:facet name="header">
                         <p:outputLabel value="Bill No"/>
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.insId}" />
                 </p:column>
 
-                <p:column headerText="Billed Bill No">
+                <p:column headerText="Billed Bill No"
+                    sortBy="#{d.billItem.bill.billedBill.insId}"
+                    filterBy="#{d.billItem.bill.billedBill.insId}"
+                    filterMatchMode="contains">
                     <f:facet name="header">
                         <p:outputLabel value="Billed Bill No"/>
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
 
-                <p:column headerText="BHT No">
+                <p:column headerText="BHT No"
+                    sortBy="#{d.billItem.bill.patientEncounter.bhtNo}" 
+                    filterBy="#{d.billItem.bill.patientEncounter.bhtNo}"
+                    filterMatchMode="contains">
                     <f:facet name="header">
                         <h:outputLabel value="BHT No" />
                     </f:facet>
@@ -120,7 +130,10 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Date">
+                <p:column headerText="Date"
+                    sortBy="#{d.billItem.createdAt}" 
+                    filterBy="#{d.billItem.createdAt}"
+                    filterMatchMode="contains">
                     <f:facet name="header">
                         <p:outputLabel value="Date"/>
                     </f:facet>
@@ -129,7 +142,10 @@
                     </h:outputLabel>
                 </p:column>
 
-                <p:column headerText="Actual Date">
+                <p:column headerText="Actual Date"
+                    sortBy="#{d.billItem.billTime}" 
+                    filterBy="#{d.billItem.billTime}"
+                    filterMatchMode="contains">
                     <f:facet name="header">
                         <p:outputLabel value="Actual Date"/>
                     </f:facet>

@@ -892,6 +892,7 @@ table.standardTable td {
 .averageNumericColumn{
     text-align: right;
     width: 80px;
+    max-width: 80px;
     padding-right: 5px;
 }
 

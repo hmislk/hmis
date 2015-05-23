@@ -202,6 +202,7 @@ public class PharmacyErrorCheckingEjb {
             BillType.PharmacyGrnReturn,
             BillType.PurchaseReturn,
             BillType.PharmacyPre,
+            BillType.PharmacyWholesalePre,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyTransferReceive,
             BillType.PharmacyAdjustment,

@@ -45,12 +45,14 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.GuardianRoom;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.inward.TimedItem;
 import com.divudi.entity.inward.TimedItemFee;
 import com.divudi.entity.memberShip.InwardMemberShipDiscount;
 import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.facade.AdmissionTypeFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -102,6 +104,8 @@ public class BhtSummeryController implements Serializable {
     private TimedItemFeeFacade timedItemFeeFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    AdmissionTypeFacade admissionTypeFacade;
     ////////////////////////////
 
     @EJB
@@ -1638,6 +1642,12 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
+    
+    public void updateAdmissionFee(AdmissionType at){
+        System.out.println("at.getAdmissionFee() = " + at.getAdmissionFee());
+        getAdmissionTypeFacade().edit(at);
+        createTables();
+    }
 
     public Admission getPatientEncounter() {
         return patientEncounter;
@@ -2340,6 +2350,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public AdmissionTypeFacade getAdmissionTypeFacade() {
+        return admissionTypeFacade;
+    }
+
+    public void setAdmissionTypeFacade(AdmissionTypeFacade admissionTypeFacade) {
+        this.admissionTypeFacade = admissionTypeFacade;
     }
 
 }
