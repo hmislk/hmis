@@ -693,7 +693,7 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         settleBatchBillAfterFiistTime();
-
+        cashPaid = 0.0;
     }
 
 //    public void settleBatchBillFiistTime(Bill bill) {
