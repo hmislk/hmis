@@ -29,7 +29,7 @@
 
                     <h:panelGrid columns="4">
                         <p:spacer width="80" height="1"/>
-                        <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createLabHadnOverReportByDate}"/>
+                        <p:commandButton ajax="false" styleClass="noPrintButton" value="Process" action="#{pharmacySaleReport.createLabHadnOverReportByDate}"/>
                         <p:commandButton ajax="false" value="Excel" actionListener="#{pharmacySaleReport.createLabHadnOverReportByDate}" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                         </p:commandButton>
@@ -45,12 +45,12 @@
                              <h:outputLabel value="Hand Over Report By Date"/><br/>
                             <h:outputLabel value="From : "/>
                             <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                             <p:spacer width="30" height="1"/>
                             <h:outputLabel value="To :"/>
                             <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                         </f:facet>
 
@@ -128,7 +128,7 @@
                             </p:row>
                         </p:columnGroup>
                         <f:facet name="footer">
-                            <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                            <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
                     </p:dataTable>
 

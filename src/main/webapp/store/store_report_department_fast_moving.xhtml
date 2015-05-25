@@ -52,11 +52,11 @@
                                             <h:outputLabel value="#{storeReportsTransfer.department.name} - Fast Moving Items by Value"/>
                                             <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                             <h:outputLabel  value="#{storeReportsTransfer.fromDate}" >
-                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                             </h:outputLabel>                          
                                             <h:outputLabel value="&emsp;&emsp;To :"/>
                                             <h:outputLabel  value="#{storeReportsTransfer.toDate}" >
-                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                             </h:outputLabel>
                                         </f:facet>
 
@@ -177,7 +177,7 @@
                             </p:tab>
                         </p:tabView> 
                         <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                         </f:facet>
 
                     </p:panel>

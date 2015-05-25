@@ -13,28 +13,30 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
-            <h:outputLabel value="Title"/>
+        <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
+            <p:outputLabel value="Title"/>
             <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{enumController.title}"/>
             </p:selectOneMenu>
-            <h:outputLabel value="Name"/>
-            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.patient.person.name}" style="width:300px;text-transform:uppercase;">
+            <p:outputLabel value="Name"/>
+            <p:inputText rendered="true" 
+                         required="true"
+                         requiredMessage="Please enter the name"
+                         autocomplete="off" 
+                         id="txtNewPtName"
+                         value="#{cc.attrs.patient.person.name}" 
+                         style="width:300px;text-transform:uppercase;">
             </p:inputText>
             <p:outputLabel value="NIC"/>
             <p:inputText autocomplete="off" value="#{cc.attrs.patient.person.nic}"/>
-            <h:outputLabel value="Sex"/>
+            <p:outputLabel value="Sex"/>
             <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>
                 <f:selectItems value="#{enumController.sex}"/>
             </p:selectOneMenu>
-            
-            <p:watermark value="YEAR" for="year" />
-            <p:watermark value="MONTH" for="month" />
-            <p:watermark value="DAYS" for="day" />
-            <h:outputLabel/>
-            <h:outputLabel value="Age"/>
+
+            <p:outputLabel value="Age"/>
             <h:panelGroup>
                 <p:inputText autocomplete="off"  id="year" style="width: 80px;"  value="#{admissionController.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
@@ -50,22 +52,26 @@
                 <br/>
                 <p:outputLabel value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
             </h:panelGroup>
-            <h:outputLabel value="Date of Birth"/>
+            <p:outputLabel value="Date of Birth"/>
             <p:calendar  value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
             </p:calendar>
-            
-            <h:outputLabel value="Address"/>
+
+            <p:outputLabel value="Address"/>
             <p:inputTextarea  value="#{cc.attrs.patient.person.address}"/>                                  
 
-            <h:outputLabel value="Mobile Phone"/>
+            <p:outputLabel value="Mobile Phone"/>
             <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.mobile}">
+                         value="#{cc.attrs.patient.person.mobile}" >
             </p:inputMask>
-            <h:outputLabel value="Home Phone"/>
+            <p:outputLabel value="Home Phone"/>
             <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.phone}">
+                         value="#{cc.attrs.patient.person.phone}" required="true" requiredMessage="Please enter a home phone number">
             </p:inputMask>
-        </h:panelGrid>
+        </p:panelGrid>
+
+        <p:watermark value="YEAR" for="year" />
+        <p:watermark value="MONTH" for="month" />
+        <p:watermark value="DAYS" for="day" />
     </cc:implementation>
 </html>
