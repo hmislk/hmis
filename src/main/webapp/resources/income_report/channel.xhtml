@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.channelBills}" var="str"
+                     rendered="#{bookKeepingSummery.channelBills.size()>0}">
+            <f:facet name="header">
+                <h:outputLabel value="Channel Collection"/>
+            </f:facet>
+            <p:column style="text-align: left;">
+                <f:facet name="header">
+                    <h:outputLabel value="Department Name"/>
+                </f:facet>
+                <h:outputLabel value="#{str.string}"/>
+            </p:column>
+            <p:column/>
+            <p:column/>
+            <p:column/>
+            <p:column style="text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="Value"/>
+                </f:facet>
+                <h:outputLabel value="#{str.value1}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>    
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Total Pharmacy Total"/>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.channelTotal}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.channelTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

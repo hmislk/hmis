@@ -25,12 +25,22 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport.createGRNBillItemForAsset()}"/>
                             </h:panelGrid>
                         <p:panel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Department Assets By Bill Item"/>
-                            </f:facet>
+                            
                             <p:dataTable rowIndexVar="i" 
                                      id="tblBills" 
                                      value="#{commonReport.billItems}" var="bi" stickyHeader="true" editingRow="true"  >
+                                <f:facet name="header">
+                                <h:outputLabel value="Department Assets By Bill Item"/>
+                                <h:outputLabel value="From" style="white-space: pre-line"/>
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <p:spacer width="10" height="0"/>
+                                <h:outputLabel value="&emsp;To"/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <f:facet name="header" >
@@ -68,10 +78,9 @@
                                 </f:facet>
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}"/>
                             </p:column>
-                                
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                         </p:dataTable>
                                
                             </p:panel>

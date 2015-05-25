@@ -54,37 +54,37 @@
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
                                     <h:outputLabel value=" To "/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/>
-                                        <h:outputLabel value="From  " style=" white-space:pre-line;"/>
-                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="&emsp;&emsp;To  "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
+                                    <h:outputLabel value="From  " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="&emsp;&emsp;To  "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </f:facet>
-                                
+
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>                                    
                                 </p:column>
-                                
+
                                 <p:column headerText="Request No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Request No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.bill.invoiceNumber}" ></h:outputLabel>                                    
                                 </p:column>
-                                
+
                                 <p:column headerText="Item">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.item.name}" ></h:outputLabel>                                    
                                 </p:column>
-                                
+
                                 <p:column headerText="Item">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
@@ -115,15 +115,15 @@
                                     <h:outputLabel value="#{i.rate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    
+
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{storeReportsTransfer.totalsValue}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>   
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>   
                                     </f:facet>
-                                    
+
                                 </p:column>
-                                
+
                                 <p:column headerText="Discount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Remarks"/>
@@ -131,15 +131,15 @@
                                     <h:outputLabel value="#{i.discount}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    
+
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{storeReportsTransfer.discountsValue}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>   
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>   
                                     </f:facet>
-                                    
+
                                 </p:column>
-                                
+
                                 <p:column headerText="Net Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Remarks"/>
@@ -149,31 +149,31 @@
                                     </h:outputLabel> 
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{storeReportsTransfer.netTotalValues}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>   
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>   
                                     </f:facet>
                                 </p:column>
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
 
-<!--                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="3" footerText="Totals">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Totals" ></h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                        <p:column style="text-align: right;"  footerText="#{storeReportsTransfer.netTotalValues}" >
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{storeReportsTransfer.netTotalValues}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>-->
+                                <!--                                <p:columnGroup type="footer">
+                                                                    <p:row>
+                                                                        <p:column colspan="3" footerText="Totals">
+                                                                            <f:facet name="footer">
+                                                                                <h:outputLabel value="Totals" ></h:outputLabel>
+                                                                            </f:facet>
+                                                                        </p:column>
+                                
+                                                                        <p:column style="text-align: right;"  footerText="#{storeReportsTransfer.netTotalValues}" >
+                                                                            <f:facet name="footer">
+                                                                                <h:outputLabel value="#{storeReportsTransfer.netTotalValues}" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </f:facet>
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                </p:columnGroup>-->
 
                             </p:dataTable>
                         </h:panelGroup>

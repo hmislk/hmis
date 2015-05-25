@@ -54,7 +54,7 @@
                             <p:dataTable id="tbl"  value="#{storeReportsTransfer.drows}" var="i"  >
 
                                 <p:column headerText="Department Unit Issue By Department - Detailed" >
-                                
+
                                     <p:dataTable id="tblDep" value="#{i.categoryBillRows}" var="cbr" >
                                         <f:facet name="header">
                                             <h:outputLabel value= "#{i.department.name}" />
@@ -119,28 +119,28 @@
                                 </p:column>
 
 
-                                <f:facet name="footer" >
-                                    
+                                <f:facet name="header" >
+
                                     <h:outputLabel value="Unit Issue From "/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-                                       <h:outputLabel value="To"/>
+                                    <h:outputLabel value="To"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
-                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="&emsp;&emsp;To : "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
+                                    <h:outputLabel value="&emsp;&emsp;To : "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    
                                 </f:facet>
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" style="float: right;" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel><br/><br/>
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
-
                             </p:dataTable>
 
 
