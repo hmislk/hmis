@@ -25,35 +25,31 @@
                             <f:facet name="header">
                                 <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
                                 <p:spacer width="20" height="0"/>
-                                <h:panelGrid columns="4">
+                                <h:panelGrid columns="2">
                                     <h:outputLabel value="From Date" />
-                                    <p:spacer width="10" height="0"/>
-
                                     <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
-                                    <p:spacer width="30" height="0"/>
                                     <h:outputLabel value="To Date" />
-                                    <p:spacer width="10" height="0"/>
                                     <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
-                                    <p:spacer width="20" height="0"/>
-                                    <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
+                                    <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
                                     <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
                                                      requiredMessage="You must select a institution" >
                                         <f:selectItem itemLabel="Select Institution"/>
                                         <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                                     </p:selectOneMenu>
-                                    <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
+                                    <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
                                     <p:autoComplete styleClass="noPrintButton"  value="#{institutionLabSumeryController.department}" 
-                                                    style="text-align: left; margin: 5px; padding: 5px;" 
+                                                    style="text-align: left; margin: 0px; padding: 0px;" 
                                                     completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                                     itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                                     requiredMessage="You must select a department" >
                                     </p:autoComplete>
-                                    <h:outputLabel styleClass="noPrintButton" value="Net Total" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
+                                    <h:outputLabel styleClass="noPrintButton" value="Net Total" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
                                     <p:inputText value="#{institutionLabSumeryController.netTotal}" />
-                                    <p:spacer width="140" height="0"/>
-                                    <h:panelGrid columns="4" >
+                                     </h:panelGrid>
+                                    <h:panelGrid columns="5" >
+                                        <p:spacer width="70" height="1"/>
                                         <p:commandButton styleClass="noPrintButton" id="btnRefresh" value="Refresh" ajax="false" action="#{institutionLabSumeryController.createLabBills()}" />
                                         <!--<p:defaultCommand target="btnRefresh"/>-->
 
@@ -61,7 +57,7 @@
                                             <p:printer target="panelReport" />
                                         </p:commandButton>             
 
-                                        <p:commandButton value="Excel" ajax="false">
+                                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
                                             <pe:exporter type="xlsx" target="tbl" fileName="Hand_Over_Ins"
                                                          facetBackground="#008000" facetFontSize="15" 
                                                          facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
@@ -69,35 +65,24 @@
                                         </p:commandButton>
 
                                     </h:panelGrid>
-                                </h:panelGrid>
+                               
                             </f:facet>
                         </p:panel>
-
-                        <p:panel styleClass="printBlock" >
-
-                            <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
-                            <br/>
-                            <h:outputLabel value="#{institutionLabSumeryController.institution.name}"  >
-                            </h:outputLabel>
-                            <h:outputLabel value=" - Handover Report" />
-                            <br/>
-                            <h:outputLabel value="From : " />
+                       
+                        <p:dataTable rendered="#{b.billedBill.insId ne true}" id="tbl"  value="#{institutionLabSumeryController.labBilleds}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Income Report With Credit By Institution Bill Count " />
+                                <h:outputLabel value=" #{institutionLabSumeryController.institution.name} :"  style="white-space: pre-line"/>
+                                <h:outputLabel value="&emsp; #{institutionLabSumeryController.department.name}"/>
+                                <h:outputLabel value="From : " style="white-space: pre-line"/>
                             <h:outputLabel value="#{institutionLabSumeryController.fromDate}"  >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
-                            &nbsp;&nbsp;&nbsp;&nbsp;
-                            <h:outputLabel value="To : "  ></h:outputLabel>
+                                <h:outputLabel value="&emsp;To : "  />
                             <h:outputLabel value="#{institutionLabSumeryController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
-
-                        </p:panel>
-
-
-                        <p:dataTable rendered="#{b.billedBill.insId ne true}" id="tbl"  value="#{institutionLabSumeryController.labBilleds}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
-                            <f:facet name="header">
-                                <h:outputLabel value="Hand Over Report "/>
-                                <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/>
+                                
                             </f:facet>
 
                             <p:column headerText="No">
@@ -170,6 +155,9 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
 
 <!--                            <f:facet name="footer" >

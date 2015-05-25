@@ -33,17 +33,17 @@
                         <h:outputLabel value="All Cashier Summary"/>
                         <br/>
                         <h:outputLabel value="From :"/>
-                        <h:outputLabel value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <h:outputLabel value="#{cashierReportController.fromDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel value="#{commonReport.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <h:outputLabel value="#{cashierReportController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         
                     </f:facet>
                     <f:facet name="footer">
-                        <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                     </f:facet>
                     <h:panelGrid columns="5" style="min-width: 30%;" styleClass="noPrintButton">
                         <h:outputLabel value="From Date" />

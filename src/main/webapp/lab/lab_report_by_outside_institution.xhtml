@@ -12,24 +12,18 @@
     <ui:define name="content">
         <h:form>
 
-            <p:panel id="panelPrint" header="Outside Institution Fees" >
-                <p:panelGrid columns="3"  >
-
-
-
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <f:facet name="header">
+                    <h:outputLabel value="3) Investigation Counts"/>
+                <h:panelGrid columns="2"  styleClass="noPrintButton" >
                     <h:outputLabel value="From Date"/>
                     <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
-                    <p:commandButton value="Refresh" ajax="false" action="#{commonReport.displayOutsideBillFees()}"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+                    
 
                     <h:outputLabel value="To Date"/>
                     <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
-
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-
                     <h:outputLabel value="Institution"/>
                     <p:autoComplete forceSelection="true" 
                                     value="#{commonReport.institution}" 
@@ -42,28 +36,35 @@
                             #{ix.institutionCode}
                         </p:column>
                     </p:autoComplete>
-
-                    <p:commandButton 
-                      ajax="false" 
-                        value="Excel"  
-                        styleClass="noPrintButton" 
-                        style="float: right;" >
-                        <pe:exporter 
-                            type="xlsx" 
-                            target="tbl" 
-                            fileName="Report By Outside Institution"/>  
+                    </h:panelGrid>
+                    
+                    <h:panelGrid columns="5"  >
+                        <p:spacer width="65" height="1"/>
+                        <p:commandButton value="Refresh" ajax="false" action="#{commonReport.displayOutsideBillFees()}"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
                     </p:commandButton>
-
-
-
-
-
-                </p:panelGrid>
+                    <p:commandButton 
+                      ajax="false"  value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="Report By Outside Institution"/>  
+                    </p:commandButton>
+                    
+                </h:panelGrid>
+                </f:facet>
 
                 <p:dataTable id="tbl" value="#{commonReport.billFees}" 
                              var="d" style="font-size: 15px;">
                     <f:facet name="header">
-                        <h:outputLabel value="Collecting Center Sale Report"/>
+                        <h:outputLabel value="#{commonReport.institution.name}"/>
+                        <h:outputLabel value="Fees For Outside Institution" style="white-space: pre-line"/>
+                        <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                        <h:outputLabel  value="#{commonReport.fromDate}">
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel  value="#{commonReport.toDate}" >
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>
                     </f:facet>
 
                     <p:column >
@@ -107,7 +108,9 @@
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
                     </p:column>
-
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                 </p:dataTable>
             </p:panel>   
 
