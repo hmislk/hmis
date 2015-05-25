@@ -535,15 +535,6 @@
                                                 <h:outputLabel id="netTotal" value="#{opdPreBillController.netTotal}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
-                                                <h:outputLabel value="Tendered" ></h:outputLabel>
-                                                <p:inputText autocomplete="off"  id="paid" value="#{opdPreBillController.strTenderedValue}" >
-                                                    <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                                    <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdPreBillController.calTotals()}"/>
-                                                </p:inputText>
-                                                <h:outputLabel  value="Balance " ></h:outputLabel>
-                                                <h:outputLabel id="balance" value="#{opdPreBillController.cashBalance}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
                                             </p:panelGrid>
 
                                         </p:panel>

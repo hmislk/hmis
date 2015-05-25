@@ -13,22 +13,12 @@
             <ui:define name="content">
 
                 <h:form>
-
-                    <h:panelGrid columns="3"  >
-
+                    <p:panel header="Referral Reports">
                         <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Referral Reports"/>
-                            </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Instituion Referrals" action="report_referral_institution_detail"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Instituion Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem"/>
-                                                         
-                        </h:panelGrid>
-
-                        
-
-                    </h:panelGrid>
-
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Instituion Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem"/>                             
+                        </h:panelGrid>                        
+                    </p:panel>                    
                 </h:form>
             </ui:define>
 

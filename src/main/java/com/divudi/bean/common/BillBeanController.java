@@ -368,12 +368,12 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public double calFeeValueChannel(Date fromDate, Date toDate, FeeType feetype, Institution institution, List<PaymentMethod> paymentMethods) {
-        
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        
+
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType in :bTp"
@@ -1116,6 +1116,29 @@ public class BillBeanController implements Serializable {
         return netTotal;
     }
 
+    public double calChannelTotal(Date fromDate, Date toDate, Institution institution) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select sum(b.netTotal)"
+                + " from Bill b "
+                + " where b.retired=false "
+//                + " and b.cancelled=false "
+//                + " and b.refunded=false "
+                + " and b.billType in :bType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        HashMap hm = new HashMap();
+        hm.put("bType", bts);
+        hm.put("ins", institution);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        return netTotal;
+    }
+
     public double calBillTotal(BillType billType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = " SELECT sum(b.netTotal) "
@@ -1227,6 +1250,31 @@ public class BillBeanController implements Serializable {
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
         hm.put("pm", Arrays.asList(pms));
+        return getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Object[]> fetchChannelBills(Date fromDate, Date toDate, Institution institution) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select b.department,"
+                + " sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+//                + " and b.cancelled=false "
+//                + " and b.refunded=false "
+                + " and  b.billType in :bType"
+                + " and b.department.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " group by b.department"
+                + " order by b.department.name";
+
+        HashMap hm = new HashMap();
+        hm.put("bType", bts);
+        hm.put("ins", institution);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
         return getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }

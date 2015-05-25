@@ -1442,9 +1442,12 @@ public class InwardBeanController implements Serializable {
             return null;
         }
 
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
-        patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
         patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
         patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());

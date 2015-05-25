@@ -10,25 +10,37 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel  >
+                    <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Store Asset BillItems "/>                                                         
-                            <h:panelGrid columns="5" >
+                            <h:outputLabel value="Store Asset BillItems "/> 
+                            </f:facet>
+                            <h:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{commonReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar  id="fromDate" value="#{commonReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
+                                <h:outputLabel/>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport.createGRNBillItemForAsset()}"/>
                             </h:panelGrid>
-
-                        </f:facet>
-
-
-                        <p:dataTable rowIndexVar="i" 
+                        <p:panel>
+                            
+                            <p:dataTable rowIndexVar="i" 
                                      id="tblBills" 
                                      value="#{commonReport.billItems}" var="bi" stickyHeader="true" editingRow="true"  >
+                                <f:facet name="header">
+                                <h:outputLabel value="Department Assets By Bill Item"/>
+                                <h:outputLabel value="From" style="white-space: pre-line"/>
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <p:spacer width="10" height="0"/>
+                                <h:outputLabel value="&emsp;To"/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <f:facet name="header" >
@@ -66,7 +78,12 @@
                                 </f:facet>
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}"/>
                             </p:column>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                         </p:dataTable>
+                               
+                            </p:panel>
                     </p:panel>
 
                 </h:form>

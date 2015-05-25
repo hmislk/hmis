@@ -16,20 +16,9 @@
 
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Investigation Month End Summary">
                     <f:facet name="header" >
-                        <p:outputLabel value="Investigation Month End Summary"/>
-                        <p:commandButton ajax="false"  value="Refresh"  styleClass="noPrintButton" style="float: right;" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
+                        <p:outputLabel value="2) Lab Investigation Without Credit"/>
 
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Month End Summary Without Credit From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
-                                         facetBackground="#008000" facetFontSize="15" 
-                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
-                        </p:commandButton>     
-
-                        <p:panelGrid columns="4" style="min-width: 100%;">
+                        <h:panelGrid columns="2" styleClass="noPrintButton">
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -37,32 +26,50 @@
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-                        </p:panelGrid>
+                        </h:panelGrid>
+                        <h:panelGrid columns="5">
+                            <p:spacer width="65" height="1"/>
+                            <p:commandButton ajax="false"  value="Refresh"  styleClass="noPrintButton"  />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Month End Summary Without Credit From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>     
+                        </h:panelGrid>
                     </f:facet>
                     <br/><br/>
                     <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsWithoutC}" var="c" >
-                        
+
                         <f:facet name="header">
-                            <h:outputLabel value="Investigation Month End Summary From "/> 
+                            <h:outputLabel value="Month End Summary Without Credit "/> 
+                            <h:outputLabel value="FROM : " style="white-space:  pre-line"/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
-                            <h:outputLabel value=" To "/>
+                            <h:outputLabel value=" &emsp;To "/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>  
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>  
                             </h:outputLabel>                                
                         </f:facet>                                                 
-                        
+
                         <p:column headerText="Test Name" >
                             <h:outputLabel value="#{c.investigation.name}"/>
                         </p:column>
                         <p:column headerText="Count" style="text-align: right;">
-                                  
+
                             <h:outputLabel value="#{c.count}"/>
                         </p:column>
                         <p:column headerText="Total" style="text-align: right;" >
                             <h:outputLabel value="#{c.total}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                         </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
                     </p:dataTable>
 

@@ -11,45 +11,42 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
- <h:outputStylesheet library="css" name="printing.css" />
+                <h:outputStylesheet library="css" name="printing.css" />
 
                 <h:form>
+                    <p:panel header="Income Report">
+                        <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;" >
+                            <h:panelGrid columns="1" >
+                                <p:panel header="1) With Credit" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_with_credit_by_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_with_credit_by_department"/>                                
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution Bill Count" action="report_income_with_credit_by_institution_for_build_bills"/>                                
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
+                            <h:panelGrid columns="1" >
+                                <p:panel header="2) Without Credit" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_without_credit_by_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
 
-                    <h:panelGrid columns="4"  >
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="With Credit" />
-                            </f:facet>
+                            <h:panelGrid columns="1" >
+                                <p:panel header="3) Doctor Payments" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Due Report Opd" action="/reportIncome/opd_professional_payment_due"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
 
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_with_credit_by_institution"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_with_credit_by_department"/>                                
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Institution Bill Count" action="report_income_with_credit_by_institution_for_build_bills"/>                                
+
 
                         </h:panelGrid>
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Without Credit" />
-                            </f:facet>
-
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_without_credit_by_institution"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
-
-                        </h:panelGrid>
-                        
-                         <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Doctor Payments" />
-                            </f:facet>
-
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Due Report Opd" action="/reportIncome/opd_professional_payment_due"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
-
-                        </h:panelGrid>
-
-                      
-
-                    </h:panelGrid>
-
+                    </p:panel>
                 </h:form>
             </ui:define>
 

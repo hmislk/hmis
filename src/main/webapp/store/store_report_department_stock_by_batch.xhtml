@@ -68,7 +68,9 @@
 
                             <p:dataTable id="tbl" rowIndexVar="ii" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Batch"/>                                     
+                                    <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Batch"/> 
+                                    <h:outputLabel value="#{storeReportsStock.category.name}"  style=" white-space:pre-line;"/> 
+                                    <h:outputLabel value="&emsp;&emsp;#{storeReportsStock.item.name} "/>
                                 </f:facet> 
 
                                 <p:column>
@@ -174,7 +176,7 @@
                                     </p:row>
                                 </p:columnGroup>
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
 
                             </p:dataTable>

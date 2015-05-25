@@ -43,12 +43,12 @@
                         <p:outputLabel value="Sales Summary Report By Date" /><br/>
                         <p:outputLabel value="From : " />
                         <p:outputLabel value="#{storeSaleReport.fromDate}" >
-                        <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel>
                         <p:spacer width="30" height="1"/>
                         <p:outputLabel value="To : " />
                         <p:outputLabel value="#{storeSaleReport.toDate}">
-                        <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel>
                     </f:facet>
                     
@@ -133,9 +133,9 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>                    
                 </h:panelGrid>
-                  <f:facet name="footer" >
-                      <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                  </f:facet>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
 
             </p:panel>         
 

@@ -16,6 +16,7 @@ import com.divudi.data.dataStructure.DepartmentSale;
 import com.divudi.data.dataStructure.DepartmentStock;
 import com.divudi.data.dataStructure.InstitutionSale;
 import com.divudi.data.dataStructure.InstitutionStock;
+import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
 import com.divudi.ejb.CommonFunctions;
@@ -155,14 +156,156 @@ public class PharmacyController implements Serializable {
 
     public void createAllItemTransactionSummery() {
         List<Amp> allAmps = ampController.getItems();
-        itemTransactionSummeryRows = new ArrayList<>();
-        for(Amp a:allAmps){
+        Map<Long, ItemTransactionSummeryRow> m = new HashMap();
+
+        for (Amp a : allAmps) {
             ItemTransactionSummeryRow r = new ItemTransactionSummeryRow();
             r.setItem(a);
-            
+            m.put(a.getId(), r);
         }
+
+        BillType[] bts = new BillType[]{BillType.PharmacySale};
+        BillType[] rbts = new BillType[]{BillType.PharmacyPre};
+        List<ItemQuantityAndValues> rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setRetailSaleQty(v.getQuantity());
+                r.setRetailSaleVal(v.getValue());
+            }
+        }
+
+        bts = new BillType[]{BillType.PharmacyWholeSale};
+        rbts = new BillType[]{BillType.PharmacyWholesalePre};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setWholeSaleQty(v.getQuantity());
+                r.setWholeSaleVal(v.getValue());
+            }
+        }
+
+        bts = new BillType[]{BillType.PharmacyIssue};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setIssueQty(v.getQuantity());
+                r.setIssueVal(v.getValue());
+            }
+        }
+        
+        bts = new BillType[]{BillType.PharmacyTransferIssue};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setTransferOutQty(v.getQuantity());
+                r.setTransferOutVal(v.getValue());
+            }
+        }
+        
+        bts = new BillType[]{BillType.PharmacyBhtPre};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setBhtSaleQty(v.getQuantity());
+                r.setBhtSaleVal(v.getValue());
+            }
+        }
+
+        bts = new BillType[]{BillType.PharmacyPurchaseBill, BillType.PharmacyGrnBill};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, null);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setPurchaseQty(v.getQuantity());
+                r.setPurchaseVal(v.getValue());
+            }
+        }
+
+        bts = new BillType[]{BillType.PharmacyTransferReceive};
+        rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
+                toDate, null, department, null, bts, rbts);
+        for (ItemQuantityAndValues v : rs) {
+            ItemTransactionSummeryRow r = m.get(v.getItem().getId());
+            if (r != null) {
+                r.setTransferInQty(v.getQuantity());
+                r.setTransferInVal(v.getValue());
+            }
+        }
+        
+//        System.out.println("m = " + m);
+        itemTransactionSummeryRows = new ArrayList<>(m.values());
+
     }
-    
+
+    public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
+            Date toDate,
+            Institution ins,
+            Department department,
+            Item item,
+            BillType[] billTypes,
+            BillType[] referenceBillTypes) {
+
+        if (false) {
+            BillItem bi = new BillItem();
+            bi.getNetValue();
+            bi.getPharmaceuticalBillItem().getQty();
+            System.out.println("bi = " + bi.getDeptId());
+        }
+
+        String sql;
+        Map m = new HashMap();
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        sql = "select new com.divudi.data.dataStructure.ItemQuantityAndValues(i.item, "
+                + "sum(i.pharmaceuticalBillItem.qty), "
+                + "sum(i.netValue)) "
+                + " from BillItem i "
+                + " where i.bill.createdAt between :frm and :to  ";
+        if (department != null) {
+            m.put("dep", department);
+            sql += " and i.bill.department=:dep";
+        }
+        if (item != null) {
+            m.put("item", department);
+            sql += " and i.item=:item ";
+        }
+
+        if (billTypes != null) {
+            List<BillType> bts = Arrays.asList(billTypes);
+            m.put("bts", bts);
+            sql += " and i.bill.billType in :bts ";
+        }
+
+        if (referenceBillTypes != null) {
+            List<BillType> rbts = Arrays.asList(referenceBillTypes);
+            m.put("rbts", rbts);
+            sql += " and i.bill.referenceBill.billType in :rbts ";
+        }
+
+        if (ins != null) {
+            m.put("ins", ins);
+            sql += " and (i.bill.institution=:ins or i.bill.department.institution=:ins) ";
+        }
+        sql += " group by i.item";
+        sql += " order by i.item.name";
+//        System.out.println("m = " + m);
+//        System.out.println("sql = " + sql);
+        List<ItemQuantityAndValues> lst = getBillItemFacade().findItemQuantityAndValuesList(sql, m, TemporalType.DATE);
+        return lst;
+
+    }
 
     public void averageByDatePercentage() {
         Calendar frm = Calendar.getInstance();
