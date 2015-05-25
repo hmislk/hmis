@@ -1483,7 +1483,11 @@ public class InwardBeanController implements Serializable {
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
-        patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        
+        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
         patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
         patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
         patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
@@ -1582,8 +1586,6 @@ public class InwardBeanController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
 
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
@@ -1611,11 +1613,11 @@ public class InwardBeanController implements Serializable {
         temp = temp + admissionType.getAdditionToCount();
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
-        
-        if(getSessionController().getInstitutionPreference().isBhtNumberWithYear()){
-        Calendar c = Calendar.getInstance();
 
-        bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+        if (getSessionController().getInstitutionPreference().isBhtNumberWithYear()) {
+            Calendar c = Calendar.getInstance();
+
+            bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
         return bhtText;
     }
