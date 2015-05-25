@@ -62,7 +62,7 @@
 
             <p:outputLabel value="Mobile Phone"/>
             <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.mobile}" >
+                         value="#{cc.attrs.patient.person.mobile}" required="true" requiredMessage="Please Enter A Mobile Number">
             </p:inputMask>
             <p:outputLabel value="Home Phone"/>
             <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
