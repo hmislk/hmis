@@ -1117,14 +1117,16 @@ public class BillBeanController implements Serializable {
     }
 
     public double calChannelTotal(Date fromDate, Date toDate, Institution institution) {
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
-                + " where b.retired=false"
-                + " and b.billType in :bType"
-                + " and b.referenceBill.institution=:ins "
+                + " where b.retired=false "
+//                + " and b.cancelled=false "
+//                + " and b.refunded=false "
+                + " and b.billType in :bType "
+                + " and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         HashMap hm = new HashMap();
@@ -1253,19 +1255,21 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Object[]> fetchChannelBills(Date fromDate, Date toDate, Institution institution) {
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "Select b.department,"
                 + " sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.retired=false"
+//                + " and b.cancelled=false "
+//                + " and b.refunded=false "
                 + " and  b.billType in :bType"
                 + " and b.department.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " group by b.department"
                 + " order by b.department.name";
-        
+
         HashMap hm = new HashMap();
         hm.put("bType", bts);
         hm.put("ins", institution);

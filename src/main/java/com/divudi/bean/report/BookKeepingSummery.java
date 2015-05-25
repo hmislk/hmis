@@ -2679,6 +2679,7 @@ public class BookKeepingSummery implements Serializable {
         dd.setString("Collection For the Day");
         calGrantTotal2HosWithPro();
         Double dbl = getGrantTotal();
+        System.out.println("dbl = " + dbl);
         dbl = dbl - pettyCashTotal;
         dd.setValue1(dbl);
         collections2Hos.add(dd);
