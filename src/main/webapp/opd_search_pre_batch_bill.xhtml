@@ -88,14 +88,14 @@
                             </p:column>  
                             <p:column headerText="Value" >
 
-                                <h:outputLabel value="#{bill.cashPaid}" >
+                                <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
                             </p:column>
-                            <p:column headerText="Value" >
+                            <p:column headerText="Discount" >
 
-                                <h:outputLabel value="#{bill.total}" >
+                                <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
