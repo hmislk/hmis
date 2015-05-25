@@ -56,11 +56,11 @@
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
                                         <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                         <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy  HH:mm a" />
+                                            <f:convertDateTime pattern="dd MMM yyyy  hh:mm:ss a" />
                                         </h:outputLabel>
                                         <h:outputLabel value="&emsp;To : "/>
                                         <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a" />
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
                                         </h:outputLabel>
                                 </f:facet>
 
@@ -114,9 +114,9 @@
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

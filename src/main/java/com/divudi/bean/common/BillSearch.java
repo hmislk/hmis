@@ -142,7 +142,7 @@ public class BillSearch implements Serializable {
     private double roundOff(double d, int position) {
 //        BigDecimal bd = new BigDecimal(x).setScale(position, RoundingMode.HALF_EVEN);
 //        return bd.doubleValue();
-      
+
         DecimalFormat newFormat = new DecimalFormat("#.##");
         return Double.valueOf(newFormat.format(d));
 
@@ -230,11 +230,11 @@ public class BillSearch implements Serializable {
             UtilityController.addSuccessMessage("Bill Item Retired");
         }
     }
-    
+
     public void updateBillfee(BillFee bf) {
 
-            getBillFeeFacade().edit(bf);
-            UtilityController.addSuccessMessage("Bill Item Retired");
+        getBillFeeFacade().edit(bf);
+        UtilityController.addSuccessMessage("Bill Item Retired");
     }
 
     private void createBillFees() {
@@ -336,7 +336,7 @@ public class BillSearch implements Serializable {
 
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
-        
+
         //System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
         getBillFeeFacade().edit(tmp.getPaidForBillFee());
         //System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
@@ -815,7 +815,7 @@ public class BillSearch implements Serializable {
         tempbillItems = null;
         comment = null;
         lazyBills = null;
-        searchKeyword=null;
+        searchKeyword = null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {
@@ -1269,7 +1269,7 @@ public class BillSearch implements Serializable {
 
             b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             b.setCreater(getSessionController().getLoggedUser());
-            
+
             b.setPaidForBillFee(nB.getPaidForBillFee());
 
             getBillItemFacede().create(b);
@@ -1585,17 +1585,13 @@ public class BillSearch implements Serializable {
 
     public List<BillFee> getBillFees2() {
         if (getBill() != null) {
-            if (billFees == null) {
-                String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
-            }
+            String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
+            billFees = getBillFeeFacade().findBySQL(sql);
         }
 
         if (getBillSearch() != null) {
-            if (billFees == null) {
-                String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
-            }
+            String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
+            billFees = getBillFeeFacade().findBySQL(sql);
         }
 
         if (billFees == null) {

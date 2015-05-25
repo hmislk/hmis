@@ -44,6 +44,7 @@ public class UserPreference implements Serializable {
     boolean institutionSpecificItems=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
+    boolean partialPaymentOfOpdPreBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
@@ -348,6 +349,14 @@ public class UserPreference implements Serializable {
 
     public void setInwardChangeAdmissionFee(boolean inwardChangeAdmissionFee) {
         this.inwardChangeAdmissionFee = inwardChangeAdmissionFee;
+    }
+
+    public boolean isPartialPaymentOfOpdPreBillsAllowed() {
+        return partialPaymentOfOpdPreBillsAllowed;
+    }
+
+    public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
+        this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
     
     @Override

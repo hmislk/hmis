@@ -114,7 +114,7 @@ public class SearchController implements Serializable {
         billFees = null;
         billItems = null;
         patientInvestigations = null;
-        searchKeyword=null;
+        searchKeyword = null;
     }
 
     public void makeListNull2() {
@@ -609,6 +609,7 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailAllBills() {
         createPharmacyRetailBills(BillType.PharmacyPre, false);
     }
+
     public void createPharmacyWholesaleAllBills() {
         createPharmacyRetailBills(BillType.PharmacyWholesalePre, false);
     }
@@ -664,15 +665,15 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //    
         //     ////System.out.println("sql = " + sql);
-        
-            if(maxNum==true){
-             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
-              }else{
-                bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-            }
-            netTotal=0.0;
-            for (Bill b : bills) {
-            netTotal+=b.getNetTotal();
+
+        if (maxNum == true) {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+        } else {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        }
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
         }
     }
 
@@ -2606,7 +2607,6 @@ public class SearchController implements Serializable {
 
         //System.out.println("temMap = " + temMap);
         //System.out.println("sql = " + sql);
-
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         calTotal();
     }
@@ -3317,8 +3317,58 @@ public class SearchController implements Serializable {
         return sql;
 
     }
+    
+    public void createOpdBathcBillPreTable() {
+       bills = null;
+        String sql;
+        Map temMap = new HashMap();
 
-    public void createPreTable() {
+        sql = "select b from PreBill b "
+                + " where b.billType = :billType "
+                + " and b.institution=:ins"
+//                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false ";
+//                + " and b.deptId is not null ";
+
+        sql += createPharmacyPayKeyword(temMap);
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billType", BillType.OpdBathcBillPre);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+    }
+    
+    
+    public void createOpdPreTable() {
+        createPreTable(BillType.OpdPreBill);
+    }
+    
+    public void createOpdPreTableNotPaid(){
+        createPreTableNotPaid(BillType.OpdPreBill);
+    }
+    
+    public void createOpdPreTablePaid(){
+        createPreTablePaid(BillType.OpdPreBill);
+    }
+
+    public void createPharmacyPreTable() {
+        createPreTable(BillType.PharmacyPre);
+    }
+    
+    public void createPharmacyPreTableNotPaid(){
+        createPreTableNotPaid(BillType.PharmacyPre);
+    }
+    
+    public void createPharmacyPreTablePaid(){
+        createPreTablePaid(BillType.PharmacyPre);
+    }
+
+    public void createPreTable(BillType bt) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -3334,7 +3384,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacyPre);
+        temMap.put("billType", bt);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -3344,7 +3394,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createPreTableNotPaid() {
+    public void createPreTableNotPaid(BillType bt) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -3362,7 +3412,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacyPre);
+        temMap.put("billType", bt);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -3372,7 +3422,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createPreTablePaid() {
+    public void createPreTablePaid(BillType bt) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -3390,7 +3440,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacyPre);
+        temMap.put("billType", bt);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
