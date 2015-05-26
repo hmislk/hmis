@@ -8,50 +8,49 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.BillExpense;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.facade.ItemFacade;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
-
+import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
+import com.divudi.entity.ServiceCategory;
+import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.inward.InwardService;
+import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
-import java.util.TimeZone;
-
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.entity.Packege;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.inward.TheatreService;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.beanutils.BeanUtils;
 
 /**
@@ -175,6 +174,35 @@ public class ItemController implements Serializable {
             }
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
+    }
+
+    public List<Item> deleteOrNotItem(boolean b, DepartmentType dt) {
+        Map m = new HashMap();
+        String sql = " select a from Item a "
+                + " where a.departmentType=:dt ";
+        if (b) {
+            sql += " and a.retired=false ";
+        } else {
+            sql += " and a.retired=true ";
+        }
+        m.put("dt", dt);
+        return getFacade().findBySQL(sql, m);
+    }
+
+    public void pharmacyDeleteItem() {
+        deleteOrNotItem(false, DepartmentType.Pharmacy);
+    }
+
+    public void pharmacyNoDeleteItem() {
+        deleteOrNotItem(true, DepartmentType.Pharmacy);
+    }
+
+    public void storeDeleteItem() {
+        deleteOrNotItem(false, DepartmentType.Store);
+    }
+
+    public void storeNoDeleteItem() {
+        deleteOrNotItem(true, DepartmentType.Store);
     }
 
     public List<Item> completeDealorItem(String query) {

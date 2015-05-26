@@ -72,6 +72,7 @@ public class AmpController implements Serializable {
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
+    
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -180,7 +181,8 @@ public class AmpController implements Serializable {
         }
         return selectedItems;
     }
-
+    
+    
     public List<Amp> completeAmp(String qry) {
         List<Amp> a = null;
         Map m = new HashMap();
