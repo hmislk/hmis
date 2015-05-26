@@ -694,6 +694,7 @@ public class OpdPreBillController implements Serializable {
         PreBill tmp = new PreBill();
         tmp.setBillType(BillType.OpdBathcBillPre);
         tmp.setBillClassType(BillClassType.PreBill);
+        tmp.setPatient(tmpPatient);
         tmp.setInstitution(getSessionController().getInstitution());
         tmp.setDepartment(getSessionController().getDepartment());
         tmp.setPaymentScheme(paymentScheme);
@@ -712,11 +713,13 @@ public class OpdPreBillController implements Serializable {
 
         double dbl = 0;
         double dblT = 0;
+        double dblD = 0;
         double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
             dblT += b.getTotal();
+            dblD += b.getDiscount();
 
 //            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(reminingCashPaid);
@@ -737,6 +740,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         tmp.setNetTotal(dbl);
+        tmp.setDiscount(dblD);
         tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
 
