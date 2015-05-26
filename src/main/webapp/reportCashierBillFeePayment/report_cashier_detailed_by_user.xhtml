@@ -5,10 +5,10 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"           
-                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
     <ui:define name="content">
@@ -16,15 +16,15 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/>
+                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/> 
+                            
                             <br/>
-                            <h:outputLabel value="Casheir Summary :"/>
-                            <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
-                            <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
+
+                            <h:outputLabel value="Cashier  Report : #{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="&emsp;From :"/>
                             <h:outputLabel value="#{commonReport.fromDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
@@ -32,28 +32,31 @@
                             <h:outputLabel value="#{commonReport.toDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
+                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
+
+                            <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
                         </f:facet>
                         <f:facet name="footer">
                             <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
 
-
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+                        <h:panelGrid columns="8" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-
+                            <p:spacer width="30" height="1"/>
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
+                            <p:spacer width="30" height="1"/>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
@@ -62,7 +65,12 @@
 
                         </h:panelGrid>
 
-                        <ca:opdBilledSummery data="#{commonReport.userBillsOwn}"/>
+                        <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+
+
+                        </h:panelGrid>
+
+                        <ca:opdBilled data="#{commonReport.userBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
@@ -74,7 +82,7 @@
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyBilledSummery data="#{commonReport.userBillsOwnPh}"/>
+                        <ca:pharmacyBilled data="#{commonReport.userBillsOwnPh}"/>                        
 
                         <p:spacer height="30"/>
 
@@ -86,16 +94,16 @@
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeBilled data="#{commonReport.userBillsOwnPh}"/>                        
+                        <ca:pharmacyWholeBilled data="#{commonReport.billedPhWholeSale}"/>                        
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
+                        <ca:pharmacyWholeCancelled data="#{commonReport.cancelledPhWholeSale}"  />
 
                         <p:spacer height="30"/>
 
-                        <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
-
+                        <ca:phrmacyWholeRefunded data="#{commonReport.refundedPhWholeSale}"/>
+                        
                         <p:spacer height="30"/>
 
                         <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
@@ -150,10 +158,46 @@
                         <ca:inwardPaymentCancel data="#{commonReport.userInwardPaymentCancelBillsOwn}"/>
 
                         <p:spacer height="30"/>
+
                         <ca:inwrdRefundBill data="#{commonReport.inwardRefunds}"/>
 
                         <p:spacer height="30"/>
 
+                        <ca:channelBilledBill data="#{commonReport.channelBilled}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBill data="#{commonReport.channelCancells}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBill data="#{commonReport.channelRefunds}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBillProPay data="#{commonReport.channelBilledProPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBillProPay data="#{commonReport.channelCancellProPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBillProPay data="#{commonReport.channelRefundsProPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBillAgentCommission data="#{commonReport.channelBilledAgnPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBillAgentCommission data="#{commonReport.channelCancellAgnPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBillAgentCommission data="#{commonReport.channelRefundAgnPayment}"/>
+
+                        <p:spacer height="30"/>
 
                         <p:dataTable id="sum1" value="#{commonReport.creditSlipSum}"  var="i" >
                             <f:facet name="header">
@@ -495,7 +539,24 @@
 
                         <p:dataTable id="sum3" value="#{commonReport.creditSlipSumAfter}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Credit Summary  After Cash Transaction"/>
+                                Credit Summary
+                            </f:facet>
+                            <p:column>
+                                <h:outputLabel value="#{i.string}"/>
+                            </p:column>
+                            <p:column style="font-weight: bold;text-align:right;" >
+                                <h:outputLabel value="#{i.value}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>                
+
+                        <p:spacer height="30"/>
+
+
+                        <p:dataTable id="sum5" value="#{commonReport.creditSlipSumAfter}"  var="i" >
+                            <f:facet name="header">
+                                Credit Summary
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -511,7 +572,7 @@
 
                         <p:dataTable id="sum4" value="#{commonReport.cashChequeSumAfter}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Cash Summary  After Cash Transaction"/>
+                                <h:outputLabel value="Cash Summary"/>
                             </f:facet>
                             <p:column>
                                 <h:outputLabel value="#{i.string}"/>
@@ -524,46 +585,18 @@
                         </p:dataTable>
 
 
-
                         <p:spacer height="30"/>
-
 
                         <h:panelGrid columns="1">
                             <h:outputLabel value="Cashier : #{commonReport.webUser.webUserPerson.name}"/>
                             <br/>
                             <h:outputLabel value="............................"/>
                         </h:panelGrid>
-                    </p:panel>
 
-                    <div style="page-break-after: always;">
-                        <br/>
-                    </div>
 
-                    <p:panel>
-                        <f:facet name="header"> 
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
-                            <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
-                            <h:outputLabel value="  Petty Cash Report"/>
-                        </f:facet>
-                        <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
-                            <h:outputLabel value="From Date " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Date" />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
-                            </h:outputLabel>
-
-                            <h:outputLabel value="From Time " />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="To Time " />
-                            <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGrid>
+                        <div style="page-break-after: always;">
+                            <br/>
+                        </div>
 
                         <ca:pettyBills data="#{commonReport.userPettyPaymentBills}"/>
 
@@ -571,7 +604,6 @@
 
                         <ca:pettyCancel data="#{commonReport.userPettyPaymentCancelBills}"/>
                     </p:panel>
-
                 </p:panel>
             </h:form>
         </h:panelGroup>

@@ -693,7 +693,7 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         settleBatchBillAfterFiistTime();
-
+        cashPaid = 0.0;
     }
 
 //    public void settleBatchBillFiistTime(Bill bill) {
@@ -837,7 +837,9 @@ public class OpdPreSettleController implements Serializable {
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
-        p.setCreater(getSessionController().getWebUser());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(paymentMethod);
+        
         System.out.println("cashPaid = " + cashPaid);
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             p.setPaidValue(cashPaid);

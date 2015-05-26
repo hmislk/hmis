@@ -1739,6 +1739,16 @@
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column>  
 
+                            <p:column headerText="Credit Card" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Card"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Card'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>  
+                            
                             <p:column headerText="Slip Date" style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip Date"/>
@@ -1868,7 +1878,17 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column> 
-
+                            
+                            <p:column headerText="Credit Card" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Card"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Card'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+                            
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Descripion"/>
