@@ -190,19 +190,19 @@ public class ItemController implements Serializable {
     }
 
     public void pharmacyDeleteItem() {
-        deleteOrNotItem(false, DepartmentType.Pharmacy);
+        allItems = deleteOrNotItem(false, DepartmentType.Pharmacy);
     }
 
     public void pharmacyNoDeleteItem() {
-        deleteOrNotItem(true, DepartmentType.Pharmacy);
+        allItems = deleteOrNotItem(true, DepartmentType.Pharmacy);
     }
 
     public void storeDeleteItem() {
-        deleteOrNotItem(false, DepartmentType.Store);
+        allItems = deleteOrNotItem(false, DepartmentType.Store);
     }
 
     public void storeNoDeleteItem() {
-        deleteOrNotItem(true, DepartmentType.Store);
+        allItems = deleteOrNotItem(true, DepartmentType.Store);
     }
 
     public List<Item> completeDealorItem(String query) {

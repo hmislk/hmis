@@ -11,7 +11,7 @@
         <ui:composition template="./../resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h.form>
+                <h:form>
                     <p:panel header="Store Item List">
                         <h:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Item" action="#{itemController.storeNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
@@ -48,7 +48,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Created By"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.creater}"  >
+                                    <h:outputLabel value="#{i.creater.webUserPerson}"  >
                                     </h:outputLabel>
                                 </p:column>
                                 
@@ -56,14 +56,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Deleted or Not"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.retired eq true ? "Deleted":"Not Deleted"}"  >
+                                    <h:outputLabel value="#{i.retired eq true ? 'Deleted':'Not Deleted'}"  >
                                     </h:outputLabel>
                                 </p:column>
                                 
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>
-                </h.form>
+                </h:form>
             </ui:define>
         </ui:composition>
 
