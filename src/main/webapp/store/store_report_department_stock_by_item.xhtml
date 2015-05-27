@@ -17,23 +17,20 @@
 
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}"
-                                            var="dept" itemLabel="#{dept.name}" 
-                                            itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsStock.department}" converter="dep" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
-                                             actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>
+                                             actionListener="#{storeReportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
                                              facetFontStyle="BOLD" 
                                              fontName="Courier New" />
                             </p:commandButton>
-                            <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
+                            <p:commandButton value="Print" actionListener="#{storeReportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"
                                              update=":frm:tbl"/>
                             <p:commandButton id="print" value="Actual print" style="display: none">
-                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
+                                <p:ajax event="click" listener="#{storeReportsStock.prepareForView()}" update=":frm:tbl"/>
                                 <p:printer target=":frm:tbl" />
                             </p:commandButton>
                         </h:panelGrid>
@@ -41,14 +38,14 @@
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
-                                         value="#{reportsStock.pharmacyStockRows}" var="i"  
-                                         rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
-                                         rows="#{reportsStock.paginator?'20':reportsStock.pharmacyStockRows.size()}"
-                                         paginator="#{reportsStock.paginator}"
+                                         value="#{storeReportsStock.pharmacyStockRows}" var="i"  
+                                         rendered="#{storeReportsStock.pharmacyStockRows.size() ne 0 }"
+                                         rows="#{storeReportsStock.paginator?'20':storeReportsStock.pharmacyStockRows.size()}"
+                                         paginator="#{storeReportsStock.paginator}"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock Report by Item - #{reportsStock.department.name}"/>                                     
+                                    <h:outputLabel value="Stock Report by Item - #{storeReportsStock.department.name}"/>                                     
                                 </f:facet> 
 
                                 <p:column width="20px;" headerText="No" sortBy="#{ii}"
@@ -116,17 +113,17 @@
                                                 <h:outputLabel value="Total" />
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
+                                        <p:column style="text-align: right;" footerText="#{storeReportsStock.stockPurchaseValue}">
                                             <f:facet name="footer" >
-                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
+                                                <h:outputLabel value="#{storeReportsStock.stockPurchaseValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
+                                        <p:column style="text-align: right;" footerText="#{storeReportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
-                                                <h:outputLabel value="#{reportsStock.stockSaleValue}" >
+                                                <h:outputLabel value="#{storeReportsStock.stockSaleValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
