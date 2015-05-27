@@ -9,6 +9,7 @@ import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -67,6 +68,7 @@ public class StoreReportsStock implements Serializable {
     Bill grnbill;
     List<Bill> grnReturnbills;
     List<Bill> paymentbills;
+    List<PharmacyStockRow> pharmacyStockRows;
     Date fromDate;
     Date toDate;
     Date fromDateE;
@@ -89,6 +91,44 @@ public class StoreReportsStock implements Serializable {
     /**
      * Methods
      */
+
+    
+    
+    public void fillDepartmentNonEmptyItemStocks() {
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
+                + "(s.itemBatch.item.code, "
+                + "s.itemBatch.item.name, "
+                + "sum(s.stock), "
+                + "sum(s.itemBatch.purcahseRate * s.stock), "
+                + "sum(s.itemBatch.retailsaleRate * s.stock))  "
+                + "from Stock s where s.stock>:z and s.department=:d "
+                + "group by s.itemBatch.item.name, s.itemBatch.item.code "
+                + "order by s.itemBatch.item.name";
+        m.put("d", department);
+        m.put("z", 0.0);
+        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue += 0.0;
+        for (PharmacyStockRow r : lsts) {
+            stockPurchaseValue += r.getPurchaseValue();
+            stockSaleValue += r.getSaleValue();
+
+        }
+        pharmacyStockRows = lsts;
+    }
+
+    
+    
+    
+    
+    
+    
     public void fillDepartmentStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -821,6 +861,46 @@ public class StoreReportsStock implements Serializable {
         return selectedInventoryStock;
     }
 
+    public List<PharmacyStockRow> getPharmacyStockRows() {
+        return pharmacyStockRows;
+    }
+
+    public void setPharmacyStockRows(List<PharmacyStockRow> pharmacyStockRows) {
+        this.pharmacyStockRows = pharmacyStockRows;
+    }
+
+    boolean paginator = true;
+    int rows = 20;
+
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+    
+    
+    
+    public void prepareForPrint(){
+        paginator=false;
+        rows=getStocks().size();
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
+    }
+
+    
     @EJB
     CreditBean creditBean;
 
