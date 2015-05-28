@@ -114,6 +114,8 @@ public class BillSearch implements Serializable {
     private WebUserController webUserController;
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
+    @Inject
+    OpdPreSettleController opdPreSettleController;
     private SearchKeyword searchKeyword;
     Institution creditCompany;
     PatientInvestigation patientInvestigation;
@@ -1281,6 +1283,10 @@ public class BillSearch implements Serializable {
 ////////////////////////
 
             cancelBillFee(can, b, tmp);
+            
+            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+            List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
+            getOpdPreSettleController().createOpdCancelBillFeePayment(can, tmpC);
 
             list.add(b);
 
@@ -1303,6 +1309,7 @@ public class BillSearch implements Serializable {
             bf.setBill(can);
             bf.setBillItem(bt);
             bf.setFeeValue(0 - nB.getFeeValue());
+            bf.setSettleValue(0-nB.getSettleValue());
 
             bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             bf.setCreater(getSessionController().getLoggedUser());
@@ -2019,6 +2026,14 @@ public class BillSearch implements Serializable {
 
     public void setBillItemList(List<BillItem> billItemList) {
         this.billItemList = billItemList;
+    }
+
+    public OpdPreSettleController getOpdPreSettleController() {
+        return opdPreSettleController;
+    }
+
+    public void setOpdPreSettleController(OpdPreSettleController opdPreSettleController) {
+        this.opdPreSettleController = opdPreSettleController;
     }
 
     public class BillTypeIncomeRecord {

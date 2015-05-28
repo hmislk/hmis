@@ -122,7 +122,8 @@ public class OpdPreBillReportController implements Serializable {
                 + " and type(bfp.billFee.bill)=:b"
                 + " and bfp.payment.paymentMethod=:pm "
                 + " and bfp.payment.institution=:ins "
-                + " and bfp.payment.createdAt between :fromDate and :toDate";
+                + " and bfp.payment.createdAt between :fromDate and :toDate ";
+                
 
         if (department != null) {
             sql += " and bfp.payment.department=:dep ";
@@ -133,6 +134,9 @@ public class OpdPreBillReportController implements Serializable {
             sql += " and bfp.payment.creater=:w ";
             m.put("w", wUser);
         }
+        
+        sql+= " group by bfp.billFee.bill "
+                + " order by bfp.billFee.bill.createdAt ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
