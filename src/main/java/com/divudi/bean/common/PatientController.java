@@ -277,6 +277,8 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
         } else {
+            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
         }
         if (getCurrent().getId() == null) {
@@ -285,6 +287,8 @@ public class PatientController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
+            getCurrent().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }

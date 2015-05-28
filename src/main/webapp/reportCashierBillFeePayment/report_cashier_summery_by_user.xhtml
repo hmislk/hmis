@@ -63,7 +63,14 @@
                         </h:panelGrid>
 
                         <ca:opdBilledSummery data="#{opdPreBillReportController.userBilledBills}"/>
+                        
+                        <p:spacer height="30"/>
 
+                        <ca:opdCancelledSummery data="#{opdPreBillReportController.userCancellededBills}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:opdRefundedSummery data="#{opdPreBillReportController.userRefundedBills}"/>
                         
                     </p:panel>
 

@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,6 +40,7 @@ public class Payment implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     Date toRealizeAt;
 
+    @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
 
     //Realization Properties

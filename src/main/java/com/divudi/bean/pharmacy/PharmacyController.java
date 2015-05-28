@@ -199,7 +199,7 @@ public class PharmacyController implements Serializable {
                 r.setIssueVal(v.getValue());
             }
         }
-        
+
         bts = new BillType[]{BillType.PharmacyTransferIssue};
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
@@ -210,7 +210,7 @@ public class PharmacyController implements Serializable {
                 r.setTransferOutVal(v.getValue());
             }
         }
-        
+
         bts = new BillType[]{BillType.PharmacyBhtPre};
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
@@ -243,7 +243,7 @@ public class PharmacyController implements Serializable {
                 r.setTransferInVal(v.getValue());
             }
         }
-        
+
 //        System.out.println("m = " + m);
         itemTransactionSummeryRows = new ArrayList<>(m.values());
 
@@ -1458,8 +1458,12 @@ public class PharmacyController implements Serializable {
     }
 
     public double findPharmacyMovement(Department department, Item itm, BillType[] bts, Date fd, Date td) {
-        if (itm instanceof Ampp) {
-            itm = ((Ampp) pharmacyItem).getAmp();
+        try {
+            if (itm instanceof Ampp) {
+                itm = ((Ampp) pharmacyItem).getAmp();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         String sql;
         Map m = new HashMap();
@@ -1479,8 +1483,12 @@ public class PharmacyController implements Serializable {
     }
 
     public Date findFirstPharmacyMovementDate(Department department, Item itm, BillType[] bts, Date fd, Date td) {
-        if (itm instanceof Ampp) {
-            itm = ((Ampp) pharmacyItem).getAmp();
+        try {
+            if (itm instanceof Ampp) {
+                itm = ((Ampp) pharmacyItem).getAmp();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         String sql;
         Map m = new HashMap();
