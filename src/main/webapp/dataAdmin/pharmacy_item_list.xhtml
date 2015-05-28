@@ -13,11 +13,11 @@
                 <h:form>
                     <p:panel header="Pharmacy Item List">
                         <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Item" action="#{itemController.pharmacyNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="deleted Item" action="#{itemController.pharmacyDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Item" action="#{ampController.pharmacyNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.pharmacyDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
                         </h:panelGrid>
                         <h:panelGroup id="pharmacyItem">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{itemController.allItems}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{ampController.itemList}" var="i"  >
                             
                                 <p:column headerText="Id">
                                     <f:facet name="header">
@@ -47,7 +47,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Created By"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.creater}"  >
+                                    <h:outputLabel value="#{i.creater.webUserPerson}"  >
                                     </h:outputLabel>
                                 </p:column>
                                 

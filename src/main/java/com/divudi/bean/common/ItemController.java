@@ -80,6 +80,7 @@ public class ItemController implements Serializable {
     private Institution instituion;
     Department department;
     List<Department> departments;
+    
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -174,35 +175,6 @@ public class ItemController implements Serializable {
             }
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
-    }
-
-    public List<Item> deleteOrNotItem(boolean b, DepartmentType dt) {
-        Map m = new HashMap();
-        String sql = " select a from Item a "
-                + " where a.departmentType=:dt ";
-        if (b) {
-            sql += " and a.retired=false ";
-        } else {
-            sql += " and a.retired=true ";
-        }
-        m.put("dt", dt);
-        return getFacade().findBySQL(sql, m);
-    }
-
-    public void pharmacyDeleteItem() {
-        allItems = deleteOrNotItem(false, DepartmentType.Pharmacy);
-    }
-
-    public void pharmacyNoDeleteItem() {
-        allItems = deleteOrNotItem(true, DepartmentType.Pharmacy);
-    }
-
-    public void storeDeleteItem() {
-        allItems = deleteOrNotItem(false, DepartmentType.Store);
-    }
-
-    public void storeNoDeleteItem() {
-        allItems = deleteOrNotItem(true, DepartmentType.Store);
     }
 
     public List<Item> completeDealorItem(String query) {
@@ -842,7 +814,7 @@ public class ItemController implements Serializable {
     public void updateSelectedOPDItemList() {
 
     }
-
+   
     /**
      *
      */

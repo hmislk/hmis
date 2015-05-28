@@ -14,11 +14,11 @@
                 <h:form>
                     <p:panel header="Store Item List">
                         <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Item" action="#{itemController.storeNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="deleted Item" action="#{itemController.storeDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.storeDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
                         </h:panelGrid>
                         <h:panelGroup id="storeItem">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{itemController.allItems}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{ampController.itemList}" var="i"  >
                             
                                 <p:column headerText="Id">
                                     <f:facet name="header">
