@@ -122,7 +122,14 @@
                                                            value="#{rb.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
+                                        </h:panelGroup> 
+                                        <h:panelGroup rendered="#{rb.refunded}" >
+                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" rendered="#{rb.refunded}"
+                                                           value="#{rb.referenceBill.createdAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
                                     </p:column> 
                                     <p:column >                               
                                         <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
