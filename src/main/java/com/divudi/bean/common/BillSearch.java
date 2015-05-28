@@ -793,6 +793,9 @@ public class BillSearch implements Serializable {
 
             bi.setRefunded(Boolean.TRUE);
             getBillItemFacede().edit(bi);
+            System.out.println("bi.getRefunded() = " + bi.getRefunded());
+            BillItem bbb=getBillItemFacade().find(bi.getId());
+            System.out.println("bbb.getRefunded() = " + bbb.getRefunded());
 
             String sql = "Select bf From BillFee bf where "
                     + " bf.retired=false and bf.billItem.id=" + bi.getId();

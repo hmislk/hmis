@@ -73,7 +73,10 @@
 
                                     <p:column id="colSelect"   selectionMode="multiple"  disabledSelection="#{b.refunded==true}"  >
                                     </p:column>
-
+                                    <p:column >
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{b.id}" />
+                                    </p:column>
                                     <p:column >
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}" />
@@ -87,7 +90,7 @@
                                         <h:outputLabel value="#{b.netValue}"/>
                                     </p:column >
                                     <p:column headerText="Refunded" >
-                                        <h:outputLabel rendered="#{b.refunded}" value="Refunded" />
+                                        <h:outputLabel value="#{b.refunded.booleanValue}" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
