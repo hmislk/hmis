@@ -906,6 +906,11 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
+        
+        if (getNewPatient().getPerson().getPhone()==null) {
+            UtilityController.addErrorMessage("Please Insert a Phone Number");
+            return true;
+        }
 
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
             if (referralId == null || referralId.trim().equals("")) {

@@ -171,8 +171,8 @@ public class PatientController implements Serializable {
 
     public void prepareAdd() {
         current = null;
-        yearMonthDay = null;        
-        getCurrent();        
+        yearMonthDay = null;
+        getCurrent();
         getYearMonthDay();
     }
 
@@ -255,11 +255,11 @@ public class PatientController implements Serializable {
         String sql;
 
         sql = "select count(p) FROM Patient p where p.code is not null";
-        
+
         long lng = getEjbFacade().countBySql(sql);
         lng++;
         String str = "";
-        str+=lng;
+        str += lng;
         return str;
     }
 
@@ -272,24 +272,23 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
-        if (getCurrent().getPerson().getId() == null) {
-            getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
-            getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(getCurrent().getPerson());
-        } else {
-            getPersonFacade().edit(getCurrent().getPerson());
+        try {
+            if (getCurrent().getPerson().getId() == null) {
+                getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
+                getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPersonFacade().create(getCurrent().getPerson());
+                getCurrent().setCreatedAt(new Date());
+                getCurrent().setCreater(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                UtilityController.addSuccessMessage("Saved as a new patient successfully.");
+            } else {
+                getPersonFacade().edit(getCurrent().getPerson());
+                getFacade().edit(getCurrent());
+                UtilityController.addSuccessMessage("Updated the patient details successfully.");
+            }
+        } catch (Exception e) {
+            UtilityController.addErrorMessage("Error. Not Saved. \n " + e.getMessage());
         }
-        if (getCurrent().getId() == null) {
-            getCurrent().setCreatedAt(new Date());
-            getCurrent().setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved as a new patient successfully.");
-        } else {
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated the patient details successfully.");
-        }
-        getPersonFacade().flush();
-        getFacade().flush();
     }
 
     public PatientFacade getEjbFacade() {

@@ -60,7 +60,12 @@
                             </p:column>
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
-                            </p:column>    
+                            </p:column>
+                            
+                            <p:column>
+                                #{bill.id}
+                            </p:column>
+                            
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
