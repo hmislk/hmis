@@ -730,13 +730,13 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
-    public void setPaymentMethodData(Payment p) {
+    public void setPaymentMethodData(Payment p,PaymentMethod pm) {
 
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
-        p.setPaymentMethod(p.getBill().getPaymentMethod());
+        p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getCashPaid());
         System.out.println("p.getPaidValue() = " + p.getPaidValue());
@@ -832,7 +832,7 @@ public class OpdPreSettleController implements Serializable {
         }
     }
 
-    public void calculateBillfeePaymentsForCancelBill(List<BillFee> billFees, Payment p) {
+    public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
             System.out.println("bf = " + bf);
@@ -842,18 +842,21 @@ public class OpdPreSettleController implements Serializable {
         }
     }
 
-    public void createOpdCancelBillFeePayment(Bill bill, List<BillFee> billFees) {
+    public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees,Payment p) {
 
+        calculateBillfeePaymentsForCancelRefundBill(billFees, p);
+        System.err.println("BillItem For Out");
+
+        JsfUtil.addSuccessMessage("Sucessfully Paid");
+    }
+    
+    public Payment createPayment(Bill bill,PaymentMethod pm){
         Payment p = new Payment();
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
-        setPaymentMethodData(p);
-
-        calculateBillfeePaymentsForCancelBill(billFees, p);
-        System.err.println("BillItem For Out");
-
-        JsfUtil.addSuccessMessage("Sucessfully Paid");
+        setPaymentMethodData(p, pm);
+        return p;
     }
 
     public Bill getPreBill() {

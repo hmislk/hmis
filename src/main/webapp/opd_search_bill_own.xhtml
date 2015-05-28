@@ -113,7 +113,14 @@
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
                                 <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                     <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
-                                </h:commandLink>                                
+                                </h:commandLink>
+                                
+                                <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
+                                    <h:outputLabel style="color: red;" value="Edited By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                
                             </p:column>
                             <p:column headerText="Client Phone No">                              
                                 <h:outputLabel value="#{bill.patient.person.phone}" />
