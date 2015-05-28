@@ -15,41 +15,41 @@
                             <h:outputLabel value="OPD BILL SEARCH "/>                          
                             <h:panelGrid columns="8" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{labReportSearchByInstitutionController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{institutionLabSumeryController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{labReportSearchByInstitutionController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar id="toDate" value="#{institutionLabSumeryController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="paymentMethod"/>
-                                <p:selectOneMenu   id="cmbPs" value="#{labReportSearchByInstitutionController.paymentMethod}"  >
+                                <p:selectOneMenu   id="cmbPs" value="#{institutionLabSumeryController.paymentMethod}"  >
                                     <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{labReportSearchByInstitutionController.paymentMethord}" />
+                                    <f:selectItems value="#{institutionLabSumeryController.paymentMethord}" />
                                 </p:selectOneMenu>
                                 <h:outputLabel   value="Institution" />
-                                <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
                                                  requiredMessage="You must select a institution" >
                                     <f:selectItem itemLabel="Select Institution"/>
-                                    <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                    <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                                 </p:selectOneMenu>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{labReportSearchByInstitutionController.createTableCashCreditBills}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{institutionLabSumeryController.createTableCashCreditBills}"/>
 
                             </h:panelGrid>
 
                         </f:facet>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{labReportSearchByInstitutionController.billBills}" 
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{institutionLabSumeryController.billBills}" 
                                      var="bill"  
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From : "/>
 
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel value="&emsp; To :" />
+                                <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Bills" />
                             </f:facet>
@@ -128,7 +128,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalBill}" >
+                                    <h:outputLabel value="#{institutionLabSumeryController.totalBill}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -140,19 +140,19 @@
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
-                        <p:dataTable rowIndexVar="i" id="tblBills2" value="#{labReportSearchByInstitutionController.canBills}" 
+                        <p:dataTable rowIndexVar="i" id="tblBills2" value="#{institutionLabSumeryController.canBills}" 
                                      var="bill"  
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From  : "/>
 
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel value="&emsp; To: " />
+                                <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Cancel Bills" />
                             </f:facet>
@@ -231,7 +231,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalCan}" >
+                                    <h:outputLabel value="#{institutionLabSumeryController.totalCan}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -243,19 +243,19 @@
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
-                        <p:dataTable rowIndexVar="i" id="tblBills3" value="#{labReportSearchByInstitutionController.refBills}" 
+                        <p:dataTable rowIndexVar="i" id="tblBills3" value="#{institutionLabSumeryController.refBills}" 
                                      var="bill"  
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From : "/>
 
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
-                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                <h:outputLabel value=" &emsp;To : " />
+                                <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Refund Bills" />
                             </f:facet>
@@ -334,7 +334,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalRef}" >
+                                    <h:outputLabel value="#{institutionLabSumeryController.totalRef}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>

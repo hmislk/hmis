@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Item-vice purchase/good receive" >
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:autoComplete 
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept" 
+                                itemLabel="#{dept.name}" 
+                                itemValue="#{dept}" 
+                                forceSelection="true" 
+                                value="#{pharmacyPurchaseController.department}" 
+                                converter="dep" >
+                            </p:autoComplete>
+
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{pharmacyPurchaseController.fromDate}" 
+                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{pharmacyPurchaseController.toDate}" 
+                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Process" 
+                                            action="#{pharmacyPurchaseController.fillItemVicePurchaseAndGoodReceive()}" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Unit_Issue_Report_by_department"  />
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
+                                         stickyHeader="true"
+                                         value="#{pharmacyPurchaseController.rows}" 
+                                         var="i"  
+                                         rowKey="#{i.name}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20,50,100"
+                                         >
+
+                                <p:column headerText="Item" sortBy="#{i.name}" filterBy="#{i.name}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Quentity" style="text-align: right;"
+                                          sortBy="#{i.qty}" filterBy="#{i.qty}" >
+                                    <h:outputLabel value="#{i.qty}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Free" sortBy="#{i.freeQty}" filterBy="#{i.freeQty}" style="text-align: right;">
+                                    <h:outputLabel value="#{i.freeQty}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

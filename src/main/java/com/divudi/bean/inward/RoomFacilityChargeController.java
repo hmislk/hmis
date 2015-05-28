@@ -207,11 +207,11 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void updateRoomFacilityCharge(RoomFacilityCharge r) {
 
-        System.out.println("r = " + r);
-        System.out.println("r1 = " + r.getRoomCharge());
-        System.out.println("r1 = " + r.getAdminstrationCharge());
-        System.out.println("r1 = " + r.getMedicalCareCharge());
-        System.out.println("r1 = " + r.getLinenCharge());
+        //System.out.println("r = " + r);
+        //System.out.println("r1 = " + r.getRoomCharge());
+        //System.out.println("r1 = " + r.getAdminstrationCharge());
+        //System.out.println("r1 = " + r.getMedicalCareCharge());
+        //System.out.println("r1 = " + r.getLinenCharge());
         getTimedItemFeeFacade().edit(r.getTimedItemFee());
         getFacade().edit(r);
         UtilityController.addSuccessMessage("Updated");

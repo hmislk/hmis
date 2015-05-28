@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="Department wise Bill report"/> 
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar  id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                            </p:calendar>
+                            <h:outputLabel/>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportController.createDepartmentBills()}"/>
+                        </h:panelGrid>
+                    
+
+                    <p:dataTable value="#{channelReportController.depBills}" var="db" >
+                        <f:facet name="header">
+                            <h:outputLabel value="All Department Bill Summary"/>
+                             <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Bill No"/>
+                                <p:column headerText="App. Number"/>
+                                <p:column headerText="App. Date"/>
+                                <p:column headerText="Patient Name"/>
+                                <p:column headerText="Cunsultant Name"/>
+                                <p:column headerText="Billed at"/>
+                                <p:column headerText="Billed by"/>
+                                <p:column headerText="Paymentmethod"/>
+                                <p:column headerText="Paid Value"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{db.bills}" var="b"  rendered="#{db.bills.size()>0}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Billed Department - #{db.billDepartment.name}"></p:outputLabel>
+                                <p:outputLabel value="Total - #{db.departmentBillTotal}" style="float: right"></p:outputLabel>
+                            </f:facet>
+                            <p:column headerText="Bill No" >                                
+                                <h:outputLabel   value="#{b.insId}"/>
+                            </p:column>
+                            <p:column headerText="App. Number" style="text-align: right;">                                
+                                <h:outputLabel   value="#{b.singleBillSession.serialNo}"/>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="App. Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{b.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.refunded}" value="#{b.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Payment Method" >                                
+                                <h:outputLabel value="#{b.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{b.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Paid Value"  >
+
+                                <h:outputLabel value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,#00.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

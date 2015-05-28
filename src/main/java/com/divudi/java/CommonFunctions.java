@@ -17,6 +17,20 @@ import java.util.TimeZone;
  */
 public class CommonFunctions {
 
+    public static  double round(double numberToRound, int decimalPlaces){
+        if(numberToRound==0){
+            return 0.0;
+        }
+        Double m = Math.pow(10, decimalPlaces);
+        Double n = m * numberToRound ;
+        Long l=Math.round(n);
+        return l/m;
+    }
+    
+    public static double round(double numberToRound){
+        return round(numberToRound, 2);
+    }
+    
     public static long calTimePeriod(Date frDate, Date tDate) {
         if (frDate == null || tDate == null) {
             return 0;

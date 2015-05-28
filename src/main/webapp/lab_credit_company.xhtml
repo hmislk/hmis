@@ -31,7 +31,7 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{creditCompanyController.prepareAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add" action="#{creditCompanyController.prepareAdd()}" styleClass="buttons" >
                                     </h:commandButton>
                                     <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{creditCompanyController.delete()}"  value="Delete"  >
@@ -49,7 +49,8 @@
                                             <h:inputText autocomplete="off" id="txtName" value="#{creditCompanyController.current.name}"  ></h:inputText>
 
                                             <h:outputText id="lblAddress" value="Address" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtAddress" value="#{creditCompanyController.current.address}"  ></h:inputText>
+                                            <h:inputText  id="txtAddress" value="#{creditCompanyController.current.address}"  >
+                                            </h:inputText>
 
                                             <h:outputText id="lblTel" value="Tel" ></h:outputText>
                                             <h:inputText autocomplete="off" id="txtTel" value="#{creditCompanyController.current.mobile}"  ></h:inputText>
@@ -88,7 +89,7 @@
                                     </p:tab>
                                 </p:tabView>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{creditCompanyController.saveSelected()}" styleClass="buttons">
+                                    <h:commandButton id="btnSave" value="Save" action="#{creditCompanyController.saveSelected()}" styleClass="buttons">
 
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>

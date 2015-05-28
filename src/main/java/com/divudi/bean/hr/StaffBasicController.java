@@ -166,7 +166,7 @@ public class StaffBasicController implements Serializable {
     private void updateStaffEmployment() {
 
         if (getCurrent().getStaff().getStaffEmployment() == null) {
-            //   //System.out.println("ceate A :");
+            //   ////System.out.println("ceate A :");
             StaffEmployment se = new StaffEmployment();
             se.setCreatedAt(new Date());
             se.setCreater(getSessionController().getLoggedUser());
@@ -177,15 +177,15 @@ public class StaffBasicController implements Serializable {
             getCurrent().getStaff().setStaffEmployment(se);
             getStaffFacade().edit(getCurrent().getStaff());
         }
-        //   //System.out.println("ceate B :");
+        //   ////System.out.println("ceate B :");
         createComponent();
-        // //System.out.println("ceate C :");
+        // ////System.out.println("ceate C :");
         getStaffEmploymentFacade().edit(getCurrent().getStaff().getStaffEmployment());
     }
 
     private void createComponent() {
 
-        //System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
+        ////System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
         StaffBasics tmp = new StaffBasics();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
@@ -273,7 +273,7 @@ public class StaffBasicController implements Serializable {
                 for (StaffPaysheetComponent err : getRepeatedComponent()) {
                     if (sp.getId().equals(err.getId())) {
                         sp.setExist(true);
-                        //System.out.println("settin");
+                        ////System.out.println("settin");
                     }
                 }
             }

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="Change Category"></h:outputLabel>
+                    </f:facet>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Category" ></h:outputLabel>
+                        <p:autoComplete value="#{categoryController.fromCategory}"
+                                        completeMethod="#{categoryController.completeCategory}"
+                                        var="fcat"
+                                        itemLabel="#{fcat.name}"
+                                        itemValue="#{fcat}"></p:autoComplete>
+                        <h:outputLabel value="To Category" ></h:outputLabel>
+                        <p:autoComplete value="#{categoryController.toCategory}"
+                                        completeMethod="#{categoryController.completeCategory}"
+                                        var="tcat"
+                                        itemLabel="#{tcat.name}"
+                                        itemValue="#{tcat}"></p:autoComplete>
+                        
+                    </h:panelGrid>
+                    <p:commandButton ajax="false" value="Change Categories of Items"
+                                    action="#{categoryController.fromTransferItemsFromFromCategoryToToCategory()}" >
+                    </p:commandButton>
+                    
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

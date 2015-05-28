@@ -14,10 +14,10 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Detail">
+                <p:panel header="GRN Detail">
 
 
-                    <p:panelGrid columns="8" style="noPrintButton">
+                    <p:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -44,11 +44,14 @@
                         <p:defaultCommand target="btnRefresh"/>
 
                     </p:panelGrid>
-                    
-                    <h:panelGrid columns="3">
+                    </p:panel>
+                <p:panel id="reportPrint">
+
+                    <h:panelGrid columns="4">
+                        <p:spacer width="90" height="1"/>
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createPurchaseDetailTableStore()}"
+                                        actionListener="#{commonReport.createPurchaseDetailTableStore()}"
                                          style="float: right;" /> 
                         
                         <p:commandButton actionListener="#{commonReport.createPurchaseDetailTableStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -61,33 +64,24 @@
                         </p:commandButton>
                     </h:panelGrid>
 
-
-
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
-
-                        <h:outputLabel value="GRN Detailed Report "/>
-                        <h:outputLabel/>
-                        <h:outputLabel value="Institution "/>
-                        <h:outputLabel value="#{commonReport.department.institution.name}"/>
-                        <h:outputLabel value="Department "/>
-                        <h:outputLabel value="#{commonReport.department.name}"/>
-                        <h:outputLabel value="From" />
-                        <h:outputLabel  value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                        </h:outputLabel>                          
-                        <h:outputLabel value="To"/>
-                        <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                        </h:outputLabel>
-                    </h:panelGrid>
-
-
                     <p:dataTable id="billed"  value="#{commonReport.purchaseBilled.bills}" var="b" 
                                  rendered="#{commonReport.purchaseBilled.bills.size()!=0}" 
                                  sortBy="#{b.billType}"  >
 
-                        <f:facet name="header">  
-                            <h:outputLabel value="Purchase"/>
+                        <f:facet name="header"> 
+                             <h:outputLabel value="GRN Detailed Report "/>
+                        <h:outputLabel/>
+                        <h:outputLabel value="&emsp;&emsp;Department " />
+                        <h:outputLabel value="#{commonReport.department.name}"/>
+                        <h:outputLabel value="From : "  style=" white-space:pre-line;"/>
+                        <h:outputLabel  value="#{commonReport.fromDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="&emsp;&emsp;To : "/>
+                        <h:outputLabel  value="#{commonReport.toDate}"  >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>
+                            <h:outputLabel value="Purchase Summary By Supplier"  style=" white-space:pre-line;"/>
                         </f:facet>
 
                         <p:column headerText="Purchase No" >
@@ -458,7 +452,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.purchaseTotal}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>
@@ -468,6 +462,9 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                     </p:dataTable>
 
 

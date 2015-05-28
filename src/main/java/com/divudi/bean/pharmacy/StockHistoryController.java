@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.HistoryType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StockHistoryRecorder;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
@@ -51,7 +53,7 @@ public class StockHistoryController implements Serializable {
         m.put("td", toDate);
         m.put("ht", HistoryType.MonthlyRecord);
         jpql = "select FUNC('Date',s.stockAt) from StockHistory s where s.historyType=:ht and s.stockAt between :fd and :td group by FUNC('Date',s.stockAt)";
-        System.out.println("m = " + m);
+        //System.out.println("m = " + m);
         pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m);
     }
 
@@ -66,8 +68,8 @@ public class StockHistoryController implements Serializable {
             m.put("d", department);
             jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd order by s.item.name";
         }
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
+        //System.out.println("m = " + m);
+        //System.out.println("jpql = " + jpql);
         pharmacyStockHistories = facade.findBySQL(jpql, m);
     }
 
@@ -144,7 +146,13 @@ public class StockHistoryController implements Serializable {
     public StockHistoryController() {
     }
 
+    @Inject
+    SessionController sessionController;
+    
     public Department getDepartment() {
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return department;
     }
 

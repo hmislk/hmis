@@ -28,8 +28,8 @@
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            
-                             <h:outputLabel value="Institution : "/>
+
+                            <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
@@ -37,6 +37,11 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <p:outputLabel value="Employee Status "/>
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.employeeStatus}" >
+                                <f:selectItem itemLabel="Please select Employee Status"/>
+                                <f:selectItems value="#{staffController.employeeStatuses}"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
@@ -71,17 +76,17 @@
                                     </f:facet>
                                     <p:outputLabel value="#{i+1}" ></p:outputLabel>
                                 </p:column>
-                                  <p:column headerText="ID">
+                                <p:column headerText="ID">
                                     <f:facet name="header" >
                                         <p:outputLabel value="ID" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.id}" ></p:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Addition">
+                                <p:column headerText="Addition">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Addition" ></p:outputLabel>
                                     </f:facet>
-                                      <p:outputLabel value="#{ss.additionalForm.id}" ></p:outputLabel>
+                                    <p:outputLabel value="#{ss.additionalForm.id}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header" >
@@ -131,11 +136,11 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.leaveType}" ></p:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Created Date" >
+                                <p:column headerText="Created Date" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Created Date" ></p:outputLabel>
                                     </f:facet>
-                                      <p:outputLabel value="#{ss.createdAt}">
+                                    <p:outputLabel value="#{ss.createdAt}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:a"/>
                                     </p:outputLabel>
                                 </p:column>

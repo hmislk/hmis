@@ -16,10 +16,10 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summery With Pro (Month)"  styleClass="noPrintButton" />
+                    <h:outputLabel value="Book Keeping Summary With Pro (Month) By Category Month End"  styleClass="noPrintButton" />
 
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  styleClass="noPrintButton" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -37,7 +37,10 @@
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
-                    <h:panelGrid columns="3">
+                    <h:panelGrid columns="5">
+                        <p:spacer width="110" height="1"/>
+                        <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
@@ -54,13 +57,10 @@
                                          facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
                         </p:commandButton>
-
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
                     </h:panelGrid>
-
-
                 </f:facet>
+
+
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
@@ -100,6 +100,13 @@
 
             <p:spacer height="30"/>
 
+            <in:channelling_professional_payment id="channelling_professional"/>  
+
+            <p:spacer height="30"/>
+
+
+
+
             <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}">
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
@@ -125,6 +132,9 @@
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="......................." />
                 </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
             </p:dataTable>
 
 

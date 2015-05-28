@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+    <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>#{labels.topic}</title>
+        <!--<h:outputStylesheet library="css" name="style.css" />-->
+    </h:head>
+    <h:body  >
+
+        <h:form>
+
+
+            <div id="background">
+                <div id="page">
+                    <div id="header" style="float: right">
+                        <span id="infos">
+                            <h:commandLink value="Staff Login" action="index" ></h:commandLink>
+                            |
+                            <h:commandLink value="Administrator" action="index" ></h:commandLink>
+                        </span>
+                        <h:commandLink action="index" ></h:commandLink>
+                        <a href="#" id="logo"></a>
+
+                        <!-- /#logo -->
+                    </div>
+                    <!-- /#header -->
+                    <div id="contents">
+                        <div id="main">
+
+                            <div  >
+                               
+                                <h:panelGroup rendered="#{empty searchController.userPatientInvestigations}" >
+                                    <h2>No Reports Found.</h2>
+                                    <p>Please recheck the bill number and telephone number and enter again. If still can not log, please contact the hospital.</p>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!empty searchController.userPatientInvestigations}" >
+
+                                    <h3>Details</h3>
+
+                                    <table  >
+                                        <tr style="vertical-align: middle;">
+                                            <td>
+                                                <p>Name</p>
+                                            </td>
+                                            <td>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </td>
+                                            <td>
+                                                <p>#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.name}</p>
+                                            </td>
+                                        </tr>
+                                        <tr style="vertical-align: middle;">
+                                            <td>
+                                                <p>Age</p>
+                                            </td>
+                                            <td>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            </td>
+                                            <td>
+                                                <p>#{searchController.userPatientInvestigations[0].billItem.bill.patient.age}</p>
+                                            </td>
+                                        </tr>
+                                        <tr style="vertical-align: middle;">
+                                                <td>
+                                                    <p>Gender</p>
+                                                </td>
+                                                 <td>
+                                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                </td>
+                                                 <td>
+                                                     <p>#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.sex}</p>
+                                                </td>
+                                            </tr>
+                                    </table>
+
+                                    <h3>Reports</h3>
+
+                                    <table class="defaultTable"  >
+                                        <tr>
+                                            <td>
+                                                <p>Bill No</p>
+                                            </td>
+                                            <td>
+                                                <p>Investigation</p>
+                                            </td>
+                                            <td>
+                                                <p>Reports</p>
+                                            </td>
+                                        </tr>
+                                        <ui:repeat id="tblBills" value="#{searchController.userPatientInvestigations}" var="pi"  >
+
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel id="lblBillNo" 
+                                                                   value="#{pi.billItem.bill.deptId}" 
+                                                                   styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
+                                                    <p:tooltip for="lblBillNo"  >
+                                                        <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="(Department Bill No : #{pi.billItem.bill.deptId})" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Sampled : " />
+                                                        <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        </h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Received : " />
+                                                        <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        </h:outputLabel>
+                                                        <br/>
+                                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                                            <h:outputLabel style="color: red;" value="Cancelled : " />
+                                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                                            <h:outputLabel style="color: red;" value="Refunded : " />
+                                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+                                                    </p:tooltip>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="#{pi.billItem.item.name}" >
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td >
+
+                                                    <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
+
+                                                        <div style="overflow: hidden;">
+
+                                                            <p:graphicImage id="imgEntered" library="image/icon" name="data_entry.png" 
+                                                                            style="margin-left: 20px; height: 30px; width: 30px; #{dpr.dataEntered ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                            <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
+                                                                            style="margin-left: 20px; height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                            <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
+                                                                            style="margin-left: 20px; height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.4;'}" ></p:graphicImage>
+
+
+                                                            <p:tooltip for="imgEntered" >
+                                                                <h:outputLabel rendered="#{!dpr.dataEntered}" value="Awaiting Dataentry to the system." styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.dataEntered}"  value="Data entered at "  styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" ></h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.dataEntered}" value="#{dpr.dataEntryAt}"  styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                </h:outputLabel>
+                                                                <h:outputLabel value="." ></h:outputLabel>
+                                                            </p:tooltip>
+                                                            <p:tooltip for="imgApproved" >
+                                                                <h:outputLabel rendered="#{!dpr.approved}" value="Awaiting Approval" styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.approved}" value="Approved at " styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.approved}"   value="#{dpr.approveAt}"  styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                </h:outputLabel>
+                                                                <h:outputLabel value="." ></h:outputLabel>
+                                                            </p:tooltip>
+
+                                                            <p:tooltip for="imgPrinted" >
+                                                                <h:outputLabel rendered="#{!dpr.printed}" value="Not Printed" styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.printed}" value="Printed at " styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <h:outputLabel  rendered="#{dpr.printed}"  value="#{dpr.printingAt}" styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                </h:outputLabel>
+                                                                <h:outputLabel value="." ></h:outputLabel>
+                                                            </p:tooltip>
+
+
+
+                                                            <h:commandButton  style="margin-left: 20px; height: 30px; }"  class="small-button" id="cmdViewReport" 
+                                                                              value="View" 
+                                                                             action="reports_customer_view">
+                                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                            </h:commandButton>
+
+                                                            <p:tooltip for="cmdViewReport" >
+                                                                <h:outputLabel  value="Reported as #{dpr.item.name}" styleClass="#{!dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                </h:outputLabel>
+                                                                <br/>
+                                                                Click hereto view the report.
+                                                            </p:tooltip>
+                                                        </div>
+
+                                                    </ui:repeat>
+
+
+                                                </td>
+                                            </tr>
+
+                                        </ui:repeat>
+                                    </table>
+
+                                </h:panelGroup>
+
+                                
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <!-- /#contents -->
+                    <div id="footer">
+                        <div id="description">
+                            <div> 
+                                <span><a href="http://www.lakmedi.com">Copyright &copy; 2012 Lakmedipro Pvt Ltd. All rights reserved</a> 
+                                </span></div>
+                        </div>
+                    </div>
+                    <!-- /#footer -->
+                </div>
+                <!-- /#page -->
+            </div>
+            <!-- /#background -->
+
+        </h:form>
+
+    </h:body>
+</html>

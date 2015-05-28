@@ -14,7 +14,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Detail">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Purchase Summary by Supplier">
 
 
                     <p:panelGrid columns="8" style="noPrintButton">
@@ -48,7 +48,7 @@
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createPurchaseDetailTable()}"
+                                        actionListener="#{commonReport.createPurchaseDetailTable()}"
                                          style="float: right;" /> 
                         
                         <p:commandButton actionListener="#{commonReport.createPurchaseDetailTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -458,7 +458,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.purchaseTotal}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>

@@ -16,27 +16,37 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Shift" />
+                            <h:outputLabel value="Worked Time" />
                         </f:facet>
+
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                        <hr:institution value="#{staffPaySheetComponentAllController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From : " />
+                                <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="To : " />
+                                <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <h:outputLabel value="Employee : "/>
+                                <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Institution : "/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Staff Category : "/>
+                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                                <h:outputLabel value="Staff Designation : "/>
+                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                <h:outputLabel value="Staff Roster : "/>
+                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="Day Type"/>
+                                <p:selectManyCheckbox value="#{hrReportController.dayTypesSelected}" layout="grid" columns="1" >
+                                    <f:selectItems value="#{enumController.dayTypes}" var="e" itemLabel="#{e}" itemValue="#{e}" ></f:selectItems>
+                                </p:selectManyCheckbox>
+                            </h:panelGrid>
                         </h:panelGrid>
+
+
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
 
@@ -48,153 +58,164 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff Shift"/>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Worked Time"/>
                                 </f:facet>
-                                
-                                  <p:column headerText="ID">
-                                       <f:facet name="header">
-                                    <h:outputLabel value="ID"/>
-                                </f:facet>
-                                <p:outputLabel value="#{ss.id}" ></p:outputLabel>
-                                    
+
+                                <p:column headerText="ID">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.id}" ></p:outputLabel>
                                 </p:column>
+
                                 <p:column headerText="Emp No">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp No"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp No"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+
+                                </p:column>
+                                 <p:column headerText="Day Of Week ">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Day Of Week"/>
+                                    </f:facet>
+                                     <p:outputLabel value=" #{ss.dayOfWeek}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp Name"/>
-                                </f:facet>
-                                <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
-                                  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp Name"/>
+                                    </f:facet>
+                                    <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+
                                 </p:column>                              
                                 <p:column headerText="Staff Category" rendered="false">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Category"/>
-                                </f:facet>
-                                <p:outputLabel value="#{ss.staff.staffCategory.name}" ></p:outputLabel>
-                                    
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Category"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.staffCategory.name}" ></p:outputLabel>
+
                                 </p:column>                               
                                 <p:column headerText="Staff Roster" >
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Roster"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Roster"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
+
                                 </p:column>
                                 <p:column headerText="Staff Shift">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Staff Shift"/>
-                                </f:facet>
-                                <p:outputLabel value="  #{ss.shift.name}" ></p:outputLabel>
-                                  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Shift"/>
+                                    </f:facet>
+                                    <p:outputLabel value="  #{ss.shift.name}" ></p:outputLabel>
+
                                 </p:column>
-                                <p:column headerText="Day Type">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Day Type"/>
-                                </f:facet>
-                                <p:outputLabel value="    #{ss.dayType}" ></p:outputLabel>
-                                
+                                <p:column headerText="Day Type" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Day Type"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.dayType}" ></p:outputLabel>
                                 </p:column>
+
                                 <p:column headerText="Lieu Allowed">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Lieu Allowed"/>
-                                </f:facet>
-                                <p:outputLabel value=" #{ss.lieuAllowed}" ></p:outputLabel>
-                                   
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Lieu Allowed"/>
+                                    </f:facet>
+                                    <p:outputLabel value=" #{ss.lieuAllowed}" ></p:outputLabel>
+
                                 </p:column>
-                                  <p:column headerText="Shift Date">
-                                       <f:facet name="header">
-                                    <h:outputLabel value="Shift Date"/>
-                                </f:facet>
-                              
-                                     <h:outputLabel value="#{ss.shiftDate}">                                        
-                                        
+                                <p:column headerText="Shift Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Shift Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.shiftDate}">                                        
+                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Worked Time"/>
-                                </f:facet>
-                             
-                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">                                        
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Worked Time"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalWorkedTime}">
+                                            <f:converter converterId="longToTime"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Extra Time">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Extra Time"/>
-                                </f:facet>
-                                
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Extra Time"/>
+                                    </f:facet>
+
                                     <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="Basic per Sec">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Basic per Sec"/>
-                                </f:facet>
-                              
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Basic per Sec"/>
+                                    </f:facet>
+
                                     <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor Salary">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Multiplying Factor Salary"/>
-                                </f:facet>
-                               
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Multiplying Factor Salary"/>
+                                    </f:facet>
+
                                     <h:outputLabel value="#{ss.multiplyingFactorSalary}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Multiplying Factor Over Time">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Multiplying Factor Over Time"/>
-                                </f:facet>
-                              
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Multiplying Factor Over Time"/>
+                                    </f:facet>
+
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>                             
-                                  <p:column headerText="Lie Allowed">
-                                       <f:facet name="header">
-                                    <h:outputLabel value="Lie Allowed"/>
-                                </f:facet>
-                             
-                                      <h:outputLabel value="#{ss.lieuAllowed}">                                        
+                                <p:column headerText="Lie Allowed">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Lie Allowed"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{ss.lieuAllowed}">                                        
                                     </h:outputLabel>
                                 </p:column>                             
-                                   <p:column headerText="Lie Utiliezed">
-                                        <f:facet name="header">
-                                    <h:outputLabel value="Lie Utiliezed"/>
-                                </f:facet>
-                              
-                                       <h:outputLabel value="#{ss.lieuQtyUtilized}">                                        
+                                <p:column headerText="Lie Utiliezed">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Lie Utiliezed"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{ss.lieuQtyUtilized}">                                        
                                     </h:outputLabel>
                                 </p:column> 
-                                  <p:column headerText="Start">
-                                       <f:facet name="header">
-                                    <h:outputLabel value="Start"/>
-                                </f:facet>
-                              
-                                      <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">                                        
+                                <p:column headerText="Start">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Start"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">                                        
                                     </h:outputLabel>
                                 </p:column> 
-                                    <p:column headerText="End">
-                                         <f:facet name="header">
-                                    <h:outputLabel value="End"/>
-                                </f:facet>
-                             
-                                      <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">                                        
+                                <p:column headerText="End">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="End"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">                                        
                                     </h:outputLabel>
                                 </p:column> 
-                                
+
                             </p:dataTable>
                         </p:panel>
 

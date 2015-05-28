@@ -57,6 +57,9 @@ public class Person implements Serializable {
     @Column(name = "SNAME")
     String nameWithInitials;
     String phone;
+    String initials;
+    String surName;
+    String zoneCode;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
@@ -66,6 +69,10 @@ public class Person implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -179,6 +186,22 @@ public class Person implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public WebUser getEditer() {
+        return editer;
+    }
+
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
+
     public WebUser getCreater() {
         return creater;
     }
@@ -201,6 +224,30 @@ public class Person implements Serializable {
 
     public void setName(String name) {
         this.name = name.toUpperCase();
+    }
+
+    public String getInitials() {
+        return initials;
+    }
+
+    public void setInitials(String initials) {
+        this.initials = initials;
+    }
+
+    public String getSurName() {
+        return surName;
+    }
+
+    public void setSurName(String surName) {
+        this.surName = surName;
+    }
+
+    public String getZoneCode() {
+        return zoneCode;
+    }
+
+    public void setZoneCode(String zoneCode) {
+        this.zoneCode = zoneCode;
     }
 
     public boolean isRetired() {

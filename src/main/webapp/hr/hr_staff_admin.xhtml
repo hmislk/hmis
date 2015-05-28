@@ -1,3 +1,8 @@
+
+
+
+
+
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
@@ -23,8 +28,6 @@
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
-                            <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
-                            <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
                             <p:panel >
 
                                 <h:panelGrid id="gpSelectText" >
@@ -40,7 +43,7 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{staffController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                    <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{staffController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
                                         </f:ajax>
                                     </p:commandButton>
@@ -51,6 +54,14 @@
                                 </h:panelGrid>
 
                             </p:panel>
+
+                            <p:panel >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
+                                    <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
+                                </h:panelGrid>
+
+                            </p:panel>
                         </h:panelGrid  >
 
                         <p:panel >
@@ -58,7 +69,7 @@
                                 <h:outputLabel value="Details" ></h:outputLabel>
                                 <p:commandButton style="text-align: center;" id="btnSave" ajax="false"
                                                  value="Save"  
-                                                 action="#{staffController.saveSelected()}" 
+                                                action="#{staffController.saveSelected()}" 
                                                  styleClass="buttons" onclick="onSubmitButton();">
                                 </p:commandButton>
                             </f:facet>
@@ -66,18 +77,27 @@
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
-                                            
+
                                             <h:outputLabel value="Staff ID"/>
                                             <h:outputLabel value="#{staffController.current.id}"/>
                                             <h:outputLabel value="Person ID"/>
                                             <h:outputLabel value="#{staffController.current.person.id}"/>
-                                            
+
                                             <h:outputLabel value="Title"/>
                                             <p:selectOneMenu value="#{staffController.current.person.title}"  >
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}"/>
                                             </p:selectOneMenu>
+                                            
+                                            <h:outputText  value="Zone Code" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.zoneCode}"  />
+                                            
+                                            <h:outputText  value="Initials" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.initials}"  />
 
+                                            <h:outputText  value="SurName" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.surName}"  />
+                                            
                                             <h:outputText  value="Name" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.name}"  />
 
@@ -113,10 +133,10 @@
                                             <p:outputLabel value="Date Joined "/>
                                             <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MM yyyy" >
                                             </p:calendar>
-                                               <p:outputLabel value="Date Resigned "/>
+                                            <p:outputLabel value="Date Resigned "/>
                                             <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
                                             </p:calendar>
-                                                  <p:outputLabel value="Date Retired "/>
+                                            <p:outputLabel value="Date Retired "/>
                                             <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" >
                                             </p:calendar>
                                             <h:outputText value="Speciality" />
@@ -208,7 +228,7 @@
                                             <h:outputText value="Institution" ></h:outputText>                                     
                                             <p:selectOneMenu id="cmbIns" value="#{staffController.current.institution}" >
                                                 <f:selectItem itemLabel="Please select a institution"/>
-                                                <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
                                             </p:selectOneMenu>                                          
                                             <h:outputText value="Working Department" ></h:outputText>                                     
@@ -259,10 +279,10 @@
                                             <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}"  />
-<!--                                            <p:outputLabel value="Epf Bank Branch"/>                                           
-                                            <autocomplete:completeBank_Branch value="#{staffController.current.epfBankBranch}"/>                                           
-                                            <h:outputText  value="Epf Account No" ></h:outputText>
-                                            <p:inputText autocomplete="off"  value="#{staffController.current.epfAccountNo}"  />-->
+                                            <!--                                            <p:outputLabel value="Epf Bank Branch"/>                                           
+                                                                                        <autocomplete:completeBank_Branch value="#{staffController.current.epfBankBranch}"/>                                           
+                                                                                        <h:outputText  value="Epf Account No" ></h:outputText>
+                                                                                        <p:inputText autocomplete="off"  value="#{staffController.current.epfAccountNo}"  />-->
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Working Time">

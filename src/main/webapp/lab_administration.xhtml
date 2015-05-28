@@ -8,49 +8,55 @@
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-
                 <h:form>
-
-                    <h:panelGrid columns="3" columnClasses="grid1 grid1"  >
-
-
-
-                        <p:panel header="Manage Investigations"  >
-                            <h:panelGrid columns="3" styleClass="alignTop" >
-                                <p:panel header="Create">
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="lab_investigation_category" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Tubes" action="lab_investigation_tube" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Speciman" action="lab_investigation_speciman" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="lab_investigation" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Machines" action="lab/lab_machine" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="lab_investigation_fee" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Replaceable Investigations" action="lab_replaceable_ix" onclick="onSubmitButton();" />
-                                </p:panel>
-                                <p:panel header="List">
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List" action="#{investigationController.listAllIxs}" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List by Category" action="lab_investigation_list_by_category" onclick="onSubmitButton();" />
-                                </p:panel>
-                                <p:panel header="Report Related">
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Format Categories" action="lab_report_format_category" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="lab_report_format" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="lab_investigation_format" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="lab_investigation_item_value" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Flags" action="lab_flags" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Calculations" action="lab_calculation" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Dynamic Labels" action="lab_dynamic_labels" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Validators" action="lab_investigation_value_component" onclick="onSubmitButton();" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Antibiotics" action="lab_antibiotic" onclick="onSubmitButton();" />
-                                </p:panel>
+                    
+                        <p:panel header="Manage Investigations" >
+                            <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
+                                <h:panelGrid columns="1">
+                                    <p:panel header="Create" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                        <h:panelGrid columns="1">
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="lab_investigation_category" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Tubes" action="lab_investigation_tube" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Speciman" action="lab_investigation_speciman" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="lab_investigation" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Machines" action="lab/lab_machine" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="lab_investigation_fee" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Replaceable Investigations" action="lab_replaceable_ix" onclick="onSubmitButton();" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </h:panelGrid>
+                                
+                                <h:panelGrid columns="1">
+                                    <p:panel header="List" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List" action="#{investigationController.listAllIxs}" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List by Category" action="lab_investigation_list_by_category" onclick="onSubmitButton();" />
+                                        </h:panelGrid>                                        
+                                    </p:panel>
+                                </h:panelGrid>
+                                
+                                <h:panelGrid columns="1">
+                                    <p:panel header="Report Related" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Report Format Categories" action="lab_report_format_category" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="lab_report_format" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="lab_investigation_format" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="lab_investigation_item_value" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Flags" action="lab_flags" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Calculations" action="lab_calculation" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Dynamic Labels" action="lab_dynamic_labels" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Validators" action="lab_investigation_value_component" onclick="onSubmitButton();" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Antibiotics" action="lab_antibiotic" onclick="onSubmitButton();" />
+                                        </h:panelGrid>
+                                    </p:panel>                                    
+                                </h:panelGrid>                                
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Other" action="lab_administration_extra" onclick="onSubmitButton();" />
 
                             </h:panelGrid>
                         </p:panel>
 
-                    </h:panelGrid>
-
-
+                   
 
                 </h:form>
             </ui:define>

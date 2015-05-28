@@ -16,9 +16,9 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summery With Pro (DAY)"  styleClass="noPrintButton" />
+                    <h:outputLabel value="1) Book Keeping Summary(With Professional)"  styleClass="noPrintButton" />
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  styleClass="noPrintButton"  >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -35,36 +35,35 @@
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
-                     <h:panelGrid columns="3">
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                     outside:outside,
-                                     pharmacy:pharmacy,
-                                     inward_collection:inward_collection,
-                                     agent_collection:agent_collection,
-                                     credit_collection:credit_collection,
-                                     credit_collection_inward:credit_collection_inward,
-                                     col,
-                                     opd_professional:opd_professional,
-                                     inward_professional:inward_professional,
-                                     credit_card:credit_card,
-                                     slip:slip,
-                                     cheque:cheque,
-                                     finalSum,
-                                     bnkDiposit"
-                                     fileName="Book_Keeping_Summery_with_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
-
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-
-                      <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createCashCategoryWithProDay}"/>
+                    <h:panelGrid columns="5">
+                        <p:spacer width="110" height="1"/>
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProDay}"/>
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward_collection:inward_collection,
+                                         agent_collection:agent_collection,
+                                         credit_collection:credit_collection,
+                                         credit_collection_inward:credit_collection_inward,
+                                         col,
+                                         opd_professional:opd_professional,
+                                         inward_professional:inward_professional,
+                                         credit_card:credit_card,
+                                         slip:slip,
+                                         cheque:cheque,
+                                         finalSum,
+                                         bnkDiposit"
+                                         fileName="Book_Keeping_Summery_with_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
                     </h:panelGrid>
-                    
+
                 </f:facet>
             </p:panel>
             <!--            <p:spacer height="30" />-->
@@ -79,6 +78,10 @@
             <p:spacer height="30"/>
 
             <in:pharmacy id="pharmacy"/>
+            
+            <p:spacer height="30"/>
+
+            <in:channel id="channel"/>
 
             <p:spacer height="30"/>
 
@@ -403,8 +406,11 @@
                                 <p:column style="text-align: right;" >
                                     <h:outputLabel value="......................." />
                                 </p:column>-->
+                 <f:facet name="footer" >
+                <h:outputLabel value="Printed By :#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+            </f:facet>
             </p:dataTable>
-
+           
         </h:form>
     </ui:define>
 

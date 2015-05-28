@@ -27,7 +27,9 @@ import com.divudi.entity.hr.StaffShift;
  */
 public class ReportKeyWord {
 
+    DayType[] dayTypes;
     Staff staff;
+    Times times;    
     Staff replacingStaff;
     Department department;
     StaffCategory staffCategory;
@@ -47,6 +49,7 @@ public class ReportKeyWord {
     Double from;
     Double to;
     Sex sex;
+    EmployeeStatus employeeStatus;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -223,4 +226,31 @@ public class ReportKeyWord {
         this.replacingStaff = replacingStaff;
     }
 
+    public EmployeeStatus getEmployeeStatus() {
+        return employeeStatus;
+    }
+
+    public void setEmployeeStatus(EmployeeStatus employeeStatus) {
+        this.employeeStatus = employeeStatus;
+    }
+
+    public Times getTimes() {
+        return times;
+    }
+
+    public void setTimes(Times times) {
+        this.times = times;
+    }
+
+    public DayType[] getDayTypes() {
+        return dayTypes;
+    }
+
+    public void setDayTypes(DayType[] dayTypes) {
+        this.dayTypes = dayTypes;
+    }
+    
+    
+
+    
 }

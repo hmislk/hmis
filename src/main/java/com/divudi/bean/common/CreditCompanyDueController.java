@@ -151,7 +151,7 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
+            newRow.setInstitution(ins);
             setInwardValues(ins, newRow, PaymentMethod.Credit);
 
             if (newRow.getValue1() != 0
@@ -638,7 +638,7 @@ public class CreditCompanyDueController implements Serializable {
 //                    + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
 //                    + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
 //                    + " like :q) ) order by c.bhtNo";
-//            //System.out.println(sql);
+//            ////System.out.println(sql);
 //            //      h.put("btp", BillType.InwardPaymentBill);
 //            h.put("q", "%" + query.toUpperCase() + "%");
 //            //suggestions = admissionFacade().findBySQL(sql, h);

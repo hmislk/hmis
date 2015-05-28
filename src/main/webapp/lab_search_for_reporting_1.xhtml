@@ -104,13 +104,13 @@
                                     <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="lab_single_worksheet" onclick="onSubmitButton();" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry"   action="#{patientReportController.lastPatientReport(pi)}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry"  action="#{patientReportController.lastPatientReport(pi)}" onclick="onSubmitButton();" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result"  action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format"  action="/lab_ix_for_ix" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format" action="/lab_ix_for_ix" onclick="onSubmitButton();"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <f:setPropertyActionListener value="#{pi}" target="#{itemForItemController.patientIx}"></f:setPropertyActionListener>
                                     </p:commandButton>

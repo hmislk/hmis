@@ -60,7 +60,7 @@
                                     <h:outputText value="Institution"/>
                                     <h:selectOneListbox id="cmbInstitution" size="1" value="#{medicalPackageItemFeeController.currentFee.institution}" >
                                         <f:selectItem itemLabel="Please select an Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                         <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/> 
                                     </h:selectOneListbox>
                                     <h:outputText value="Department"/>
@@ -71,7 +71,7 @@
                                     <h:outputText value="Fee"/>
                                     <h:inputText autocomplete="off" id="txtFee" value="#{medicalPackageItemFeeController.currentFee.fee}"/>
                                     <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add"  action="#{medicalPackageItemFeeController.saveCharge}" styleClass="buttons">
+                                    <h:commandButton id="btnAddTo" value="Add" action="#{medicalPackageItemFeeController.saveCharge}" styleClass="buttons">
                                         <f:ajax render="dtbFee gpVeda" execute="gpVeda :#{p:component('cur')}"  />
                                     </h:commandButton>
                                      <p:defaultCommand target="btnAddTo"/>

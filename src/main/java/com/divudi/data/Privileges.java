@@ -27,6 +27,7 @@ public enum Privileges {
     CashTransaction,
     //Submenu Privileges
     OpdBilling,
+    OpdPreBilling,
     OpdBillSearch,
     OpdBillItemSearch,
     OpdReprint,
@@ -124,14 +125,26 @@ public enum Privileges {
     PharmacySaleReprint,
     PharmacySaleCancel,
     PharmacySaleReturn,
+    //Wholesale
+    PharmacySaleWh,
+    PharmacySaleReprintWh,
+    PharmacySaleCancelWh,
+    PharmacySaleReturnWh,
+    //end wholesale
     PharmacyInwardBilling,
     PharmacyInwardBillingCancel,
     PharmacyInwardBillingReturn,
     PharmacyGoodReceive,
+    //Wholesale
+    PharmacyGoodReceiveWh,
+    //end Wholesale
     PharmacyGoodReceiveCancel,
     PharmacyGoodReceiveReturn,
     PharmacyGoodReceiveEdit,
     PharmacyPurchase,
+    //Wholesale
+    PharmacyPurchaseWh,
+    //Whalesale
     PharmacyPurchaseReprint,
     PharmacyPurchaseCancellation,
     PharmacyPurchaseReturn,
@@ -178,6 +191,7 @@ public enum Privileges {
     ClinicalVisitSummery,
     ClinicalHistory,
     ClinicalAdministration,
+    ClinicalPatientDelete,
     ChannelAdd,
     ChannelCancel,
     ChannelRefund,
@@ -256,12 +270,16 @@ public enum Privileges {
     
     HrAdmin,
     EmployeeHistoryReport,
+    hrDeleteLateLeave,
     
     
     Developers,
 
     //Cashier
     AllCashierSummery,
+    
+    //Administration
+    SearchAll,
     
     
    

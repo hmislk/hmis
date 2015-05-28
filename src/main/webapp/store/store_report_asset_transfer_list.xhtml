@@ -33,7 +33,8 @@
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="4">
+                            <p:spacer width="85" height="1"/>
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillAssetTransferlist()}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -49,18 +50,19 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.transferItems}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List To "/>
+                                    <h:outputLabel value="Asset Transfer List &emsp; From : "/>
+                                    <h:outputLabel value="#{storeReportsTransferfromDepartment.name}"/>
+                                    <h:outputLabel value="Transfer List To : "/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                         <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; HH:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="&emsp; To : "/>
                                         <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; HH:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                   
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
@@ -69,7 +71,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
                                 </p:column>
-
+                                
                                 <p:column headerText="Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Date"/>
@@ -165,6 +167,9 @@
                                         </p:column>                                        
                                     </p:row>
                                 </p:columnGroup>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

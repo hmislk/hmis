@@ -30,14 +30,15 @@
                                                          style="float: right;" 
                                                          value="Add New Patient" process="btnAddPt" 
                                                          update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                         action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
+                                                        action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
                                         </p:commandButton>
                                         
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
                                                          update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                         action="#{patientController.delete()}" onclick="onSubmitButton();" >
+                                                         action="#{patientController.delete()}" onclick="onSubmitButton();" 
+                                                         rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
                                         
                                         <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
@@ -117,13 +118,13 @@
                                         <p:commandButton id="btnAddToQueue"   value="Add" ajax="false" style="float: right;" 
                                                          onclick="if (!confirm('Are you sure you want to Add this record?'))
                                                                      return false;" 
-                                                         action="#{practiceBookingController.addToQueue()}" >                        
+                                                        action="#{practiceBookingController.addToQueue()}" >                        
                                         </p:commandButton>
 
                                         <p:commandButton id="btnAddToQueueAndClear"  value="Add and Clear For New Patient" ajax="false" style="float: right;" 
                                                          onclick="if (!confirm('Are you sure you want to Add this record?'))
                                                                      return false;" 
-                                                         action="#{practiceBookingController.addAndClear()}" >                        
+                                                        action="#{practiceBookingController.addAndClear()}" >                        
                                         </p:commandButton>
 
                                     </h:panelGrid>
@@ -140,8 +141,8 @@
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
                                             <p:commandButton disabled="#{bs.absent}" value="Visit" 
-                                                             action="#{practiceBookingController.opdVisitFromQueue()}" 
-                                                             ajax="false" onclick="onSubmitButton();" >
+                                                            action="#{practiceBookingController.opdVisitFromQueue()}" 
+                                                           ajax="false" onclick="onSubmitButton();" >
                                                 <f:setPropertyActionListener value="#{bs}" 
                                                                              target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                             </p:commandButton>
@@ -159,7 +160,7 @@
                                     <h:outputLabel value="Details of Selected Patient" />
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
                                     <p:commandButton  process="panelDetails" update="acPt" value="Save" 
-                                                      action="#{patientController.saveSelected()}" ></p:commandButton>
+                                                     action="#{patientController.saveSelected()}" ></p:commandButton>
                                 </f:facet>
 
 

@@ -14,7 +14,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Payment Detail">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Payment summary By Supplier">
 
 
                     <p:panelGrid columns="10" style="noPrintButton">
@@ -53,7 +53,7 @@
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createGrnPaymentTable()}"
+                                        actionListener="#{commonReport.createGrnPaymentTable()}"
                                          style="float: right;" /> 
                         
                         <p:commandButton actionListener="#{commonReport.createGrnPaymentTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -91,7 +91,18 @@
                                  rendered="#{commonReport.grnPaymentBill.bills.size()!=0}" 
                                  sortBy="#{b.billType}"  >
 
-                        <f:facet name="header">  
+                        <f:facet name="header">
+                            <h:outputLabel value="GRN Payment Details : "/>                        
+                            <h:outputLabel value="From  "/>
+                            <h:outputLabel value="#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <p:spacer width="10" height="1"/>
+                            <h:outputLabel value="To  "/>
+                            <h:outputLabel value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <br/>
                             <h:outputLabel value="GRN Payment"/>
                         </f:facet>
 
@@ -487,7 +498,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.GRNPaymentTotal}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>

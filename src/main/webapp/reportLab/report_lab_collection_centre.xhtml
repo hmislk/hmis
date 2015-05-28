@@ -46,7 +46,12 @@
                     </p:panelGrid>
                 </f:facet>
                 <br/><br/>
-                <p:dataTable id="tbl" value="#{commonReport.billsByCollectingOwn}" var="d" >
+                <p:dataTable id="tbl" value="#{commonReport.billsByCollectingOwn}" var="d" 
+                            rows="20"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100" 
+                            >
                     <f:facet name="header">
                         <h:outputLabel value="#{commonReport.collectingIns.name}"/>                    
                         <h:outputLabel value="#{commonReport.fromDate}" >
@@ -65,7 +70,10 @@
                             <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </p:column>
-                    <p:column headerText="Bill Code">
+                    <p:column headerText="Bill Code"
+                        sortBy="#{d.insId}" 
+                        filterBy="#{d.insId}"
+                        filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Bill Code"/>                        
                         </f:facet>
@@ -82,13 +90,19 @@
                             </p:commandLink>
                         </h:panelGrid>
                     </p:column>-->
-                    <p:column headerText="Patient Name"  >
+                    <p:column headerText="Patient Name"  
+                        sortBy="#{d.patient.person.nameWithTitle}" 
+                        filterBy="#{d.patient.person.nameWithTitle}"
+                        filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Patient Name"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column headerText="Patient Name" rendered="#{commonReport.collectingIns eq null}"  >
+                    <p:column headerText="Patient Name" rendered="#{commonReport.collectingIns eq null}"  
+                        sortBy="#{d.collectingCentre.name}" 
+                        filterBy="#{d.collectingCentre.name}"
+                        filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Collecting Centre"/>                        
                         </f:facet>

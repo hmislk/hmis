@@ -64,6 +64,8 @@
                         <h:panelGrid columns="2"> 
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{staffSalaryController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{staffSalaryController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{staffSalaryController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -124,28 +126,16 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Block">
-                                       <p:selectBooleanCheckbox value="#{i.blocked}" />                                    
-                                </p:column>
-                                  <p:column headerText="Hold">
-                                       <p:selectBooleanCheckbox value="#{i.hold}" />                                    
-                                </p:column>
+                               
                               
                                 <p:column>
                                     <p:commandButton process="@this" 
                                                      update=":#{p:component('lst')} " 
                                                      value="View"  
-                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                                    actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                                     </p:commandButton>                          
                                 </p:column>
-                                <p:column>
-                                    <p:commandButton process="@this" 
-                                                     update=":#{p:component('lst')} " 
-                                                     value="Update"  
-                                                     actionListener="#{staffSalaryController.onEditBlockedUpdate(i)}" 
-                                                     onclick="onSubmitButton();">                              
-                                    </p:commandButton>                          
-                                </p:column>
+                              
 
                             </p:dataTable>
                         </p:panel>

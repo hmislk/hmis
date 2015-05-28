@@ -17,11 +17,11 @@
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
                             <h:outputLabel value="From Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.fromDate}" >
+                            <p:calendar value="#{staffLeaveEntitleController.current.fromDate}" pattern="dd/MM/yy">
                                 <!--<f:ajax execute="@this" event="dateSelect" render="frm" />-->
                             </p:calendar>
                             <h:outputLabel value="To Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.toDate}">
+                            <p:calendar value="#{staffLeaveEntitleController.current.toDate}" pattern="dd/MM/yy">
                                 <!--<f:ajax execute="@this" event="dateSelect" render="to" />-->
                             </p:calendar>
                             <h:outputLabel value="Leave Type : "/>
@@ -32,10 +32,10 @@
                             <h:outputLabel value="Entitle Days Per Year"/>
                             <p:inputText value="#{staffLeaveEntitleController.current.count}"/>
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                             action="#{staffLeaveEntitleController.saveSelected()}"/>
+                                            action="#{staffLeaveEntitleController.saveSelected()}"/>
 
                             <p:commandButton ajax="false" value="Delete" 
-                                             action="#{staffLeaveEntitleController.delete()}"/>
+                                            action="#{staffLeaveEntitleController.delete()}"/>
 
                         </h:panelGrid>
                     </p:panel>

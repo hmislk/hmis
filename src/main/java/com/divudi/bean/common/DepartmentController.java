@@ -73,7 +73,10 @@ public class DepartmentController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         if (getInstitution() == null) {
-            return new ArrayList<>();
+            String sql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution.id=" + getSessionController().getInstitution().getId();
+            items = getFacade().findBySQL(sql);
         } else {
             String sql = "Select d From Department d "
                     + " where d.retired=false"
@@ -85,6 +88,22 @@ public class DepartmentController implements Serializable {
 
         //items = getFacade().findAll("name", true);
         return items;
+    }
+    
+    public List<Department> getInstitutionDepatrments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map m = new HashMap();
+            m.put("ins", ins);
+            String sql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " order by d.name";
+            deps = getFacade().findBySQL(sql, m);
+        }
+        return deps;
     }
 
     public List<Department> getLogedDepartments() {
@@ -312,9 +331,7 @@ public class DepartmentController implements Serializable {
                 Department o = (Department) object;
                 return getStringKey(o.getId());
             } else {
-                System.out.println("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DepartmentController.class.getName());
-                return "";
+               return "";
             }
         }
     }

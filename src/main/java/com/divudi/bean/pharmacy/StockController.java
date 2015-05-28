@@ -12,6 +12,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.data.DepartmentType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.facade.StockFacade;
 import com.divudi.entity.pharmacy.Stock;
@@ -75,14 +76,14 @@ public class StockController implements Serializable {
     public StoreBean getStoreBean() {
         return storeBean;
     }
-    
+
     public void removeStoreItemsWithoutStocks() {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
         String jpsql = "Select i from Item i where i.departmentType=:dt and i.retired=false ";
         List<Item> items = getItemFacade().findBySQL(jpsql, m);
         for (Item i : items) {
-            if (storeBean.getStockQty(i) < 0.0 || storeBean.getStockQty(i) == 0.0  ) {
+            if (storeBean.getStockQty(i) < 0.0 || storeBean.getStockQty(i) == 0.0) {
                 i.setRetired(true);
                 i.setRetirer(getSessionController().getLoggedUser());
                 i.setRetiredAt(new Date());
@@ -92,7 +93,6 @@ public class StockController implements Serializable {
         }
     }
 
-    
     public List<Stock> completeStock(String qry) {
         List<Stock> a = null;
         if (qry != null) {
@@ -102,6 +102,22 @@ public class StockController implements Serializable {
             a = new ArrayList<>();
         }
         return a;
+    }
+
+    public Double departmentItemStock(Department dept, Item item) {
+        String sql;
+        Map m = new HashMap();
+        m.put("dept", dept);
+        m.put("item", item);
+        sql = "select sum(c.stock) "
+                + " from Stock c where "
+                + " c.department=:dept "
+                + " and c.itemBatch.item=:item";
+        return getFacade().findDoubleByJpql(sql, m);
+    }
+
+    public Double departmentItemStock(Item item) {
+        return departmentItemStock(sessionController.getDepartment(), item);
     }
 
     public void prepareAdd() {

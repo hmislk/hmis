@@ -95,8 +95,12 @@ public class EnumController implements Serializable {
         return FeeType.values();
     }
 
+    public DayType[] getDayTypes() {
+        return DayType.values();
+    }
+
     public DayType[] getDayTypeForShift() {
-        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.PublicHoliday};
+        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.Poya};
 
         return dayTypes;
     }
@@ -142,7 +146,7 @@ public class EnumController implements Serializable {
     public List<PaysheetComponentType> getPaysheetComponentTypesUserDefinded() {
         return PaysheetComponentType.addition.getUserDefinedComponents();
     }
-    
+
     public List<PaysheetComponentType> getPaysheetComponentTypesSystemDefinded() {
         return PaysheetComponentType.addition.getSystemDefinedComponents();
     }
@@ -225,12 +229,9 @@ public class EnumController implements Serializable {
             BillType.CashRecieveBill,
             BillType.AgentPaymentReceiveBill,
             BillType.InwardPaymentBill,
-            BillType.PharmacySale, 
+            BillType.PharmacySale,
             BillType.ChannelCash,
-            BillType.ChannelPaid,
-
-
-//            BillType.PharmacyPurchaseBill,
+            BillType.ChannelPaid, //            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -269,6 +270,7 @@ public class EnumController implements Serializable {
             BillType.GrnPayment,
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
+            BillType.PharmacyWholeSale,
             BillType.PharmacyIssue};
 
         return b;
@@ -333,17 +335,16 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
-        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.OnCall, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent,  PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
         return p;
     }
 
-    
     public PaymentMethod[] getPaymentMethodsForChannelSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
     }
-    
+
 //    public boolean checkPaymentScheme(PaymentScheme scheme, String paymentMathod) {
 //        if (scheme != null && scheme.getPaymentMethod() != null) {
 //            //System.err.println("Payment Scheme : " + scheme.getPaymentMethod());

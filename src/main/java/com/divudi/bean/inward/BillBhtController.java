@@ -130,7 +130,7 @@ public class BillBhtController implements Serializable {
     private boolean printPreview;
     private List<Bill> bills;
     Date date;
-    
+
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -217,7 +217,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //System.out.println("ggg : " + getBillSearch().getComment());
+            ////System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelBill();
         }
 
@@ -312,8 +312,8 @@ public class BillBhtController implements Serializable {
             System.err.println("1");
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
-           b.setBillItems(list);
-           billFacade.edit(b);
+            b.setBillItems(list);
+            billFacade.edit(b);
             //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
             //System.err.println("5");
@@ -497,6 +497,22 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             UtilityController.addErrorMessage("Please set To Department to This item");
             return true;
+        }
+
+        if (!getSessionController().getInstitutionPreference().isInwardAddServiceBillTimeCheck()) {
+            if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
+                if (getCurrentBillItem().getBillTime() == null) {
+                    UtilityController.addErrorMessage("Please set Time To This Investigation");
+                    return true;
+                }
+                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
+                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
+                    return true;
+                }
+            }
+        }else{
+            getCurrentBillItem().setBillTime(new Date());
+            getCurrentBillItem().setDescreption("");
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
@@ -694,16 +710,16 @@ public class BillBhtController implements Serializable {
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //System.out.println(getIndex());
+        ////System.out.println(getIndex());
         if (getIndex() != null) {
             boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            ////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////System.out.println("Is Removed:" + remove);
+            //////System.out.println("Is Removed:" + remove);
             calTotals();
 
         }
@@ -715,7 +731,7 @@ public class BillBhtController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //System.out.println(b.getBillItem().getNetValue());
+                ////System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

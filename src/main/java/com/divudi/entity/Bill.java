@@ -35,6 +35,8 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheType;
 
 /**
  *
@@ -45,7 +47,6 @@ import javax.persistence.Transient;
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b"),
     @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
-
 public class Bill implements Serializable {
 
     @ManyToOne
@@ -66,6 +67,8 @@ public class Bill implements Serializable {
     private List<Bill> returnCashBills = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsPre = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> cashBillsOpdPre = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
@@ -136,6 +139,7 @@ public class Bill implements Serializable {
     double discount;
     double discountPercent;
     double netTotal;
+    double billTotal;
     double paidAmount;
     double balance;
     double serviceCharge;
@@ -304,6 +308,16 @@ public class Bill implements Serializable {
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
     }
+
+    public double getBillTotal() {
+        return billTotal;
+    }
+
+    public void setBillTotal(double billTotal) {
+        this.billTotal = billTotal;
+    }
+    
+    
 
     private boolean paid;
 
@@ -519,11 +533,11 @@ public class Bill implements Serializable {
     }
 
     public double getDiscountPercentPharmacy() {
-        System.out.println("getting discount percent");
-//        System.out.println("bill item"+getBillItems());
-//        System.out.println(getBillItems().get(0).getPriceMatrix());
+        //System.out.println("getting discount percent");
+//        //System.out.println("bill item"+getBillItems());
+//        //System.out.println(getBillItems().get(0).getPriceMatrix());
         if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
-            System.out.println("sys inside");
+            //System.out.println("sys inside");
             discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
         }
 
@@ -1379,6 +1393,17 @@ public class Bill implements Serializable {
         cashBillsPre = bills;
 
         return cashBillsPre;
+    }
+
+    public List<Bill> getCashBillsOpdPre() {
+        List<Bill> bills = new ArrayList<>();
+        for (Bill b : cashBillsOpdPre) {
+            if (b instanceof BilledBill && b.getBillType() == BillType.OpdBill) {
+                bills.add(b);
+            }
+        }
+        cashBillsOpdPre = bills;
+        return cashBillsOpdPre;
     }
 
     public boolean checkActiveCashPreBill() {

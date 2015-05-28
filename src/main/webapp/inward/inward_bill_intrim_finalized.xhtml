@@ -60,7 +60,7 @@
 
 
 
-                        <p:panel header="Summery" id="tot">
+                        <p:panel header="Summary" id="tot">
 
                             <h:panelGroup id="crd" style="display: #{bhtSummeryFinalizedController.patientEncounter.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
                                 <credit:outputCredit  patientEncounter="#{bhtSummeryFinalizedController.patientEncounter}"/>
@@ -305,12 +305,19 @@
                                     </f:facet>
                                     <h:outputLabel value="#{pt.item.name}"/>                                    
                                 </p:column>
+                                <p:column headerText="Service Name">
+
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Service Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt}"/>                                    
+                                </p:column>
                                 <p:column headerText="Start Time">
                                     <f:facet name="header">
                                         <h:outputLabel value="Start Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.fromTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss a"/>
                                     </h:outputLabel>                                         
                                 </p:column>
                                 <p:column headerText="Stopped Time">
@@ -318,7 +325,7 @@
                                         <h:outputLabel value="Stopped Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.toTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss a"/>
                                     </h:outputLabel>                                                              
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Total">

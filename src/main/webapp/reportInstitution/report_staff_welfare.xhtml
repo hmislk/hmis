@@ -16,18 +16,19 @@
             <p:panel>
                 <f:facet name="header" >                
                     <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
-                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
-                                     styleClass="noPrintButton" 
-                                     action="#{serviceSummery.createStaffWelfare()}"/>
-                    <p:commandButton ajax="false" value="Print"  
-                                     styleClass="noPrintButton" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
+                    <h:panelGrid columns="4" >
+                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
+                                         styleClass="noPrintButton" 
+                                         action="#{serviceSummery.createStaffWelfare()}"/>
+                        <p:commandButton ajax="false" value="Print"  
+                                         styleClass="noPrintButton" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
 
-                    <p:commandButton value="Excel2" ajax="false" >
-                        <pe:exporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
-                    </p:commandButton>
-
+                        <p:commandButton value="Excel2" ajax="false" >
+                            <pe:exporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
+                        </p:commandButton>
+                    </h:panelGrid>
                 </f:facet>
             </p:panel>
             <p:spacer height="30"/>
@@ -35,9 +36,9 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          value="#{serviceSummery.staffs}" var="s">                   
                 <f:facet name="header">
-                    <h:outputLabel value="Staff Welfare Summery"/>
+                    <h:outputLabel value="Staff Welfare Summary"/>
                 </f:facet>
-               
+
                 <p:column headerText="No">
                     <f:facet name="header">
                         <p:outputLabel value="No"/>
@@ -58,7 +59,7 @@
                     </f:facet>
                     <p:outputLabel value="#{s.person.nameWithTitle}" />
                 </p:column>
-                
+
                 <p:column headerText="Annual Entitlement" >
                     <f:facet name="header">
                         <p:outputLabel value="Annual Entitlement"/>
@@ -67,7 +68,7 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </p:outputLabel>
                 </p:column>
-                
+
                 <p:column headerText="Annual Utilized Value">
                     <f:facet name="header">
                         <p:outputLabel value="Annual Utilized Value"/>

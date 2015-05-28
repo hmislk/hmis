@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -15,81 +15,92 @@
                 <h:form>
 
 
-                    <p:panel header="Department Stock Report by Batch Expiary" >
-
-                        <h:panelGrid columns="11" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
-                            </p:autoComplete>
-
-                            <p:spacer width="10" ></p:spacer>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-
-                            <p:spacer width="10" ></p:spacer>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-
-                            <p:commandButton ajax="false" value="Three Months Expiary" actionListener="#{reportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Six Months Expiary" actionListener="#{reportsStock.fillSixMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="One Year Expiary" actionListener="#{reportsStock.fillOneYearExpiary()}" ></p:commandButton>
-
+                    <p:panel header="Stock Report by Expiry" >
+                        <h:panelGrid columns="3" styleClass="alignTop" >
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="Department" ></h:outputLabel>
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
+                                </p:autoComplete>
+                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar value="#{reportsStock.fromDate}" pattern="dd MMM yyyy" ></p:calendar>
+                                <h:outputLabel value="To" ></h:outputLabel>
+                                <p:calendar value="#{reportsStock.toDate}" pattern="dd MMM yyyy" ></p:calendar>
+                            </h:panelGrid>
+                            <p:spacer width="20" height="1" ></p:spacer>
+                            <h:panelGrid columns="1" >
+                                <p:commandLink ajax="false" value="List Three Months Expiry" actionListener="#{reportsStock.fillThreeMonthsExpiary()}" ></p:commandLink>
+                                <p:commandLink ajax="false" value="List Six Months Expiry" actionListener="#{reportsStock.fillSixMonthsExpiary()}" ></p:commandLink>
+                                <p:commandLink ajax="false" value="List One Year Expiry" actionListener="#{reportsStock.fillOneYearExpiary()}" ></p:commandLink>
+                            </h:panelGrid>
                         </h:panelGrid>
-
                         <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentExpiaryStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                             />
+                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock" />
                             </p:commandButton>
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  
-                                         rows="50"
+                            <p:dataTable id="tbl" value="#{reportsStock.stocks}" var="i"  
+                                         rows="20"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100" >
+                                         rowsPerPageTemplate="10, 20, 50" >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet>
 
-                                <p:column headerText="Item">
+                                <p:column headerText="Item"
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Code">
+                                <p:column headerText="Code"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          styleClass="averageNumericColumn"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Quantity" style="text-align: right;">
+                                <p:column headerText="Quantity" 
+                                          style="text-align: right;"
+                                          sortBy="#{i.stock}" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>                                     
                                     </f:facet>
-                                    <h:outputLabel value="#{i.stock}"  >
+                                    <h:outputLabel value="#{i.stock}" styleClass="averateNumericText" >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </h:outputLabel>                                 
                                 </p:column>
 
-                                <p:column headerText="Expiary">
+                                <p:column headerText="Expiry"
+                                          sortBy="#{i.itemBatch.dateOfExpire}"
+                                          styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd/MMMM/yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate" 
+                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.itemBatch.purcahseRate}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>                                     
                                     </f:facet>
@@ -102,7 +113,10 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;"
+                                          sortBy="#{i.itemBatch.purcahseRate * i.stock}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>                                     
                                     </f:facet>
@@ -116,16 +130,22 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Retail Price" style="text-align: right;">
+                                <p:column headerText="Retail Rate" 
+                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.itemBatch.retailsaleRate}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Retail Price"/>                                     
+                                        <h:outputLabel value="Retail Rate"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;">
+                                <p:column headerText="Retail Sale Value" 
+                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.itemBatch.retailsaleRate * i.stock}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>                                     
                                     </f:facet>
@@ -139,7 +159,8 @@
                                     </f:facet>
 
                                 </p:column>
-                                <p:column headerText="Comments" style="text-align: right;">
+                                <p:column headerText="Comments" 
+                                          style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Comments"/>                                     
                                     </f:facet>
@@ -197,5 +218,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
 import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
@@ -21,6 +22,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String1Value6;
 import com.divudi.data.table.String2Value4;
+import com.divudi.ejb.BillReportBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -33,17 +35,23 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemBatchFacade;
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -57,6 +65,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.eclipse.persistence.config.ResultType;
 
 /**
  *
@@ -75,24 +84,39 @@ public class PharmacySaleReport implements Serializable {
     List<String1Value6> saleValuesSlip;
     List<String1Value6> saleValuesCard;
     List<String1Value6> saleValuesCredit;
+    List<String1Value6> wholeSaleValuesCash;
+    List<String1Value6> wholeSaleValuesCheque;
+    List<String1Value6> wholeSaleValuesSlip;
+    List<String1Value6> wholeSaleValuesCard;
+    List<String1Value6> wholeSaleValuesCredit;
     List<String1Value6> bhtIssues;
     List<String1Value6> unitIssues;
     List<BillItem> billItems;
+    List<BillItem> wholeSaleBillItems;
     private Department department;
     Department toDepartment;
     private Institution institution;
     private double grantNetTotal;
     private double grantTotal;
+    private double grantNetTotalWholeSale;
     private double grantProfessional;
     private double grantDiscount;
     private double grantCashTotal;
     private double grantCreditTotal;
     private double grantCardTotal;
+    private double grantDiscountWholeSale;
+    private double grantCashTotalWholeSale;
+    private double grantCreditTotalWholeSale;
+    private double grantCardTotalWholeSale;
     ///////
     private PharmacySummery billedSummery;
+    PharmacySummery billedWholeSaleSummery;
     private PharmacyDetail billedDetail;
     private PharmacyDetail cancelledDetail;
     private PharmacyDetail refundedDetail;
+    private PharmacyDetail billedDetailWholeSale;
+    private PharmacyDetail cancelledDetailWholeSale;
+    private PharmacyDetail refundedDetailWholeSale;
     private PharmacyPaymetMethodSummery billedPaymentSummery;
     //  private List<DatedBills> billDetail;
 
@@ -100,6 +124,7 @@ public class PharmacySaleReport implements Serializable {
 
     ///pharmacy summery all///
     double totalPSCashBV = 0.0;
+    double totalPSCashCC = 0.0;
     double totalPSCashRV = 0.0;
     double totalPSCashNV = 0.0;
     double totalPSCashBC = 0.0;
@@ -107,6 +132,7 @@ public class PharmacySaleReport implements Serializable {
     double totalPSCashNC = 0.0;
 
     double totalPSCreditBV = 0.0;
+    double totalPSCreditCC = 0.0;
     double totalPSCreditRV = 0.0;
     double totalPSCreditNV = 0.0;
     double totalPSCreditBC = 0.0;
@@ -114,6 +140,7 @@ public class PharmacySaleReport implements Serializable {
     double totalPSCreditNC = 0.0;
 
     double totalPSCardBV = 0.0;
+    double totalPSCardCC = 0.0;
     double totalPSCardRV = 0.0;
     double totalPSCardNV = 0.0;
     double totalPSCardBC = 0.0;
@@ -121,6 +148,7 @@ public class PharmacySaleReport implements Serializable {
     double totalPSCardNC = 0.0;
 
     double totalPSSlipBV = 0.0;
+    double totalPSSlipCC = 0.0;
     double totalPSSlipRV = 0.0;
     double totalPSSlipNV = 0.0;
     double totalPSSlipBC = 0.0;
@@ -128,13 +156,56 @@ public class PharmacySaleReport implements Serializable {
     double totalPSSlipNC = 0.0;
 
     double totalPSChequeBV = 0.0;
+    double totalPSChequeCC = 0.0;
     double totalPSChequeRV = 0.0;
     double totalPSChequeNV = 0.0;
     double totalPSChequeBC = 0.0;
     double totalPSChequeRC = 0.0;
     double totalPSChequeNC = 0.0;
 
+    ///pharmacy whole sale
+    double totalPWSCashBV = 0.0;
+    double totalPWSCashCC = 0.0;
+    double totalPWSCashRV = 0.0;
+    double totalPWSCashNV = 0.0;
+    double totalPWSCashBC = 0.0;
+    double totalPWSCashRC = 0.0;
+    double totalPWSCashNC = 0.0;
+
+    double totalPWSCreditBV = 0.0;
+    double totalPWSCreditCC = 0.0;
+    double totalPWSCreditRV = 0.0;
+    double totalPWSCreditNV = 0.0;
+    double totalPWSCreditBC = 0.0;
+    double totalPWSCreditRC = 0.0;
+    double totalPWSCreditNC = 0.0;
+
+    double totalPWSCardBV = 0.0;
+    double totalPWSCardCC = 0.0;
+    double totalPWSCardRV = 0.0;
+    double totalPWSCardNV = 0.0;
+    double totalPWSCardBC = 0.0;
+    double totalPWSCardRC = 0.0;
+    double totalPWSCardNC = 0.0;
+
+    double totalPWSSlipBV = 0.0;
+    double totalPWSSlipCC = 0.0;
+    double totalPWSSlipRV = 0.0;
+    double totalPWSSlipNV = 0.0;
+    double totalPWSSlipBC = 0.0;
+    double totalPWSSlipRC = 0.0;
+    double totalPWSSlipNC = 0.0;
+
+    double totalPWSChequeBV = 0.0;
+    double totalPWSChequeCC = 0.0;
+    double totalPWSChequeRV = 0.0;
+    double totalPWSChequeNV = 0.0;
+    double totalPWSChequeBC = 0.0;
+    double totalPWSChequeRC = 0.0;
+    double totalPWSChequeNC = 0.0;
+
     double totalBHTIssueBV = 0.0;
+    double totalBHTIssueCC = 0.0;
     double totalBHTIssueRV = 0.0;
     double totalBHTIssueNV = 0.0;
     double totalBHTIssueBC = 0.0;
@@ -142,6 +213,7 @@ public class PharmacySaleReport implements Serializable {
     double totalBHTIssueNC = 0.0;
 
     double totalUnitIssueBV = 0.0;
+    double totalUnitIssueCC = 0.0;
     double totalUnitIssueRV = 0.0;
     double totalUnitIssueNV = 0.0;
     double totalUnitIssueBC = 0.0;
@@ -159,6 +231,8 @@ public class PharmacySaleReport implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    BillReportBean billReportBean;
 
     PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
@@ -173,6 +247,50 @@ public class PharmacySaleReport implements Serializable {
 
     public Category getCategory() {
         return category;
+    }
+
+    List<Item> nonMovingItems;
+
+    @EJB
+    StockFacade stockFacade;
+    @EJB
+    ItemFacade itemFacade;
+    @EJB
+    AmpFacade ampFacade;
+
+    List<Amp> amps;
+    List<Item> items;
+    Department departmentMoving;
+
+    public List<Item> getNonMovingItems() {
+        return nonMovingItems;
+    }
+
+    public void setNonMovingItems(List<Item> nonMovingItems) {
+        this.nonMovingItems = nonMovingItems;
+    }
+
+    public void fillNonMoving() {
+        Map allItems;
+        List<Item> movedItems;
+        Stock s = new Stock();
+
+//        s.getDepartment();
+//        s.getItemBatch().getItem();
+//        s.getItemBatch().getItem();
+        HashMap m = new HashMap();
+        m.put("dpt", getDepartmentMoving());
+        String j;
+
+        j = "select s.itemBatch.item "
+                + " from Stock s "
+                + " where s.stock > 0 "
+                + " and s.department=:dpt "
+                + " group by s.itemBatch.item "
+                + " order by s.itemBatch.item.name";
+
+        nonMovingItems = itemFacade.findBySQL(j, m);
+        //System.out.println("nonMovingItems = " + nonMovingItems);
     }
 
     public void setCategory(Category category) {
@@ -191,6 +309,8 @@ public class PharmacySaleReport implements Serializable {
         grantCreditTotal = 0;
         billedSummery = null;
         billedPaymentSummery = null;
+        items = null;
+        amps = null;
 
     }
 
@@ -342,6 +462,41 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    private List<Object[]> fetchSaleValueByDepartment(BillType billType) {
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", billType);
+        sql = "select FUNC('Date',i.createdAt),"
+                + " i.bill.billClassType,"
+                + " sum(i.netValue)"
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                //                + " and i.retired=false "
+                + " and i.bill.retired=false "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType"
+                + " order by i.createdAt,i.bill.billClassType ";
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createTableSaleBillItems() {
+        billItems = createSaleBillItems(BillType.PharmacySale);
+        wholeSaleBillItems = createSaleBillItems(BillType.PharmacyWholeSale);
+    }
+
     public void createSaleBillItems() {
         String sql;
         Map m = new HashMap();
@@ -374,6 +529,38 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public List<BillItem> createSaleBillItems(BillType billType) {
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", billType);
+        sql = "select i "
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                //                + " and i.retired=false "
+                + " and i.bill.retired=false "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        if (item != null) {
+            sql += " and i.item=:itm";
+            m.put("itm", item);
+        }
+
+        sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
+        return billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     private List<Object[]> fetchSaleValueByPaymentmethod() {
         String sql;
 
@@ -383,6 +570,37 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
         m.put("btp", BillType.PharmacySale);
+        sql = "select FUNC('Date',i.createdAt),"
+                + " i.bill.paymentMethod,"
+                + " sum(i.netValue)"
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                //                + " and i.retired=false "
+                + " and i.bill.retired=false "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += " group by FUNC('Date',i.createdAt),i.bill.paymentMethod"
+                + " order by i.createdAt,i.bill.paymentMethod ";
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private List<Object[]> fetchSaleValueByPaymentmethod(BillType billType) {
+        String sql;
+
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", billType);
         sql = "select FUNC('Date',i.createdAt),"
                 + " i.bill.paymentMethod,"
                 + " sum(i.netValue)"
@@ -602,6 +820,45 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    private double getSaleValueByDepartmentPaymentSchemeP(Bill bill, PaymentScheme ps, BillType billType) {
+
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", bill.getClass());
+        m.put("btp", billType);
+        sql = "select sum(i.netTotal) "
+                + " from Bill i where "
+                + " i.referenceBill.department=:d "
+                + " and i.retired=false "
+                + " and i.billType=:btp "
+                + " and type(i)=:cl "
+                + " and i.createdAt between :fd and :td ";
+
+        if (paymentMethod != null) {
+
+            sql += " and i.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+
+        }
+
+        if (ps != null) {
+
+            sql += " and i.paymentScheme=:ps ";
+            m.put("ps", ps);
+
+        }
+
+        sql += " order by i.deptId ";
+
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+
     private double getIssueValueByDepartment(Date date, Bill bill) {
 
         Date fd = getCommonFunctions().getStartOfDay(date);
@@ -626,73 +883,67 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-    private double calBillFee(Date date, FeeType fTy, PaymentMethod pm) {
-
+    private double calBillFee(Date date, FeeType fTy, BillType[] btyps) {
         String sql;
-
-        sql = "select sum(f.feeValue) "
-                + " from BillFee f "
-                + " where f.bill.retired=false "
-                + " and f.bill.billType = :billType "
-                + " and f.bill.paymentMethod = :pm "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.bill.toInstitution=:ins "
-                + " and f.fee.feeType=:ft";
-
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
         Map m = new HashMap();
-        m.put("fd", fd);
-        m.put("td", td);
-        m.put("pm", pm);
-        m.put("billType", BillType.OpdBill);
-        m.put("ins", institution);
-        m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());
-        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-
-        return saleValue;
-
-    }
-    
-    private double calBillFee(Date date, FeeType fTy, BillType bty) {
-
-        String sql;
-
         sql = "select sum(f.feeGrossValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
-                + " and f.bill.billType = :billType "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.bill.toInstitution=:ins "
-                + " and f.fee.feeType=:ft";
+                + " and f.bill.billType in :btyps "
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
-        m.put("billType", bty);        
-        m.put("ins", institution);
+        List<BillType> lbs = Arrays.asList(btyps);
+        m.put("btyps", lbs);
+
         m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());        
-
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
+    private double calBillFee(Date date, FeeType fTy, BillType btyp) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select sum(f.feeGrossValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType =:btyp "
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
+
+        m.put("fd", fd);
+        m.put("td", td);
+        List<BillType> lbs = Arrays.asList(btyp);
+        m.put("btyp", lbs);
+
+        m.put("ft", fTy);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     private double calBillFee(Date date, FeeType fTy) {
-
         String sql;
-
+        Map m = new HashMap();
         sql = "select sum(f.feeValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
@@ -701,17 +952,19 @@ public class PharmacySaleReport implements Serializable {
                 + " or f.bill.paymentMethod = :pm2 "
                 + " or f.bill.paymentMethod = :pm3 "
                 + " or f.bill.paymentMethod = :pm4) "
-                + " and f.bill.createdAt between :fd and :td "
-                + " and f.bill.toInstitution=:ins "
-                + " and f.fee.feeType=:ft";
+                + " and f.bill.createdAt between :fd and :td ";
+        if (institution != null) {
+            sql += " and f.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and f.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        sql += " and f.fee.feeType=:ft";
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
-
-        System.err.println("From " + fd);
-        System.err.println("To " + td);
-
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -719,13 +972,10 @@ public class PharmacySaleReport implements Serializable {
         m.put("pm3", PaymentMethod.Cheque);
         m.put("pm4", PaymentMethod.Slip);
         m.put("billType", BillType.OpdBill);
-        m.put("ins", institution);
+
         m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-
         return saleValue;
-
     }
 
     @Inject
@@ -912,6 +1162,35 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    private double getSaleValueByDepartmentByBill(Date date, PaymentMethod paymentMethod, Bill bill, BillType billType) {
+        //   List<Stock> billedSummery;
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("pm", paymentMethod);
+        m.put("class", bill.getClass());
+        //  m.put("btp", BillType.PharmacyPre);
+        m.put("btp", billType);
+        sql = "select sum(i.netTotal)"
+                + "  from Bill i "
+                + " where i.paymentMethod=:pm "
+                + " and i.retired=false "
+                + " and  i.referenceBill.department=:d "
+                + " and type(i)=:class "
+                + " and i.billType=:btp"
+                + " and i.createdAt between :fd and :td"
+                + "  order by i.deptId ";
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        //   //System.err.println("from " + fromDate);
+        //  //System.err.println("Sale Value " + saleValue);
+        return saleValue;
+
+    }
+
 //    private double getSaleValuePaymentmethod(Date date, PaymentMethod paymentMethod, Bill bill) {
 //        //   List<Stock> billedSummery;
 //        Date fd = getCommonFunctions().getStartOfDay(date);
@@ -963,6 +1242,30 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", td);
         m.put("cl", bill.getClass());
         m.put("btp", BillType.PharmacySale);
+        sql = "select sum(i.discount)"
+                + " from Bill i "
+                + " where i.referenceBill.department=:d "
+                + " and i.retired=false "
+                + " and i.billType=:btp"
+                + "  and type(i)=:cl "
+                + " and i.createdAt between :fd and :td ";
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+
+    private double getDiscountValueByDepartmentByBill(Date date, Bill bill, BillType billType) {
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("cl", bill.getClass());
+        m.put("btp", billType);
         sql = "select sum(i.discount)"
                 + " from Bill i "
                 + " where i.referenceBill.department=:d "
@@ -1050,6 +1353,30 @@ public class PharmacySaleReport implements Serializable {
         // m.put("btp", BillType.PharmacyPre);
         m.put("class", bill.getClass());
         m.put("btp", BillType.PharmacySale);
+        sql = "select i from Bill i "
+                + " where i.referenceBill.department=:d "
+                + " and i.retired=false "
+                + " and i.billType=:btp "
+                + " and type(i)=:class and "
+                + " i.createdAt between :fd and :td "
+                + " order by i.deptId ";
+
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private List<Bill> getSaleBillByDepartment(Date date, Bill bill, BillType billType) {
+        //   List<Stock> billedSummery;
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", fd);
+        m.put("td", td);
+        // m.put("btp", BillType.PharmacyPre);
+        m.put("class", bill.getClass());
+        m.put("btp", billType);
         sql = "select i from Bill i "
                 + " where i.referenceBill.department=:d "
                 + " and i.retired=false "
@@ -1149,6 +1476,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     private double calGrantNetTotalByDepartment() {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", BillType.PharmacySale);
+
+        sql = "select sum(i.netValue) from BillItem i "
+                + " where i.bill.referenceBill.department=:d "
+                + " and i.bill.retired=false"
+                //                + " and i.retired=false  "
+                + " and i.bill.billType=:btp "
+                + " and type(i.bill)!=:cl ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += " and i.bill.createdAt between :fd and :td ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private double calGrantNetTotalByDepartment(BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
         Map m = new HashMap();
@@ -1275,6 +1629,34 @@ public class PharmacySaleReport implements Serializable {
     }
 
     private double calGrantNetTotalByDepartment(Bill bill) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("class", bill.getClass());
+        // m.put("btp", BillType.PharmacyPre);
+        m.put("btp", BillType.PharmacySale);
+        sql = "select sum(i.netValue)"
+                + " from BillItem i "
+                + " where i.bill.referenceBill.department=:d "
+                + " and i.bill.retired=false "
+                //                + " and i.retired=false  "
+                + " and i.bill.billType=:btp "
+                + " and type(i.bill)=:class ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat ";
+            m.put("cat", category);
+        }
+
+        sql += " and i.bill.createdAt between :fromDate and :toDate ";
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private double calGrantNetTotalByDepartment(Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
         Map m = new HashMap();
@@ -1535,6 +1917,28 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    private double calGrantTotalByPaymentMethodByBill(PaymentMethod paymentMethod, Bill bill, BillType billType) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("pm", paymentMethod);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("class", bill.getClass());
+        m.put("btp", billType);
+        sql = "select sum(i.netTotal)"
+                + "  from Bill i"
+                + "  where type(i)=:class"
+                + " and i.retired=false "
+                + "  and i.paymentMethod=:pm "
+                + " and  i.referenceBill.department=:d"
+                + " and i.billType=:btp "
+                + " and i.createdAt between :fromDate and :toDate ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     private double calGrantTotalByPaymentMethodByBillItem(PaymentMethod paymentMethod, Bill bill) {
         //   List<Stock> billedSummery;
@@ -1628,6 +2032,29 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    private double calGrantTotalByPaymentMethodByBill(PaymentMethod paymentMethod, BillType billType) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("pm", paymentMethod);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("class", PreBill.class);
+        m.put("btp", billType);
+        sql = "select sum(i.netTotal) "
+                + " from Bill i "
+                + " where type(i)!=:class "
+                + " and i.retired=false "
+                + " and i.paymentMethod=:pm "
+                + " and i.referenceBill.department=:d "
+                + " and i.billType=:btp "
+                + " and i.createdAt between :fromDate and :toDate ";
+
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     private double calGrantDiscountByDepartmentByBill(Bill bill) {
         //   List<Stock> billedSummery;
@@ -1637,6 +2064,25 @@ public class PharmacySaleReport implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("btp", BillType.PharmacySale);
+        m.put("class", bill.getClass());
+        sql = "select sum(i.discount) from Bill i "
+                + " where type(i)=:class "
+                + " and i.retired=false  "
+                + " and i.referenceBill.department=:d "
+                + " and  i.billType=:btp"
+                + " and i.createdAt between :fromDate and :toDate ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double calGrantDiscountByDepartmentByBill(Bill bill, BillType billType) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("btp", billType);
         m.put("class", bill.getClass());
         sql = "select sum(i.discount) from Bill i "
                 + " where type(i)=:class "
@@ -1711,6 +2157,25 @@ public class PharmacySaleReport implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("btp", BillType.PharmacySale);
+        m.put("class", PreBill.class);
+        sql = "select sum(i.discount) from Bill i "
+                + " where type(i)!=:class "
+                + " and i.referenceBill.department=:d "
+                + " and i.retired=false  "
+                + " and i.billType=:btp "
+                + " and i.createdAt between :fromDate and :toDate ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double calGrantDiscountByDepartmentByBill(BillType billType) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("btp", billType);
         m.put("class", PreBill.class);
         sql = "select sum(i.discount) from Bill i "
                 + " where type(i)!=:class "
@@ -1818,7 +2283,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            //System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String1Value3) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -1833,6 +2298,90 @@ public class PharmacySaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
 
+    }
+
+    public void createSaleWholeSaleReportByDate() {
+        billedSummery = new PharmacySummery();
+
+        List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
+
+        System.err.println(listRowSale);
+
+        billedSummery.setBills(listRowSale);
+
+        billedSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(), BillType.PharmacySale));
+        billedSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(), BillType.PharmacySale));
+        billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(), BillType.PharmacySale));
+        grantNetTotal = calGrantNetTotalByDepartment(BillType.PharmacySale);
+
+        ///pharmacy whole sale
+        List<String1Value3> listRowWholeSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacyWholeSale));
+
+        System.err.println(listRowWholeSale);
+
+        billedWholeSaleSummery.setBills(listRowWholeSale);
+
+        billedWholeSaleSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill(), BillType.PharmacyWholeSale));
+        billedWholeSaleSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill(), BillType.PharmacyWholeSale));
+        billedWholeSaleSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill(), BillType.PharmacyWholeSale));
+
+        grantNetTotalWholeSale = calGrantNetTotalByDepartment(BillType.PharmacyWholeSale);
+
+    }
+
+    public List<String1Value3> setPharmacyBills(List<Object[]> list) {
+        TreeMap<Date, String1Value3> hm = new TreeMap<>();
+        List<String1Value3> listRow = new ArrayList<>();
+
+        for (Object[] obj : list) {
+            Date date = (Date) obj[0];
+
+            BillClassType billClassType = (BillClassType) obj[1];
+            Double value = (Double) obj[2];
+            System.out.println("value = " + value);
+            System.out.println("billClassType = " + billClassType);
+            System.out.println("value = " + value);
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(date);
+
+            //String1Value3 newRow = (String1Value3) hm.get(date);
+//            if (newRow == null) {
+//                newRow = new String1Value3();
+//                newRow.setDate(date);
+//            } else {
+//                hm.remove(date);
+//            }
+            String1Value3 sv3 = new String1Value3();
+            sv3.setDate(date);
+
+            switch (billClassType) {
+                case BilledBill:
+                    sv3.setValue1(value);
+                    break;
+                case CancelledBill:
+                    sv3.setValue2(value);
+                    break;
+                case RefundBill:
+                    sv3.setValue3(value);
+                    break;
+            }
+            listRow.add(sv3);
+
+            hm.put(date, sv3);
+
+        }
+
+//        Collections.s
+//        List<String1Value3> listRow = new ArrayList<>();
+//        Iterator it = hm.entrySet().iterator();
+//        while (it.hasNext()) {
+////            Map.Entry pairs = (Map.Entry) it.next();
+////            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+////            listRow.add((String1Value3) pairs.getValue());
+////            it.remove(); // avoids a ConcurrentModificationException
+//        }
+        return listRow;
     }
 //    public void createSaleReportByDate() {
 //        billedSummery = new PharmacySummery();
@@ -1981,14 +2530,13 @@ public class PharmacySaleReport implements Serializable {
 
                 sv = (double) o[2];
                 cv = (double) o[3];
-                System.out.println("cv = " + cv);
-                System.out.println("sv = " + sv);
+                //System.out.println("cv = " + cv);
+                //System.out.println("sv = " + sv);
 
-                System.out.println("pi = " + pi);
-                System.out.println("ti = " + ti);
-
+                //System.out.println("pi = " + pi);
+                //System.out.println("ti = " + ti);
                 if (pi == null || !ti.equals(pi)) {
-                    System.out.println("new item - " + ti.getName());
+                    //System.out.println("new item - " + ti.getName());
                     r = new CategoryMovementReportRow();
                     r.setItem(ti);
                     r.setDepartmentIssue(0.0);
@@ -2002,56 +2550,55 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = ti;
                     categoryMovementReportRows.add(r);
-                    System.out.println("size = " + categoryMovementReportRows.size());
+                    //System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
-                System.out.println("tbt = " + tbt);
-
+                //System.out.println("tbt = " + tbt);
                 switch (tbt) {
                     case PharmacySale:
                     case PharmacyPre:
-                        System.out.println("pharmacy sale");
-                        System.out.println("r.getOpdSale() = " + r.getOpdSale());
+                        //System.out.println("pharmacy sale");
+                        //System.out.println("r.getOpdSale() = " + r.getOpdSale());
                         r.setOpdSale(r.getOpdSale() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
                         break;
                     case PharmacyBhtPre:
-                        System.out.println("bht sale ");
-                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        //System.out.println("bht sale ");
+                        //System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         r.setInwardIssue(r.getInwardIssue() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        //System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         break;
                     case PharmacyIssue:
-                        System.out.println("pharmacy issue ");
-                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        //System.out.println("pharmacy issue ");
+                        //System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         r.setDepartmentIssue(r.getDepartmentIssue() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        //System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-                        System.out.println("tx issue ");
-                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        //System.out.println("tx issue ");
+                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         r.setTransferIn(r.getTransferIn() + sv);
-                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
-                        System.out.println("tx issue ");
-                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        //System.out.println("tx issue ");
+                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         r.setTransferOut(r.getTransferOut() + sv);
-                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
                     default:
-                        System.out.println("other bill type");
+                    //System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
-                System.out.println("e = " + e);
+                //System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            System.out.println("r.getTotal() = " + r.getTotal());
+            //System.out.println("r.getTotal() = " + r.getTotal());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
             totalOpdSale += r.getOpdSale();
@@ -2140,58 +2687,58 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = itemBatch;
                     categoryMovementReportRows.add(r);
-//                    System.out.println("size = " + categoryMovementReportRows.size());
+//                    //System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
-//                System.out.println("tbt = " + tbt);
+//                //System.out.println("tbt = " + tbt);
                 switch (billType) {
                     case PharmacySale:
                     case PharmacyPre:
-//                        System.out.println("pharmacy sale");
-//                        System.out.println("r.getOpdSale() = " + r.getOpdSale());
+//                        //System.out.println("pharmacy sale");
+//                        //System.out.println("r.getOpdSale() = " + r.getOpdSale());
                         r.setOpdSale(r.getOpdSale() + netValue);
                         r.setOpdSaleQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getOpdSaleQty()));
                         break;
                     case PharmacyBhtPre:
-//                        System.out.println("bht sale ");
-//                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        //System.out.println("bht sale ");
+//                        //System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         r.setInwardIssue(r.getInwardIssue() + netValue);
                         r.setInwardIssueQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getInwardIssueQty()));
-//                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        //System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         break;
                     case PharmacyIssue:
-//                        System.out.println("pharmacy issue ");
-//                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        //System.out.println("pharmacy issue ");
+//                        //System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         r.setDepartmentIssue(r.getDepartmentIssue() + netValue);
                         r.setDepartmentIssueQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getDepartmentIssueQty()));
-//                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        //System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-//                        System.out.println("tx issue ");
-//                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        //System.out.println("tx issue ");
+//                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         r.setTransferIn(r.getTransferIn() + netValue);
-//                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
-//                        System.out.println("tx issue ");
-//                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        //System.out.println("tx issue ");
+//                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         r.setTransferOut(r.getTransferOut() + netValue);
-//                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
                     default:
-                        System.out.println("other bill type");
+                    //System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
-                System.out.println("e = " + e);
+                //System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            System.out.println("r.getTotal() = " + r.getTotal());
+            //System.out.println("r.getTotal() = " + r.getTotal());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
             totalOpdSale += r.getOpdSale();
@@ -2369,15 +2916,68 @@ public class PharmacySaleReport implements Serializable {
     }
 
     //pasan
-    public void createLabReportByDateWithCashAndCredit() {
+    public void createFeeSummeryWithCounts(BillType[] btps) {
         billedSummery = new PharmacySummery();
-
         billedSummery.setBills(new ArrayList<String1Value3>());
-
         Date nowDate = getFromDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
+        long countTotal = 0l;
+        double hospitalFee;
+        double proTot;
+        double regentFee;
+        long count;
 
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution, btps);
+            proTot = calBillFee(nowDate, FeeType.Staff, btps);
+            regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
+
+            count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
+                    CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
+            countTotal += count;
+
+            newRow.setValue1(hospitalFee);
+            newRow.setValue2(regentFee);
+            newRow.setValue3(proTot);
+            newRow.setLongValue1(count);
+
+            hospitalFeeTot += hospitalFee;
+            profeTotal += proTot;
+            regentTot += regentFee;
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+        billedSummery.setBilledTotal(hospitalFeeTot);
+        billedSummery.setCancelledTotal(profeTotal);
+        billedSummery.setRefundedTotal(regentTot);
+        billedSummery.setCount(countTotal);
+
+    }
+
+    public void createFeeSummeryWithoutCounts(BillType[] btps) {
+        billedSummery = new PharmacySummery();
+        billedSummery.setBills(new ArrayList<String1Value3>());
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
         double hospitalFeeTot = 0.0;
         double profeTotal = 0.0;
         double regentTot = 0.0;
@@ -2393,28 +2993,13 @@ public class PharmacySaleReport implements Serializable {
             String1Value3 newRow = new String1Value3();
             newRow.setString(formattedDate);
 
-            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Cash);
-            double hospitalFeeCredit = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Credit);
-
-            hospitalFee = hospitalFeeCash + hospitalFeeCredit;
-
-            double proTotCash = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Cash);
-            double proTotCredit = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Credit);
-
-            proTot = proTotCash + proTotCredit;
-
-            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Cash);
-            double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
-
-            regentFee = regentFeeCash + regentFeeCredit;
-            
-//            //inward bills
-//            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
-//            //double 
+            hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution, btps);
+            proTot = calBillFee(nowDate, FeeType.Staff, btps);
+            regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
 
             newRow.setValue1(hospitalFee);
             newRow.setValue2(regentFee);
-            newRow.setValue3(proTot);            
+            newRow.setValue3(proTot);
 
             hospitalFeeTot += hospitalFee;
             profeTotal += proTot;
@@ -2429,15 +3014,32 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
-        labBhtIssueBilledBills = getLabBills(BillType.InwardBill, new BilledBill());
-        labBhtIssueBilledBillTotals = getLabBillTotal(BillType.InwardBill, new BilledBill());
-
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
 
     }
-    
+
+    public void createDailyOpdFeeSummeryWithCounts() {
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        createFeeSummeryWithCounts(btps);
+    }
+
+    public void createDailyOpdFeeSummeryWithoutCounts() {
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        createFeeSummeryWithoutCounts(btps);
+    }
+
+    public void createDailyInwardFeeSummeryWithCounts() {
+        BillType[] btps = new BillType[]{BillType.InwardBill};
+        createFeeSummeryWithCounts(btps);
+    }
+
+    public void createDailyInwardFeeSummeryWithoutCounts() {
+        BillType[] btps = new BillType[]{BillType.InwardBill};
+        createFeeSummeryWithoutCounts(btps);
+    }
+
     public void createLabSummeryInward() {
         billedSummery = new PharmacySummery();
 
@@ -2450,10 +3052,8 @@ public class PharmacySaleReport implements Serializable {
         double hospitalFeeTot = 0.0;
         double profeTotal = 0.0;
         double regentTot = 0.0;
-        
-        
-        double regentFee;
 
+        //double regentFee;
         while (nowDate.before(getToDate())) {
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
@@ -2467,14 +3067,13 @@ public class PharmacySaleReport implements Serializable {
             double proTotCash = calBillFee(nowDate, FeeType.Staff, BillType.InwardBill);
 
             double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, BillType.InwardBill);
-            
+
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
 //            //double 
-
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
-            newRow.setValue3(proTotCash);            
+            newRow.setValue3(proTotCash);
 
             hospitalFeeTot += hospitalFeeCash;
             profeTotal += proTotCash;
@@ -2488,7 +3087,7 @@ public class PharmacySaleReport implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
@@ -2498,7 +3097,7 @@ public class PharmacySaleReport implements Serializable {
     List<Bill> getLabBills(BillType billType, Bill bill) {
         Map hm = new HashMap();
         String sql;
-        System.out.println("In to method");
+        //System.out.println("In to method");
         sql = "SELECT b FROM Bill b "
                 + " WHERE b.createdAt between :fromDate and :toDate "
                 + " and type(b)=:bill "
@@ -2506,8 +3105,6 @@ public class PharmacySaleReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
-        
 
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
@@ -2531,8 +3128,6 @@ public class PharmacySaleReport implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
                 + " and b.department=:dep ";
-        
-        
 
         hm.put("btp", billType);
         hm.put("bill", bill.getClass());
@@ -2952,10 +3547,16 @@ public class PharmacySaleReport implements Serializable {
         saleValuesSlip = new ArrayList<>();
         saleValuesCard = new ArrayList<>();
         saleValuesCredit = new ArrayList<>();
+        wholeSaleValuesCash = new ArrayList<>();
+        wholeSaleValuesCheque = new ArrayList<>();
+        wholeSaleValuesSlip = new ArrayList<>();
+        wholeSaleValuesCard = new ArrayList<>();
+        wholeSaleValuesCredit = new ArrayList<>();
         bhtIssues = new ArrayList<>();
         unitIssues = new ArrayList<>();
 
         totalPSCashBV = 0.0;
+        totalPSCashCC = 0.0;
         totalPSCashRV = 0.0;
         totalPSCashNV = 0.0;
         totalPSCashBC = 0.0;
@@ -2963,6 +3564,7 @@ public class PharmacySaleReport implements Serializable {
         totalPSCashNC = 0.0;
 
         totalPSCreditBV = 0.0;
+        totalPSCreditCC = 0.0;
         totalPSCreditRV = 0.0;
         totalPSCreditNV = 0.0;
         totalPSCreditBC = 0.0;
@@ -2970,6 +3572,7 @@ public class PharmacySaleReport implements Serializable {
         totalPSCreditNC = 0.0;
 
         totalPSCardBV = 0.0;
+        totalPSCardCC = 0.0;
         totalPSCardRV = 0.0;
         totalPSCardNV = 0.0;
         totalPSCardBC = 0.0;
@@ -2977,6 +3580,7 @@ public class PharmacySaleReport implements Serializable {
         totalPSCardNC = 0.0;
 
         totalPSSlipBV = 0.0;
+        totalPSSlipCC = 0.0;
         totalPSSlipRV = 0.0;
         totalPSSlipNV = 0.0;
         totalPSSlipBC = 0.0;
@@ -2984,13 +3588,55 @@ public class PharmacySaleReport implements Serializable {
         totalPSSlipNC = 0.0;
 
         totalPSChequeBV = 0.0;
+        totalPSChequeCC = 0.0;
         totalPSChequeRV = 0.0;
         totalPSChequeNV = 0.0;
         totalPSChequeBC = 0.0;
         totalPSChequeRC = 0.0;
         totalPSChequeNC = 0.0;
 
+        totalPWSCashBV = 0.0;
+        totalPWSCashCC = 0.0;
+        totalPWSCashRV = 0.0;
+        totalPWSCashNV = 0.0;
+        totalPWSCashBC = 0.0;
+        totalPWSCashRC = 0.0;
+        totalPWSCashNC = 0.0;
+
+        totalPWSCreditBV = 0.0;
+        totalPWSCreditCC = 0.0;
+        totalPWSCreditRV = 0.0;
+        totalPWSCreditNV = 0.0;
+        totalPWSCreditBC = 0.0;
+        totalPWSCreditRC = 0.0;
+        totalPWSCreditNC = 0.0;
+
+        totalPWSCardBV = 0.0;
+        totalPWSCardCC = 0.0;
+        totalPWSCardRV = 0.0;
+        totalPWSCardNV = 0.0;
+        totalPWSCardBC = 0.0;
+        totalPWSCardRC = 0.0;
+        totalPWSCardNC = 0.0;
+
+        totalPWSSlipBV = 0.0;
+        totalPWSSlipCC = 0.0;
+        totalPWSSlipRV = 0.0;
+        totalPWSSlipNV = 0.0;
+        totalPWSSlipBC = 0.0;
+        totalPWSSlipRC = 0.0;
+        totalPWSSlipNC = 0.0;
+
+        totalPWSChequeBV = 0.0;
+        totalPWSChequeCC = 0.0;
+        totalPWSChequeRV = 0.0;
+        totalPWSChequeNV = 0.0;
+        totalPWSChequeBC = 0.0;
+        totalPWSChequeRC = 0.0;
+        totalPWSChequeNC = 0.0;
+
         totalBHTIssueBV = 0.0;
+        totalBHTIssueCC = 0.0;
         totalBHTIssueRV = 0.0;
         totalBHTIssueNV = 0.0;
         totalBHTIssueBC = 0.0;
@@ -2998,6 +3644,7 @@ public class PharmacySaleReport implements Serializable {
         totalBHTIssueNC = 0.0;
 
         totalUnitIssueBV = 0.0;
+        totalUnitIssueCC = 0.0;
         totalUnitIssueRV = 0.0;
         totalUnitIssueNV = 0.0;
         totalUnitIssueBC = 0.0;
@@ -3010,15 +3657,17 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSCashBV += newRow.getValue1();
             totalPSCashRV += newRow.getValue2();
             totalPSCashNV += newRow.getValue3();
             totalPSCashBC += newRow.getValue4();
             totalPSCashRC += newRow.getValue5();
             totalPSCashNC += newRow.getValue6();
+            totalPSCashCC += newRow.getValue7();
             saleValuesCash.add(newRow);
 
             ////////////
@@ -3027,15 +3676,17 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSChequeBV += newRow.getValue1();
             totalPSChequeRV += newRow.getValue2();
             totalPSChequeNV += newRow.getValue3();
             totalPSChequeBC += newRow.getValue4();
             totalPSChequeRC += newRow.getValue5();
             totalPSChequeNC += newRow.getValue6();
+            totalPSChequeCC += newRow.getValue7();
             saleValuesCheque.add(newRow);
 
             ////////////
@@ -3044,10 +3695,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSSlipBV += newRow.getValue1();
+            totalPSSlipCC += newRow.getValue7();
             totalPSSlipRV += newRow.getValue2();
             totalPSSlipNV += newRow.getValue3();
             totalPSSlipBC += newRow.getValue4();
@@ -3061,10 +3714,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSCardBV += newRow.getValue1();
+            totalPSCardCC += newRow.getValue7();
             totalPSCardRV += newRow.getValue2();
             totalPSCardNV += newRow.getValue3();
             totalPSCardBC += newRow.getValue4();
@@ -3078,10 +3733,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue2(calValueSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new CancelledBill()));
             newRow.setValue5(calCountSale(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalPSCreditBV += newRow.getValue1();
+            totalPSCreditCC += newRow.getValue7();
             totalPSCreditRV += newRow.getValue2();
             totalPSCreditNV += newRow.getValue3();
             totalPSCreditBC += newRow.getValue4();
@@ -3089,16 +3746,113 @@ public class PharmacySaleReport implements Serializable {
             totalPSCreditNC += newRow.getValue6();
             saleValuesCredit.add(newRow);
 
+            /////////Pharmacy whole sale
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cash, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCashBV += newRow.getValue1();
+            totalPWSCashRV += newRow.getValue2();
+            totalPWSCashNV += newRow.getValue3();
+            totalPWSCashBC += newRow.getValue4();
+            totalPWSCashRC += newRow.getValue5();
+            totalPWSCashNC += newRow.getValue6();
+            totalPWSCashCC += newRow.getValue7();
+            wholeSaleValuesCash.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Cheque, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSChequeBV += newRow.getValue1();
+            totalPWSChequeRV += newRow.getValue2();
+            totalPWSChequeNV += newRow.getValue3();
+            totalPWSChequeBC += newRow.getValue4();
+            totalPWSChequeRC += newRow.getValue5();
+            totalPWSChequeNC += newRow.getValue6();
+            totalPWSChequeCC += newRow.getValue7();
+            wholeSaleValuesCheque.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Slip, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSSlipBV += newRow.getValue1();
+            totalPWSSlipCC += newRow.getValue7();
+            totalPWSSlipRV += newRow.getValue2();
+            totalPWSSlipNV += newRow.getValue3();
+            totalPWSSlipBC += newRow.getValue4();
+            totalPWSSlipRC += newRow.getValue5();
+            totalPWSSlipNC += newRow.getValue6();
+            wholeSaleValuesSlip.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new BilledBill()));
+            newRow.setValue7(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Card, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCardBV += newRow.getValue1();
+            totalPWSCardCC += newRow.getValue7();
+            totalPWSCardRV += newRow.getValue2();
+            totalPWSCardNV += newRow.getValue3();
+            totalPWSCardBC += newRow.getValue4();
+            totalPWSCardRC += newRow.getValue5();
+            totalPWSCardNC += newRow.getValue6();
+            wholeSaleValuesCard.add(newRow);
+
+            ////////////
+            newRow = new String1Value6();
+            newRow.setString(dep.getName());
+            newRow.setValue1(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
+            newRow.setValue2(calValueSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new RefundBill()));
+            newRow.setValue3(newRow.getValue1() + newRow.getValue2());
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new BilledBill()));
+            newRow.setValue4(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new CancelledBill()));
+            newRow.setValue5(calCountSale(BillType.PharmacyWholeSale, PaymentMethod.Credit, dep, new RefundBill()));
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
+            totalPWSCreditBV += newRow.getValue1();
+            totalPWSCreditCC += newRow.getValue7();
+            totalPWSCreditRV += newRow.getValue2();
+            totalPWSCreditNV += newRow.getValue3();
+            totalPWSCreditBC += newRow.getValue4();
+            totalPWSCreditRC += newRow.getValue5();
+            totalPWSCreditNC += newRow.getValue6();
+            wholeSaleValuesCredit.add(newRow);
+
             ////////////
             newRow = new String1Value6();
             newRow.setString(dep.getName());
             newRow.setValue1(calValue2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill()));
+            newRow.setValue7(calCount2(BillType.PharmacyBhtPre, dep, new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalBHTIssueBV += newRow.getValue1();
+            totalBHTIssueCC += newRow.getValue7();
             totalBHTIssueRV += newRow.getValue2();
             totalBHTIssueNV += newRow.getValue3();
             totalBHTIssueBC += newRow.getValue4();
@@ -3112,10 +3866,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue1(calValue2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
             newRow.setValue2(calValue2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue3(newRow.getValue1() + newRow.getValue2());
-            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill()));
+            newRow.setValue7(calCount2(BillType.PharmacyIssue, dep, new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
-            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            newRow.setValue6(newRow.getValue4() - newRow.getValue5() - newRow.getValue7());
             totalUnitIssueBV += newRow.getValue1();
+            totalUnitIssueCC += newRow.getValue7();
             totalUnitIssueRV += newRow.getValue2();
             totalUnitIssueNV += newRow.getValue3();
             totalUnitIssueBC += newRow.getValue4();
@@ -3126,187 +3882,6 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-//       public void createPharmacyReport() {
-//        List<Department> departments = fetchDepartment(DepartmentType.Pharmacy);
-//
-//        saleValuesCash = new ArrayList<>();
-//        saleValuesCheque = new ArrayList<>();
-//        saleValuesSlip = new ArrayList<>();
-//        saleValuesCard = new ArrayList<>();
-//        saleValuesCredit = new ArrayList<>();
-//        bhtIssues = new ArrayList<>();
-//        unitIssues = new ArrayList<>();
-//
-//        totalPSCashBV = 0.0;
-//        totalPSCashRV = 0.0;
-//        totalPSCashNV = 0.0;
-//        totalPSCashBC = 0.0;
-//        totalPSCashRC = 0.0;
-//        totalPSCashNC = 0.0;
-//
-//        totalPSCreditBV = 0.0;
-//        totalPSCreditRV = 0.0;
-//        totalPSCreditNV = 0.0;
-//        totalPSCreditBC = 0.0;
-//        totalPSCreditRC = 0.0;
-//        totalPSCreditNC = 0.0;
-//
-//        totalPSCardBV = 0.0;
-//        totalPSCardRV = 0.0;
-//        totalPSCardNV = 0.0;
-//        totalPSCardBC = 0.0;
-//        totalPSCardRC = 0.0;
-//        totalPSCardNC = 0.0;
-//
-//        totalPSSlipBV = 0.0;
-//        totalPSSlipRV = 0.0;
-//        totalPSSlipNV = 0.0;
-//        totalPSSlipBC = 0.0;
-//        totalPSSlipRC = 0.0;
-//        totalPSSlipNC = 0.0;
-//
-//        totalPSChequeBV = 0.0;
-//        totalPSChequeRV = 0.0;
-//        totalPSChequeNV = 0.0;
-//        totalPSChequeBC = 0.0;
-//        totalPSChequeRC = 0.0;
-//        totalPSChequeNC = 0.0;
-//
-//        totalBHTIssueBV = 0.0;
-//        totalBHTIssueRV = 0.0;
-//        totalBHTIssueNV = 0.0;
-//        totalBHTIssueBC = 0.0;
-//        totalBHTIssueRC = 0.0;
-//        totalBHTIssueNC = 0.0;
-//
-//        totalUnitIssueBV = 0.0;
-//        totalUnitIssueRV = 0.0;
-//        totalUnitIssueNV = 0.0;
-//        totalUnitIssueBC = 0.0;
-//        totalUnitIssueRC = 0.0;
-//        totalUnitIssueNC = 0.0;
-//
-//        for (Department dep : departments) {
-//            String1Value6 newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue2(calValue(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
-//            newRow.setValue3(calValue(BillType.PharmacySale, PaymentMethod.Cash, dep));
-//            newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalPSCashBV += newRow.getValue1();
-//            totalPSCashRV += newRow.getValue2();
-//            totalPSCashNV += newRow.getValue3();
-//            totalPSCashBC += newRow.getValue4();
-//            totalPSCashRC += newRow.getValue5();
-//            totalPSCashNC += newRow.getValue6();
-//            saleValuesCash.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue2(calValue(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
-//            newRow.setValue3(calValue(BillType.PharmacySale, PaymentMethod.Cheque, dep));
-//            newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalPSChequeBV += newRow.getValue1();
-//            totalPSChequeRV += newRow.getValue2();
-//            totalPSChequeNV += newRow.getValue3();
-//            totalPSChequeBC += newRow.getValue4();
-//            totalPSChequeRC += newRow.getValue5();
-//            totalPSChequeNC += newRow.getValue6();
-//            saleValuesCheque.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue2(calValue(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
-//            newRow.setValue3(calValue(BillType.PharmacySale, PaymentMethod.Slip, dep));
-//            newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalPSSlipBV += newRow.getValue1();
-//            totalPSSlipRV += newRow.getValue2();
-//            totalPSSlipNV += newRow.getValue3();
-//            totalPSSlipBC += newRow.getValue4();
-//            totalPSSlipRC += newRow.getValue5();
-//            totalPSSlipNC += newRow.getValue6();
-//            saleValuesSlip.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue2(calValue(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
-//            newRow.setValue3(calValue(BillType.PharmacySale, PaymentMethod.Card, dep));
-//            newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalPSCardBV += newRow.getValue1();
-//            totalPSCardRV += newRow.getValue2();
-//            totalPSCardNV += newRow.getValue3();
-//            totalPSCardBC += newRow.getValue4();
-//            totalPSCardRC += newRow.getValue5();
-//            totalPSCardNC += newRow.getValue6();
-//            saleValuesCard.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue2(calValue(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
-//            newRow.setValue3(calValue(BillType.PharmacySale, PaymentMethod.Credit, dep));
-//            newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
-//            newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalPSCreditBV += newRow.getValue1();
-//            totalPSCreditRV += newRow.getValue2();
-//            totalPSCreditNV += newRow.getValue3();
-//            totalPSCreditBC += newRow.getValue4();
-//            totalPSCreditRC += newRow.getValue5();
-//            totalPSCreditNC += newRow.getValue6();
-//            saleValuesCredit.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
-//            newRow.setValue2(calValue2(BillType.PharmacyBhtPre, dep, new RefundBill()));
-//            newRow.setValue3(calValue2(BillType.PharmacyBhtPre, dep));
-//            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
-//            newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalBHTIssueBV += newRow.getValue1();
-//            totalBHTIssueRV += newRow.getValue2();
-//            totalBHTIssueNV += newRow.getValue3();
-//            totalBHTIssueBC += newRow.getValue4();
-//            totalBHTIssueRC += newRow.getValue5();
-//            totalBHTIssueNC += newRow.getValue6();
-//            bhtIssues.add(newRow);
-//
-//            ////////////
-//            newRow = new String1Value6();
-//            newRow.setString(dep.getName());
-//            newRow.setValue1(calValue2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
-//            newRow.setValue2(calValue2(BillType.PharmacyIssue, dep, new RefundBill()));
-//            newRow.setValue3(calValue2(BillType.PharmacyIssue, dep));
-//            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
-//            newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
-//            newRow.setValue6(newRow.getValue4() - newRow.getValue5());
-//            totalUnitIssueBV += newRow.getValue1();
-//            totalUnitIssueRV += newRow.getValue2();
-//            totalUnitIssueNV += newRow.getValue3();
-//            totalUnitIssueBC += newRow.getValue4();
-//            totalUnitIssueRC += newRow.getValue5();
-//            totalUnitIssueNC += newRow.getValue6();
-//            unitIssues.add(newRow);
-//        }
-//
-//    }
     public void createSalePaymentMethod() {
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
@@ -3347,7 +3922,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            //System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -3410,7 +3985,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            //System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -3457,7 +4032,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyIssueBHT() {
-        itemWithDepBHTIssues=new ArrayList<>();
+        itemWithDepBHTIssues = new ArrayList<>();
         ItemWithDepBHTIssue depBHTIssue = null;
         totalBHTIssue = 0.0;
         for (ItemBatch i : fetchPharmacyItemBatchs(new PreBill())) {
@@ -3476,23 +4051,23 @@ public class PharmacySaleReport implements Serializable {
                     }
 
                     if (qty != 0) {
-                        System.out.println("i.getName() = " + i.getItem().getName());
-                        System.out.println("d.getName() = " + d.getName());
+                        //System.out.println("i.getName() = " + i.getItem().getName());
+                        //System.out.println("d.getName() = " + d.getName());
                         s1v3.setString(d.getName());
                         s1v3.setValue1(qty);
                         s1v3.setValue2(magine);
                         s1v3.setValue3(vaue);
-                        System.out.println("total = " + total);
-                        System.out.println("s1v3.getValue3() = " + s1v3.getValue3());
+                        //System.out.println("total = " + total);
+                        //System.out.println("s1v3.getValue3() = " + s1v3.getValue3());
                         total += s1v3.getValue3();
-                        System.out.println("total = " + total);
+                        //System.out.println("total = " + total);
                         s1v3s.add(s1v3);
                     }
 
                 }
             }
             if (s1v3s != null) {
-                depBHTIssue=new ItemWithDepBHTIssue();
+                depBHTIssue = new ItemWithDepBHTIssue();
                 depBHTIssue.setItemString(i.getItem().getName());
                 depBHTIssue.setItemRate(i.getRetailsaleRate());
                 depBHTIssue.setList(s1v3s);
@@ -3603,76 +4178,6 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-//    public void createSalePaymentMethod() {
-//        billedPaymentSummery = new PharmacyPaymetMethodSummery();
-//        billedPaymentSummery.setBills(new ArrayList<String2Value4>());
-//
-//        Date nowDate = getFromDate();
-//        Calendar cal = Calendar.getInstance();
-//        cal.setTime(nowDate);
-//
-//        while (nowDate.before(getToDate())) {
-//
-//            String2Value4 newRow = new String2Value4();
-//
-//            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
-//            String formattedDate = df.format(nowDate);
-//
-//            newRow.setString(formattedDate);
-//
-//            double cash = 0;
-//            double credit = 0;
-//            double card = 0;
-//
-//            ////////
-//            cash = getSaleValuePaymentmethod(nowDate, PaymentMethod.Cash, new BilledBill());
-//            cash += getSaleValuePaymentmethod(nowDate, PaymentMethod.Cash, new CancelledBill());
-//            cash += getSaleValuePaymentmethod(nowDate, PaymentMethod.Cash, new RefundBill());
-//            /////////////
-//            credit = getSaleValuePaymentmethod(nowDate, PaymentMethod.Credit, new BilledBill());
-//            credit += getSaleValuePaymentmethod(nowDate, PaymentMethod.Credit, new CancelledBill());
-//            credit += getSaleValuePaymentmethod(nowDate, PaymentMethod.Credit, new RefundBill());
-//
-//            //////////////
-//            card = getSaleValuePaymentmethod(nowDate, PaymentMethod.Card, new BilledBill());
-//            card += getSaleValuePaymentmethod(nowDate, PaymentMethod.Card, new CancelledBill());
-//            card += getSaleValuePaymentmethod(nowDate, PaymentMethod.Card, new RefundBill());
-//
-//            newRow.setValue1(cash);
-//            newRow.setValue2(credit);
-//            newRow.setValue3(card);
-//            newRow.setValue4(cash + credit + card);
-//
-//            billedPaymentSummery.getBills().add(newRow);
-//
-//            Calendar nc = Calendar.getInstance();
-//            nc.setTime(nowDate);
-//            nc.add(Calendar.DATE, 1);
-//            nowDate = nc.getTime();
-//
-//        }
-//
-//        billedPaymentSummery.setCashTotal(
-//                calGrantTotalByPaymentMethod(PaymentMethod.Cash, new BilledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Cash, new CancelledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Cash, new RefundBill()));
-//
-//        ////////////
-//        billedPaymentSummery.setCreditTotal(
-//                calGrantTotalByPaymentMethod(PaymentMethod.Credit, new BilledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Credit, new CancelledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Credit, new RefundBill()));
-//
-//        ////////////////
-//        billedPaymentSummery.setCardTotal(
-//                calGrantTotalByPaymentMethod(PaymentMethod.Card, new BilledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Card, new CancelledBill())
-//                + calGrantTotalByPaymentMethod(PaymentMethod.Card, new RefundBill()));
-//
-//        grantCardTotal = calGrantTotalByPaymentMethod(PaymentMethod.Card);
-//        grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
-//        grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
-//    }
     public void createSaleReportByDateDetail() {
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -3816,9 +4321,13 @@ public class PharmacySaleReport implements Serializable {
     }
 
     List<PaymentSchemeSummery> paymentSchemeSummerys;
+    List<PaymentSchemeSummery> paymentSchemeSummeryWholeSale;
     double billTotal;
     double canTotal;
     double refTotal;
+    double billTotalWholeSale;
+    double canTotalWholeSale;
+    double refTotalWholeSale;
 
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -3829,6 +4338,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setPaymentSchemeSummerys(List<PaymentSchemeSummery> paymentSchemeSummerys) {
         this.paymentSchemeSummerys = paymentSchemeSummerys;
+    }
+
+    public List<PaymentSchemeSummery> getPaymentSchemeSummeryWholeSale() {
+        return paymentSchemeSummeryWholeSale;
+    }
+
+    public void setPaymentSchemeSummeryWholeSale(List<PaymentSchemeSummery> paymentSchemeSummeryWholeSale) {
+        this.paymentSchemeSummeryWholeSale = paymentSchemeSummeryWholeSale;
     }
 
     public double getBillTotal() {
@@ -3855,34 +4372,79 @@ public class PharmacySaleReport implements Serializable {
         this.refTotal = refTotal;
     }
 
+    public double getBillTotalWholeSale() {
+        return billTotalWholeSale;
+    }
+
+    public void setBillTotalWholeSale(double billTotalWholeSale) {
+        this.billTotalWholeSale = billTotalWholeSale;
+    }
+
+    public double getCanTotalWholeSale() {
+        return canTotalWholeSale;
+    }
+
+    public void setCanTotalWholeSale(double canTotalWholeSale) {
+        this.canTotalWholeSale = canTotalWholeSale;
+    }
+
+    public double getRefTotalWholeSale() {
+        return refTotalWholeSale;
+    }
+
+    public void setRefTotalWholeSale(double refTotalWholeSale) {
+        this.refTotalWholeSale = refTotalWholeSale;
+    }
+
     public void createSalereportByDateSummeryPaymentscheam() {
         if (department == null) {
             UtilityController.addErrorMessage("Select Department");
             return;
         }
         paymentSchemeSummerys = new ArrayList<>();
+        paymentSchemeSummeryWholeSale = new ArrayList<>();
         List<PaymentScheme> paymentSchemes = paymentSchemeController.getItems();
 
-        billTotal = 0.0;
-        canTotal = 0.0;
-        refTotal = 0.0;
-
         for (PaymentScheme ps : paymentSchemes) {
-            PaymentSchemeSummery pss = new PaymentSchemeSummery();
+            addSaleValueByDepartmentPaymentSchemeP(paymentSchemeSummerys, ps, BillType.PharmacySale);
+            addSaleValueByDepartmentPaymentSchemeP(paymentSchemeSummeryWholeSale, ps, BillType.PharmacyWholeSale);
 
-            pss.setPaymentScheme(ps.getName());
-            pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps));
-            pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps));
-            pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps));
-
-            billTotal += pss.getBillTotal();
-            canTotal += pss.getCancelBillTotal();
-            refTotal += pss.getRefundBillTotal();
-
-            paymentSchemeSummerys.add(pss);
-            System.out.println("Added - " + ps.getName());
         }
+        BillListWithTotals b = addSaleTotal(paymentSchemeSummerys, billTotal, canTotal, refTotal);
+        BillListWithTotals w = addSaleTotal(paymentSchemeSummeryWholeSale, billTotalWholeSale, canTotalWholeSale, refTotalWholeSale);
 
+        billTotal = b.getNetTotal();
+        canTotal = b.getCancelledTotal();
+        refTotal = b.getRefundTotal();
+        billTotalWholeSale = w.getNetTotal();
+        canTotalWholeSale = w.getCancelledTotal();
+        refTotalWholeSale = w.getRefundTotal();
+
+    }
+
+    public void addSaleValueByDepartmentPaymentSchemeP(List<PaymentSchemeSummery> schemeSummerys, PaymentScheme ps, BillType billType) {
+        PaymentSchemeSummery pss = new PaymentSchemeSummery();
+        pss.setPaymentScheme(ps.getName());
+        pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, billType));
+        pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, billType));
+        pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, billType));
+
+        schemeSummerys.add(pss);
+
+    }
+
+    public BillListWithTotals addSaleTotal(List<PaymentSchemeSummery> schemeSummerys, double bilTotal, double cancellTotal, double refundTotal) {
+        BillListWithTotals b = new BillListWithTotals();
+        b.setNetTotal(0.0);
+        b.setCancelledTotal(0.0);
+        b.setRefundTotal(0.0);
+
+        for (PaymentSchemeSummery pss : schemeSummerys) {
+            b.setNetTotal(b.getNetTotal() + pss.getBillTotal());
+            b.setCancelledTotal(b.getCancelledTotal() + pss.getCancelBillTotal());
+            b.setRefundTotal(b.getRefundTotal() + pss.getRefundBillTotal());
+        }
+        return b;
     }
 
     public class PaymentSchemeSummery {
@@ -4002,19 +4564,27 @@ public class PharmacySaleReport implements Serializable {
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
 
+        billedDetailWholeSale = new PharmacyDetail();
+        cancelledDetailWholeSale = new PharmacyDetail();
+        refundedDetailWholeSale = new PharmacyDetail();
+
         billedDetail.setDatedBills(new ArrayList<DatedBills>());
         cancelledDetail.setDatedBills(new ArrayList<DatedBills>());
         refundedDetail.setDatedBills(new ArrayList<DatedBills>());
+
+        billedDetailWholeSale.setDatedBills(new ArrayList<DatedBills>());
+        cancelledDetailWholeSale.setDatedBills(new ArrayList<DatedBills>());
+        refundedDetailWholeSale.setDatedBills(new ArrayList<DatedBills>());
 
         Date nowDate = getFromDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
         while (nowDate.before(getToDate())) {
 
-            double sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new BilledBill());
-            double sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new BilledBill());
-            double sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new BilledBill());
-            double sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new BilledBill());
+            double sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new BilledBill(), BillType.PharmacySale);
+            double sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new BilledBill(), BillType.PharmacySale);
+            double sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new BilledBill(), BillType.PharmacySale);
+            double sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new BilledBill(), BillType.PharmacySale);
             DatedBills newRow = new DatedBills();
             newRow.setDate(nowDate);
             newRow.setSumCashTotal(sumCash);
@@ -4028,10 +4598,10 @@ public class PharmacySaleReport implements Serializable {
             }
 
             ///
-            sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new CancelledBill());
-            sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new CancelledBill());
-            sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new CancelledBill());
-            sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new CancelledBill());
+            sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new CancelledBill(), BillType.PharmacySale);
+            sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new CancelledBill(), BillType.PharmacySale);
+            sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new CancelledBill(), BillType.PharmacySale);
+            sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new CancelledBill(), BillType.PharmacySale);
             newRow = new DatedBills();
             newRow.setDate(nowDate);
             newRow.setSumCashTotal(sumCash);
@@ -4045,10 +4615,10 @@ public class PharmacySaleReport implements Serializable {
             }
 
             ///
-            sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new RefundBill());
-            sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new RefundBill());
-            sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new RefundBill());
-            sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new RefundBill());
+            sumCash = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new RefundBill(), BillType.PharmacySale);
+            sumCredit = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new RefundBill(), BillType.PharmacySale);
+            sumCard = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new RefundBill(), BillType.PharmacySale);
+            sumDiscount = getDiscountValueByDepartmentByBill(nowDate, new RefundBill(), BillType.PharmacySale);
             newRow = new DatedBills();
             newRow.setDate(nowDate);
             newRow.setSumCashTotal(sumCash);
@@ -4060,6 +4630,57 @@ public class PharmacySaleReport implements Serializable {
             if (!newRow.getBills().isEmpty()) {
                 refundedDetail.getDatedBills().add(newRow);
             }
+            
+            
+            double sumCashWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new BilledBill(), BillType.PharmacyWholeSale);
+            double sumCreditWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new BilledBill(), BillType.PharmacyWholeSale);
+            double sumCardWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new BilledBill(), BillType.PharmacyWholeSale);
+            double sumDiscountWholeSale = getDiscountValueByDepartmentByBill(nowDate, new BilledBill(), BillType.PharmacyWholeSale);
+            DatedBills newRowWholeSale = new DatedBills();
+            newRowWholeSale.setDate(nowDate);
+            newRowWholeSale.setSumCashTotal(sumCashWholeSale);
+            newRowWholeSale.setSumCreditTotal(sumCreditWholeSale);
+            newRowWholeSale.setSumCardTotal(sumCardWholeSale);
+            newRowWholeSale.setSumDiscount(sumDiscountWholeSale);
+            newRowWholeSale.setBills(getSaleBillByDepartment(nowDate, new BilledBill(), BillType.PharmacyWholeSale));
+
+            if (!newRowWholeSale.getBills().isEmpty()) {
+                billedDetailWholeSale.getDatedBills().add(newRowWholeSale);
+            }
+
+            ///
+            sumCashWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new CancelledBill(), BillType.PharmacyWholeSale);
+            sumCreditWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new CancelledBill(), BillType.PharmacyWholeSale);
+            sumCardWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new CancelledBill(), BillType.PharmacyWholeSale);
+            sumDiscountWholeSale = getDiscountValueByDepartmentByBill(nowDate, new CancelledBill(), BillType.PharmacyWholeSale);
+            newRowWholeSale = new DatedBills();
+            newRowWholeSale.setDate(nowDate);
+            newRowWholeSale.setSumCashTotal(sumCashWholeSale);
+            newRowWholeSale.setSumCreditTotal(sumCreditWholeSale);
+            newRowWholeSale.setSumCardTotal(sumCardWholeSale);
+            newRowWholeSale.setSumDiscount(sumDiscountWholeSale);
+            newRowWholeSale.setBills(getSaleBillByDepartment(nowDate, new CancelledBill(), BillType.PharmacyWholeSale));
+
+            if (!newRowWholeSale.getBills().isEmpty()) {
+                cancelledDetailWholeSale.getDatedBills().add(newRowWholeSale);
+            }
+
+            ///
+            sumCashWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new RefundBill(), BillType.PharmacyWholeSale);
+            sumCreditWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new RefundBill(), BillType.PharmacyWholeSale);
+            sumCardWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new RefundBill(), BillType.PharmacyWholeSale);
+            sumDiscountWholeSale = getDiscountValueByDepartmentByBill(nowDate, new RefundBill(), BillType.PharmacyWholeSale);
+            newRowWholeSale = new DatedBills();
+            newRowWholeSale.setDate(nowDate);
+            newRowWholeSale.setSumCashTotal(sumCashWholeSale);
+            newRowWholeSale.setSumCreditTotal(sumCreditWholeSale);
+            newRowWholeSale.setSumCardTotal(sumCardWholeSale);
+            newRowWholeSale.setSumDiscount(sumDiscountWholeSale);
+            newRowWholeSale.setBills(getSaleBillByDepartment(nowDate, new RefundBill(), BillType.PharmacyWholeSale));
+
+            if (!newRowWholeSale.getBills().isEmpty()) {
+                refundedDetailWholeSale.getDatedBills().add(newRowWholeSale);
+            }
 
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
@@ -4068,29 +4689,54 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
-        billedDetail.setDiscount(calGrantDiscountByDepartmentByBill(new BilledBill()));
-        billedDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new BilledBill()));
-        billedDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new BilledBill()));
-        billedDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new BilledBill()));
+        billedDetail.setDiscount(calGrantDiscountByDepartmentByBill(new BilledBill(), BillType.PharmacySale));
+        billedDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new BilledBill(), BillType.PharmacySale));
+        billedDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new BilledBill(), BillType.PharmacySale));
+        billedDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new BilledBill(), BillType.PharmacySale));
 
-        cancelledDetail.setDiscount(calGrantDiscountByDepartmentByBill(new CancelledBill()));
-        cancelledDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new CancelledBill()));
-        cancelledDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new CancelledBill()));
-        cancelledDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new CancelledBill()));
+        cancelledDetail.setDiscount(calGrantDiscountByDepartmentByBill(new CancelledBill(), BillType.PharmacySale));
+        cancelledDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new CancelledBill(), BillType.PharmacySale));
+        cancelledDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new CancelledBill(), BillType.PharmacySale));
+        cancelledDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new CancelledBill(), BillType.PharmacySale));
 
-        refundedDetail.setDiscount(calGrantDiscountByDepartmentByBill(new RefundBill()));
-        refundedDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new RefundBill()));
-        refundedDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new RefundBill()));
-        refundedDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new RefundBill()));
+        refundedDetail.setDiscount(calGrantDiscountByDepartmentByBill(new RefundBill(), BillType.PharmacySale));
+        refundedDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new RefundBill(), BillType.PharmacySale));
+        refundedDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new RefundBill(), BillType.PharmacySale));
+        refundedDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new RefundBill(), BillType.PharmacySale));
+        
+        billedDetailWholeSale.setDiscount(calGrantDiscountByDepartmentByBill(new BilledBill(), BillType.PharmacyWholeSale));
+        billedDetailWholeSale.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new BilledBill(), BillType.PharmacyWholeSale));
+        billedDetailWholeSale.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new BilledBill(), BillType.PharmacyWholeSale));
+        billedDetailWholeSale.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new BilledBill(), BillType.PharmacyWholeSale));
+
+        cancelledDetailWholeSale.setDiscount(calGrantDiscountByDepartmentByBill(new CancelledBill(), BillType.PharmacyWholeSale));
+        cancelledDetailWholeSale.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new CancelledBill(), BillType.PharmacyWholeSale));
+        cancelledDetailWholeSale.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new CancelledBill(), BillType.PharmacyWholeSale));
+        cancelledDetailWholeSale.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new CancelledBill(), BillType.PharmacyWholeSale));
+
+        refundedDetailWholeSale.setDiscount(calGrantDiscountByDepartmentByBill(new RefundBill(), BillType.PharmacyWholeSale));
+        refundedDetailWholeSale.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new RefundBill(), BillType.PharmacyWholeSale));
+        refundedDetailWholeSale.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new RefundBill(), BillType.PharmacyWholeSale));
+        refundedDetailWholeSale.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new RefundBill(), BillType.PharmacyWholeSale));
 
         grantCardTotal = 0;
         grantCashTotal = 0;
         grantCreditTotal = 0;
         grantDiscount = 0;
-        grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
-        grantDiscount = calGrantDiscountByDepartmentByBill();
+        grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, BillType.PharmacySale);
+        grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, BillType.PharmacySale);
+        grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacySale);
+        grantDiscount = calGrantDiscountByDepartmentByBill(BillType.PharmacySale);
+        
+        
+        grantCardTotalWholeSale = 0;
+        grantCashTotalWholeSale = 0;
+        grantCreditTotalWholeSale = 0;
+        grantDiscountWholeSale = 0;
+        grantCardTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, BillType.PharmacyWholeSale);
+        grantCashTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, BillType.PharmacyWholeSale);
+        grantCreditTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacyWholeSale);
+        grantDiscountWholeSale = calGrantDiscountByDepartmentByBill(BillType.PharmacyWholeSale);
 
     }
 
@@ -4191,6 +4837,115 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public void createItemListWithOutItemDistributer() {
+        List<Amp> allAmps = getAllPharmacyItems();
+        //System.out.println("allAmps = " + allAmps.size());
+        List<Amp> ampsWithDealor = getAllDealorItems();
+        //System.out.println("ampsWithOutDealor = " + ampsWithDealor.size());
+        allAmps.removeAll(ampsWithDealor);
+        //System.out.println("After remove allAmps = " + allAmps.size());
+        amps = new ArrayList<>();
+        amps.addAll(allAmps);
+        //System.out.println("amps = " + amps.size());
+    }
+
+    public void createItemListOneItemHasGreterThanOneDistributor() {
+        List<Object[]> objs = getAllDealorItemsWithCount();
+        //System.out.println("objs = " + objs);
+        //System.out.println("objs = " + objs.size());
+        amps = new ArrayList<>();
+        for (Object[] obj : objs) {
+            //System.out.println("obj = " + obj);
+            if (obj != null) {
+                Amp item = (Amp) obj[0];
+                //System.out.println("item = " + item.getName());
+                long count = (long) obj[1];
+                //System.out.println("count = " + count);
+                if (count > 1) {
+                    //System.out.println("****Add****");
+                    amps.add(item);
+                }
+            }
+        }
+        //System.out.println("items = " + amps.size());
+
+    }
+
+    public void createItemListOneItemHasGreterThanOneDistributorOther() {
+        List<Amp> ampsWithDealor = getAllDealorItems();
+        //System.out.println("ampsWithDealor = " + ampsWithDealor.size());
+
+        items = new ArrayList<>();
+        for (Item i : ampsWithDealor) {
+            System.err.println("in");
+            //System.out.println("item = " + i.getName());
+            List<Amp> allAmps = getAmpItems(i);
+            //System.out.println("amps = " + allAmps.size());
+            int count = 0;
+            if (allAmps != null) {
+                count = allAmps.size();
+            }
+            //System.out.println("count = " + count);
+            if (count > 1) {
+                //System.out.println("****Add****");
+                items.add(i);
+            }
+            System.err.println("out");
+        }
+        //System.out.println("items = " + items.size());
+
+    }
+
+    public List<Amp> getAllPharmacyItems() {
+        String sql;
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Store);
+        m.put("dep2", DepartmentType.Inventry);
+        sql = "select c from Amp c "
+                + " where c.retired=false "
+                + " and (c.departmentType is null "
+                + " or c.departmentType!=:dep "
+                + " or c.departmentType!=:dep2 )"
+                + " order by c.name ";
+
+        return ampFacade.findBySQL(sql, m);
+    }
+
+    public List<Amp> getAllDealorItems() {
+        String sql;
+
+        sql = "SELECT distinct(i.item) FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " order by i.item.name ";
+
+        return ampFacade.findBySQL(sql);
+    }
+
+    public List<Object[]> getAllDealorItemsWithCount() {
+        String sql;
+
+        sql = "SELECT distinct(i.item),count(i.item) FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " order by i.item.name ";
+
+        return ampFacade.findAggregates(sql);
+    }
+
+    public List<Amp> getAmpItems(Item a) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT i.item FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item.retired=false "
+                + " and i.item=:a ";
+
+        m.put("a", a);
+        return ampFacade.findBySQL(sql, m);
+    }
+
     /**
      * Creates a new instance of PharmacySaleReport
      */
@@ -4276,6 +5031,25 @@ public class PharmacySaleReport implements Serializable {
         this.billedSummery = billedSummery;
     }
 
+    public double getGrantNetTotalWholeSale() {
+        return grantNetTotalWholeSale;
+    }
+
+    public void setGrantNetTotalWholeSale(double grantNetTotalWholeSale) {
+        this.grantNetTotalWholeSale = grantNetTotalWholeSale;
+    }
+
+    public PharmacySummery getBilledWholeSaleSummery() {
+        if (billedWholeSaleSummery == null) {
+            billedWholeSaleSummery = new PharmacySummery();
+        }
+        return billedWholeSaleSummery;
+    }
+
+    public void setBilledWholeSaleSummery(PharmacySummery billedWholeSaleSummery) {
+        this.billedWholeSaleSummery = billedWholeSaleSummery;
+    }
+
     public PharmacyPaymetMethodSummery getBilledPaymentSummery() {
         return billedPaymentSummery;
     }
@@ -4307,6 +5081,64 @@ public class PharmacySaleReport implements Serializable {
     public void setGrantCardTotal(double grantCardTotal) {
         this.grantCardTotal = grantCardTotal;
     }
+
+    public double getGrantDiscountWholeSale() {
+        return grantDiscountWholeSale;
+    }
+
+    public void setGrantDiscountWholeSale(double grantDiscountWholeSale) {
+        this.grantDiscountWholeSale = grantDiscountWholeSale;
+    }
+
+    public double getGrantCashTotalWholeSale() {
+        return grantCashTotalWholeSale;
+    }
+
+    public void setGrantCashTotalWholeSale(double grantCashTotalWholeSale) {
+        this.grantCashTotalWholeSale = grantCashTotalWholeSale;
+    }
+
+    public double getGrantCreditTotalWholeSale() {
+        return grantCreditTotalWholeSale;
+    }
+
+    public void setGrantCreditTotalWholeSale(double grantCreditTotalWholeSale) {
+        this.grantCreditTotalWholeSale = grantCreditTotalWholeSale;
+    }
+
+    public double getGrantCardTotalWholeSale() {
+        return grantCardTotalWholeSale;
+    }
+
+    public void setGrantCardTotalWholeSale(double grantCardTotalWholeSale) {
+        this.grantCardTotalWholeSale = grantCardTotalWholeSale;
+    }
+
+    public PharmacyDetail getBilledDetailWholeSale() {
+        return billedDetailWholeSale;
+    }
+
+    public void setBilledDetailWholeSale(PharmacyDetail billedDetailWholeSale) {
+        this.billedDetailWholeSale = billedDetailWholeSale;
+    }
+
+    public PharmacyDetail getCancelledDetailWholeSale() {
+        return cancelledDetailWholeSale;
+    }
+
+    public void setCancelledDetailWholeSale(PharmacyDetail cancelledDetailWholeSale) {
+        this.cancelledDetailWholeSale = cancelledDetailWholeSale;
+    }
+
+    public PharmacyDetail getRefundedDetailWholeSale() {
+        return refundedDetailWholeSale;
+    }
+
+    public void setRefundedDetailWholeSale(PharmacyDetail refundedDetailWholeSale) {
+        this.refundedDetailWholeSale = refundedDetailWholeSale;
+    }
+    
+    
 
     public PharmacyDetail getBilledDetail() {
         return billedDetail;
@@ -4442,6 +5274,46 @@ public class PharmacySaleReport implements Serializable {
 
     public void setUnitIssues(List<String1Value6> unitIssues) {
         this.unitIssues = unitIssues;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCash() {
+        return wholeSaleValuesCash;
+    }
+
+    public void setWholeSaleValuesCash(List<String1Value6> wholeSaleValuesCash) {
+        this.wholeSaleValuesCash = wholeSaleValuesCash;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCheque() {
+        return wholeSaleValuesCheque;
+    }
+
+    public void setWholeSaleValuesCheque(List<String1Value6> wholeSaleValuesCheque) {
+        this.wholeSaleValuesCheque = wholeSaleValuesCheque;
+    }
+
+    public List<String1Value6> getWholeSaleValuesSlip() {
+        return wholeSaleValuesSlip;
+    }
+
+    public void setWholeSaleValuesSlip(List<String1Value6> wholeSaleValuesSlip) {
+        this.wholeSaleValuesSlip = wholeSaleValuesSlip;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCard() {
+        return wholeSaleValuesCard;
+    }
+
+    public void setWholeSaleValuesCard(List<String1Value6> wholeSaleValuesCard) {
+        this.wholeSaleValuesCard = wholeSaleValuesCard;
+    }
+
+    public List<String1Value6> getWholeSaleValuesCredit() {
+        return wholeSaleValuesCredit;
+    }
+
+    public void setWholeSaleValuesCredit(List<String1Value6> wholeSaleValuesCredit) {
+        this.wholeSaleValuesCredit = wholeSaleValuesCredit;
     }
 
     public double getTotalPSCashBV() {
@@ -4684,6 +5556,286 @@ public class PharmacySaleReport implements Serializable {
         this.totalPSChequeNC = totalPSChequeNC;
     }
 
+    public double getTotalPWSCashBV() {
+        return totalPWSCashBV;
+    }
+
+    public void setTotalPWSCashBV(double totalPWSCashBV) {
+        this.totalPWSCashBV = totalPWSCashBV;
+    }
+
+    public double getTotalPWSCashCC() {
+        return totalPWSCashCC;
+    }
+
+    public void setTotalPWSCashCC(double totalPWSCashCC) {
+        this.totalPWSCashCC = totalPWSCashCC;
+    }
+
+    public double getTotalPWSCashRV() {
+        return totalPWSCashRV;
+    }
+
+    public void setTotalPWSCashRV(double totalPWSCashRV) {
+        this.totalPWSCashRV = totalPWSCashRV;
+    }
+
+    public double getTotalPWSCashNV() {
+        return totalPWSCashNV;
+    }
+
+    public void setTotalPWSCashNV(double totalPWSCashNV) {
+        this.totalPWSCashNV = totalPWSCashNV;
+    }
+
+    public double getTotalPWSCashBC() {
+        return totalPWSCashBC;
+    }
+
+    public void setTotalPWSCashBC(double totalPWSCashBC) {
+        this.totalPWSCashBC = totalPWSCashBC;
+    }
+
+    public double getTotalPWSCashRC() {
+        return totalPWSCashRC;
+    }
+
+    public void setTotalPWSCashRC(double totalPWSCashRC) {
+        this.totalPWSCashRC = totalPWSCashRC;
+    }
+
+    public double getTotalPWSCashNC() {
+        return totalPWSCashNC;
+    }
+
+    public void setTotalPWSCashNC(double totalPWSCashNC) {
+        this.totalPWSCashNC = totalPWSCashNC;
+    }
+
+    public double getTotalPWSCreditBV() {
+        return totalPWSCreditBV;
+    }
+
+    public void setTotalPWSCreditBV(double totalPWSCreditBV) {
+        this.totalPWSCreditBV = totalPWSCreditBV;
+    }
+
+    public double getTotalPWSCreditCC() {
+        return totalPWSCreditCC;
+    }
+
+    public void setTotalPWSCreditCC(double totalPWSCreditCC) {
+        this.totalPWSCreditCC = totalPWSCreditCC;
+    }
+
+    public double getTotalPWSCreditRV() {
+        return totalPWSCreditRV;
+    }
+
+    public void setTotalPWSCreditRV(double totalPWSCreditRV) {
+        this.totalPWSCreditRV = totalPWSCreditRV;
+    }
+
+    public double getTotalPWSCreditNV() {
+        return totalPWSCreditNV;
+    }
+
+    public void setTotalPWSCreditNV(double totalPWSCreditNV) {
+        this.totalPWSCreditNV = totalPWSCreditNV;
+    }
+
+    public double getTotalPWSCreditBC() {
+        return totalPWSCreditBC;
+    }
+
+    public void setTotalPWSCreditBC(double totalPWSCreditBC) {
+        this.totalPWSCreditBC = totalPWSCreditBC;
+    }
+
+    public double getTotalPWSCreditRC() {
+        return totalPWSCreditRC;
+    }
+
+    public void setTotalPWSCreditRC(double totalPWSCreditRC) {
+        this.totalPWSCreditRC = totalPWSCreditRC;
+    }
+
+    public double getTotalPWSCreditNC() {
+        return totalPWSCreditNC;
+    }
+
+    public void setTotalPWSCreditNC(double totalPWSCreditNC) {
+        this.totalPWSCreditNC = totalPWSCreditNC;
+    }
+
+    public double getTotalPWSCardBV() {
+        return totalPWSCardBV;
+    }
+
+    public void setTotalPWSCardBV(double totalPWSCardBV) {
+        this.totalPWSCardBV = totalPWSCardBV;
+    }
+
+    public double getTotalPWSCardCC() {
+        return totalPWSCardCC;
+    }
+
+    public void setTotalPWSCardCC(double totalPWSCardCC) {
+        this.totalPWSCardCC = totalPWSCardCC;
+    }
+
+    public double getTotalPWSCardRV() {
+        return totalPWSCardRV;
+    }
+
+    public void setTotalPWSCardRV(double totalPWSCardRV) {
+        this.totalPWSCardRV = totalPWSCardRV;
+    }
+
+    public double getTotalPWSCardNV() {
+        return totalPWSCardNV;
+    }
+
+    public void setTotalPWSCardNV(double totalPWSCardNV) {
+        this.totalPWSCardNV = totalPWSCardNV;
+    }
+
+    public double getTotalPWSCardBC() {
+        return totalPWSCardBC;
+    }
+
+    public void setTotalPWSCardBC(double totalPWSCardBC) {
+        this.totalPWSCardBC = totalPWSCardBC;
+    }
+
+    public double getTotalPWSCardRC() {
+        return totalPWSCardRC;
+    }
+
+    public void setTotalPWSCardRC(double totalPWSCardRC) {
+        this.totalPWSCardRC = totalPWSCardRC;
+    }
+
+    public double getTotalPWSCardNC() {
+        return totalPWSCardNC;
+    }
+
+    public void setTotalPWSCardNC(double totalPWSCardNC) {
+        this.totalPWSCardNC = totalPWSCardNC;
+    }
+
+    public double getTotalPWSSlipBV() {
+        return totalPWSSlipBV;
+    }
+
+    public void setTotalPWSSlipBV(double totalPWSSlipBV) {
+        this.totalPWSSlipBV = totalPWSSlipBV;
+    }
+
+    public double getTotalPWSSlipCC() {
+        return totalPWSSlipCC;
+    }
+
+    public void setTotalPWSSlipCC(double totalPWSSlipCC) {
+        this.totalPWSSlipCC = totalPWSSlipCC;
+    }
+
+    public double getTotalPWSSlipRV() {
+        return totalPWSSlipRV;
+    }
+
+    public void setTotalPWSSlipRV(double totalPWSSlipRV) {
+        this.totalPWSSlipRV = totalPWSSlipRV;
+    }
+
+    public double getTotalPWSSlipNV() {
+        return totalPWSSlipNV;
+    }
+
+    public void setTotalPWSSlipNV(double totalPWSSlipNV) {
+        this.totalPWSSlipNV = totalPWSSlipNV;
+    }
+
+    public double getTotalPWSSlipBC() {
+        return totalPWSSlipBC;
+    }
+
+    public void setTotalPWSSlipBC(double totalPWSSlipBC) {
+        this.totalPWSSlipBC = totalPWSSlipBC;
+    }
+
+    public double getTotalPWSSlipRC() {
+        return totalPWSSlipRC;
+    }
+
+    public void setTotalPWSSlipRC(double totalPWSSlipRC) {
+        this.totalPWSSlipRC = totalPWSSlipRC;
+    }
+
+    public double getTotalPWSSlipNC() {
+        return totalPWSSlipNC;
+    }
+
+    public void setTotalPWSSlipNC(double totalPWSSlipNC) {
+        this.totalPWSSlipNC = totalPWSSlipNC;
+    }
+
+    public double getTotalPWSChequeBV() {
+        return totalPWSChequeBV;
+    }
+
+    public void setTotalPWSChequeBV(double totalPWSChequeBV) {
+        this.totalPWSChequeBV = totalPWSChequeBV;
+    }
+
+    public double getTotalPWSChequeCC() {
+        return totalPWSChequeCC;
+    }
+
+    public void setTotalPWSChequeCC(double totalPWSChequeCC) {
+        this.totalPWSChequeCC = totalPWSChequeCC;
+    }
+
+    public double getTotalPWSChequeRV() {
+        return totalPWSChequeRV;
+    }
+
+    public void setTotalPWSChequeRV(double totalPWSChequeRV) {
+        this.totalPWSChequeRV = totalPWSChequeRV;
+    }
+
+    public double getTotalPWSChequeNV() {
+        return totalPWSChequeNV;
+    }
+
+    public void setTotalPWSChequeNV(double totalPWSChequeNV) {
+        this.totalPWSChequeNV = totalPWSChequeNV;
+    }
+
+    public double getTotalPWSChequeBC() {
+        return totalPWSChequeBC;
+    }
+
+    public void setTotalPWSChequeBC(double totalPWSChequeBC) {
+        this.totalPWSChequeBC = totalPWSChequeBC;
+    }
+
+    public double getTotalPWSChequeRC() {
+        return totalPWSChequeRC;
+    }
+
+    public void setTotalPWSChequeRC(double totalPWSChequeRC) {
+        this.totalPWSChequeRC = totalPWSChequeRC;
+    }
+
+    public double getTotalPWSChequeNC() {
+        return totalPWSChequeNC;
+    }
+
+    public void setTotalPWSChequeNC(double totalPWSChequeNC) {
+        this.totalPWSChequeNC = totalPWSChequeNC;
+    }
+
     public double getTotalBHTIssueBV() {
         return totalBHTIssueBV;
     }
@@ -4828,12 +5980,76 @@ public class PharmacySaleReport implements Serializable {
         this.totalMargineValue = totalMargineValue;
     }
 
+    public double getTotalPSCashCC() {
+        return totalPSCashCC;
+    }
+
+    public void setTotalPSCashCC(double totalPSCashCC) {
+        this.totalPSCashCC = totalPSCashCC;
+    }
+
+    public double getTotalPSCreditCC() {
+        return totalPSCreditCC;
+    }
+
+    public void setTotalPSCreditCC(double totalPSCreditCC) {
+        this.totalPSCreditCC = totalPSCreditCC;
+    }
+
+    public double getTotalPSCardCC() {
+        return totalPSCardCC;
+    }
+
+    public void setTotalPSCardCC(double totalPSCardCC) {
+        this.totalPSCardCC = totalPSCardCC;
+    }
+
+    public double getTotalPSSlipCC() {
+        return totalPSSlipCC;
+    }
+
+    public void setTotalPSSlipCC(double totalPSSlipCC) {
+        this.totalPSSlipCC = totalPSSlipCC;
+    }
+
+    public double getTotalPSChequeCC() {
+        return totalPSChequeCC;
+    }
+
+    public void setTotalPSChequeCC(double totalPSChequeCC) {
+        this.totalPSChequeCC = totalPSChequeCC;
+    }
+
+    public double getTotalBHTIssueCC() {
+        return totalBHTIssueCC;
+    }
+
+    public void setTotalBHTIssueCC(double totalBHTIssueCC) {
+        this.totalBHTIssueCC = totalBHTIssueCC;
+    }
+
+    public double getTotalUnitIssueCC() {
+        return totalUnitIssueCC;
+    }
+
+    public void setTotalUnitIssueCC(double totalUnitIssueCC) {
+        this.totalUnitIssueCC = totalUnitIssueCC;
+    }
+
     public List<BillItem> getBillItems() {
         return billItems;
     }
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public List<BillItem> getWholeSaleBillItems() {
+        return wholeSaleBillItems;
+    }
+
+    public void setWholeSaleBillItems(List<BillItem> wholeSaleBillItems) {
+        this.wholeSaleBillItems = wholeSaleBillItems;
     }
 
     public SearchKeyword getSearchKeyword() {
@@ -4848,7 +6064,6 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
-   
     public List<Bill> getLabBhtIssueBilledBills() {
         return labBhtIssueBilledBills;
     }
@@ -5021,6 +6236,36 @@ public class PharmacySaleReport implements Serializable {
             this.transferOutQty = transferOutQty;
         }
 
+    }
+
+    public Department getDepartmentMoving() {
+        return departmentMoving;
+    }
+
+    public void setDepartmentMoving(Department departmentMoving) {
+        this.departmentMoving = departmentMoving;
+    }
+
+    public List<Amp> getAmps() {
+        if (amps == null) {
+            amps = new ArrayList<>();
+        }
+        return amps;
+    }
+
+    public void setAmps(List<Amp> amps) {
+        this.amps = amps;
+    }
+
+    public List<Item> getItems() {
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
 }

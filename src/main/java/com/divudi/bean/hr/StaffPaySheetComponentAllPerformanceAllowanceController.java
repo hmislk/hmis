@@ -285,16 +285,16 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
 
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
-        if (!getRepeatedComponent().isEmpty()) {
-            for (StaffPaysheetComponent sp : items) {
-                for (StaffPaysheetComponent err : getRepeatedComponent()) {
-                    if (sp.getId().equals(err.getId())) {
-                        sp.setExist(true);
-                        //System.out.println("settin");
-                    }
-                }
-            }
-        }
+//        if (!getRepeatedComponent().isEmpty()) {
+//            for (StaffPaysheetComponent sp : items) {
+//                for (StaffPaysheetComponent err : getRepeatedComponent()) {
+//                    if (sp.getId().equals(err.getId())) {
+//                        sp.setExist(true);
+//                        ////System.out.println("settin");
+//                    }
+//                }
+//            }
+//        }
     }
 
     public List<StaffPaysheetComponent> getItems() {

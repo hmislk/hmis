@@ -44,6 +44,9 @@
                         </h:panelGrid>
                         <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        
+                        <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
                         </p:commandButton>
@@ -74,7 +77,7 @@
                                         <p:outputLabel value="Category" />
                                     </f:facet>
                                     <h:commandLink value="#{rec.category.name}"
-                                                   action="#{inwardReportController1.processCategoryBillItems}" >
+                                                  action="#{inwardReportController1.processCategoryBillItems}" >
                                         <f:setPropertyActionListener value="#{rec.category}" target="#{inwardReportController1.category}" />
                                     </h:commandLink>
                                 </p:column>
@@ -148,8 +151,8 @@
                                     <h:outputLabel value="Room Charges"/>
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
-                                                     action="report_income_room" 
-                                                     actionListener="#{inwardReportController1.processPatientRooms()}"/>
+                                                    action="report_income_room" 
+                                                    actionListener="#{inwardReportController1.processPatientRooms()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
                                     <f:facet name="header" >
@@ -267,7 +270,7 @@
                                         <p:outputLabel value="Speciality" />
                                     </f:facet>                                
                                     <h:commandLink value="#{pro.speciality.name}"
-                                                   action="#{inwardReportController1.processProfessionalFees}" >
+                                                  action="#{inwardReportController1.processProfessionalFees}" >
                                         <f:setPropertyActionListener value="#{pro.speciality}" 
                                                                      target="#{inwardReportController1.speciality}" />
                                     </h:commandLink>
@@ -315,8 +318,8 @@
                                     <h:outputLabel value="Inward Charges"/>
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
-                                                     action="inward_charge" 
-                                                     actionListener="#{inwardReportController1.processInwardCharges()}"/>
+                                                    action="inward_charge" 
+                                                    actionListener="#{inwardReportController1.processInwardCharges()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
                                     <f:facet name="header" >
@@ -435,7 +438,7 @@
                                 
                             </p:dataTable>
                             
-                            <p:panel  header="Summery" style="text-align: center;">
+                            <p:panel  header="Summary" style="text-align: center;">
 
                                 <p:dataTable id="tb6" value="#{inwardReportController1.finalValues}" var="s">
                                     <p:column>

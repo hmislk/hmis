@@ -57,7 +57,7 @@ public class StoreItemCategoryController implements Serializable {
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
         a = getFacade().findBySQL(sql, m, 20);
-        //System.out.println("a size is " + a.size());
+        ////System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();
@@ -73,7 +73,7 @@ public class StoreItemCategoryController implements Serializable {
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
         a = getAssetCategoryFacade().findBySQL(sql, m, 20);
-        //System.out.println("a size is " + a.size());
+        ////System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();

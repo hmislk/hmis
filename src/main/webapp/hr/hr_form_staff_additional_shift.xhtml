@@ -5,40 +5,39 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Additional Working Shift Sheet">
+            <p:panel header="Extra Shift Normal">
                 <h:panelGrid columns="2">
-                    <p:panel header="Additional Working Details">
+                    <p:panel >
                         <h:panelGrid columns="2">                           
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                           
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                            
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
+                                        navigator="true"
                                         pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar>  
-                            <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
-                            <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
-                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
-                                <f:selectItem itemLabel="Select Staff Shift"/>
-                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
-                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                            </p:selectOneMenu>
+                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
+                            </p:calendar> 
                             <h:outputLabel value="From Time"/>
-                            <p:calendar id="requestedDate" 
-                                        value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
-                                        pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar> 
+                           <ez:enterDateTime id="fromDate" 
+                                              idValue="from"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerFrom()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerFrom()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.fromSystemTimeStamp}"/>
                             <h:outputLabel value="To Time"/>
-                            <p:calendar id="forDate" value="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
-                                        pattern="yyyy MM dd HH:mm:ss" >
-                            </p:calendar> 
-
+                           <ez:enterDateTime id="toDate" 
+                                              idValue="to"
+                                              timeEnterListener="#{staffAdditionalFormController.timeEnterListenerTo()}"
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                              
+                                              date="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
+                                              systemTimeStamp="#{staffAdditionalFormController.toSystemTimeStamp}"/>
                             <h:outputLabel value="Approved Staff"/>
                             <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>                          
                             <h:outputLabel value="Approved Date"/>
@@ -50,11 +49,13 @@
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
-                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
+                                            action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                            <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
 
+                            <p:watermark for="recomment" value="Delete Comment"/>
                         </h:panelGrid>
                     </p:panel>
                     <p:panel header="Search Forms">
@@ -81,6 +82,9 @@
                                      scrollHeight="300" >
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"></p:commandButton>
+                            </p:column>
+                            <p:column headerText="ForNo">
+                                <p:outputLabel value="#{add.code}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>

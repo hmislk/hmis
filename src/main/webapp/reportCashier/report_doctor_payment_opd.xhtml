@@ -49,15 +49,14 @@
                             <p:panelGrid columns="3" style="width: 100%;">
                                 <p:dataTable id="tbl" value="#{searchController.billItems}" var="bf">
                                     <f:facet name="header">                                        
-                                        <p:outputLabel value="Opd Doctor Payment Report"/><h:outputLabel/>   
-                                        <h:outputLabel/><h:outputLabel/>
+                                        <p:outputLabel value="Opd Doctor Payments (By Bill Item)"/><br/>  
                                         <h:outputLabel value="  From : "  />
                                         <h:outputLabel  value="#{searchController.fromDate}" >
-                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
-                                        </h:outputLabel>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                        </h:outputLabel><p:spacer width="30" height="1"/>
                                         <h:outputLabel value="  To : "/> 
                                         <h:outputLabel  value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <p:column headerText="Paid By" style="font-size: 12px;">
@@ -67,7 +66,7 @@
                                         <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}" >
                                         </p:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Date/Time" style="font-size: 12px;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Date/Time" />
@@ -122,7 +121,10 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                </p:dataTable>
+                                    
+                                </p:dataTable><f:facet name="footer">
+                                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                                    </f:facet>
                             </p:panelGrid>
                         </p:panel>
                     </p:panel>

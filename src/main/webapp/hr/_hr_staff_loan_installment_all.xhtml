@@ -22,10 +22,14 @@
                                            var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                         </p:selectOneMenu>
                         <h:outputLabel value="From"/>
-                        <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MM yyyy">                            
+                        <p:calendar  value="#{staffLoanController.current.fromDate}" 
+                                     navigator="true"
+                                     pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
-                        <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MM yyyy">                            
+                        <p:calendar   value="#{staffLoanController.current.toDate}"
+                                      navigator="true"
+                                      pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
@@ -47,7 +51,7 @@
                         <h:outputLabel/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
                                                  itemLabel="Completed"/>
-                        <p:commandButton value="Save"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
                         
                         </h:panelGrid>
                     </p:panel>
@@ -55,7 +59,7 @@
                     <p:panel id="staff" header="Staff List">
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
-                                         action="#{staffController.createStaffWithCode()}"
+                                        action="#{staffController.createStaffWithCode()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
@@ -92,7 +96,9 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" 
+                                    navigator="true"
+                                    pattern="dd MMMM yyyy hh:mm:ss a" />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>
@@ -138,7 +144,9 @@
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{i.toDate}"  
+                                                navigator="true"
+                                                pattern="dd MMMM yyyy" />
                                 </f:facet>
                             </p:cellEditor>
 

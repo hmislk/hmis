@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Channel Bill List">
+                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                         </h:panelGrid>
+                        <h:panelGrid columns="4"> 
+                            <p:spacer width="70" height="1"/>
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.channelBillList()}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{channelReportController.channelBillList()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
+                        </p:commandButton>
+                            </h:panelGrid>
+                   
+                    </p:panel>
+                    <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+                    
+
+                    <p:panel id="reportPrint">
+                        <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Bill Summary" />
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                            </f:facet>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Appoinment Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Bill Number" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.insId}" />
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cunsultant Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.staff.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Appointment Number" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.singleBillSession.serialNo}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Bill Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.billType}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Payment Method" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.paymentMethod}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Status" >
+                                <p:outputLabel rendered="#{b.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>
+                                <p:outputLabel rendered="#{b.billType eq 'ChannelAgent'}" value="Agent" style="color: green;"/>
+                                <p:outputLabel rendered="#{b.billType eq 'ChannelStaff'}" value="Staff" style="color: green;"/>
+                                <p:outputLabel rendered="#{b.billType eq 'ChannelCash'}" value="Paid"/>
+                            </p:column>
+                            <p:column headerText="C/R" >
+                                <p:outputLabel value="Cancelled" rendered="#{b.cancelled==true}"/>
+                                <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        
+                            </p:column>  
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

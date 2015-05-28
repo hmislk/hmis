@@ -13,106 +13,86 @@
             <ui:define name="content">
 
                 <h:form>
+                    <p:panel header="Store Summaries" >
+                        <h:panelGrid columns="3"  styleClass="alignTop" style="margin: auto;" > 
+                            <h:panelGrid columns="1" >
+                                <p:panel header="1) Cashier " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="store_report_cashier_detailed_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summary" action="store_report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="4) GRN " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="GRN Summary" action="store_report_grn_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="GRN Summary By Supplier" action="store_report_grn_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="7) Issue Report " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1" > 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by bill" action="store_report_unit_issue_bill.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit by Department" action="store_report_unit_issue_department.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Summary" action="store_report_unit_issue_department_by_departmaent" actionListener="#{storeSaleReport.makeNull}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Detailed" action="store_report_unit_issue_department_by_departmaent_item_vice" actionListener="#{storeSaleReport.makeNull}"/>
 
-                    <h:panelGrid columns="4"  style="width: 100%"> 
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Cashier" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="store_report_cashier_detailed_by_user" actionListener="#{commonReport.recreteModal}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summery" action="store_report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                            
+                                <p:commandButton styleClass="linkButton" ajax="false"
+                                                 value="Department Unit Issue by Bill Item" 
+                                                 action="store_report_unit_issue_bill_item.xhtml" disabled="false"/>
 
+                                <p:commandButton styleClass="linkButton" ajax="false"
+                                                 value="Department Unit Issue by Item(Batch)" 
+                                                 action="store_unit_report_by_item.xhtml"/>
+                                <p:commandButton styleClass="linkButton" ajax="false"
+                                                 value="Department Unit Issue by Item" 
+                                                 action="store_unit_report_by_item_1.xhtml"/>
+                                <p:commandButton styleClass="linkButton" ajax="false"
+                                                 value="BHT Issue by Item" 
+                                                 action="store_report_bht_issue_by_item.xhtml" disabled="true"/>
+                                </h:panelGrid> 
+                                </p:panel>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" >
+                                <p:panel header="2) Sale Report All " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery" actionListener="#{storeSaleReport.makeNull}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                 <p:panel header="5) Purchase " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Purchase Summary" action="store_report_purchase_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Purchase Summary By Supplier" action="store_report_purchase_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="8) Transfer Report " style="width: 400px; height: auto" collapsed="true" toggleable="true">                                    
+                                     <h:panelGrid columns="1" >
+                                     <p:commandButton styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_issue_by_date_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="true"/>
+                                 </h:panelGrid>
+                                 </p:panel>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" >
+                                <p:panel header="3) Sale Report By Payment Method " style="width: 400px; height: auto" collapsed="true" toggleable="true">                                   
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="6) GRN Payment " style="width: 400px; height: auto" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="GRN Payment Summary" action="store_report_grnPayment_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="GRN Payment Summary By Supplier" action="store_report_grnPayment_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="9) Asset Transfer Report " style="width: 400px; height: auto" collapsed="true" toggleable="true">                                    
+                                    <h:panelGrid columns="1" >
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_asset_issue_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="fasle"/>
+                                </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
                         </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Sale Report All" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Sale Summery Report By Date" action="store_report_sale_by_date_summery" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail" actionListener="#{storeSaleReport.makeNull}"/>
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Sale Report By Payment Method" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Sale Summery Report By Date" action="store_report_sale_by_date_summery_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
-
-                        </h:panelGrid>
-                        
-                         <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="GRN" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="GRN Summery" action="store_report_grn_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="GRN Summery By Supplier" action="store_report_grn_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-
-                        </h:panelGrid>
-                        
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Purchase" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Purchase Summery" action="store_report_purchase_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Purchase Summery By Supplier" action="store_report_purchase_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-
-                        </h:panelGrid>
-                        
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="GRN Payment" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="GRN Payment Summery" action="store_report_grnPayment_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="GRN Payment Summery By Supplier" action="store_report_grnPayment_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-
-                        </h:panelGrid>
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Issue Report" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by bill" action="store_report_unit_issue_bill.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit by Department" action="store_report_unit_issue_department.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Summery" action="store_report_unit_issue_department_by_departmaent" actionListener="#{storeSaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Detailed" action="store_report_unit_issue_department_by_departmaent_item_vice" actionListener="#{storeSaleReport.makeNull}"/>
-                           
-                            <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="Department Unit Issue by Bill Item" 
-                                             action="store_report_unit_issue_bill_item.xhtml" disabled="false"/>
-                            
-                            <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="Department Unit Issue by Item(Batch)" 
-                                             action="store_unit_report_by_item.xhtml"/>
-                            <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="Department Unit Issue by Item" 
-                                             action="store_unit_report_by_item_1.xhtml"/>
-                            <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="BHT Issue by Item" 
-                                             action="store_report_bht_issue_by_item.xhtml" disabled="true"/>
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Transfer Report" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Transfer Issue Summery Report By Date" action="store_report_issue_by_date_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="true"/>
-
-                        </h:panelGrid>
-
-                    </h:panelGrid>
-                    
-                    <h:panelGrid columns="4" style="width: 100%">
-                        <h:panelGrid columns="1" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Asset Transfer Report" />
-                            </f:facet>    
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Transfer Issue Summery Report By Date" action="store_report_asset_issue_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="fasle"/>
-
-                        </h:panelGrid>
-                    </h:panelGrid> 
-
+                    </p:panel>
                 </h:form>
             </ui:define>
 

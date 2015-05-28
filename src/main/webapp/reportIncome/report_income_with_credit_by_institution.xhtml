@@ -10,94 +10,65 @@
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
-
-
-
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="printing.css" />
-
-
                 <h:form>
                     <p:panel id="panelReport" styleClass="noBorder summeryBorder" >
+                        <f:facet name="header">
+                            <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
+                            <h:panelGrid columns="2" styleClass="noPrintButton">
+                                <h:outputLabel value="From Date" />
+                                <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                </p:calendar>
+                                <h:outputLabel value="To Date" />
+                                <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                </p:calendar>
+                                <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
+                                                 requiredMessage="You must select a institution" >
+                                    <f:selectItem itemLabel="Select Institution"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                </p:selectOneMenu>
+                            </h:panelGrid>
 
-                        <p:panel  styleClass="tem nonPrintBlock" >
+                            <h:panelGrid columns="5" >
+                                <p:spacer width="70" height="1"/>
+                                <p:commandButton styleClass="noPrintButton" id="btnRefresh" value="Refresh" ajax="false" />
+                                <p:defaultCommand target="btnRefresh"/>
 
+                                <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                                    <p:printer target="panelReport" />
+                                </p:commandButton>             
+
+                                <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
+                                    <pe:exporter type="xlsx" target="tbl" fileName="Hand_Over_Ins"
+                                                 facetBackground="#008000" facetFontSize="15" 
+                                                 facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                                 fontName="Courier New" />
+                                </p:commandButton>
+
+                            </h:panelGrid>
+                        </f:facet>
+                        <p:dataTable id="tbl" value="#{institutionLabSumeryController.labBillsOwn}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                             <f:facet name="header">
-                                <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
-                                <p:spacer width="20" height="0"/>
-                                <h:panelGrid columns="67">
-                                    <h:outputLabel value="From Date" />
-                                    <p:spacer width="10" height="0"/>
-
-                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                                    </p:calendar>
-                                    <p:spacer width="30" height="0"/>
-                                    <h:outputLabel value="To Date" />
-                                     <p:spacer width="10" height="0"/>
-                                    <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                                    </p:calendar>
-                                      <p:spacer width="20" height="0"/>
-                                    <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
-                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
-                                                     requiredMessage="You must select a institution" >
-                                        <f:selectItem itemLabel="Select Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
-                                    </p:selectOneMenu>
-
-                                     <p:spacer width="140" height="0"/>
-                                    <h:panelGrid columns="4" >
-                                        <p:commandButton styleClass="noPrintButton" id="btnRefresh" value="Refresh" ajax="false" />
-                                        <p:defaultCommand target="btnRefresh"/>
-
-                                        <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
-                                            <p:printer target="panelReport" />
-                                        </p:commandButton>             
-
-                                        <p:commandButton value="Excel" ajax="false">
-                                            <pe:exporter type="xlsx" target="tbl" fileName="Hand_Over_Ins"
-                                                         facetBackground="#008000" facetFontSize="15" 
-                                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                                         fontName="Courier New" />
-                                        </p:commandButton>
-
-                                    </h:panelGrid>
-                                </h:panelGrid>
-                            </f:facet>
-                        </p:panel>
-
-                        <p:panel styleClass="printBlock" >
-
-                            <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
-                            <br/>
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.institution.name}"  >
-                            </h:outputLabel>
-                            <h:outputLabel value=" - Handover Report" />
-                            <br/>
-                            <h:outputLabel value="From : " />
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
-                            </h:outputLabel>
-                            &nbsp;&nbsp;&nbsp;&nbsp;
-                            <h:outputLabel value="To : "  ></h:outputLabel>
-                            <h:outputLabel value="#{labReportSearchByInstitutionController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
-                            </h:outputLabel>
-
-                        </p:panel>
-
-
-                        <p:dataTable id="tbl" value="#{labReportSearchByInstitutionController.labBillsOwn}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
-                            <f:facet name="header">
-                                <h:outputLabel value="Hand Over Report "/>
-                                <h:outputLabel value=" #{labReportSearchByInstitutionController.institution.name}"/>
+                                <h:outputLabel value="Income Report By Institution &emsp;"/>
+                                <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/>
+                                <h:outputLabel value="From : " style="white-space: pre-line"/>
+                                <h:outputLabel value="#{institutionLabSumeryController.fromDate}"  >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                                </h:outputLabel>
+                                <h:outputLabel value="&emsp;&emsp;To : "  />
+                                <h:outputLabel value="#{institutionLabSumeryController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="No">
                                 <f:facet name="header">
                                     <h:outputLabel value="No"/>
                                 </f:facet>
-                                 <h:outputLabel value="#{i+1}" />
-                                
+                                <h:outputLabel value="#{i+1}" />
+
                             </p:column>
                             <p:column headerText="Bill Id" >
                                 <f:facet name="header">
@@ -157,30 +128,33 @@
                                 <p:row>
                                     <p:panelGrid columns="2" style="text-align: right;">
                                         <h:outputLabel  value="Gross Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.hosTot + labReportSearchByInstitutionController.profTot }" style="text-align: right;" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.hosTot + institutionLabSumeryController.profTot }" style="text-align: right;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.disTot}" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.disTot}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.netTot}" >                                        
+                                        <h:outputLabel value="#{institutionLabSumeryController.netTot}" >                                        
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Professional Fee Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{labReportSearchByInstitutionController.profTot}" style="text-align: right;" >
+                                        <h:outputLabel value="#{institutionLabSumeryController.profTot}" style="text-align: right;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="" ></h:outputLabel>
                                         <h:outputLabel value="" ></h:outputLabel>
                                         <h:outputLabel style="font-weight: bolder; " value="Net Department Income"/>
-                                        <h:outputLabel style="font-weight: bolder; " value="#{labReportSearchByInstitutionController.labHandover}" >
+                                        <h:outputLabel style="font-weight: bolder; " value="#{institutionLabSumeryController.labHandover}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:row>
                             </f:facet>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                         </p:dataTable>
 
                     </p:panel>

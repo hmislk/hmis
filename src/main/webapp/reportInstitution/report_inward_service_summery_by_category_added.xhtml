@@ -14,21 +14,9 @@
 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Inward Servcie Summery By Added Date"/><br/>
-                    <p:commandButton value="Refresh" ajax="false" id="btnRefresh"  
-                                     actionListener="#{serviceSummery.createServiceCategorySummeryInwardAdded()}"
-                                     styleClass="noPrintButton" style="float: right;" />
-                    <p:defaultCommand target="btnRefresh"/>
+                    <h:outputLabel value="5) Summary By Service Inward"/>
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-
-                    <p:commandButton value="Excel" ajax="false" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd" fileName="Service_Summery_By_Category"  />
-                    </p:commandButton>
-
-                    <h:panelGrid columns="2" style="min-width: 100%;border: none;">
+                    <h:panelGrid columns="2" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
                         </p:calendar>
@@ -43,6 +31,21 @@
                             <p:column>#{pta.parentCategory}</p:column>                                        
                         </p:autoComplete>
                     </h:panelGrid>
+                    <h:panelGrid columns="5" styleClass="noPrintButton">
+                        <p:spacer width="195" height="1"/>
+                        <p:commandButton value="Refresh" ajax="false" id="btnRefresh"  
+                                         actionListener="#{serviceSummery.createServiceCategorySummeryInwardAdded()}"
+                                         styleClass="noPrintButton" style="float: right;" />
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel" ajax="false" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd" fileName="Service_Summery_By_Category"  />
+                        </p:commandButton>
+                    </h:panelGrid>
                 </f:facet>
             </p:panel>
             <p:spacer height="30"/>
@@ -53,14 +56,15 @@
                          rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
-                    <h:outputLabel value="#{serviceSummery.category.name}"/>
-                    <h:outputLabel value=" : "/>
+                     <h:outputLabel value="Summary By Service Category - Added Date"/>
+                    <h:outputLabel value="#{serviceSummery.category.name}" style="white-space: pre-line"/>
+                     <h:outputLabel value=" &emsp;&emsp;From : " />
                     <h:outputLabel value="#{serviceSummery.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                     </h:outputLabel>
-                    <h:outputLabel value="--"/>
+                   <h:outputLabel value="&emsp;&emsp;To :"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                     </h:outputLabel>
                 </f:facet>
 
@@ -87,6 +91,13 @@
                         <h:outputLabel value="BHT No" />
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
+                </p:column>
+
+                <p:column headerText="Surgery Name">
+                    <f:facet name="header">
+                        <h:outputLabel value="Surgery Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.forwardReferenceBill.procedure.item.name}" />
                 </p:column>
 
                 <p:column headerText="Date">
@@ -164,7 +175,9 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
-
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
             </p:dataTable> 
 
 

@@ -85,8 +85,8 @@ public class StaffImageController implements Serializable {
             UtilityController.addErrorMessage("Please select staff member");
             return "";
         }
-        //System.out.println("file name is not null");
-        //System.out.println(file.getFileName());
+        ////System.out.println("file name is not null");
+        ////System.out.println(file.getFileName());
         try {
             in = getFile().getInputstream();
             File f = new File(getStaffController().getCurrent().toString() + getStaffController().getCurrent().getFileType());
@@ -110,7 +110,7 @@ public class StaffImageController implements Serializable {
             getStaffFacade().edit(getStaffController().getCurrent());
             return "";
         } catch (IOException e) {
-            //System.out.println("Error " + e.getMessage());
+            ////System.out.println("Error " + e.getMessage());
             return "";
         }
 
@@ -164,14 +164,14 @@ public class StaffImageController implements Serializable {
 
         Staff temStaff = getStaffFacade().findFirstBySQL("select s from Staff s where s.baImage != null and s.id = " + stfId);
 
-        //System.out.println("Printing");
+        ////System.out.println("Printing");
 
         if (temStaff == null) {
             return new DefaultStreamedContent();
         } else {
             if (temStaff.getId() != null && temStaff.getBaImage() != null) {
-                //System.out.println(temStaff.getFileType());
-                //System.out.println(temStaff.getFileName());
+                ////System.out.println(temStaff.getFileType());
+                ////System.out.println(temStaff.getFileName());
                 return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
             } else {
                 return new DefaultStreamedContent();

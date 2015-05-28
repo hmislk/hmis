@@ -52,17 +52,34 @@
                 </f:facet>              
 
                 <p:panel id="datatable">
-                <p:dataTable id="tbl1" value="#{searchController.bills}" var="p">                       
+                <p:dataTable id="tbl1" value="#{searchController.bills}" var="p"
+                            rows="20"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100" 
+                            >                       
 
-                    <p:column headerText="Issue No">                        
+                    <p:column headerText="Issue No"
+                              sortBy="#{p.deptId}"
+                              filterBy="#{p.deptId}"
+                              filterMatchMode="contains"
+                              >                        
                         <h:outputLabel value="#{p.deptId}"/>                          
                     </p:column>
 
-                    <p:column headerText="From Department">                       
+                    <p:column headerText="From Department"
+                              sortBy="#{p.department.name}"
+                              filterBy="#{p.department.name}"
+                              filterMatchMode="contains"
+                              >                       
                         <h:outputLabel value="#{p.department.name}"/>                          
                     </p:column>
                     
-                    <p:column headerText="To Department">                       
+                    <p:column headerText="To Department"
+                               sortBy="#{p.toDepartment.name}"
+                              filterBy="#{p.toDepartment.name}"
+                              filterMatchMode="contains"
+                              >                       
                         <h:outputLabel value="#{p.toDepartment.name}"/>                          
                     </p:column>
                     
@@ -74,7 +91,11 @@
                         <h:outputLabel value="#{p.creater.staff.person.nameWithTitle}"/>                          
                     </p:column>
                     
-                    <p:column headerText="Transporter">                       
+                    <p:column headerText="Transporter"
+                              sortBy="#{p.toStaff.person.nameWithTitle}"
+                              filterBy="#{p.toStaff.person.nameWithTitle}"
+                              filterMatchMode="contains"
+                              >                       
                         <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                          
                     </p:column>
                     

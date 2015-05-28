@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Pharmacy Bills Not Paid" >
+                        <f:facet name="header" >
+
+                            <h:panelGrid columns="5" style="min-width: 100%;" >
+                                <p:commandButton ajax="false" value="Refresh" 
+                                                actionListener="#{searchController.createWholePreBillsNotPaid()}"/>
+                                <p:commandButton ajax="false" value="Add To Stock" action="#{searchController.addToStock}" 
+                                                 disabled="#{!webUserController.hasPrivilege('PharmacyReAddToStock')}"/>
+                            </h:panelGrid>
+
+                        </f:facet>
+
+                        <p:dataTable id="tblBills" value="#{searchController.bills}"                                 
+                                     var="bill" rowKey="#{bill.id}"
+                                     selection="#{searchController.selectedBills}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+
+                            <p:column selectionMode="multiple" ></p:column>
+
+
+                            <p:column headerText="Pre Bill No">
+                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                            </p:column>     
+                            <p:column headerText="ID">
+                                #{bill.id}
+                            </p:column>
+                            <p:column headerText="Date" >                              
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>                                   
+                            </p:column>
+                            <p:column headerText="Time" >
+
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
+                                </h:outputLabel>
+
+                            </p:column>                           
+                            <p:column headerText="Billed By"  >
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                            </p:column>                                                      
+                            <p:column headerText="Net Value">
+
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+
+                            </p:column>
+
+                            <p:column headerText="Ins Id">
+                                <h:outputLabel value="#{bill.insId}"  ></h:outputLabel>
+                            </p:column>  
+
+                            <p:column >
+                                <p:commandButton ajax="false"  value="ViewBill" action="pharmacy_reprint_bill_pre"  disabled="#{bill.referenceBill ne null}">                                
+                                    <f:setPropertyActionListener  value="#{bill}" target="#{pharmacyBillSearch.bill}" />
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

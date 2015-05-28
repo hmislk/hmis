@@ -350,9 +350,18 @@ public class GrnController implements Serializable {
                 PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
+                
+                ph.setQty(tmpQty);
                 ph.setQtyInUnit((double) tmpQty);
+                
+                ph.setFreeQty(i.getFreeQty());
+                ph.setFreeQtyInUnit(i.getFreeQty());
+                
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
+                
+                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08)* ph.getQtyInUnit() /(ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
                 ph.setFreeQty(i.getFreeQty());
                 
@@ -412,6 +421,8 @@ public class GrnController implements Serializable {
             }
         }
 
+        tmp.getPharmaceuticalBillItem().setWholesaleRate((tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08)* (tmp.getPharmaceuticalBillItem().getQtyInUnit())/(tmp.getPharmaceuticalBillItem().getQtyInUnit() + tmp.getPharmaceuticalBillItem().getFreeQtyInUnit())  );
+        
         calGrossTotal();
     }
 

@@ -15,7 +15,7 @@
 
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder" header="Collecting Centre Sale Report">
                 <f:facet name="header"  >
-                    <p:outputLabel value="Lab Credit Sale Report By Investigation Item" styleClass="noPrintButton"/>
+                    <p:outputLabel value="REPORT BY COLLECTION CENTER COUNT" styleClass="noPrintButton"/>
                     <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
@@ -49,11 +49,16 @@
                 
                 <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
                 
-                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" >
+                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
+                    rows="20"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="20, 50, 100" 
+                    >
 
                     <f:facet name="header">
 
-                        <h:outputLabel value="Investigation Month End Summery By "/>
+                        <h:outputLabel value="Investigation Month End Summary By "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.creditCompany.name} "/>
                         <br/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate} ">
@@ -66,7 +71,13 @@
 
                     </f:facet>
 
-                    <p:column headerText="Test Name" style="text-align:left">
+                    <p:column headerText="Test Name" style="text-align:center"
+                            sortBy="#{c.investigation.name}" 
+                            filterBy="#{c.investigation.name}"
+                            filterMatchMode="contains">
+                          <f:facet name="header">
+                              <h:outputLabel value="Test Name"/>
+                          </f:facet>
                         <h:outputLabel value="#{c.investigation.name}"  />
                     </p:column>
                     <p:column headerText="Count" style="text-align: center">

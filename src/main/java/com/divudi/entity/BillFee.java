@@ -85,6 +85,7 @@ public class BillFee implements Serializable {
     double feeMargin;
     double feeAdjusted;
     double paidValue = 0.0;
+    double settleValue = 0.0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
@@ -208,7 +209,7 @@ public class BillFee implements Serializable {
             this.feeGrossValue = getFee().getFee();
             this.feeValue = getFee().getFee();
         }
-        //    //System.out.println("Setting fee value as " + feeValue);
+        //    ////System.out.println("Setting fee value as " + feeValue);
     }
 
     public void setFeeValueForDiscountAllowedAndUserChangable(boolean foriegn, double discountPercent) {
@@ -619,6 +620,14 @@ public class BillFee implements Serializable {
 
     public void setFeeGrossValue(Double feeGrossValue) {
         this.feeGrossValue = feeGrossValue;
+    }
+
+    public double getSettleValue() {
+        return settleValue;
+    }
+
+    public void setSettleValue(double settleValue) {
+        this.settleValue = settleValue;
     }
 
 }

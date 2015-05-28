@@ -64,18 +64,6 @@
                             <p:column headerText="Code" >
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                            </p:column>
                             <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode panelInventoryItemDetails" listener="#{storePurchaseController.createSerialNumber()}" ></f:ajax>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{storePurchaseController.currentBillItem.tmpQty}" style="width:100%" />  
@@ -97,7 +85,7 @@
 
 
                         <p:commandButton id="btnAdd" value="Add Item" 
-                                         action="#{storePurchaseController.addItem}" 
+                                        action="#{storePurchaseController.addItem}" 
                                          process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
 
                     </p:panelGrid>
@@ -301,7 +289,7 @@
                                      value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
                         <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
                         <p:commandButton id="btnAddExpense" value="Add Expense" 
-                                         action="#{storePurchaseController.addExpense()}" 
+                                        action="#{storePurchaseController.addExpense()}" 
                                          process="billExpenseGrid" 
                                          update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
                     </h:panelGrid>

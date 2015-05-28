@@ -6,9 +6,11 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -16,14 +18,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -90,6 +95,10 @@ public class StaffShift implements Serializable {
     private StaffShift referenceStaffShiftLateIn;
     @ManyToOne
     private StaffShift referenceStaffShiftEarlyOut;
+    @OneToMany(mappedBy = "referenceStaffShiftLateIn", fetch = FetchType.LAZY)
+    private List<StaffShift> referenceStaffShiftLateIns = new ArrayList<>();
+     @OneToMany(mappedBy = "referenceStaffShiftEarlyOut", fetch = FetchType.LAZY)
+    private List<StaffShift> referenceStaffShiftEarlyOuts = new ArrayList<>();
 
     //Multiplying Factor Always come by subtrating 1
     // if Multiplying Factor for Salary is 1 ,but actual value is 2
@@ -577,6 +586,8 @@ public class StaffShift implements Serializable {
         }
 
     }
+    
+   
 
     public void calExtraTimeWithStartOrEndRecord() {
         if (getStartRecord() == null || getEndRecord() == null) {
@@ -649,7 +660,8 @@ public class StaffShift implements Serializable {
             DayType dayType = getShift().getDayType();
 
             if (dayType == DayType.DayOff
-                    || dayType == DayType.SleepingDay) {
+                    || dayType == DayType.SleepingDay
+                    || dayType==DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
                 Calendar toCalendar = Calendar.getInstance();
@@ -1286,6 +1298,22 @@ public class StaffShift implements Serializable {
 
     public void setAutoLeave(boolean autoLeave) {
         this.autoLeave = autoLeave;
+    }
+
+    public List<StaffShift> getReferenceStaffShiftLateIns() {
+        return referenceStaffShiftLateIns;
+    }
+
+    public void setReferenceStaffShiftLateIns(List<StaffShift> referenceStaffShiftLateIns) {
+        this.referenceStaffShiftLateIns = referenceStaffShiftLateIns;
+    }
+
+    public List<StaffShift> getReferenceStaffShiftEarlyOuts() {
+        return referenceStaffShiftEarlyOuts;
+    }
+
+    public void setReferenceStaffShiftEarlyOuts(List<StaffShift> referenceStaffShiftEarlyOuts) {
+        this.referenceStaffShiftEarlyOuts = referenceStaffShiftEarlyOuts;
     }
 
 }

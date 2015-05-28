@@ -24,7 +24,7 @@
                                                 pattern="yyyy MM dd HH:mm:ss">
                                     </p:calendar>   
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
-                                                     action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
+                                                    action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
                                     <h:panelGroup>
                                         <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
                                             <f:selectItem itemLabel="Select Staff Shift 1"/>
@@ -49,7 +49,7 @@
 
                                     </p:calendar>                                                                                              
                                     <p:commandButton ajax="false" value="Process Shift" 
-                                                     action="#{staffAmendmentFormController.fetchToShift()}" />
+                                                    action="#{staffAmendmentFormController.fetchToShift()}" />
                                     <h:panelGroup>
                                         <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
                                             <f:selectItem itemLabel="Select Shift 1"/>
@@ -75,7 +75,7 @@
                                     <h:outputLabel value="Comment"/>
                                     <p:inputTextarea value="#{staffAmendmentFormController.currAmendmentForm.comments}" />
                                     <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                     action="#{staffAmendmentFormController.saveAmendmentForm()}"/>
+                                                    action="#{staffAmendmentFormController.saveAmendmentForm()}"/>
 
                                     <p:commandButton ajax="false" value="Clear" action="#{staffAmendmentFormController.clear()}"/>
                                     <p:commandButton value="Delete" action="#{staffAmendmentFormController.deleteAmmendmentForm}" ajax="false"></p:commandButton>
@@ -107,7 +107,7 @@
                                          scrollHeight="400">
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" 
-                                                     action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
+                                                    action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
                                 </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{add.fromStaff.person.nameWithTitle}" ></p:outputLabel>

@@ -69,7 +69,7 @@
                                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                         <p:column headerText="Visit">
                                             <p:commandButton disabled="#{bs.absent}" value="Visit" 
-                                                             action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
+                                                            action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
                                                 <f:setPropertyActionListener value="#{bs}" 
                                                                              target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                             </p:commandButton>

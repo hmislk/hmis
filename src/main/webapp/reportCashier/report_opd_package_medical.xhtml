@@ -59,7 +59,7 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
-                                         action="#{billPackageMedicalController.createMedicalPackageBillItems()}"
+                                        action="#{billPackageMedicalController.createMedicalPackageBillItems()}"
                                          onclick="onSubmitButton();" />
                         <p:watermark for="acIx2" value="Meical Package" />
                         <p:watermark for="ins" value="Institution" />
@@ -78,7 +78,22 @@
                 <p:panel id="gpBillPreview">
                     <p:dataTable id="tbl" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
                         <f:facet name="header">
-                            <p:outputLabel value="Medical Package Bill Detail Report" />
+                            <p:outputLabel value="Medical Package Detail Report" />
+                            <br/>
+                            <p:outputLabel value="From : "/>
+                        <p:outputLabel value="#{billPackageMedicalController.frmDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </p:outputLabel>
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="To : "/>
+                        <p:outputLabel value="#{billPackageMedicalController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </p:outputLabel><br/>
+                        <p:outputLabel value=" #{billPackageMedicalController.currentBillItem.item.name}" />
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
+                        <p:spacer width="30" height="1"/>
+                        <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
                         </f:facet>
                         <p:column headerText="Serial No">
                             <f:facet name="header">
@@ -157,6 +172,9 @@
                         </p:columnGroup>
                     </p:dataTable>
                 </p:panel>
+                <f:facet name="footer">
+                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                </f:facet>
             </p:panel>
 
         </h:form>

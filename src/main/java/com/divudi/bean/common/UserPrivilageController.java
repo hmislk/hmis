@@ -65,6 +65,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node0 = new PrivilageNode("OPD", tmproot);
         TreeNode node00 = new PrivilageNode("Billing Menu", node0, Privileges.Opd);
         TreeNode node01 = new PrivilageNode("Bill", node0, Privileges.OpdBilling);
+        TreeNode node01a = new PrivilageNode("Pre Billing", node0, Privileges.OpdPreBilling);
         TreeNode node02 = new PrivilageNode("Bill Search", node0, Privileges.OpdBillSearch);
         TreeNode node03 = new PrivilageNode("Bill Item Search", node0, Privileges.OpdBillItemSearch);
         TreeNode node04 = new PrivilageNode("Reprint", node0, Privileges.OpdReprint);
@@ -149,9 +150,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode node202 = new PrivilageNode("Search Bills", node2, Privileges.LabBillSearch);
         TreeNode node203 = new PrivilageNode("Search Bills Items", node2, Privileges.LabBillItemSearch);
         TreeNode node204 = new PrivilageNode("Patient Edit", node2, Privileges.LabEditPatient);
-        TreeNode node205 = new PrivilageNode("Reprint", node2, Privileges.LabBillReprint);
-        TreeNode node206 = new PrivilageNode("Return", node2, Privileges.LabBillReturning);
-        TreeNode node207 = new PrivilageNode("Cancel", node2, Privileges.LabBillCancelling);
+        TreeNode node205 = new PrivilageNode("Lab Bill Reprint", node2, Privileges.LabBillReprint);
+        TreeNode node206 = new PrivilageNode("Lab Bill Return", node2, Privileges.LabBillReturning);
+        TreeNode node207 = new PrivilageNode("Lab Bill Cancel", node2, Privileges.LabBillCancelling);
         TreeNode node208 = new PrivilageNode("Reactivate", node2, Privileges.LabBillReactivating);
         TreeNode node209 = new PrivilageNode("Sample Collection", node2, Privileges.LabSampleCollecting);
         TreeNode node210 = new PrivilageNode("Sample Receive", node2, Privileges.LabSampleReceiving);
@@ -159,6 +160,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node212 = new PrivilageNode("Autherize", node2, Privileges.LabAutherizing);
         TreeNode node213 = new PrivilageNode("De-Autherize", node2, Privileges.LabDeAutherizing);
         TreeNode node214 = new PrivilageNode("Report Print", node2, Privileges.LabPrinting);
+        TreeNode node214a = new PrivilageNode("Report Reprint", node2, Privileges.LabReprinting);
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2, Privileges.LabSummeriesLevel1);
         TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);
@@ -176,6 +178,7 @@ public class UserPrivilageController implements Serializable {
         ///////////////////////
         TreeNode node302 = new PrivilageNode("GRN", node3);
         TreeNode node3021 = new PrivilageNode("GRN", node302, Privileges.PharmacyGoodReceive);
+        TreeNode node3021a = new PrivilageNode("GRN For Wholesale", node302, Privileges.PharmacyGoodReceiveWh);
         TreeNode node3022 = new PrivilageNode("GRN Cancelling", node302, Privileges.PharmacyGoodReceiveCancel);
         TreeNode node3023 = new PrivilageNode("GRN Return", node302, Privileges.PharmacyGoodReceiveReturn);
         TreeNode node3024 = new PrivilageNode("GRN Edit", node302, Privileges.PharmacyGoodReceiveEdit);
@@ -187,11 +190,15 @@ public class UserPrivilageController implements Serializable {
         //////////////////
         TreeNode node304 = new PrivilageNode("Sale", node3);
         TreeNode node3041 = new PrivilageNode("Pharmacy Sale", node304, Privileges.PharmacySale);
+        TreeNode node3041a = new PrivilageNode("Pharmacy Wholesale", node304, Privileges.PharmacySaleWh);
         TreeNode node3042 = new PrivilageNode("Pharmacy Sale Cancel", node304, Privileges.PharmacySaleCancel);
+        TreeNode node3042a = new PrivilageNode("Pharmacy Wholesale Cancel", node304, Privileges.PharmacySaleCancelWh);
         TreeNode node3043 = new PrivilageNode("Pharmacy Sale Return", node304, Privileges.PharmacySaleReturn);
-        //////////////////
+        TreeNode node3043a = new PrivilageNode("Pharmacy Wholesale Return", node304, Privileges.PharmacySaleReturnWh);
+//////////////////
         TreeNode node305 = new PrivilageNode("Purchase", node3);
         TreeNode node3051 = new PrivilageNode("Purchase", node305, Privileges.PharmacyPurchase);
+        TreeNode node3051a = new PrivilageNode("Purchase Wholesale", node305, Privileges.PharmacyPurchaseWh);
         TreeNode node3052 = new PrivilageNode("Purchase Cancel", node305, Privileges.PharmacyPurchaseCancellation);
         TreeNode node3053 = new PrivilageNode("Purchase Return", node305, Privileges.PharmacyPurchaseReturn);
         TreeNode node3054 = new PrivilageNode("Pharmacy Return Without Traising", node305, Privileges.PharmacyReturnWithoutTraising);        
@@ -235,6 +242,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node705 = new PrivilageNode("Visit Summery", node7, Privileges.ClinicalVisitSummery);
         TreeNode node706 = new PrivilageNode("History", node7, Privileges.ClinicalHistory);
         TreeNode node707 = new PrivilageNode("Administration", node7, Privileges.ClinicalAdministration);
+        TreeNode node708 = new PrivilageNode("Clinical Patient Delete", node7, Privileges.ClinicalPatientDelete);
 
         TreeNode node6 = new PrivilageNode("Administration", tmproot);
         TreeNode node60 = new PrivilageNode("Admin Menu", node6, Privileges.Admin);
@@ -256,11 +264,13 @@ public class UserPrivilageController implements Serializable {
         TreeNode node6632 = new PrivilageNode("By Category", node663, Privileges.MemberShipOpdMemberShipDisByCategory);
         TreeNode node6633 = new PrivilageNode("Opd MemberShip Report", node663, Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport);
         TreeNode node67 = new PrivilageNode("Only For Developers(Don't Add That)", node6, Privileges.Developers);
+        TreeNode node68 = new PrivilageNode("Search All", node6, Privileges.SearchAll);
 
         TreeNode node9 = new PrivilageNode("Human Resource", tmproot);
         TreeNode node91 = new PrivilageNode("HR Menu", node9, Privileges.Hr);
         TreeNode node910 = new PrivilageNode("HR Anistration", node91, Privileges.HrAdmin);
         TreeNode node911 = new PrivilageNode("HR Employee History Reports", node91, Privileges.EmployeeHistoryReport);
+        TreeNode node912 = new PrivilageNode("HR Delete Late Leave", node91, Privileges.hrDeleteLateLeave);
 
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);
@@ -489,20 +499,20 @@ public class UserPrivilageController implements Serializable {
 //            n.setSelected(false);
 //        }
 //        for (TreeNode n : root.getChildren()) {
-//            //System.out.println("n is " + n);
+//            ////System.out.println("n is " + n);
 //            for (TreeNode n1 : n.getChildren()) {
 //                Privileges p;
-//                //System.out.println("n1 is " + n1);
+//                ////System.out.println("n1 is " + n1);
 //                //
 //                try {
 //                    if (n1 instanceof PrivilageNode) {
 //                        p = ((PrivilageNode) n1).getP();
 //                        markTreeNode(p, n1);
 //                    } else {
-//                        //System.out.println("type of p is ");
+//                        ////System.out.println("type of p is ");
 //                    }
 //                } catch (Exception e) {
-//                    //System.out.println("exception e is " + e.getMessage());
+//                    ////System.out.println("exception e is " + e.getMessage());
 //                }
 //            }
 //        }

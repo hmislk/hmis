@@ -7,7 +7,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
-
     <head>
     </head>
 
@@ -23,7 +22,7 @@
 
 
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" styleClass="nonPrintBlock">
-                        <p:growl id="messages" showDetail="true"/> 
+                        
                         <p:panel  >
                             <f:facet  name="header" >
                                 <h:panelGroup id="facetPanelIx" >
@@ -57,14 +56,17 @@
                             <h:panelGrid columns="8" >
                                 <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                  value="Save" 
-                                                 action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
                                 <p:commandButton ajax="false" process="tblVals" update=":#{p:component('tblCals')} :#{p:component('tblFlags')} :#{p:component('divPrint')}"  styleClass="nonPrintBlock"  value="Calculate" 
-                                                 action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
+                                                action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
                                 </p:commandButton>
                                 <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true )}"   value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
-                                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}"/>
+                                <p:commandButton styleClass="nonPrintBlock" 
+                                                 ajax="false" value="Print" 
+                                                 onclick="window.print();" disabled="#{patientReportController.currentPatientReport.printed and !webUserController.hasPrivilege('LabReprinting')}"
+                                                 actionListener="#{patientReportController.printPatientReport()}"/>
                                 <p:spacer width="30" ></p:spacer>
                                 <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                 </p:commandButton>
@@ -243,9 +245,10 @@
 
                     </h:panelGroup>
 
-
-
-                    <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" />
+                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" 
+                                     disabled="#{patientReportController.currentPatientReport.printed and !webUserController.hasPrivilege('LabReprinting')}"
+                                     onclick="window.print();" 
+                                     actionListener="#{patientReportController.printPatientReport()}" />
 
                     <p:panel styleClass="myDivToPrint" id="divPrint" style="border: 0px; margin: 0px; padding: 0px; background-color: white!important;" >
 

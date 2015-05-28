@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">     
+
+                <p:panel header="Specialities">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <p:ajax  event="change" process="@this" update="scStaff" /> 
+                            <p:ajax  event="click" process="@this" update="scStaff" /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Consultants" id="scStaff" >    
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                            <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
+                            <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Sessions" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
+                    <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
+                                 id="tblSessionsOfSelectedConsultant" var="ses"
+                                 selectionMode="single" 
+                                 selection="#{bookingController.selectedServiceSession}" >
+
+                        <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
+                                update=":#{p:component('tblBookingsOfSelectedSession')}"
+                                listener="#{bookingController.fillBillSessions}" />  
+
+
+                        <p:column headerText="Session">
+                            #{ses.name}
+                        </p:column>
+                        <p:column headerText="Max">
+                            #{ses.maxNo}
+                        </p:column>
+                        <p:column headerText="Booked">
+                            #{ses.displayCount}
+                        </p:column>
+                        <p:column headerText="Date">
+                            <p:outputLabel value="#{ses.sessionAt}">
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Time">
+                            <p:outputLabel value="#{ses.startingTime}">
+                                <f:convertDateTime pattern="hh:mm a"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Fee">
+                            <p:outputLabel value="#{ses.originatingSession.totalFee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>                                                            
+                        </p:column>   
+                    </p:dataTable>
+                </p:panel>
+            </h:panelGrid>
+        </h:form>
+
+        <p:dialog  widgetVar="dlgSessionEdit" modal="true" height="100">
+
+        </p:dialog> 
+
+
+    </ui:define>
+
+
+</ui:composition>

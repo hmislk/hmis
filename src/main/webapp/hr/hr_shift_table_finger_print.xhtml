@@ -38,30 +38,30 @@
                     <p:commandButton value="Fill"
                                      process="@this frmDate toDate roster"
                                      update="lst"
-                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
+                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                    action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
                                      onclick="onSubmitButton();" /> 
 
                     <p:commandButton value="Fill Additional Only"
                                      process="@this frmDate toDate roster"
                                      update="lst"
-                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
+                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                    action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
                                      onclick="onSubmitButton();" /> 
                 </h:panelGroup>
 
                 <p:commandButton value="SAVE"
                                  process="lst"
                                  update="lst"
-                                 action="#{shiftFingerPrintAnalysisController.save()}" 
+                                action="#{shiftFingerPrintAnalysisController.save()}" 
                                  onclick="onSubmitButton();"/>
             </h:panelGrid>
 
             <p:commandButton value="Reset and Fill"
                              process="@this frmDate toDate roster"
                              update="lst"
-                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                             action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
+                            actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                            action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
                              onclick="onSubmitButton();" 
                              style="float: right;"/> 
 

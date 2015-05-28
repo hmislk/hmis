@@ -62,7 +62,7 @@
                         </p:panel>
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputLabel value="Summery"/>
+                                <h:outputLabel value="Summary"/>
                             </f:facet>
                             <h:panelGrid columns="2">                                
                                 <p:commandButton ajax="false" value="Cal Cash Value" action="#{cashInController.calTotal()}" onclick="onSubmitButton();"/>
@@ -164,7 +164,7 @@
 
                 <p:panel rendered="#{cashInController.printPreview}">
                     <p:commandButton ajax="false" value="New Bill"
-                                     actionListener="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
+                                    actionListener="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
 
                     <bi:cashIn  bill="#{cashInController.bill}"/>
                 </p:panel>

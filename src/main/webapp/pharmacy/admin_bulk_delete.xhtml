@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Items by Name" >
+                        <p:commandButton ajax="false" value="Excel">
+                            <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Process"
+                                        action="#{ampController.createItemList()}"/>
+
+                        <p:commandButton ajax="false" value="Bulk Delete" action="#{ampController.removeSelectedItems}"/>
+
+                        <p:panel id="paItems">
+                            <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
+                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,25,50"
+                                         >
+                                <p:column id="colSelect"  selectionMode="multiple" >
+                                </p:column>
+                                <p:column headerText="Category" 
+                                          sortBy="#{i.category.name}" 
+                                          filterBy="#{i.category.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.category.name}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" 
+                                          sortBy="#{i.name}"
+                                          filterBy="#{i.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.code}"
+                                          filterBy="#{i.code}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Generic" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -119,7 +119,7 @@ public class ClinicalImportExportController implements Serializable {
     }
 
     public String importToExcel() {
-        //System.out.println("importing to excel");
+        ////System.out.println("importing to excel");
         String strName;
         String strAgeAndAddress;
         String strAge;

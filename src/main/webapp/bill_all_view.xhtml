@@ -20,15 +20,15 @@
                         </f:facet>
 
                         <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panelGrid columns="2" style="width: 100%;" styleClass="alignTop">
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.patient.person.nameWithTitle }" ></h:outputLabel>
                                         <h:outputLabel value="BHT No:" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.patientEncounter.bhtNo}" ></h:outputLabel>
-                                        <h:outputLabel value="Staff ​Name:" rendered="#{billSearch.billSearch.staff}"></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }" rendered="#{billSearch.billSearch.staff}"></h:outputLabel> 
+                                        <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }"></h:outputLabel> 
                                         <h:outputLabel value="Age" />
                                         <h:outputLabel value="#{billSearch.billSearch.patient.age}"  />
                                         <h:outputLabel value="Sex" >
@@ -48,7 +48,19 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
-                                        
+
+                                        <h:outputLabel value="Billed bill:" ></h:outputLabel>
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.id}" />
+
+                                        <h:outputLabel value="Billed bill No (Ins Id) :" ></h:outputLabel>
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.insId}" />
+
+                                        <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.deptId}" />
+
+                                        <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.createdAt}" />
+
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
 
@@ -57,6 +69,15 @@
 
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.referenceBill}" />
+
+                                        <h:outputLabel value="Reference Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Reference Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
@@ -104,7 +125,22 @@
                                                 #{ix.institutionCode}
                                             </p:column>
                                         </p:autoComplete>
+                                        <h:outputLabel value="Department :" ></h:outputLabel>
+                                        <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
+                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                        value="#{billSearch.billSearch.department}" converter="dep"/>
 
+                                        <h:outputLabel value="From Institution :" ></h:outputLabel>
+                                        <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            <p:column>
+                                                #{ix.name}
+                                            </p:column>
+                                            <p:column>
+                                                #{ix.institutionCode}
+                                            </p:column>
+                                        </p:autoComplete>
                                         <h:outputLabel value="To Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.toInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"
@@ -172,6 +208,17 @@
 
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.netTotal}"/>
+
+                                        <h:outputLabel value="Paid Amount :" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.paidAmount}"/>
+
+                                        <h:outputLabel value="Balance:" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.balance}"/>
+
+                                          <h:outputLabel value="Paid:" ></h:outputLabel>
+                                          <h:inputText value="#{billSearch.billSearch.paid}"/>
+
+
 
                                         <h:outputLabel value="PerformInstitutionFee" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.performInstitutionFee}" />
@@ -317,9 +364,25 @@
                                     <p:column headerText="Item Id">
                                         <h:outputLabel value="#{bip21.id}" />
                                     </p:column>
+                                    <p:column headerText="Ref Id">
+                                        <h:outputLabel value="#{bip21.referenceBill.id}" />
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip21.item.name}"/>
+                                    </p:column>
+                                    <p:column headerText="1">
+                                        <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
+                                    </p:column>
+                                    <p:column headerText="2">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.paidForBillFee.paidValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Test/Service">
                                         <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />

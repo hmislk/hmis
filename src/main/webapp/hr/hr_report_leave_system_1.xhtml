@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Leave Report Extra" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To : " />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Staff Designation : "/>
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:outputLabel value="Leave Type : "/>
+                            <p:selectOneMenu  value="#{hrReportController.reportKeyWord.leaveType}">
+                                <f:selectItem itemLabel="Select Day Type : "/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu>   
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeaveSystem()}"/>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" >                     
+                           <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Report"/>
+                                </f:facet>
+                                
+                                <p:column headerText="Emp No">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp No"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
+                                   
+                                </p:column>
+                                <p:column headerText="Emp Name">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Emp Name"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    
+                                </p:column>
+                                <p:column headerText="Department Name">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Department Name"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.department.name}" ></p:outputLabel>
+                                    
+                                </p:column>
+                                <p:column headerText="Staff Category">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Category"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.staffCategory.name}" ></p:outputLabel>
+                                   
+                                </p:column>
+                                <p:column headerText="Staff Designation">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Designation"/>
+                                </f:facet>
+                                <p:outputLabel value="  #{ss.staff.designation.name}" ></p:outputLabel>
+                                  
+                                </p:column>
+                                <p:column headerText="Staff Roster" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Staff Roster"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.staff.roster.name}" ></p:outputLabel>
+                                   
+                                </p:column>  
+                                <p:column headerText="Leave Type" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Type"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.leaveType}" ></p:outputLabel>
+                                   
+                                </p:column>  
+                                  <p:column headerText="Crated Date" >
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Crated Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.createdAt}" ></p:outputLabel>
+                                    
+                                </p:column>  
+                                <p:column headerText="Leave Date" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Date"/>
+                                </f:facet>
+                                <p:outputLabel value=" #{ss.leaveDate}" ></p:outputLabel>
+                                   
+                                </p:column>  
+                                <p:column headerText="Leave Qty" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Leave Qty"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.qty}" ></p:outputLabel>
+                                    
+                                </p:column> 
+                              
+                                <p:column headerText="Comments" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Comments"/>
+                                </f:facet>
+                                <p:outputLabel value="#{ss.form.comments}" ></p:outputLabel>
+                                    
+                                </p:column> 
+                                <p:column headerText="Delete Comments" rendered="false">
+                                      <f:facet name="header">
+                                    <h:outputLabel value="Delete Comments"/>
+                                </f:facet>
+                              
+                                      <p:inputText value="#{ss.retireComments}"/>                                    
+                                </p:column> 
+                               <p:column>
+                                   #{ss.staffShift.shiftStartTime}
+                               </p:column>
+                                <p:column>
+                                   #{ss.staffShift.shiftEndTime}
+                               </p:column>
+                               <p:column>
+                                   <p:dataTable value="#{ss.staffShift.referenceStaffShiftLateIns}" var="i">
+                                       <p:column >
+                                           <p:outputLabel value="#{i.startRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                       <p:column >
+                                           <p:outputLabel value="#{i.endRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                   </p:dataTable>
+                               </p:column>
+                                <p:column>
+                                   <p:dataTable value="#{ss.staffShift.referenceStaffShiftEarlyOuts}" var="i">
+                                       <p:column >
+                                           <p:outputLabel value="#{i.startRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                       <p:column >
+                                           <p:outputLabel value="#{i.endRecord.recordTimeStamp}" >
+                                               <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                           </p:outputLabel>
+                                       </p:column>
+                                   </p:dataTable>
+                               </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

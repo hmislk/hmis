@@ -68,7 +68,7 @@
                             <p:column headerText="View Before Stock">
                                 
                                 <p:commandButton ajax="false" value="View Before Stock" 
-                                                 action="store_variant_category_stock_by_item"  >
+                                                action="store_variant_category_stock_by_item"  >
                                     <f:setPropertyActionListener target="#{reportsStockVariant.department}" value="#{bill.department}"/>
                                     <f:setPropertyActionListener target="#{reportsStockVariant.category}" value="#{bill.category}"/>
                                     <f:setPropertyActionListener target="#{reportsStockVariant.recordedBill}" value="#{bill}"/>       
@@ -79,7 +79,7 @@
                             <p:column headerText="Save After Stock">
                               
                                 <p:commandButton ajax="false" value="Save After Stock" 
-                                                 action="store_variant_category_stock_by_item_after" actionListener="#{reportsStockVariant.fillCategoryStocksAfter()}">
+                                                action="store_variant_category_stock_by_item_after" actionListener="#{reportsStockVariant.fillCategoryStocksAfter()}">
                                     <f:setPropertyActionListener target="#{reportsStockVariant.department}" value="#{bill.department}"/>
                                     <f:setPropertyActionListener target="#{reportsStockVariant.category}" value="#{bill.category}"/>
                                     <f:setPropertyActionListener target="#{reportsStockVariant.recordedBill}" value="#{bill}"/>       
@@ -104,7 +104,7 @@
                                     <p:column headerText="View After Stock">
                                        
                                         <p:commandButton ajax="false" value="View After Stock" 
-                                                         action="store_variant_category_stock_by_item_after"  >
+                                                        action="store_variant_category_stock_by_item_after"  >
                                             <f:setPropertyActionListener target="#{reportsStockVariant.department}" value="#{f.department}"/>
                                             <f:setPropertyActionListener target="#{reportsStockVariant.category}" value="#{f.category}"/>
                                             <f:setPropertyActionListener target="#{reportsStockVariant.recordedBillAfter}" value="#{f}"/>       

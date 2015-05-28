@@ -36,21 +36,37 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
+                                        value="#{reportsStock.stocks}" var="i"  
+                                        rows="20"
+                                        paginator="true"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="20, 50, 100"
+                                        >
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{reportsStock.category.name}"/> <br/><br/>
                                     <h:outputLabel value="Date : "><p:clock pattern="dd MM yy hh:mm:ss a" /></h:outputLabel>                                   
                                 </f:facet> 
                                 
-                                <p:column headerText="Item">
+                                <p:column headerText="Item"
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
+                                    
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code" style="text-align: center;">
+                                <p:column headerText="Code" style="text-align: center;"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>

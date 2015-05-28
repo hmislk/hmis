@@ -33,30 +33,30 @@
                     <p:commandButton value="Fill"
                                      process="@this frmDate toDate roster"
                                      update="lst"
-                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
+                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                    action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
                                      onclick="onSubmitButton();" /> 
 
                     <p:commandButton value="Fill Additional Only"
                                      process="@this frmDate toDate roster"
                                      update="lst"
-                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
+                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                    action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
                                      onclick="onSubmitButton();" /> 
                 </h:panelGroup>
 
                 <p:commandButton value="SAVE"
                                  process="lst"
                                  update="lst"
-                                 action="#{shiftFingerPrintAnalysisController.save()}" 
+                                action="#{shiftFingerPrintAnalysisController.save()}" 
                                  onclick="onSubmitButton();"/>
             </h:panelGrid>
 
             <p:commandButton value="Reset and Fill"
                              process="@this frmDate toDate roster"
                              update="lst"
-                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                             action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
+                            actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                            action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
                              onclick="onSubmitButton();" 
                              style="float: right;"/> 
 
@@ -73,18 +73,27 @@
                     <p:column headerText="Shift Name" styleClass="singleLine">
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
-                    <p:column>
+                    <p:column headerText="ID">
                         #{sts.id}
                     </p:column>
                      
-                    <p:column>
-                        #{sts.shiftStartTime}
+                    <p:column headerText="Shift Start">
+                        <h:outputLabel value="#{sts.shiftStartTime}" >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
                     </p:column>
-                     <p:column>
-                        #{sts.shiftEndTime}
+                    <p:column headerText="Shift End Time">
+                         <h:outputLabel value="#{sts.shiftEndTime}" >
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                        
                     </p:column>
                     <p:column headerText="Leave/Replace" styleClass="singleLine">                       
                         <h:outputLabel value="#{sts.leaveType}"  />                     
+                    </p:column>
+                    
+                     <p:column headerText="Halfday" styleClass="singleLine">                       
+                        <h:outputLabel value="#{sts.shift.halfShift}"  />                     
                     </p:column>
 
                     <p:column>
@@ -108,7 +117,7 @@
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
-                                                   itemLabel="#{i.timeLabel}||#{i.id}" itemValue="#{i}" />
+                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
@@ -123,7 +132,7 @@
                             <h:panelGroup >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
-                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}||#{i.id}"  itemValue="#{i}" />
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="endRc "
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   

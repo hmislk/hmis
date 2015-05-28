@@ -59,7 +59,7 @@
 
 
                     <p:panel header="All Bills" >
-                        <p:commandButton  ajax="false" value="List All Bill Items" action="#{pharmacyErrorChecking.listPharmacyMovementByDateRangeOnlyStockChange() }" >
+                        <p:commandButton ajax="false" value="List All Bill Items" action="#{pharmacyErrorChecking.listPharmacyMovementByDateRangeOnlyStockChange() }" >
                           
                         </p:commandButton>
 
@@ -87,7 +87,7 @@
 
                             <p:column >
                                 <h:outputLabel value="#{i+1}"/>
-                                <p:commandButton action="pharmacy_reprint_bill" value="View Bill" ajax="false">                                    
+                                <p:commandButton action="#{pharmacyBillSearch.viewBill}" value="View Bill" ajax="false">                                    
                                     <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacyBillSearch.bill}"/>                                    
                                 </p:commandButton>
                             </p:column>
@@ -116,6 +116,9 @@
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Stock Id "/>
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.stock.id}" >
+                                    </h:outputLabel>
+                                       <h:outputLabel value="Stock History Id "/>
+                                    <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.id}" >
                                     </h:outputLabel>
                                     <h:outputLabel value="Batch Id "/>
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.id}" >

@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                            <h:panelGrid columns="5" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{opdPreBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{opdPreBillController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{opdPreBillController.createBillFeePayments}"/>
+                                
+
+                            </h:panelGrid>
+
+
+
+                            <p:defaultCommand target="btnSearch" />
+
+
+                        </f:facet>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{opdPreBillController.billFeePayments}" 
+                                     var="bfp"  
+                                     >
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" >                                
+                                <h:outputLabel   value="#{bfp.billFee.bill.deptId}"/>
+                            </p:column>    
+                            <p:column headerText="Batch Bill No">                                
+                                <h:outputLabel   value="#{bfp.billFee.bill.backwardReferenceBill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bfp.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Bill netTotal" >                                
+                                <h:outputLabel   value="#{bfp.billFee.bill.netTotal}"/>
+                            </p:column>
+                            <p:column headerText="Bill balance" >                                
+                                <h:outputLabel   value="#{bfp.billFee.bill.balance}"/>
+                            </p:column>
+                            <p:column headerText="Bill cashPaid" >                                
+                                <h:outputLabel   value="#{bfp.billFee.bill.cashPaid}"/>
+                            </p:column>
+                            <p:column headerText="payment Amount for bfp" >
+                                <h:outputLabel value="#{bfp.amount}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="payment Amount" >
+                                <h:outputLabel value="#{bfp.payment.paidValue}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="dep" >
+                                <h:outputLabel value="#{bfp.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="dep payment" >
+                                <h:outputLabel value="#{bfp.payment.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="institution" >
+                                <h:outputLabel value="#{bfp.institution.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="institution payment" >
+                                <h:outputLabel value="#{bfp.payment.institution.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bfp.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>    
+                            
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

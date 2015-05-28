@@ -34,6 +34,7 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 
@@ -54,6 +56,9 @@ public class BookingController implements Serializable {
 
     private Speciality speciality;
     private Staff staff;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date channelDay;
     private ServiceSession selectedServiceSession;
     private BillSession selectedBillSession;
     ////////////////////
@@ -94,7 +99,10 @@ public class BookingController implements Serializable {
     private ChannelBean channelBean;
 
     List<Staff> consultants;
+    List<BillSession> getSelectedBillSession;
     boolean printPreview;
+    double absentCount;
+    int serealNo;
 
     public String nurse() {
         if (preSet()) {
@@ -138,17 +146,37 @@ public class BookingController implements Serializable {
         }
     }
 
+    public List<BillSession> getGetSelectedBillSession() {
+        return getSelectedBillSession;
+    }
+
+    public void setGetSelectedBillSession(List<BillSession> getSelectedBillSession) {
+        this.getSelectedBillSession = getSelectedBillSession;
+    }
+
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            System.out.println("billSessions" + bs.getId());
+            //System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
-                              
 
             } else {
                 if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
                     alreadyExists = true;
+                }
+            }
+            System.out.println("bs = " + bs);
+            System.out.println("selectedBillSession = " + selectedBillSession);
+            if (!bs.equals(selectedBillSession)) {
+                for (BillItem bi : bs.getBill().getBillItems()) {
+                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
+                    System.out.println("serealNo = " + serealNo);
+                    if (serealNo == bi.getBillSession().getSerialNo()) {
+                        System.err.println("Equals");
+                        alreadyExists = true;
+                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                    }
                 }
             }
 
@@ -156,13 +184,47 @@ public class BookingController implements Serializable {
 
         return alreadyExists;
     }
+    
+    public boolean errorCheck() {
+        boolean flag=false;
+        if (serealNo==0) {
+            UtilityController.addErrorMessage("Cant Add This Number");
+            return true;
+        }
+        for (BillSession bs : billSessions) {
+            System.out.println("bs = " + bs);
+            System.out.println("selectedBillSession = " + selectedBillSession);
+            if (!bs.equals(selectedBillSession)) {
+                for (BillItem bi : bs.getBill().getBillItems()) {
+                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
+                    System.out.println("serealNo = " + serealNo);
+                    if (serealNo == bi.getBillSession().getSerialNo()) {
+                        System.err.println("Equals");
+                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        flag=true;
+                    }
+                }
+            }
+
+        }
+
+        return flag;
+    }
+
+    public double getAbsentCount() {
+        return absentCount;
+    }
+
+    public void setAbsentCount(double absentCount) {
+        this.absentCount = absentCount;
+    }
 
 //    public void errorCheckChannelNumber() {
 //
 //        for (BillSession bs : billSessions) {
-//            System.out.println("billSessions" + bs.getName());
+//            //System.out.println("billSessions" + bs.getName());
 //            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
-//                System.out.println("billitem" + bi.getId());
+//                //System.out.println("billitem" + bi.getId());
 //                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
 //                    UtilityController.addErrorMessage("Number you entered already exist");
 //                    setSelectedBillSession(bs);
@@ -182,9 +244,19 @@ public class BookingController implements Serializable {
         if (errorCheckForSerial()) {
             return;
         }
+        if (errorCheck()) {
+            return;
+        }
+
+        for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
+            bi.getBillSession().setSerialNo(serealNo);
+            System.out.println("bi = " + bi.getBillSession().getSerialNo());
+            System.out.println("serealNo = " + serealNo);
+            getBillItemFacade().edit(bi);
+        }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        System.out.println(getSelectedBillSession().getBill().getPatient());
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
 
@@ -208,7 +280,7 @@ public class BookingController implements Serializable {
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //System.out.println(sql);
+            ////System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
         }
         return suggestions;
@@ -225,7 +297,7 @@ public class BookingController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
         }
-//        System.out.println("consultants = " + consultants);
+//        //System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 
@@ -242,6 +314,7 @@ public class BookingController implements Serializable {
      */
     public BookingController() {
     }
+    
 
     public Speciality getSpeciality() {
         return speciality;
@@ -312,7 +385,7 @@ public class BookingController implements Serializable {
     private double fetchForiegnFee(Item item) {
         String jpql;
         Map m = new HashMap();
-        jpql = "Select sum(f.fee)"
+        jpql = "Select sum(f.ffee)"
                 + " from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:ses ";
@@ -363,6 +436,7 @@ public class BookingController implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
+
         if (staff != null) {
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
@@ -419,12 +493,62 @@ public class BookingController implements Serializable {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
+        HashMap hh = new HashMap();     
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("billSessions" + billSessions);
+
+    }
+    
+    public void fillBillSessions() {
+        selectedBillSession = null;
+//        selectedServiceSession = ((ServiceSession) event.getObject());
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        HashMap hh = new HashMap();     
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("billSessions" + billSessions);
+
+    }
+
+    public void fillAbsentBillSessions(SelectEvent event) {
+        selectedBillSession = null;
+        selectedServiceSession = ((ServiceSession) event.getObject());
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt "
+                + " and bs.absent=true "
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        //absentCount=billSessions.size();
 
     }
 
@@ -575,6 +699,22 @@ public class BookingController implements Serializable {
 
     public void setItemFeeFacade(ItemFeeFacade ItemFeeFacade) {
         this.ItemFeeFacade = ItemFeeFacade;
+    }
+
+    public Date getChannelDay() {
+        return channelDay;
+    }
+
+    public void setChannelDay(Date channelDay) {
+        this.channelDay = channelDay;
+    }
+
+    public int getSerealNo() {
+        return serealNo;
+    }
+
+    public void setSerealNo(int serealNo) {
+        this.serealNo = serealNo;
     }
 
 }

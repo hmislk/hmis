@@ -146,7 +146,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:component('cmbDoc')}"  actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -335,7 +335,7 @@
                                 </p:commandButton>
                                 <p:commandButton value="New Lab Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
                                 </p:commandButton>
-                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billPackageController.cancellAll}"/>
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}"/>
                                 <div style="border: 1px solid;" >
 
                                     <p:panel   id="gpBillPreview"  style="margin: auto; border: 0px; padding: 0px; " >

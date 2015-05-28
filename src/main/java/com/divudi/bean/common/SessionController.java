@@ -75,6 +75,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
     WebUser webUser;
+    
+    
+    String billNo;
+    String phoneNo;
 
     public void updateUserPreferences() {
         if (institutionPreference != null) {
@@ -605,7 +609,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * Creates a new instance of SessionController
      */
     public SessionController() {
-        //System.out.println("session started");
+        ////System.out.println("session started");
     }
 
     public String getDefLocale() {
@@ -672,7 +676,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (userPrivilages == null) {
             String sql;
             sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
-            //System.out.println("5");
+            ////System.out.println("5");
             userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
         }
         if (userPrivilages == null) {
@@ -680,6 +684,24 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return userPrivilages;
     }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+    
+    
 
     public void setPrivilegeses(List<Privileges> privilegeses) {
         this.privilegeses = privilegeses;
@@ -756,7 +778,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-        //System.out.println("session distroyed " + thisLogin);
+        ////System.out.println("session distroyed " + thisLogin);
         if (thisLogin == null) {
             return;
         }
@@ -767,12 +789,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        //System.out.println("starting session");
+        ////System.out.println("starting session");
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        //System.out.println("recording logout as session is distroid");
+        ////System.out.println("recording logout as session is distroid");
         recordLogout();
     }
 

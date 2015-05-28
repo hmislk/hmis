@@ -14,7 +14,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Detail">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Summary by Supplier">
 
 
                     <p:panelGrid columns="10" style="noPrintButton">
@@ -54,7 +54,7 @@
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createGrnDetailTableByDealor()}"
+                                        actionListener="#{commonReport.createGrnDetailTableByDealor()}"
                                          style="float: right;" /> 
                         
                         <p:commandButton actionListener="#{commonReport.createGrnDetailTableByDealor()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -68,31 +68,21 @@
                     </h:panelGrid>
 
 
-
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
-
-                        <h:outputLabel value="GRN Detailed Report "/>
-                        <h:outputLabel/>
-                        <h:outputLabel value="Institution "/>
-                        <h:outputLabel value="#{commonReport.department.institution.name}"/>
-                        <h:outputLabel value="Department "/>
-                        <h:outputLabel value="#{commonReport.department.name}"/>
-                        <h:outputLabel value="From" />
-                        <h:outputLabel  value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                        </h:outputLabel>                          
-                        <h:outputLabel value="To"/>
-                        <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                        </h:outputLabel>
-                    </h:panelGrid>
-
-
                     <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" 
                                  sortBy="#{b.billType}"  >
 
-                        <f:facet name="header">  
+                        <f:facet name="header"> 
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yyyy HH:mm a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="dd MM yyyy HH:mm a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="GRN by - #{commonReport.department.name}"/> 
+                            <br/>
                             <h:outputLabel value="GRN"/>
                         </f:facet>
 
@@ -492,7 +482,7 @@
 
                     <p:dataTable id="sum" value="#{commonReport.grnTotal}"  var="i" >
                         <f:facet name="header">
-                            Summery
+                            Summary
                         </f:facet>
                         <p:column>
                             <h:outputLabel value="#{i.string}"/>

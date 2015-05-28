@@ -85,7 +85,7 @@ public class ListsController {
             String sql;
             HashMap tmpMap = new HashMap();
             sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)= :ampp or type(c)= :vmp or type(c)= :vmpp) order by c.name";
-            //System.out.println(sql);
+            ////System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
             tmpMap.put("vmp", Vmp.class);

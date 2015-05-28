@@ -29,7 +29,7 @@
                                             forceSelection="true" value="#{reportsStockVariant.category}" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
-                                             actionListener="#{reportsStockVariant.fillCategoryStocks()}"
+                                            actionListener="#{reportsStockVariant.fillCategoryStocks()}"
                                              disabled="#{reportsStockVariant.recordedBill.id ne null}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Clear" action="#{reportsStockVariant.recreateModel()}"/>
@@ -41,7 +41,7 @@
                                 <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                             <p:commandButton ajax="false" value="Save Records"
-                                             action="#{reportsStockVariant.saveRecord()}"
+                                            action="#{reportsStockVariant.saveRecord()}"
                                              disabled="#{reportsStockVariant.recordedBill.id ne null}"/>
 
                             <p:watermark for="dep" value="Department"/>

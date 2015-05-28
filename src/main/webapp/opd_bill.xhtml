@@ -40,7 +40,7 @@
                             </h:panelGrid>
                             <h:panelGrid columns="1">                            
                                 <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
-                                    <f:selectItem itemLabel="Select Payment Scheme"/>
+                                    <f:selectItem itemLabel="Select Discount Scheme"/>
                                     <f:selectItems value="#{paymentSchemeController.items}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
@@ -186,13 +186,14 @@
 
                                             <h:panelGrid columns="1" >
 
-                                                <p:autoComplete styleClass="mediuminput"
+                                                <p:autoComplete styleClass="mediuminput" converter="patientConverter"
                                                                 disabled="#{billController.fromOpdEncounter}"
                                                                 widgetVar="aPt" id="acPt" forceSelection="true" 
                                                                 value="#{billController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;"
+                                                                minQueryLength="5">
 
 
                                                     <p:column headerText="Name">
@@ -216,7 +217,6 @@
                                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                         </h:outputLabel>
                                                     </p:column>
-
                                                     <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
                                                             render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
                                                             listener="#{billController.calTotals()}" />
@@ -242,7 +242,7 @@
                                 <h:panelGroup id="panelIx" >
 
 
-                                    <p:panel id='pIxAdd' header="Items Requests" style="min-height: 350px;"  >
+                                    <p:panel id='pIxAdd' header="Items / Services" style="min-height: 350px;"  >
                                         <p:focus  context="acIx"/>
                                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
                                                         value="#{billController.currentBillItem.item}" 
@@ -324,7 +324,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}"  actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -563,18 +563,19 @@
                 <h:panelGroup rendered="#{billController.printPreview}" >
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
-
                             <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:commandButton value="Print" 
+                                                 process="@this" 
+                                                 update="@all" 
+                                                 type="button"  
+                                                 ajax="false">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
@@ -594,7 +595,7 @@
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
@@ -617,7 +618,7 @@
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
@@ -635,10 +636,10 @@
                                 </div>
                             </h:panelGroup>
                         </h:panelGrid>
-                        
-                        
-                        
-                        
+
+
+
+
                         <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
@@ -648,7 +649,7 @@
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
@@ -660,7 +661,7 @@
                                 </div>                                
                             </h:panelGroup>
                         </h:panelGrid>
-                        
+
                     </h:panelGroup>
 
                 </h:panelGroup>
