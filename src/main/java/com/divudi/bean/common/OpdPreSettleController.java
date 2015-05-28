@@ -89,10 +89,6 @@ public class OpdPreSettleController implements Serializable {
     @EJB
     ItemFacade itemFacade;
     @EJB
-    StockFacade stockFacade;
-    @EJB
-    PharmacyBean pharmacyBean;
-    @EJB
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
@@ -106,7 +102,6 @@ public class OpdPreSettleController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
 /////////////////////////
     Item selectedAlternative;
-    Bill saleReturnBill;
 
     private Bill preBill;
     private Bill saleBill;
@@ -138,30 +133,10 @@ public class OpdPreSettleController implements Serializable {
     double balance;
     Double editingQty;
 
-    public String toSettleReturn(Bill args) {
-        String sql = "Select b from RefundBill b"
-                + " where b.referenceBill=:bil"
-                + " and b.retired=false "
-                + " and b.refundedBill is null "
-                + " and b.cancelled=false ";
-        HashMap hm = new HashMap();
-        hm.put("bil", args);
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
-
-        if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
-            return "";
-        } else {
-            setPreBill(args);
-            return "/pharmacy/pharmacy_bill_return_pre_cash";
-        }
-    }
-
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
         saleBill = null;
-        saleReturnBill = null;
         bill = null;
         billItem = null;
         removingBillItem = null;
@@ -330,37 +305,6 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
-    private void saveSaleReturnBill() {
-        getSaleReturnBill().copy(getPreBill());
-        getSaleReturnBill().copyValue(getPreBill());
-
-        getSaleReturnBill().setBillType(BillType.PharmacySale);
-        getSaleReturnBill().setReferenceBill(getPreBill());
-        getSaleReturnBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getSaleReturnBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getBillBean().setPaymentMethodData(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod(), paymentMethodData);
-
-        getSaleReturnBill().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getSaleReturnBill().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getSaleReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        getSaleReturnBill().setCreater(getSessionController().getLoggedUser());
-
-        getSaleReturnBill().setInsId(getPreBill().getInsId());
-        getSaleReturnBill().setDeptId(getPreBill().getDeptId());
-
-        if (getSaleReturnBill().getId() == null) {
-            getBillFacade().create(getSaleReturnBill());
-        }
-
-        //   updateSaleReturnPreBill();
-    }
-
-//     private void updateSaleReturnPreBill() {
-//        getPreBill().setReferenceBill(getSaleReturnBill());
-//        getBillFacade().edit(getPreBill());
-//    }
-//  
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
 
@@ -409,38 +353,6 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
-    private void saveSaleReturnBillItems() {
-        for (BillItem tbi : getPreBill().getBillItems()) {
-
-            BillItem sbi = new BillItem();
-
-            sbi.copy(tbi);
-            // sbi.invertValue(tbi);
-
-            sbi.setBill(getSaleReturnBill());
-            sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
-
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(tbi.getPharmaceuticalBillItem());
-
-            ph.setBillItem(sbi);
-
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
-            //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getSaleReturnBill().getBillItems().add(sbi);
-        }
-        getBillFacade().edit(getSaleReturnBill());
-    }
-
     public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
@@ -484,25 +396,6 @@ public class OpdPreSettleController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-
-    public void settleReturnBillWithPay() {
-        editingQty = null;
-
-        saveSaleReturnBill();
-        saveSaleReturnBillItems();
-
-//        getPreBill().getReturnCashBills().add(getSaleReturnBill());
-        getBillFacade().edit(getPreBill());
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getSaleReturnBill(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        setBill(getBillFacade().find(getSaleReturnBill().getId()));
-
-        clearBill();
-        clearBillItem();
-        billPreview = true;
-
     }
 
     private void clearBill() {
@@ -572,22 +465,6 @@ public class OpdPreSettleController implements Serializable {
 
     public void setEditingBillItem(BillItem editingBillItem) {
         this.editingBillItem = editingBillItem;
-    }
-
-    public StockFacade getStockFacade() {
-        return stockFacade;
-    }
-
-    public void setStockFacade(StockFacade stockFacade) {
-        this.stockFacade = stockFacade;
-    }
-
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
-    }
-
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
     }
 
     public Patient getNewPatient() {
@@ -758,7 +635,7 @@ public class OpdPreSettleController implements Serializable {
             System.out.println("reminingCashPaid = " + reminingCashPaid);
             System.out.println("cashPaid = " + cashPaid);
 
-            if ((reminingCashPaid != 0.0)||!getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 for (BillItem bi : b.getBillItems()) {
                     System.err.println("BillItem For In");
                     System.out.println("bi = " + bi);
@@ -839,7 +716,7 @@ public class OpdPreSettleController implements Serializable {
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(paymentMethod);
-        
+
         System.out.println("cashPaid = " + cashPaid);
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             p.setPaidValue(cashPaid);
@@ -853,10 +730,39 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
+    public void setPaymentMethodData(Payment p) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(p.getBill().getPaymentMethod());
+
+        p.setPaidValue(p.getBill().getCashPaid());
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
+
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+
+    }
+
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
         bfp.setAmount(amount);
+        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        getBillFeePaymentFacade().create(bfp);
+    }
+    
+    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(bf.getSettleValue());
         bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
         bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
         bfp.setCreater(getSessionController().getLoggedUser());
@@ -926,10 +832,33 @@ public class OpdPreSettleController implements Serializable {
         }
     }
 
+    public void calculateBillfeePaymentsForCancelBill(List<BillFee> billFees, Payment p) {
+        for (BillFee bf : billFees) {
+            System.err.println("BillFee For In");
+            System.out.println("bf = " + bf);
+            System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
+            setBillFeePaymentAndPayment(bf, p);
+            System.err.println("BillFee For Out");
+        }
+    }
+
+    public void createOpdCancelBillFeePayment(Bill bill, List<BillFee> billFees) {
+
+        Payment p = new Payment();
+        p.setBill(bill);
+        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
+        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
+        setPaymentMethodData(p);
+
+        calculateBillfeePaymentsForCancelBill(billFees, p);
+        System.err.println("BillItem For Out");
+
+        JsfUtil.addSuccessMessage("Sucessfully Paid");
+    }
+
     public Bill getPreBill() {
         if (preBill == null) {
             preBill = new PreBill();
-            preBill.setBillType(BillType.PharmacyPre);
         }
         return preBill;
     }
@@ -948,14 +877,6 @@ public class OpdPreSettleController implements Serializable {
             //  saleBill.setBillType(BillType.PharmacySale);
         }
         return saleBill;
-    }
-
-    public Bill getSaleReturnBill() {
-        if (saleReturnBill == null) {
-            saleReturnBill = new RefundBill();
-            saleReturnBill.setBillType(BillType.PharmacySale);
-        }
-        return saleReturnBill;
     }
 
     public void setSaleBill(Bill saleBill) {

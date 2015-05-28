@@ -17,6 +17,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -67,6 +68,10 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByUser() {
+        if (getWebUser()==null) {
+            JsfUtil.addErrorMessage("Please Select A User");
+            return;
+        }
         userBilledBills = createBillsTotals(new BilledBill());
         userCancellededBills = createBillsTotals(new CancelledBill());
         userRefundedBills = createBillsTotals(new RefundBill());
@@ -117,7 +122,8 @@ public class OpdPreBillReportController implements Serializable {
                 + " and type(bfp.billFee.bill)=:b"
                 + " and bfp.payment.paymentMethod=:pm "
                 + " and bfp.payment.institution=:ins "
-                + " and bfp.payment.createdAt between :fromDate and :toDate";
+                + " and bfp.payment.createdAt between :fromDate and :toDate ";
+                
 
         if (department != null) {
             sql += " and bfp.payment.department=:dep ";
@@ -128,6 +134,9 @@ public class OpdPreBillReportController implements Serializable {
             sql += " and bfp.payment.creater=:w ";
             m.put("w", wUser);
         }
+        
+        sql+= " group by bfp.billFee.bill "
+                + " order by bfp.billFee.bill.createdAt ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
@@ -135,6 +144,7 @@ public class OpdPreBillReportController implements Serializable {
         m.put("b", b.getClass());
         m.put("ins", getSessionController().getInstitution());
 
+        System.out.println("paymentMethod = " + paymentMethod);
         System.out.println("sql = " + sql);
         System.out.println("getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) = " + getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP));
 
@@ -154,9 +164,10 @@ public class OpdPreBillReportController implements Serializable {
                         Bill bb = new Bill();
                         bb = (Bill) obj[0];
                         System.out.println("bb = " + bb);
-                        System.out.println("bb = " + bb.getClaimableTotal());
-                        bb.setClaimableTotal((double) obj[1]);
-                        System.out.println("bb = " + bb.getClaimableTotal());
+                        bb.setNetTotal((double) obj[1]);
+                        System.out.println("bb = " + bb.getNetTotal());
+                        bb.setPaymentMethod(pm);
+                        System.out.println("bb = " + bb.getPaymentMethod());
                         if (bb!=null) {
                             bs.add(bb);
                         }
