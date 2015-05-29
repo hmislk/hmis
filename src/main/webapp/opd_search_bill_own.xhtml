@@ -60,7 +60,12 @@
                             </p:column>
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
-                            </p:column>    
+                            </p:column>
+                            
+                            <p:column>
+                                #{bill.id}
+                            </p:column>
+                            
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
@@ -78,7 +83,7 @@
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="#{bill.createdAt.time}" >
-                                    
+
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -114,13 +119,20 @@
                                 <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                     <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
-                                
+
                                 <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
                                     <h:outputLabel style="color: red;" value="Edited By " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
-                                
+
+                                <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
+                                    <h:outputLabel style="color: red;" value="Edited At " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
                             </p:column>
                             <p:column headerText="Client Phone No">                              
                                 <h:outputLabel value="#{bill.patient.person.phone}" />
