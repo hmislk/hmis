@@ -112,7 +112,7 @@
                             </h:panelGroup>
                             <h:panelGroup>
 
-                                <h:panelGrid columns="3" >
+                                <h:panelGrid columns="2" >
 
                                     <p:panel header="Patient Details" >
 
@@ -144,36 +144,15 @@
 
 
 
-                                    <p:dataTable value="#{patientEncounterController.currentPatientEncounters}" var="pe" >
+
+
+
+                                    <p:dataTable  id="tblBills" value="#{patientEncounterController.currentPatientInvestigations}" var="pi"  rows="5"
+                                                  paginator="true"
+                                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                  >
                                         <f:facet name="header" >
-                                            Past Visits
-                                        </f:facet>
-                                        <p:column headerText="Visit Date" >
-                                            <h:outputLabel value="#{pe.createdAt}" >
-                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Dx" >
-                                            <ui:repeat value="#{pe.diagnosis}" var="dxs" >
-                                                <h:outputLabel value="#{dxs.stringValue}" ></h:outputLabel>
-                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;" rendered="#{dxs.lobValue ne null}"></h:outputLabel>
-                                                <h:outputLabel value="#{dxs.lobValue}" ></h:outputLabel>
-                                                <br/>
-                                            </ui:repeat>
-                                        </p:column>
-                                        <p:column headerText="View" >
-                                            <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}" onclick="onSubmitButton();" >
-                                                <f:setPropertyActionListener target="#{patientEncounterController.encounterToDisplay}" value="#{pe}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                        </p:column>
-                                    </p:dataTable>
-
-
-
-
-                                    <p:dataTable  id="tblBills" value="#{patientEncounterController.currentPatientInvestigations}" var="pi"  >
-                                        <f:facet name="header" >
-                                            Past Visits
+                                            Investigations
                                         </f:facet>
                                         <p:column  headerText="Ix" styleClass="alignTop" >
                                             <h:outputLabel id="lblBillIx" value="#{pi.billItem.item.name}" >
@@ -342,9 +321,34 @@
 
 
 
+                                    <p:dataTable value="#{patientEncounterController.currentPatientEncounters}" var="pe" rows="5"
+                                                 paginator="true"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 >
+                                        <f:facet name="header" >
+                                            Past Visits
+                                        </f:facet>
+                                        <p:column headerText="Visit Date" >
+                                            <h:outputLabel value="#{pe.createdAt}" >
+                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Dx" >
+                                            <ui:repeat value="#{pe.diagnosis}" var="dxs" >
+                                                <h:outputLabel value="#{dxs.stringValue}" ></h:outputLabel>
+                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;" rendered="#{dxs.lobValue ne null}"></h:outputLabel>
+                                                <h:outputLabel value="#{dxs.lobValue}" ></h:outputLabel>
+                                                <br/>
+                                            </ui:repeat>
+                                        </p:column>
+                                        <p:column headerText="View" >
+                                            <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener target="#{patientEncounterController.encounterToDisplay}" value="#{pe}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
 
-                                </h:panelGrid>
-                                <h:panelGrid columns="1" >
+
 
                                     <p:panel header="Billings" >
 
@@ -352,7 +356,10 @@
 
                                         <p:dataTable id="tblPtBills"
                                                      value="#{patientEncounterController.currentBills}" 
-                                                     var="bill" >
+                                                     var="bill" rows="5"
+                                                     paginator="true"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     >
                                             <p:column headerText="No" >
                                                 <h:outputLabel value="#{bill.insId}" id="lblBillNos"  ></h:outputLabel>
                                             </p:column>
@@ -363,21 +370,25 @@
                                             </p:column>
                                             <p:column  headerText="Bill Type" id="colType"  >
                                                 <h:outputLabel id="lblBillTypes" value="#{bill.billType}" ></h:outputLabel>
-                                                <p:tooltip for="lblBillTypes lblBillDates lblBillNos" >
-                                                    <table >
-                                                        <ui:repeat value="#{bill.billItems}" var="tbi" >
-                                                            <tr>
-                                                                <td>
-                                                                    <p:outputLabel value="#{tbi.item.name}" ></p:outputLabel>
-                                                                </td>
-                                                                <td>
-                                                                    <p:outputLabel value="#{tbi.qty}" rendered="#{tbi.qty gt 1}" ></p:outputLabel>
-                                                                </td>
-                                                            </tr>
-                                                        </ui:repeat>
-                                                    </table>
 
-                                                </p:tooltip>
+                                            </p:column>
+
+                                            <p:column  headerText="Bill Type" id="colType1"  >
+
+                                                <table >
+                                                    <ui:repeat value="#{bill.billItems}" var="tbi" >
+                                                        <tr>
+                                                            <td>
+                                                                <p:outputLabel value="#{tbi.item.name}" ></p:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <p:outputLabel value="#{tbi.qty}" rendered="#{bill.billType eq 'PharmacySale'}" ></p:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </table>
+
+
                                             </p:column>
                                             <p:column headerText="Net Value" >
                                                 <h:outputLabel value="#{bill.netTotal}" >

@@ -191,6 +191,7 @@ public enum Privileges {
     ClinicalVisitSummery,
     ClinicalHistory,
     ClinicalAdministration,
+    ClinicalPatientDelete,
     ChannelAdd,
     ChannelCancel,
     ChannelRefund,
