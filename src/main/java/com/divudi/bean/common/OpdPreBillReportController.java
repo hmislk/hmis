@@ -51,13 +51,20 @@ public class OpdPreBillReportController implements Serializable {
     List<Bill> bills;
 
     WebUser webUser;
-    Department department;
+    Department department;//cash getting dept - cashier
+    Department toDepartment;// lab/channel/opd
     Date fromDate;
     Date toDate;
 
+    //Opd summery
     BillsTotals userBilledBills;
     BillsTotals userCancellededBills;
     BillsTotals userRefundedBills;
+
+    //Pharmacy summery
+    BillsTotals userBilledBillsPharmacy;
+    BillsTotals userCancellededBillsPharmacy;
+    BillsTotals userRefundedBillsPharmacy;
 
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
 
@@ -68,16 +75,23 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByUser() {
-        if (getWebUser()==null) {
+        
+        if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
         }
-        userBilledBills = createBillsTotals(new BilledBill());
-        userCancellededBills = createBillsTotals(new CancelledBill());
-        userRefundedBills = createBillsTotals(new RefundBill());
+        
+        userBilledBills = createBillsTotals(new BilledBill(), BillType.OpdBill,getWebUser(),getDepartment(),getToDepartment());
+        userCancellededBills = createBillsTotals(new CancelledBill(), BillType.OpdBill,getWebUser(),getDepartment(),getToDepartment());
+        userRefundedBills = createBillsTotals(new RefundBill(), BillType.OpdBill,getWebUser(),getDepartment(),getToDepartment());
+
+        userBilledBillsPharmacy= createBillsTotals(new BilledBill(), BillType.PharmacySale,getWebUser(),getDepartment(),getToDepartment());
+        userCancellededBillsPharmacy= createBillsTotals(new CancelledBill(), BillType.PharmacySale,getWebUser(),getDepartment(),getToDepartment());
+        userRefundedBillsPharmacy= createBillsTotals(new RefundBill(), BillType.PharmacySale,getWebUser(),getDepartment(),getToDepartment());
+        
     }
 
-    private double calValue(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department) {
+    private double calValue(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department, BillType bt) {
 
         String sql;
         Map m = new HashMap();
@@ -87,7 +101,8 @@ public class OpdPreBillReportController implements Serializable {
                 + " join bfp.billFee.bill b "
                 + " WHERE "
                 + " bfp.retired=false "
-                + " and type(b)=:b"
+                + " and type(b)=:b "
+                + " and b.billType=:bt "
                 + " and p.paymentMethod=:pm "
                 + " and p.institution=:ins "
                 + " and p.createdAt between :fromDate and :toDate";
@@ -106,42 +121,49 @@ public class OpdPreBillReportController implements Serializable {
         m.put("toDate", getToDate());
         m.put("pm", paymentMethod);
         m.put("b", b.getClass());
+        m.put("bt", bt);
         m.put("ins", getSessionController().getInstitution());
 
         return getPaymentFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
-    private List<Object[]> getBillWithTotal(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department) {
+    private List<Object[]> getBillWithTotal(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department,Department tDepartment, BillType bt) {
 
         String sql;
         Map m = new HashMap();
 
         sql = "SELECT distinct(bfp.billFee.bill),sum(bfp.amount) FROM BillFeePayment bfp WHERE "
                 + " bfp.retired=false "
-                + " and type(bfp.billFee.bill)=:b"
+                + " and type(bfp.billFee.bill)=:b "
+                + " and bfp.billFee.bill.billType=:bt "
                 + " and bfp.payment.paymentMethod=:pm "
                 + " and bfp.payment.institution=:ins "
                 + " and bfp.payment.createdAt between :fromDate and :toDate ";
-                
-
+        //Payment done deparment-cashier
         if (department != null) {
             sql += " and bfp.payment.department=:dep ";
             m.put("dep", department);
+        }
+        
+        if (tDepartment!= null) {
+            sql += " and bfp.department=:toDep ";
+            m.put("toDep", tDepartment);
         }
 
         if (wUser != null) {
             sql += " and bfp.payment.creater=:w ";
             m.put("w", wUser);
         }
-        
-        sql+= " group by bfp.billFee.bill "
+
+        sql += " group by bfp.billFee.bill "
                 + " order by bfp.billFee.bill.createdAt ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("pm", paymentMethod);
         m.put("b", b.getClass());
+        m.put("bt", bt);
         m.put("ins", getSessionController().getInstitution());
 
         System.out.println("paymentMethod = " + paymentMethod);
@@ -152,11 +174,11 @@ public class OpdPreBillReportController implements Serializable {
 
     }
 
-    public BillsTotals createBillsTotals(Bill b) {
+    public BillsTotals createBillsTotals(Bill b, BillType billType,WebUser wu,Department d,Department td) {
         BillsTotals billsTotals = new BillsTotals();
         List<Bill> bs = new ArrayList<>();
         for (PaymentMethod pm : getPaymentMethods) {
-            List<Object[]> objects = getBillWithTotal(b, pm, webUser, department);
+            List<Object[]> objects = getBillWithTotal(b, pm, wu, d,td, billType);
             System.out.println("objects = " + objects);
             if (objects != null) {
                 for (Object[] obj : objects) {
@@ -168,7 +190,7 @@ public class OpdPreBillReportController implements Serializable {
                         System.out.println("bb = " + bb.getNetTotal());
                         bb.setPaymentMethod(pm);
                         System.out.println("bb = " + bb.getPaymentMethod());
-                        if (bb!=null) {
+                        if (bb != null) {
                             bs.add(bb);
                         }
                     }
@@ -179,24 +201,24 @@ public class OpdPreBillReportController implements Serializable {
         for (PaymentMethod paymentMethod : getPaymentMethods) {
             switch (paymentMethod) {
                 case Cash:
-                    System.out.println("1.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment()));
-                    billsTotals.setCash(calValue(b, paymentMethod, getWebUser(), getDepartment()));
+                    System.out.println("1.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCash(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
                 case Credit:
-                    System.out.println("2.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment()));
-                    billsTotals.setCredit(calValue(b, paymentMethod, getWebUser(), getDepartment()));
+                    System.out.println("2.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCredit(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
                 case Card:
-                    System.out.println("3.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment()));
-                    billsTotals.setCard(calValue(b, paymentMethod, getWebUser(), getDepartment()));
+                    System.out.println("3.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCard(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
                 case Slip:
-                    System.out.println("4.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment()));
-                    billsTotals.setSlip(calValue(b, paymentMethod, getWebUser(), getDepartment()));
+                    System.out.println("4.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setSlip(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
                 case Cheque:
-                    System.out.println("5.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment()));
-                    billsTotals.setCheque(calValue(b, paymentMethod, getWebUser(), getDepartment()));
+                    System.out.println("5.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCheque(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
             }
         }
@@ -300,6 +322,38 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public BillsTotals getUserBilledBillsPharmacy() {
+        return userBilledBillsPharmacy;
+    }
+
+    public void setUserBilledBillsPharmacy(BillsTotals userBilledBillsPharmacy) {
+        this.userBilledBillsPharmacy = userBilledBillsPharmacy;
+    }
+
+    public BillsTotals getUserCancellededBillsPharmacy() {
+        return userCancellededBillsPharmacy;
+    }
+
+    public void setUserCancellededBillsPharmacy(BillsTotals userCancellededBillsPharmacy) {
+        this.userCancellededBillsPharmacy = userCancellededBillsPharmacy;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacy() {
+        return userRefundedBillsPharmacy;
+    }
+
+    public void setUserRefundedBillsPharmacy(BillsTotals userRefundedBillsPharmacy) {
+        this.userRefundedBillsPharmacy = userRefundedBillsPharmacy;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
     }
 
 }

@@ -20,9 +20,8 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdBathcBillPreTable}"/>
-                                <h:outputLabel/><h:outputLabel/>
-
-
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search Paid Only" action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
+                                <p:commandButton id="btnSearch3" ajax="false" value="Search Not Paid Only" action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -46,7 +45,7 @@
                         <p:dataTable 
                             rowIndexVar="i"
                             id="tblBills" 
-                            value="#{searchController.bills}" 
+                            value="#{searchController.aceptPaymentBills}" 
                             var="bill"   
                             paginator="true"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -90,6 +89,18 @@
 
                                 <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Value" >
+
+                                <h:outputLabel value="#{bill.referenceBill}" >
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Value" >
+
+                                <h:outputLabel value="#{bill.referenceBill.balance}" >
                                 </h:outputLabel>
 
                             </p:column>
