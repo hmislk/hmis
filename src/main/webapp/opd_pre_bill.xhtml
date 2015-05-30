@@ -559,7 +559,7 @@
                                                  process="@this" 
                                                  update="@all" 
                                                  type="button"  
-                                               ajax="false">
+                                                 ajax="false">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
@@ -607,22 +607,10 @@
 
                                 <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
                                 </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
                             </div>
                             <h:panelGroup id="gpPosBill">
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                                <div></div>
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
+                                <div>
+                                    <bi:posOpdBillPre bill="#{opdPreBillController.bills.get(0)}" duplicate="false"/>                        
                                 </div>
                             </h:panelGroup>
                         </h:panelGrid>
