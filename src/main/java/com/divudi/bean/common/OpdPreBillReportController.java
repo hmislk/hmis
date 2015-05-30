@@ -13,6 +13,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -90,6 +91,23 @@ public class OpdPreBillReportController implements Serializable {
         userRefundedBillsPharmacy= createBillsTotals(new RefundBill(), BillType.PharmacySale,getWebUser(),getDepartment(),getToDepartment());
         
     }
+    
+    public void createCashierTableByUserPayment() {
+        
+        if (getWebUser() == null) {
+            JsfUtil.addErrorMessage("Please Select A User");
+            return;
+        }
+        
+        userBilledBills = createBillsTotalsPayment(new BilledBill(), BillType.OpdBathcBill,getWebUser(),getDepartment());
+        userCancellededBills = createBillsTotalsPayment(new CancelledBill(), BillType.OpdBill,getWebUser(),getDepartment());
+        userRefundedBills = createBillsTotalsPayment(new RefundBill(), BillType.OpdBill,getWebUser(),getDepartment());
+
+        userBilledBillsPharmacy= createBillsTotalsPayment(new BilledBill(), BillType.PharmacySale,getWebUser(),getDepartment());
+        userCancellededBillsPharmacy= createBillsTotalsPayment(new CancelledBill(), BillType.PharmacySale,getWebUser(),getDepartment());
+        userRefundedBillsPharmacy= createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale,getWebUser(),getDepartment());
+        
+    }
 
     private double calValue(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department, BillType bt) {
 
@@ -103,6 +121,40 @@ public class OpdPreBillReportController implements Serializable {
                 + " bfp.retired=false "
                 + " and type(b)=:b "
                 + " and b.billType=:bt "
+                + " and p.paymentMethod=:pm "
+                + " and p.institution=:ins "
+                + " and p.createdAt between :fromDate and :toDate";
+
+        if (department != null) {
+            sql += " and p.department=:dep ";
+            m.put("dep", department);
+        }
+
+        if (wUser != null) {
+            sql += " and p.creater=:w ";
+            m.put("w", wUser);
+        }
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("pm", paymentMethod);
+        m.put("b", b.getClass());
+        m.put("bt", bt);
+        m.put("ins", getSessionController().getInstitution());
+
+        return getPaymentFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double calValuePayment(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department, BillType bt) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT sum(p.paidValue) FROM Payment p WHERE "
+                + " p.retired=false "
+                + " and type(p.bill)=:b "
+                + " and p.bill.billType=:bt "
                 + " and p.paymentMethod=:pm "
                 + " and p.institution=:ins "
                 + " and p.createdAt between :fromDate and :toDate";
@@ -173,6 +225,47 @@ public class OpdPreBillReportController implements Serializable {
         return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    private List<Object[]> getBillWithTotalPayment(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department, BillType bt) {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT distinct(p.bill),sum(p.paidValue) FROM Payment p WHERE "
+                + " p.retired=false "
+                + " and type(p.bill)=:b "
+                + " and p.bill.billType=:bt "
+                + " and p.paymentMethod=:pm "
+                + " and p.institution=:ins "
+                + " and p.createdAt between :fromDate and :toDate ";
+        //Payment done deparment-cashier
+        if (department != null) {
+            sql += " and p.department=:dep ";
+            m.put("dep", department);
+        }
+        
+        if (wUser != null) {
+            sql += " and p.creater=:w ";
+            m.put("w", wUser);
+        }
+
+        sql += " group by p.bill "
+                + " order by p.bill.createdAt ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("pm", paymentMethod);
+        m.put("b", b.getClass());
+        m.put("bt", bt);
+        m.put("ins", getSessionController().getInstitution());
+
+        System.out.println("paymentMethod = " + paymentMethod);
+        System.out.println("sql = " + sql);
+        System.out.println("getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) = " + getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP));
+
+        return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public BillsTotals createBillsTotals(Bill b, BillType billType,WebUser wu,Department d,Department td) {
         BillsTotals billsTotals = new BillsTotals();
@@ -219,6 +312,58 @@ public class OpdPreBillReportController implements Serializable {
                 case Cheque:
                     System.out.println("5.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     billsTotals.setCheque(calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+            }
+        }
+
+        return billsTotals;
+    }
+    
+    public BillsTotals createBillsTotalsPayment(Bill b, BillType billType,WebUser wu,Department d) {
+        BillsTotals billsTotals = new BillsTotals();
+        List<Bill> bs = new ArrayList<>();
+        for (PaymentMethod pm : getPaymentMethods) {
+            List<Object[]> objects = getBillWithTotalPayment(b, pm, wu, d, billType);
+            System.out.println("objects = " + objects);
+            if (objects != null) {
+                for (Object[] obj : objects) {
+                    if (obj[0] != null) {
+                        Bill bb = new Bill();
+                        bb = (Bill) obj[0];
+                        System.out.println("bb = " + bb);
+                        bb.setNetTotal((double) obj[1]);
+                        System.out.println("bb = " + bb.getNetTotal());
+                        bb.setPaymentMethod(pm);
+                        System.out.println("bb = " + bb.getPaymentMethod());
+                        if (bb != null) {
+                            bs.add(bb);
+                        }
+                    }
+                }
+            }
+        }
+        billsTotals.setBills(bs);
+        for (PaymentMethod paymentMethod : getPaymentMethods) {
+            switch (paymentMethod) {
+                case Cash:
+                    System.out.println("1.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCash(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Credit:
+                    System.out.println("2.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCredit(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Card:
+                    System.out.println("3.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCard(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Slip:
+                    System.out.println("4.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setSlip(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Cheque:
+                    System.out.println("5.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCheque(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
                     break;
             }
         }

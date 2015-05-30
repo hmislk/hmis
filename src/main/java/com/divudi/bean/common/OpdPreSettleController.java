@@ -741,7 +741,12 @@ public class OpdPreSettleController implements Serializable {
 
         System.out.println("cashPaid = " + cashPaid);
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-            p.setPaidValue(cashPaid);
+            if (cashPaid<getBilledBill().getBalance()) {
+                p.setPaidValue(cashPaid);
+            }else{
+                p.setPaidValue(getBilledBill().getBalance());
+            }
+            
         } else {
             p.setPaidValue(getBilledBill().getNetTotal());
         }
