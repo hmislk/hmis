@@ -663,7 +663,20 @@ public class OpdPreSettleController implements Serializable {
                 for (BillItem bi : b.getBillItems()) {
                     System.err.println("BillItem For In");
                     System.out.println("bi = " + bi);
-                    String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+
+                    String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
+                    BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+                    if (rbi != null) {
+                        System.err.println("rbi = " + rbi.getId());
+                        System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                        System.out.println("rbi.getBill().getDeptId() = " + rbi.getBill().getDeptId());
+                        System.err.println("rbi = " + rbi.getId());
+                        UtilityController.addErrorMessage("Some Bill Item Already Refunded");
+                        continue;
+                    }
+
+                    sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
                     List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
                     System.out.println("billFees = " + billFees.size());
