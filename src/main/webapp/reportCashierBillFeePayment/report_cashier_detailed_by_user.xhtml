@@ -72,6 +72,18 @@
 
                         <ca:opdRefunded data="#{opdPreBillReportController.userRefundedBills}"/>
                         
+                        <p:spacer height="30"/>
+                        
+                        <ca:pharmacyBilled data="#{opdPreBillReportController.userBilledBillsPharmacy}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyCancelled data="#{opdPreBillReportController.userCancellededBillsPharmacy}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyRefunded data="#{opdPreBillReportController.userRefundedBillsPharmacy}"/>
+                        
                     </p:panel>
 
                 </p:panel>

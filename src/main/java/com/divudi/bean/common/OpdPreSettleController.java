@@ -79,6 +79,8 @@ public class OpdPreSettleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    OpdPreBillController opdPreBillController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -558,19 +560,30 @@ public class OpdPreSettleController implements Serializable {
         return "/opd_bill_batch_pre_settle";
     }
 
-    public void settle() {
+    public String settle() {
         System.out.println("cashPaid = " + cashPaid);
         System.out.println("getBilledBill() = " + getBilledBill());
+        
+        if (errorCheck()) {
+            return "";
+        }
+        
+        String str=settleBatchBillAfterFiistTime();
+        cashPaid = 0.0;
+        
+        return str;
+    }
+    
+    public boolean errorCheck(){
         if (cashPaid == 0.0 && getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             JsfUtil.addErrorMessage("Please Enter Correct Amount");
-            return;
+            return true;
         }
         if (getBilledBill() == null) {
             UtilityController.addErrorMessage("Nothing To Pay");
-            return;
+            return true;
         }
-        settleBatchBillAfterFiistTime();
-        cashPaid = 0.0;
+        return false;
     }
 
 //    public void settleBatchBillFiistTime(Bill bill) {
@@ -620,7 +633,7 @@ public class OpdPreSettleController implements Serializable {
 //        getBillFacade().edit(tmp);
 //        JsfUtil.addSuccessMessage("Sucessfully Paid");
 //    }
-    public void settleBatchBillAfterFiistTime() {
+    public String settleBatchBillAfterFiistTime() {
 
         double dbl = 0;
         double pid = 0;
@@ -661,7 +674,16 @@ public class OpdPreSettleController implements Serializable {
         getBilledBill().setBalance(dbl - pid);
         getBilledBill().setNetTotal(dbl);
         getBillFacade().edit(getBilledBill());
-        JsfUtil.addSuccessMessage("Sucessfully Paid");
+        if (getBilledBill().getCashPaid()==getBilledBill().getNetTotal()) {
+            System.out.println("getOpdPreBillController().getBills().size() = " + getOpdPreBillController().getBills().size());
+            getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
+            System.out.println("getOpdPreBillController().getBills().size() = " + getOpdPreBillController().getBills().size());
+            JsfUtil.addSuccessMessage("Sucessfully Fully Paid");
+            return "/bill_print";
+        }else{
+            JsfUtil.addSuccessMessage("Sucessfully Paid");
+            return "";
+        }
     }
 
     public BilledBill createBatchBilledBill(Bill b) {
@@ -719,7 +741,12 @@ public class OpdPreSettleController implements Serializable {
 
         System.out.println("cashPaid = " + cashPaid);
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-            p.setPaidValue(cashPaid);
+            if (cashPaid<getBilledBill().getBalance()) {
+                p.setPaidValue(cashPaid);
+            }else{
+                p.setPaidValue(getBilledBill().getBalance());
+            }
+            
         } else {
             p.setPaidValue(getBilledBill().getNetTotal());
         }
@@ -1045,6 +1072,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public OpdPreBillController getOpdPreBillController() {
+        return opdPreBillController;
+    }
+
+    public void setOpdPreBillController(OpdPreBillController opdPreBillController) {
+        this.opdPreBillController = opdPreBillController;
     }
 
 }
