@@ -544,6 +544,8 @@ public class InwardTimedItemController implements Serializable {
 
         if (tmpPI.getToTime() == null) {
             tmpPI.setToTime(Calendar.getInstance().getTime());
+//            UtilityController.addErrorMessage("Please Enter Stopped Time");
+//            return;
         }
 
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) tmpPI.getItem());

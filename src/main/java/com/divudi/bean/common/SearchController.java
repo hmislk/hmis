@@ -3758,14 +3758,22 @@ public class SearchController implements Serializable {
 
     }
 
+    @Inject
+    WebUserController webUserController;
+    
     public void createTableByKeyword() {
         bills = null;
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType = :billType and b.institution=:ins "
+        sql = "select b from BilledBill b where b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
+        if(!webUserController.hasPrivilege("AdminFilterWithoutDepartment")){
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", getSessionController().getInstitution());
+        }
+        
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(b.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -3796,7 +3804,7 @@ public class SearchController implements Serializable {
         temMap.put("billType", BillType.OpdBill);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
+        
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
