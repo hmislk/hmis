@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail by Discount Scheme Summary">
                 <h:panelGrid columns="8" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  >
@@ -47,7 +47,8 @@
 
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.paymentSchemeSummerys}" var="pss">
-                    <f:facet name="header">                        
+                    <f:facet name="header">
+                        <h:outputLabel value="Pharmacy Sale"/><br/>
                         <h:outputLabel value=" From "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
@@ -112,6 +113,79 @@
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{pharmacySaleReport.billTotal+pharmacySaleReport.canTotal+pharmacySaleReport.refTotal}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:dataTable>
+                
+                <p:dataTable id="sum2" value="#{pharmacySaleReport.paymentSchemeSummeryWholeSale}" var="pss">
+                    <f:facet name="header">
+                        <h:outputLabel value="Pharmacy Whole Sale"/><br/>
+                        <h:outputLabel value=" From "/>
+                        <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
+                        </h:outputLabel>
+                        <h:outputLabel value=" To "/>
+                        <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:column headerText="Scheme Name">
+                        <f:facet name="header">
+                            <h:outputLabel value="Scheme Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.paymentScheme}"/>
+                    </p:column>
+                    <p:column headerText="Bill Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.billTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.billTotalWholeSale}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>                           
+                    <p:column headerText="Cancelled Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Cancelled Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.cancelBillTotal}" style="float: right;" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.canTotalWholeSale}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>                            
+                    <p:column headerText="Refund Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Refund Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.refundBillTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.refTotalWholeSale}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Grand Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Grand Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.billTotal+pwss.cancelBillTotal+pss.refundBillTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.billTotalWholeSale+pharmacySaleReport.canTotalWholeSale+pharmacySaleReport.refTotalWholeSale}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>

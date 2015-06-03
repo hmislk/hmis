@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Movement Report Stock by Date by Batch">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
 
                     <h:outputLabel  rendered="true" value="Department"/>
@@ -55,26 +55,22 @@
                     </p:commandButton>
                 </h:panelGrid>
 
-                <h:panelGrid styleClass="printBlock" columns="2">
-                    <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
-                    <h:outputLabel value="CATEGORY-VICE MOVEMENT REPORT"/>                   
-                    <h:outputLabel value="From Date :  "/>
-                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
-                    </h:outputLabel>
-                    <h:outputLabel value="To Date"/>
-                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
-                    </h:outputLabel>   
-                    <h:outputLabel value="Category"/>                   
-                    <h:outputLabel value="#{pharmacySaleReport.category.name}"/>
-
-                </h:panelGrid>
+                
 
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
+                        <h:outputLabel value="From  "/>
+                        <h:outputLabel value="#{pharmacySaleReport.fromDate}">
+                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
+                        <p:spacer width="10" height="1"/>
+                        <h:outputLabel value="To  "/>
+                        <h:outputLabel value="#{pharmacySaleReport.toDate}">
+                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
+                        <br/>
                     </f:facet>
 
                     <p:column >

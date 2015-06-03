@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
@@ -22,85 +23,105 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
-                        </p:panelGrid>
-                        <p:panelGrid columns="3" >
+                            <h:outputLabel/>
                             <p:commandButton value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+
                         </p:panelGrid>
 
-                        <p:dataTable value="#{channelReportController.rowBundle.rows}" var="r" >
-                            <p:columnGroup type="header" >
-                                <p:row>
-                                    <p:column rowspan="2" headerText="Detail" >
-                                    </p:column>
-                                    <p:column colspan="5" headerText="Collection" >
-                                    </p:column>
-                                    <p:column rowspan="2" headerText="Agency" >
-                                    </p:column>
-                                    <p:column rowspan="5" headerText="Total">
-                                    </p:column>
-                                </p:row>
-                                <p:row >
-                                    <p:column headerText="Cash">
-                                    </p:column>
-                                    <p:column headerText="Credit Card">
-                                    </p:column>
-                                    <p:column headerText="Cheque">
-                                    </p:column>
-                                    <p:column headerText="Slips">
-                                    </p:column>
-                                    <p:column headerText="Total">
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                            <p:column >
-                                <p:outputLabel value="#{r.name}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;"  >
-                                <p:outputLabel value="#{r.cashTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.cardTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.chequeTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.slipTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.collectionTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.agentTotal}" ></p:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;" >
-                                <p:outputLabel value="#{r.value}" ></p:outputLabel>
-                            </p:column>
 
-                            <p:columnGroup type="footer" >
-                                <p:row>
-                                    <p:column  footerText="Total" >
-                                    </p:column>
-                                    <p:column style="text-align: right;"  footerText="#{channelReportController.rowBundle.bundle.cashTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.cardTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.chequeTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.slipTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.collectionTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.agentTotal}">
-                                    </p:column>
-                                    <p:column footerText="#{channelReportController.rowBundle.bundle.value}">
-                                    </p:column>
+                        <p:panel header="Income With Agent Booking">
+                            
+                             
+                            <p:dataTable  value="#{channelReportController.rowBundle.rows}" var="r" >
+                                <f:facet name="header">
+                                   
+                                <h:outputLabel value="#{channelReportController.institution.name}"/>
+                                    <h:outputLabel value="From : " />
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                
+                                <p:columnGroup type="header" >
+                                    <p:row>
+                                        <p:column rowspan="2" headerText="Detail" >
+                                        </p:column>
+                                        <p:column colspan="5" headerText="Collection" >
+                                        </p:column>
+                                        <p:column rowspan="2" headerText="Agency" >
+                                        </p:column>
+                                        <p:column rowspan="5" headerText="Total">
+                                        </p:column>
+                                    </p:row>
+                                    <p:row >
+                                        <p:column headerText="Cash">
+                                        </p:column>
+                                        <p:column headerText="Credit Card">
+                                        </p:column>
+                                        <p:column headerText="Cheque">
+                                        </p:column>
+                                        <p:column headerText="Slips">
+                                        </p:column>
+                                        <p:column headerText="Total">
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                                <p:column >
+                                    <p:outputLabel value="#{r.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;"  >
+                                    <p:outputLabel value="#{r.cashTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.cardTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.chequeTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.slipTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.collectionTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.agentTotal}" ></p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" >
+                                    <p:outputLabel value="#{r.value}" ></p:outputLabel>
+                                </p:column>
 
-                                </p:row>
-                            </p:columnGroup>
-                        </p:dataTable>
+                                <p:columnGroup type="footer" >
+                                    <p:row>
+                                        <p:column  footerText="Total" >
+                                        </p:column>
+                                        <p:column style="text-align: right;"  footerText="#{channelReportController.rowBundle.bundle.cashTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.cardTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.chequeTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.slipTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.collectionTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.agentTotal}">
+                                        </p:column>
+                                        <p:column footerText="#{channelReportController.rowBundle.bundle.value}">
+                                        </p:column>
 
+                                    </p:row>
+                                </p:columnGroup>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
+                            </p:dataTable>
 
+                        </p:panel>
                     </p:panel>
                 </h:form>
             </ui:define>

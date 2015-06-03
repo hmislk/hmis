@@ -62,17 +62,17 @@
 
                             <p:dataTable id="tbl" value="#{institutionLabSumeryController.bills}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="OPD Doctor Payment(By Bill)"/>
+                                    <h:outputLabel value="Handover Reports"/>
                                     <br/>
-                                    <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/>
+                                    <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/><br/>
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:spacer width="30" height="1"/>
                                         <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{institutionLabSumeryController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                 </f:facet>
 
@@ -229,7 +229,7 @@
                                 </p:column>
                             </p:dataTable>
                             <f:facet name="footer">
-                                        <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                                     </f:facet>
                         </p:panel>
                     </p:panel>

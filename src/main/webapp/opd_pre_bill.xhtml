@@ -535,15 +535,6 @@
                                                 <h:outputLabel id="netTotal" value="#{opdPreBillController.netTotal}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
-                                                <h:outputLabel value="Tendered" ></h:outputLabel>
-                                                <p:inputText autocomplete="off"  id="paid" value="#{opdPreBillController.strTenderedValue}" >
-                                                    <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                                    <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdPreBillController.calTotals()}"/>
-                                                </p:inputText>
-                                                <h:outputLabel  value="Balance " ></h:outputLabel>
-                                                <h:outputLabel id="balance" value="#{opdPreBillController.cashBalance}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
                                             </p:panelGrid>
 
                                         </p:panel>
@@ -568,7 +559,7 @@
                                                  process="@this" 
                                                  update="@all" 
                                                  type="button"  
-                                               ajax="false">
+                                                 ajax="false">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
@@ -616,22 +607,10 @@
 
                                 <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
                                 </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
                             </div>
                             <h:panelGroup id="gpPosBill">
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                                <div></div>
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
+                                <div>
+                                    <bi:posOpdBillPre bill="#{opdPreBillController.bills.get(0)}" duplicate="false"/>                        
                                 </div>
                             </h:panelGroup>
                         </h:panelGrid>

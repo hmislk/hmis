@@ -12,7 +12,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:form>
+                <h:form id="frm">
 
 
                     <p:panel header="Stock Report by Batch" >
@@ -31,23 +31,31 @@
                                 <pe:exporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
                                              datasetPadding="4"/>  
                             </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
-                                <p:printer target="tbl" />  
-                            </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
                                              facetBackground="#008000" facetFontSize="15" 
                                              facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
                                              fontName="Courier New" />
                             </p:commandButton>
+
+
+                            <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
+                                             oncomplete="$('#frm\\:print').click()"
+                                             update=":frm:tbl"/>
+                            <p:commandButton id="print" value="Actual print" style="display: none">
+                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
+                                <p:printer target=":frm:tbl" />
+                            </p:commandButton>
+
+
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
                                          value="#{reportsStock.stocks}" var="i" 
-                                         rows="20"
-                                         paginator="true"
+                                         rows="#{reportsStock.rows}"
+                                         paginator="#{reportsStock.paginator}"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >

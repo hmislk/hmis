@@ -21,6 +21,9 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
                             </p:autoComplete>
+                            </h:panelGrid>
+                        <h:panelGrid columns="4" >
+                            <p:spacer width="75" height="1"/>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentStocksMinus()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -37,7 +40,7 @@
 
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{storeReportsStock.department.name} Stock"/>                                     
+                                    <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Batch minus"/>                                     
                                 </f:facet> 
 
                                 <p:column headerText="Item">
@@ -125,6 +128,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

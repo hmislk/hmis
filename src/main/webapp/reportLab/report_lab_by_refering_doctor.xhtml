@@ -17,7 +17,7 @@
                     <f:facet name="header" >
                         <p:outputLabel value="Report by Refering Doctor"/>
                         <p:commandButton value="Process"
-                                       ajax="false"
+                                       ajax="false" style="float: right;"
                                          styleClass="noPrintButton"
                                         action="#{commonReport1.listBillItemsByReferringDoctor}"
                                          />
@@ -59,7 +59,12 @@
 
                         </p:panelGrid>
                     </f:facet>
-                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" >
+                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" 
+                                rows="20"
+                                paginator="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100" 
+                                >
                         <f:facet name="header">
                             <h:outputLabel value="Requests by Referring Doctor "/>
                             <h:outputLabel value="From " />
@@ -79,14 +84,20 @@
                             <h:outputLabel value="#{commonReport1.referringDoctor.person.nameWithTitle}"/>
                         </p:column>
 
-                        <p:column headerText="Bill No" >
+                        <p:column headerText="Bill No" 
+                            sortBy="#{d.bill.insId}" 
+                            filterBy="#{d.bill.insId}"
+                            filterMatchMode="contains">
                             <f:facet name="header">
                                 <h:outputLabel value="Bill No"/>
                             </f:facet>
                             <h:outputLabel value="#{d.bill.insId}"/>
                         </p:column>
 
-                        <p:column headerText="Date/Time" >
+                        <p:column headerText="Date/Time" 
+                            sortBy="#{d.bill.createdAt}" 
+                            filterBy="#{d.bill.createdAt}"
+                            filterMatchMode="contains">
                             <f:facet name="header">
                                 <h:outputLabel value="Date/Time"/>
                             </f:facet>
