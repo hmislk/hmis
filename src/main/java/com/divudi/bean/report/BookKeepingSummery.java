@@ -863,13 +863,15 @@ public class BookKeepingSummery implements Serializable {
 
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
+        List<BillType> lbs = Arrays.asList(btps);
 
         List t = new ArrayList();
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
                 + " where bi.item.department.institution=:ins "
-                + " and  bi.bill.billType= :bTp  "
+                + " and  bi.bill.billType in :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and (bi.bill.paymentMethod = :pm1 "
                 + " or  bi.bill.paymentMethod = :pm2 "
@@ -882,7 +884,7 @@ public class BookKeepingSummery implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("bTp", lbs);
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);

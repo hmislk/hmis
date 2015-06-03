@@ -7,6 +7,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -1364,7 +1365,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private List<Bill> getSaleBillByDepartment(Date date, Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
         Date fd = getCommonFunctions().getStartOfDay(date);
@@ -1917,7 +1918,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantTotalByPaymentMethodByBill(PaymentMethod paymentMethod, Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2032,7 +2033,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantTotalByPaymentMethodByBill(PaymentMethod paymentMethod, BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2074,7 +2075,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantDiscountByDepartmentByBill(Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2167,7 +2168,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantDiscountByDepartmentByBill(BillType billType) {
         //   List<Stock> billedSummery;
         String sql;
@@ -3021,7 +3022,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createDailyOpdFeeSummeryWithCounts() {
-        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
+        BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
     }
 
@@ -4630,8 +4631,7 @@ public class PharmacySaleReport implements Serializable {
             if (!newRow.getBills().isEmpty()) {
                 refundedDetail.getDatedBills().add(newRow);
             }
-            
-            
+
             double sumCashWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Cash, new BilledBill(), BillType.PharmacyWholeSale);
             double sumCreditWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Credit, new BilledBill(), BillType.PharmacyWholeSale);
             double sumCardWholeSale = getSaleValueByDepartmentByBill(nowDate, PaymentMethod.Card, new BilledBill(), BillType.PharmacyWholeSale);
@@ -4703,7 +4703,7 @@ public class PharmacySaleReport implements Serializable {
         refundedDetail.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new RefundBill(), BillType.PharmacySale));
         refundedDetail.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new RefundBill(), BillType.PharmacySale));
         refundedDetail.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card, new RefundBill(), BillType.PharmacySale));
-        
+
         billedDetailWholeSale.setDiscount(calGrantDiscountByDepartmentByBill(new BilledBill(), BillType.PharmacyWholeSale));
         billedDetailWholeSale.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, new BilledBill(), BillType.PharmacyWholeSale));
         billedDetailWholeSale.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, new BilledBill(), BillType.PharmacyWholeSale));
@@ -4727,8 +4727,7 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, BillType.PharmacySale);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacySale);
         grantDiscount = calGrantDiscountByDepartmentByBill(BillType.PharmacySale);
-        
-        
+
         grantCardTotalWholeSale = 0;
         grantCashTotalWholeSale = 0;
         grantCreditTotalWholeSale = 0;
@@ -4976,6 +4975,10 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public Department getDepartment() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+
         return department;
     }
 
@@ -5137,8 +5140,6 @@ public class PharmacySaleReport implements Serializable {
     public void setRefundedDetailWholeSale(PharmacyDetail refundedDetailWholeSale) {
         this.refundedDetailWholeSale = refundedDetailWholeSale;
     }
-    
-    
 
     public PharmacyDetail getBilledDetail() {
         return billedDetail;
@@ -5163,8 +5164,12 @@ public class PharmacySaleReport implements Serializable {
     public void setRefundedDetail(PharmacyDetail refundedDetail) {
         this.refundedDetail = refundedDetail;
     }
-
+    
     public Institution getInstitution() {
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+
         return institution;
     }
 

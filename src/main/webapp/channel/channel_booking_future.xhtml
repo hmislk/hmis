@@ -11,12 +11,12 @@
     <ui:define name="content">
 
         <h:form>
-            
+
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{futureBookingController.speciality}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <p:ajax  event="change" process="@this" update="scStaff" /> 
                             <p:ajax  event="click" process="@this" update="scStaff" /> 
@@ -26,8 +26,8 @@
 
                 <p:panel header="Consultants" id="scStaff" >    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
-                            <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                        <p:selectOneListbox  converter="stfcon" value="#{futureBookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{futureBookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
                             <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
                         </p:selectOneListbox>
@@ -35,14 +35,20 @@
                 </p:panel>
 
                 <p:panel header="Sessions" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
-                    <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
+                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                        <p:ajax event="dateSelect" process="@this date" 
+                                update=":#{p:component('tblSessionsOfSelectedConsultant')}"
+                                listener="#{futureBookingController.generateSessions}" />
+                    </p:calendar>
+
+                    <p:dataTable value="#{futureBookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
-                                 selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
+                                 selection="#{futureBookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
-                                listener="#{bookingController.fillBillSessions}" />  
+                                listener="#{futureBookingController.fillBillSessions}" />  
 
 
                         <p:column headerText="Session" style="text-wrap: none;" >
@@ -79,9 +85,9 @@
 
                 <p:panel header="Bookings" style="min-height: 370px!important;"  >
                     <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
-                                 value="#{bookingController.billSessions}" var='bs'
+                                 value="#{futureBookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
-                                 selection="#{bookingController.selectedBillSession}">
+                                 selection="#{futureBookingController.selectedBillSession}">
                         <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                 listener="#{channelBillController.createBillfees}" />  
 
@@ -115,12 +121,12 @@
 
                             <h:panelGroup id="lblSessionTotal">
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
+                                    value="#{futureBookingController.selectedServiceSession.originatingSession.totalFfee}"
                                     rendered="#{channelBillController.foriegn}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
+                                    value="#{futureBookingController.selectedServiceSession.originatingSession.totalFee}"
                                     rendered="#{!channelBillController.foriegn}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
@@ -260,36 +266,36 @@
                         <p:tab title="Booking" id="booking">
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="Patient Name"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
                                 <p:outputLabel value="Booking Id"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.bookingId}"/>
                                 <p:outputLabel value="Serial No"/>
-                                <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                <ui:repeat value="#{futureBookingController.selectedBillSession.bill.billItems}" var="bis" >
                                     <p:outputLabel value="#{bis.billSession.serialNo}"/>
                                 </ui:repeat>
                                 <p:outputLabel value="Payment Method"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
-                                <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.paymentMethod}"/>
+                                <p:outputLabel value="Agent" rendered="#{futureBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{futureBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="Agent Ref No" rendered="#{futureBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{futureBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                 <p:outputLabel value="Booking User"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                 <p:outputLabel value="Booked At"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.bill.createdAt}"> 
                                     <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                                 <p:outputLabel value="Consultant"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                 <p:outputLabel value="Appointment Date">
                                 </p:outputLabel>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.sessionDate}"> 
                                     <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" >
                                     </f:convertDateTime>
                                 </p:outputLabel>
                                 <p:outputLabel value="Appointment Time">
                                 </p:outputLabel>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
+                                <p:outputLabel value="#{futureBookingController.selectedBillSession.serviceSession.sessionTime}"> 
                                     <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                             </h:panelGrid>                            
@@ -469,31 +475,31 @@
                         <p:tab title="Change" id="change">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
-                                <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
+                                <p:selectOneMenu  value="#{futureBookingController.selectedBillSession.bill.patient.person.title}"  >
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Name"/>
-                                <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
+                                <p:inputText autocomplete="off" value="#{futureBookingController.selectedBillSession.bill.patient.person.name}" />
                                 <p:outputLabel value="Patient"/>
-                                <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
+                                <p:inputText autocomplete="off" value="#{futureBookingController.selectedBillSession.bill.patient.person.phone}"/>
                                 <p:outputLabel value="Current Serial No"/>
-                                <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                <ui:repeat value="#{futureBookingController.selectedBillSession.bill.billItems}" var="bis" >
                                     <p:outputLabel value="#{bis.billSession.serialNo}">                                        
                                     </p:outputLabel>
                                 </ui:repeat>
                                 <p:outputLabel value="Serial No"/>
-                                <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
+                                <p:inputText autocomplete="off" value="#{futureBookingController.serealNo}">                                        
                                 </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
-                                <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
+                                <p:selectBooleanCheckbox value="#{futureBookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
 
-                                <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
-                                                 disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
-                                <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
-                                                 disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Update Serial" action="#{futureBookingController.updateSerial()}"
+                                                 disabled="#{futureBookingController.selectedBillSession.bill.cancelled==true
+                                                             or futureBookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Update Patient" action="#{futureBookingController.updatePatient}"
+                                                 disabled="#{futureBookingController.selectedBillSession.bill.cancelled==true
+                                                             or futureBookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 
                             </h:panelGrid>
 
@@ -511,115 +517,115 @@
 
 
                                 <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.bill.bookingId}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> #{bs.bill.bookingId}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">#{bs.serviceSession.staff.speciality.name}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}">#{bs.serviceSession.staff.speciality.name}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Consultant" filterBy="#{bs.serviceSession.staff.person.nameWithTitle}" filterMatchMode="contains">
 
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  #{bs.serviceSession.staff.person.nameWithTitle}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}">  #{bs.serviceSession.staff.person.nameWithTitle}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Session Name" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  #{bs.serviceSession.name}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}">  #{bs.serviceSession.name}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.serialNo}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}"  value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> #{bs.serialNo}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}"  value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Patient Name" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.bill.patient.person.nameWithTitle}
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> #{bs.bill.patient.person.nameWithTitle}
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column>   
                                 <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column> 
                                 <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column> 
                                 <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                        <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                        <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{futureBookingController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                        <f:setPropertyActionListener target="#{futureBookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{futureBookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column> 
                             </p:dataTable> 
@@ -630,15 +636,15 @@
                             <h:panelGrid columns="2">
                                 <p:panel header="Selected Session">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " action="#{bookingController.nurse}"  onclick="onSubmitButton();" >                                       
+                                        <p:commandButton value="Nurse View " action="#{futureBookingController.nurse}"  onclick="onSubmitButton();" >                                       
                                         </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Doctor View " action="#{futureBookingController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Session View " action="#{futureBookingController.session}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Phone View " action="#{futureBookingController.phone}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="User View " action="#{futureBookingController.user}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                     </h:panelGrid>
 
