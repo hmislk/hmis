@@ -850,6 +850,10 @@ public class PharmacySaleReport implements Serializable {
             sql += " and i.paymentScheme=:ps ";
             m.put("ps", ps);
 
+        }else{
+            
+            sql += " and i.paymentScheme is null ";
+            
         }
 
         sql += " order by i.deptId ";
@@ -4405,6 +4409,7 @@ public class PharmacySaleReport implements Serializable {
         paymentSchemeSummerys = new ArrayList<>();
         paymentSchemeSummeryWholeSale = new ArrayList<>();
         List<PaymentScheme> paymentSchemes = paymentSchemeController.getItems();
+        paymentSchemes.add(null);
 
         for (PaymentScheme ps : paymentSchemes) {
             addSaleValueByDepartmentPaymentSchemeP(paymentSchemeSummerys, ps, BillType.PharmacySale);
@@ -4425,7 +4430,12 @@ public class PharmacySaleReport implements Serializable {
 
     public void addSaleValueByDepartmentPaymentSchemeP(List<PaymentSchemeSummery> schemeSummerys, PaymentScheme ps, BillType billType) {
         PaymentSchemeSummery pss = new PaymentSchemeSummery();
-        pss.setPaymentScheme(ps.getName());
+        System.out.println("ps = " + ps);
+        if (ps==null) {
+            pss.setPaymentScheme("Scheme Not Selected");
+        }else{
+            pss.setPaymentScheme(ps.getName());
+        }
         pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps, billType));
         pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps, billType));
         pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps, billType));
