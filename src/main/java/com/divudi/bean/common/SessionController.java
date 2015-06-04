@@ -226,9 +226,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             return false;
         }
 
-        if (false) {
+        if (true) {
             Calendar calendar = Calendar.getInstance();
-            calendar.set(2015, 05, 03, 23, 59, 59);//2015/june/03/23:00:00
+            calendar.set(2015, 05, 05, 23, 59, 59);//2015/june/03/23:00:00
             calendar.set(Calendar.MILLISECOND, 999);
 
             Date expired = calendar.getTime();
