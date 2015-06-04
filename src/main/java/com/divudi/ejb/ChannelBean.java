@@ -112,7 +112,6 @@ public class ChannelBean {
         return lg.intValue();
     }
 
-    
     public List<ServiceSession> setSessionAt(List<ServiceSession> sessions) {
         int sessionDayCount = 0;
         List<ServiceSession> serviceSessions = new ArrayList<>();
@@ -199,7 +198,7 @@ public class ChannelBean {
         }
         return serviceSessions;
     }
-    
+
     private boolean checkLeaveDate(Date date, Staff staff) {
         System.err.println("Leave Staff " + staff);
         System.err.println("Date " + date);
@@ -336,6 +335,42 @@ public class ChannelBean {
 
         }
 
+        System.err.println("Created Sessions  " + createdSessions);
+        return createdSessions;
+    }
+
+    public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions,Date date) {
+        int sessionDayCount = 0;
+        System.err.println("Passing Sessions " + inputSessions);
+        List<ServiceSession> createdSessions = new ArrayList<>();
+
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return createdSessions;
+        }
+
+        Integer tmp = 0;
+        int rowIndex = 0;
+
+        for (ServiceSession ss : inputSessions) {
+            ServiceSession newSs = new ServiceSession();
+            newSs.setOriginatingSession(ss);
+            newSs.setName(ss.getName());
+            newSs.setMaxNo(ss.getMaxNo());
+            newSs.setStartingTime(ss.getStartingTime());
+            newSs.setSessionWeekday(ss.getSessionWeekday());
+            newSs.setHospitalFee(ss.getHospitalFee());
+            newSs.setProfessionalFee(ss.getProfessionalFee());
+            newSs.setId(ss.getId());
+            newSs.setSessionAt(date);
+            newSs.setSessionDate(date);
+            newSs.setDisplayCount(getBillSessionsCount(ss, date));
+            newSs.setStaff(ss.getStaff());
+            //Temprory
+            newSs.setRoomNo(rowIndex++);
+            //////System.out.println("Specific Count : " + sessionDayCount);
+            createdSessions.add(newSs);
+
+        }
         System.err.println("Created Sessions  " + createdSessions);
         return createdSessions;
     }

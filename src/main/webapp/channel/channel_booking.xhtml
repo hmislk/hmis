@@ -11,7 +11,7 @@
     <ui:define name="content">
 
         <h:form>
-            
+
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
@@ -29,7 +29,8 @@
                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
-                            <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
+                            <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                     listener="#{bookingController.generateSessions}"/>
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
