@@ -36,7 +36,16 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="2)Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
                                     </h:panelGrid>
                                 </p:panel>
-
+                                <p:panel header="7) Cashier Reports(Bill Fee Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed}">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}" />
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}" />
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4) All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml"/>
+                                    </h:panelGrid>                     
+                                </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
                                 <p:panel header="2) Package Reports" style="width: 400px; height: auto" collapsed="true" toggleable="true">
@@ -54,6 +63,16 @@
                                     <h:panelGrid columns="1" >
                                         <p:commandButton styleClass="linkButton" ajax="false" value="1) Summary By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
                                     </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="8) Cashier Reports(Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed}">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml" actionListener="#{commonReport.recreteModal}" />
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml" actionListener="#{commonReport.recreteModal}" />
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4) All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml"/>
+                                    </h:panelGrid>                     
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >

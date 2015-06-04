@@ -17,11 +17,11 @@
 
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel>                        
+                            <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>                        
                         </f:facet>
 
                         <h:panelGrid columns="20"  >
-                            <h:outputLabel value="Pharmacy Retail Bill" />
+                            <h:outputLabel value="OPD Bill" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.paymentMethod}"  >                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
@@ -122,7 +122,14 @@
                                                            value="#{rb.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
+                                        </h:panelGroup> 
+                                        <h:panelGroup rendered="#{rb.refunded}" >
+                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" rendered="#{rb.refunded}"
+                                                           value="#{rb.referenceBill.createdAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
                                     </p:column> 
                                     <p:column >                               
                                         <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
@@ -142,6 +149,11 @@
                                     </p:column>
                                     <p:column >
                                         <h:outputLabel value="#{rb.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{rb.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>

@@ -186,7 +186,7 @@
 
                                             <h:panelGrid columns="1" >
 
-                                                <p:autoComplete styleClass="mediuminput"
+                                                <p:autoComplete styleClass="mediuminput" converter="patientConverter"
                                                                 disabled="#{billController.fromOpdEncounter}"
                                                                 widgetVar="aPt" id="acPt" forceSelection="true" 
                                                                 value="#{billController.searchedPatient}" 
