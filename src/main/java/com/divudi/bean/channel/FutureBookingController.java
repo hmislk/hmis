@@ -433,24 +433,6 @@ public class FutureBookingController implements Serializable {
     }
 
     public void generateSessions(SelectEvent event) {
-//        serviceSessions = new ArrayList<>();
-//        String sql;
-//        Map m = new HashMap();
-//        m.put("staff", getStaff());
-//
-//        if (staff != null) {
-//            sql = "Select s From ServiceSession s "
-//                    + " where s.retired=false "
-//                    + " and s.staff=:staff "
-//                    + " order by s.sessionWeekday";
-//            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
-//            System.err.println("Fetch Sessions " + tmp);
-//            calculateFee(tmp);
-//            System.err.println("Calling Start");
-//            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
-//            System.err.println("Calling End");
-//        }
-
         date = null;
         date = ((Date) event.getObject());
         serviceSessions = new ArrayList<>();
@@ -476,8 +458,9 @@ public class FutureBookingController implements Serializable {
             
             m.put("staff", getStaff());
             m.put("wd", wd);            
-            serviceSessions = getServiceSessionFacade().findBySQL(sql, m);
-            calculateFee(serviceSessions);
+            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            calculateFee(tmp);
+            serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }        
         
         billSessions = new ArrayList<>();        
