@@ -88,6 +88,18 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public Item getItem() {
         return item;
     }
+    
+    public void createInvestigationMonthEndSummeryCounts() {
+        items = new ArrayList<>();
+        for (Item w : getInvestigations()) {
+            InvestigationSummeryData temp = new InvestigationSummeryData();
+            temp.setInvestigation(w);
+            setCountTotal(temp, w);
+            if (temp.getCount() != 0) {
+                items.add(temp);
+            }
+        }
+    }
 
     public void setItem(Item item) {
         this.item = item;
@@ -162,16 +174,16 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
-        items = new ArrayList<>();
-
-        for (Item w : getInvestigations()) {
-            InvestigationSummeryData temp = new InvestigationSummeryData();
-            temp.setInvestigation(w);
-            setCountTotal(temp, w);
-            if (temp.getCount() != 0) {
-                items.add(temp);
-            }
-        }
+//        items = new ArrayList<>();
+//
+//        for (Item w : getInvestigations()) {
+//            InvestigationSummeryData temp = new InvestigationSummeryData();
+//            temp.setInvestigation(w);
+//            setCountTotal(temp, w);
+//            if (temp.getCount() != 0) {
+//                items.add(temp);
+//            }
+//        }
 
         return items;
     }
