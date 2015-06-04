@@ -44,16 +44,18 @@
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrder'}" >
                                 <se:po_request />
                             </h:panelGroup>
-                            
-                               <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferRequest'}" >
+
+                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferRequest'}" >
                                 <se:transfer_request />
                             </h:panelGroup>
-                            
-                               <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferIssue'}" >
+
+                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferIssue'}" >
                                 <se:transfer_issue />
                             </h:panelGroup>
-                            
-                            
+
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferReceive'}" >
+                                <se:transfer_recieve />
+                            </h:panelGroup>
 
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrderApprove'}" >
                                 <se:po_approve />
@@ -66,7 +68,7 @@
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyPurchaseBill'}" >
                                 <se:purchase />
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{searchController.billType eq 'PurchaseReturn'}" >
                                 <se:purchase_return />
                             </h:panelGroup>
@@ -78,7 +80,7 @@
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyAdjustment'}" >
                                 <se:adjustment />
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyWholeSale'}" >
                                 <se:pharmacy_whole_sale />
                             </h:panelGroup>
@@ -86,7 +88,7 @@
                     </p:panel>
 
                 </h:form>
-               
+
             </ui:define>
 
 
