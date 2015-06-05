@@ -5,9 +5,11 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.report.CashierReportController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
+import com.divudi.data.dataStructure.WebUserBillsTotal;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -18,6 +20,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -45,11 +48,18 @@ public class OpdPreBillReportController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     CommonFunctions commonFunctions;
+    @EJB
+    WebUserFacade webUserFacade;
 
     @Inject
     SessionController sessionController;
+    @Inject
+    CashierReportController cashierReportController;
+    @Inject
+    EnumController enumController;
 
     List<Bill> bills;
+    List<WebUserBillsTotal> webUserBillsTotals;
 
     WebUser webUser;
     Department department;//cash getting dept - cashier
@@ -68,6 +78,7 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userRefundedBillsPharmacy;
 
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
+    List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
 
     /**
      * Creates a new instance of OpdPreBillReportController
@@ -108,9 +119,64 @@ public class OpdPreBillReportController implements Serializable {
         userRefundedBillsPharmacy = createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment());
 
     }
-    
 
-    private double calValue(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department d, BillType bt) {
+    public void createCashierTableByAllUserPayment() {
+        System.out.println("in");
+        webUserBillsTotals = new ArrayList<>();
+        System.out.println("getCashiers() = " + getCashiers());
+        for (WebUser wu : getCashiers()) {
+            System.out.println("in 2");
+            WebUserBillsTotal tmp = new WebUserBillsTotal();
+            tmp.setWebUser(wu);
+            List<BillsTotals> billls = new ArrayList<>();
+            double uCard = 0;
+            double uCash = 0;
+            double uCheque = 0;
+            double uCredit = 0;
+            double uSlip = 0;
+            for (BillType btp : getCashFlowBillTypes()) {
+                System.out.println("in 3");
+                for (Bill b : getBillClassTypes) {
+                    System.out.println("in 4");
+                    BillsTotals billsTotals = createTotalsPayment(b, btp, wu, getDepartment());
+                    if (billsTotals.getCard() != 0
+                            || billsTotals.getCash() != 0
+                            || billsTotals.getCheque() != 0
+                            || billsTotals.getCredit() != 0
+                            || billsTotals.getSlip() != 0) {
+
+                        billls.add(billsTotals);
+                        uCard += billsTotals.getCard();
+                        uCash += billsTotals.getCash();
+                        uCheque += billsTotals.getCheque();
+                        uCredit += billsTotals.getCredit();
+                        uSlip += billsTotals.getSlip();
+
+                    }
+                }
+
+            }
+            BillsTotals newSum = new BillsTotals();
+            newSum.setName("Total ");
+            newSum.setBold(true);
+            newSum.setCard(uCard);
+            newSum.setCash(uCash);
+            newSum.setCheque(uCheque);
+            newSum.setCredit(uCredit);
+            newSum.setSlip(uSlip);
+
+            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                System.err.println("SUNN ");
+                billls.add(newSum);
+            }
+
+            tmp.setBillsTotals(billls);
+            webUserBillsTotals.add(tmp);
+        }
+
+    }
+
+    private double calValue(Bill b, PaymentMethod paymentMethod, WebUser wUser, Department department, BillType bt) {
 
         String sql;
         Map m = new HashMap();
@@ -126,15 +192,10 @@ public class OpdPreBillReportController implements Serializable {
                 + " and p.institution=:ins "
                 + " and p.createdAt between :fromDate and :toDate";
 
-        if (d != null) {
+        if (department != null) {
             sql += " and p.department=:dep ";
-            m.put("dep", d);
+            m.put("dep", department);
         }
-        
-//        if (td != null) {
-//            sql += " and bfp.department=:tdep ";
-//            m.put("tdep", td);
-//        }
 
         if (wUser != null) {
             sql += " and p.creater=:w ";
@@ -297,13 +358,6 @@ public class OpdPreBillReportController implements Serializable {
             }
         }
         billsTotals.setBills(bs);
-        if ((d == null && td != null) || (d != null && td == null)) {
-            if (d != null) {
-                billsTotals.setName(d.getName());
-            } else {
-                billsTotals.setName(td.getName());
-            }
-        }
         for (PaymentMethod paymentMethod : getPaymentMethods) {
             switch (paymentMethod) {
                 case Cash:
@@ -382,6 +436,95 @@ public class OpdPreBillReportController implements Serializable {
         }
 
         return billsTotals;
+    }
+
+    public BillsTotals createTotalsPayment(Bill b, BillType billType, WebUser wu, Department d) {
+        BillsTotals billsTotals = new BillsTotals();
+        List<Bill> bs = new ArrayList<>();
+        String name = billType.getLabel() + " ";
+
+        if (b.getClass().equals(BilledBill.class)) {
+            name += "Billed";
+        }
+        if (b.getClass().equals(RefundBill.class)) {
+            name += "Cancelled";
+        }
+        if (b.getClass().equals(CancelledBill.class)) {
+            name += "Refunded";
+        }
+        billsTotals.setName(name);
+        System.out.println("name = " + name);
+        for (PaymentMethod paymentMethod : getPaymentMethods) {
+            switch (paymentMethod) {
+                case Cash:
+                    System.out.println("1.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCash(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Credit:
+                    System.out.println("2.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCredit(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Card:
+                    System.out.println("3.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCard(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Slip:
+                    System.out.println("4.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setSlip(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+                case Cheque:
+                    System.out.println("5.calValue(paymentMethod, getWebUser(), getDepartment()) = " + calValue(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    billsTotals.setCheque(calValuePayment(b, paymentMethod, getWebUser(), getDepartment(), billType));
+                    break;
+            }
+        }
+
+        return billsTotals;
+    }
+
+    public List<WebUser> getCashiers() {
+        String sql;
+        Map temMap = new HashMap();
+        List<WebUser> cashiers = new ArrayList<>();
+        BillType[] btpArr = getCashFlowBillTypes();
+        List<BillType> btpList = Arrays.asList(btpArr);
+        sql = "select us from "
+                + " Payment p"
+                + " join p.bill b "
+                + " join p.creater us "
+                + " where p.retired=false "
+                + " and p.institution=:ins "
+                + " and b.billType in :btp "
+                + " and p.createdAt between :fromDate and :toDate "
+                + " group by us ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", btpList);
+        temMap.put("ins", sessionController.getInstitution());
+        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        if (cashiers == null) {
+            cashiers = new ArrayList<>();
+        }
+
+        return cashiers;
+    }
+
+    public BillType[] getCashFlowBillTypes() {
+        BillType[] b = {
+            BillType.OpdBill,
+            BillType.OpdBathcBill,
+            BillType.PaymentBill,
+            BillType.PettyCash,
+            BillType.CashRecieveBill,
+            BillType.AgentPaymentReceiveBill,
+            BillType.InwardPaymentBill,
+            BillType.PharmacySale,
+            BillType.ChannelCash,
+            BillType.ChannelPaid, //            BillType.PharmacyPurchaseBill,
+        //            BillType.GrnPayment,
+        };
+
+        return b;
     }
 
     //getters and Setters
@@ -512,6 +655,38 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    public CashierReportController getCashierReportController() {
+        return cashierReportController;
+    }
+
+    public void setCashierReportController(CashierReportController cashierReportController) {
+        this.cashierReportController = cashierReportController;
+    }
+
+    public List<WebUserBillsTotal> getWebUserBillsTotals() {
+        return webUserBillsTotals;
+    }
+
+    public void setWebUserBillsTotals(List<WebUserBillsTotal> webUserBillsTotals) {
+        this.webUserBillsTotals = webUserBillsTotals;
+    }
+
+    public EnumController getEnumController() {
+        return enumController;
+    }
+
+    public void setEnumController(EnumController enumController) {
+        this.enumController = enumController;
+    }
+
+    public WebUserFacade getWebUserFacade() {
+        return webUserFacade;
+    }
+
+    public void setWebUserFacade(WebUserFacade webUserFacade) {
+        this.webUserFacade = webUserFacade;
     }
 
 }
