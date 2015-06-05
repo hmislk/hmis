@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"           
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete" >
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="#{revinewReportController.webUser.institution.name}"/>
+                            <br/>
+                            <h:outputLabel value="Casheir Summary :"/>
+                            <h:outputLabel value="#{revinewReportController.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
+                            <h:outputLabel value="#{revinewReportController.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel value="#{revinewReportController.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <au:department value="#{revinewReportController.toDepartment}" />
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                                             styleClass="noPrintButton" style="float: right;"
+                                             action="#{revinewReportController.createCashierTableByDepartment()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                        </f:facet>
+                        <f:facet name="footer">
+                            <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                        </f:facet>
+
+
+                        <h:panelGrid columns="4" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{revinewReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{revinewReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>                            
+
+                        </h:panelGrid>
+
+                        <p:dataTable id="billed" value="#{revinewReportController.userBilledBillsList}" var="b">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Opd Bills "/>
+                            </f:facet>
+
+                            <p:column headerText="Department">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Department"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.name}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.cash}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.credit}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="C Card" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.card}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.cheque}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.slip}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <ca:opdCancelledSummery data="#{revinewReportController.userCancellededBills}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:opdRefundedSummery data="#{revinewReportController.userRefundedBills}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyBilledSummery data="#{revinewReportController.userBilledBillsPharmacy}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyCancelledSummery data="#{revinewReportController.userCancellededBillsPharmacy}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyRefundedSummery data="#{revinewReportController.userRefundedBillsPharmacy}"/>
+
+                    </p:panel>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
