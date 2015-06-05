@@ -11,7 +11,7 @@
     <ui:define name="content">
 
         <h:form>
-            
+
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
@@ -35,6 +35,12 @@
                 </p:panel>
 
                 <p:panel header="Sessions" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
+                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                        <p:ajax event="dateSelect" process="@this date" 
+                                update=":#{p:component('tblSessionsOfSelectedConsultant')}"
+                                listener="#{bookingController.generateSessionsFutureBooking}" />
+                    </p:calendar>
+
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
