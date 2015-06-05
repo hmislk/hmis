@@ -323,17 +323,25 @@ public class SearchController implements Serializable {
     }
 
     public void createReturnSaleBills() {
-        createReturnSaleBills(BillType.PharmacyPre);
+        createReturnSaleBills(BillType.PharmacyPre, true);
+    }
+
+    public void createReturnSaleAllBills() {
+        createReturnSaleBills(BillType.PharmacyPre, false);
     }
 
     public void createReturnWholeSaleBills() {
-        createReturnSaleBills(BillType.PharmacyWholesalePre);
+        createReturnSaleBills(BillType.PharmacyWholesalePre, true);
     }
 
-    public void createReturnSaleBills(BillType billType) {
+    public void createReturnWholeSaleAllBills() {
+        createReturnSaleBills(BillType.PharmacyWholesalePre, false);
+    }
+
+    public void createReturnSaleBills(BillType billType, boolean maxNum) {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
+        m.put("bt", billType);
         m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -362,8 +370,11 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.createdAt desc  ";
-
-        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+        if (maxNum == true) {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+        }else{
+             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        }
 
     }
 
@@ -3392,7 +3403,7 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
-        abs = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP,50);
+        abs = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
 
         List<Bill> pbs = new ArrayList<>();
         Map temMap2 = new HashMap();
@@ -3414,7 +3425,7 @@ public class SearchController implements Serializable {
         temMap2.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
-        pbs = getBillFacade().findBySQLWithoutCache(sql, temMap2, TemporalType.TIMESTAMP,50);
+        pbs = getBillFacade().findBySQLWithoutCache(sql, temMap2, TemporalType.TIMESTAMP, 50);
 
         System.out.println("pbs = " + pbs);
         System.out.println("abs = " + abs);
@@ -3760,7 +3771,7 @@ public class SearchController implements Serializable {
 
     @Inject
     WebUserController webUserController;
-    
+
     public void createTableByKeyword() {
         bills = null;
         String sql;
@@ -3769,11 +3780,11 @@ public class SearchController implements Serializable {
         sql = "select b from BilledBill b where b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
-        if(!webUserController.hasPrivilege("AdminFilterWithoutDepartment")){
+        if (!webUserController.hasPrivilege("AdminFilterWithoutDepartment")) {
             sql += " and b.institution=:ins ";
             temMap.put("ins", getSessionController().getInstitution());
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(b.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -3804,7 +3815,6 @@ public class SearchController implements Serializable {
         temMap.put("billType", BillType.OpdBill);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
