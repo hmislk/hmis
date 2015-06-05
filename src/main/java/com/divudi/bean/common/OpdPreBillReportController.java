@@ -197,6 +197,11 @@ public class OpdPreBillReportController implements Serializable {
             m.put("dep", department);
         }
 
+//        if (td != null) {
+//            sql += " and bfp.department=:tdep ";
+//            m.put("tdep", td);
+//        }
+
         if (wUser != null) {
             sql += " and p.creater=:w ";
             m.put("w", wUser);
@@ -358,6 +363,13 @@ public class OpdPreBillReportController implements Serializable {
             }
         }
         billsTotals.setBills(bs);
+        if ((d == null && td != null) || (d != null && td == null)) {
+            if (d != null) {
+                billsTotals.setName(d.getName());
+            } else {
+                billsTotals.setName(td.getName());
+            }
+        }
         for (PaymentMethod paymentMethod : getPaymentMethods) {
             switch (paymentMethod) {
                 case Cash:
