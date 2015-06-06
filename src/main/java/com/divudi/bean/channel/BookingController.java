@@ -34,6 +34,7 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -103,6 +104,7 @@ public class BookingController implements Serializable {
     boolean printPreview;
     double absentCount;
     int serealNo;
+    Date date;
 
     public String nurse() {
         if (preSet()) {
@@ -333,9 +335,19 @@ public class BookingController implements Serializable {
     public void setStaff(Staff staff) {
         System.err.println("CLIKED");
         this.staff = staff;
-        generateSessions();
+        //generateSessions();
         setSelectedServiceSession(null);
     }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+    
+    
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
@@ -449,6 +461,40 @@ public class BookingController implements Serializable {
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
             System.err.println("Calling End");
         }
+    }
+    
+    public void generateSessionsFutureBooking(SelectEvent event) {
+        date = null;
+        date = ((Date) event.getObject());
+        serviceSessions = new ArrayList<>();
+        Map m = new HashMap();
+
+        Date currenDate = new Date();
+        if (getDate().before(currenDate)) {
+            UtilityController.addErrorMessage("Please Select Future Date");
+            return;
+        }
+
+        String sql = "";
+
+        if (staff != null) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(getDate());
+            int wd = c.get(Calendar.DAY_OF_WEEK);            
+            
+            sql = "Select s From ServiceSession s "
+                    + " where s.retired=false "
+                    + " and s.staff=:staff "
+                    + " and s.sessionWeekday=:wd ";
+            
+            m.put("staff", getStaff());
+            m.put("wd", wd);            
+            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            calculateFee(tmp);
+            serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
+        }        
+        
+        billSessions = new ArrayList<>();        
     }
 
     public boolean isPrintPreview() {

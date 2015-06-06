@@ -242,6 +242,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node705 = new PrivilageNode("Visit Summery", node7, Privileges.ClinicalVisitSummery);
         TreeNode node706 = new PrivilageNode("History", node7, Privileges.ClinicalHistory);
         TreeNode node707 = new PrivilageNode("Administration", node7, Privileges.ClinicalAdministration);
+        TreeNode node708 = new PrivilageNode("Clinical Patient Delete", node7, Privileges.ClinicalPatientDelete);
 
         TreeNode node6 = new PrivilageNode("Administration", tmproot);
         TreeNode node60 = new PrivilageNode("Admin Menu", node6, Privileges.Admin);
@@ -250,6 +251,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node63 = new PrivilageNode("Manage Staff", node6, Privileges.AdminStaff);
         TreeNode node64 = new PrivilageNode("Manage Items/Services", node6, Privileges.AdminItems);
         TreeNode node65 = new PrivilageNode("Manage Fees/Prices/Packages", node6, Privileges.AdminPrices);
+        TreeNode node65a = new PrivilageNode("Filter Without Department", node6, Privileges.AdminFilterWithoutDepartment);
         TreeNode node66 = new PrivilageNode("Membership", node6);
         TreeNode node660 = new PrivilageNode("Membership Menu", node66, Privileges.MemberShip);
         TreeNode node661 = new PrivilageNode("Membership Schemes", node66, Privileges.MembershipSchemes);
@@ -333,6 +335,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node23 = new PrivilageNode("Channelling", tmproot);
         TreeNode node2300 = new PrivilageNode("Channelling Menu", node23, Privileges.Channelling);
         TreeNode node2301 = new PrivilageNode("Channel Booking", node23, Privileges.ChannellingChannelBooking);
+        TreeNode node2308 = new PrivilageNode("Channel Future Booking", node23, Privileges.ChannellingFutureChannelBooking);
         TreeNode node2302 = new PrivilageNode("Past Booking", node23, Privileges.ChannellingPastBooking);
         TreeNode node2303 = new PrivilageNode("Booked List", node23, Privileges.ChannellingBookedList);
         TreeNode node2304 = new PrivilageNode("Doctor Leave", node23, Privileges.ChannellingDoctorLeave);

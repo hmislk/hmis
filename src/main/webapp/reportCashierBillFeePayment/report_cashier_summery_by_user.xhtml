@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"           
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete" >
 
 
     <ui:define name="content">
@@ -32,6 +33,7 @@
                             <h:outputLabel value="#{opdPreBillReportController.toDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
+                            <au:department value="#{opdPreBillReportController.toDepartment}" />
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
                                              styleClass="noPrintButton" style="float: right;"
                                             action="#{opdPreBillReportController.createCashierTableByUser()}" />  
@@ -66,11 +68,23 @@
                         
                         <p:spacer height="30"/>
 
-                        <ca:opdCancelled data="#{opdPreBillReportController.userCancellededBills}"/>
+                        <ca:opdCancelledSummery data="#{opdPreBillReportController.userCancellededBills}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:opdRefunded data="#{opdPreBillReportController.userRefundedBills}"/>
+                        <ca:opdRefundedSummery data="#{opdPreBillReportController.userRefundedBills}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:pharmacyBilledSummery data="#{opdPreBillReportController.userBilledBillsPharmacy}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyCancelledSummery data="#{opdPreBillReportController.userCancellededBillsPharmacy}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacy}"/>
                         
                     </p:panel>
 
