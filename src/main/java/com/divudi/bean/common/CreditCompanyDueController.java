@@ -482,12 +482,12 @@ public class CreditCompanyDueController implements Serializable {
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td "
-                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) !=0.1";
+                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 1 ";
+        
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-
         if (institution != null) {
             sql += " and b.creditCompany =:ins ";
             m.put("ins", institution);
