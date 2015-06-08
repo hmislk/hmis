@@ -67,6 +67,13 @@ public class OpdPreBillReportController implements Serializable {
     Date fromDate;
     Date toDate;
 
+    //final totals
+    double finalCashTot;
+    double finalCreditTot;
+    double finalCardTot;
+    double finalSlipTot;
+    double finalChequeTot;
+
     //Opd summery
     BillsTotals userBilledBills;
     BillsTotals userCancellededBills;
@@ -84,6 +91,14 @@ public class OpdPreBillReportController implements Serializable {
      * Creates a new instance of OpdPreBillReportController
      */
     public OpdPreBillReportController() {
+    }
+    
+    public void makeNull(){
+        bills=new ArrayList<>();
+        webUserBillsTotals=new ArrayList<>();
+        webUser=null;
+        department=null;
+        toDepartment=null;
     }
 
     public void createCashierTableByUser() {
@@ -124,6 +139,13 @@ public class OpdPreBillReportController implements Serializable {
         System.out.println("in");
         webUserBillsTotals = new ArrayList<>();
         System.out.println("getCashiers() = " + getCashiers());
+
+        finalCashTot = 0.0;
+        finalCardTot = 0.0;
+        finalChequeTot = 0.0;
+        finalCreditTot = 0.0;
+        finalSlipTot = 0.0;
+
         for (WebUser wu : getCashiers()) {
             System.out.println("in 2");
             WebUserBillsTotal tmp = new WebUserBillsTotal();
@@ -169,6 +191,12 @@ public class OpdPreBillReportController implements Serializable {
                 System.err.println("SUNN ");
                 billls.add(newSum);
             }
+
+            finalCashTot += newSum.getCash();
+            finalCardTot += newSum.getCard();
+            finalChequeTot += newSum.getCheque();
+            finalCreditTot += newSum.getCredit();
+            finalSlipTot += newSum.getSlip();
 
             tmp.setBillsTotals(billls);
             webUserBillsTotals.add(tmp);
@@ -469,24 +497,24 @@ public class OpdPreBillReportController implements Serializable {
         for (PaymentMethod paymentMethod : getPaymentMethods) {
             switch (paymentMethod) {
                 case Cash:
-                    System.out.println("1.calValuePayment Cash = " + calValuePayment(b, paymentMethod, getWebUser(), d, billType));
-                    billsTotals.setCash(calValuePayment(b, paymentMethod, getWebUser(), d, billType));
+                    System.out.println("1.calValuePayment Cash = " + calValuePayment(b, paymentMethod, wu, d, billType));
+                    billsTotals.setCash(calValuePayment(b, paymentMethod, wu, d, billType));
                     break;
                 case Credit:
-                    System.out.println("2.calValuePayment Credit = " + calValuePayment(b, paymentMethod, getWebUser(), d, billType));
-                    billsTotals.setCredit(calValuePayment(b, paymentMethod, getWebUser(), d, billType));
+                    System.out.println("2.calValuePayment Credit = " + calValuePayment(b, paymentMethod, wu, d, billType));
+                    billsTotals.setCredit(calValuePayment(b, paymentMethod, wu, d, billType));
                     break;
                 case Card:
-                    System.out.println("3.calValuePayment Card = " + calValuePayment(b, paymentMethod, getWebUser(), d, billType));
-                    billsTotals.setCard(calValuePayment(b, paymentMethod, getWebUser(), d, billType));
+                    System.out.println("3.calValuePayment Card = " + calValuePayment(b, paymentMethod, wu, d, billType));
+                    billsTotals.setCard(calValuePayment(b, paymentMethod, wu, d, billType));
                     break;
                 case Slip:
-                    System.out.println("4.calValuePayment Slip = " + calValuePayment(b, paymentMethod, getWebUser(), d, billType));
-                    billsTotals.setSlip(calValuePayment(b, paymentMethod, getWebUser(), d, billType));
+                    System.out.println("4.calValuePayment Slip = " + calValuePayment(b, paymentMethod, wu, d, billType));
+                    billsTotals.setSlip(calValuePayment(b, paymentMethod, wu, d, billType));
                     break;
                 case Cheque:
-                    System.out.println("5.calValuePayment Cheque = " + calValuePayment(b, paymentMethod, getWebUser(), d, billType));
-                    billsTotals.setCheque(calValuePayment(b, paymentMethod, getWebUser(), d, billType));
+                    System.out.println("5.calValuePayment Cheque = " + calValuePayment(b, paymentMethod, wu, d, billType));
+                    billsTotals.setCheque(calValuePayment(b, paymentMethod, wu, d, billType));
                     break;
             }
         }
@@ -523,8 +551,8 @@ public class OpdPreBillReportController implements Serializable {
 
     public BillType[] getCashFlowBillTypes() {
         BillType[] b = {
-            BillType.OpdBill,
             BillType.OpdBathcBill,
+            BillType.OpdBill,
             BillType.PaymentBill,
             BillType.PettyCash,
             BillType.CashRecieveBill,
@@ -699,6 +727,46 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setWebUserFacade(WebUserFacade webUserFacade) {
         this.webUserFacade = webUserFacade;
+    }
+
+    public double getFinalCashTot() {
+        return finalCashTot;
+    }
+
+    public void setFinalCashTot(double finalCashTot) {
+        this.finalCashTot = finalCashTot;
+    }
+
+    public double getFinalCreditTot() {
+        return finalCreditTot;
+    }
+
+    public void setFinalCreditTot(double finalCreditTot) {
+        this.finalCreditTot = finalCreditTot;
+    }
+
+    public double getFinalCardTot() {
+        return finalCardTot;
+    }
+
+    public void setFinalCardTot(double finalCardTot) {
+        this.finalCardTot = finalCardTot;
+    }
+
+    public double getFinalSlipTot() {
+        return finalSlipTot;
+    }
+
+    public void setFinalSlipTot(double finalSlipTot) {
+        this.finalSlipTot = finalSlipTot;
+    }
+
+    public double getFinalChequeTot() {
+        return finalChequeTot;
+    }
+
+    public void setFinalChequeTot(double finalChequeTot) {
+        this.finalChequeTot = finalChequeTot;
     }
 
 }

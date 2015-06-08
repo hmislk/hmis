@@ -39,8 +39,8 @@
 
                         </p:autoComplete>
                         <p:watermark for="it" value="Timed Item"/>
-                        
-                        
+
+
                         <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" onclick="onSubmitButton();"  />
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -52,21 +52,21 @@
                     </p:panel>
                     <p:panel header="Timed Sevice" id="gpBillPreview">                          
                         <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
-                            
-                            
-                <f:facet name="header">
-                    <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{inwardTimedItemController.frmDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="--"/>
-                    <h:outputLabel value="#{inwardTimedItemController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
-                    </h:outputLabel>
-                </f:facet>
-                            
-                            
+
+
+                            <f:facet name="header">
+                                <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
+                                <h:outputLabel value=" : "/>
+                                <h:outputLabel value="#{inwardTimedItemController.frmDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="--"/>
+                                <h:outputLabel value="#{inwardTimedItemController.toDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </f:facet>
+
+
                             <p:column headerText="BHT Number">
                                 <f:facet name="header">
                                     <p:outputLabel value="BHT Number"/>
@@ -99,6 +99,14 @@
                                 </f:facet>
                                 <h:outputLabel value="#{ti.toTime}"   >
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Time">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ti.tmpConsumedTime}"   >
+                                    <f:convertNumber pattern="##0.0"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" headerText="Discount">
