@@ -101,11 +101,11 @@
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Time">
+                            <p:column headerText="Time(Minutes)" styleClass="averageNumericColumn">
                                 <f:facet name="header">
                                     <p:outputLabel value="Time"/>
                                 </f:facet>
-                                <h:outputLabel value="#{ti.tmpConsumedTime}"   >
+                                <h:outputLabel value="#{ti.tmpConsumedTime}" >
                                     <f:convertNumber pattern="##0.0"/>
                                 </h:outputLabel>
                             </p:column>
@@ -149,9 +149,19 @@
                             </p:column>  
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="Total" colspan="7">
+                                    <p:column footerText="Total" colspan="5">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="Total"></p:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{inwardTimedItemController.totalMins}" style="text-align: right;" >
+                                        <f:facet name="footer" >
+                                            <p:outputLabel value="#{inwardTimedItemController.totalMins}"></p:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="" colspan="2">
+                                        <f:facet name="footer" >
+                                            <p:outputLabel value=""></p:outputLabel>
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{inwardTimedItemController.total}">
