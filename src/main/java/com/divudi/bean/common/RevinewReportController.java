@@ -47,15 +47,28 @@ public class RevinewReportController implements Serializable {
     BillsTotals userCancellededBillsPharmacy;
     BillsTotals userRefundedBillsPharmacy;
 
-    //Opd summery
+    //Opd summery List
     List<BillsTotals> userBilledBillsList;
     List<BillsTotals> userCancellededBillsList;
     List<BillsTotals> userRefundedBillsList;
 
-    //Pharmacy summery
+    //Pharmacy summery List
     List<BillsTotals> userBilledBillsPharmacyList;
     List<BillsTotals> userCancellededBillsPharmacyList;
     List<BillsTotals> userRefundedBillsPharmacyList;
+
+    //all summery
+    List<BillsTotals> reNewReportFinalTotal;
+
+    //Opd summery
+    double userBilledBillsTotal;
+    double userCancellededBillsTotal;
+    double userRefundedBillsTotal;
+
+    //Pharmacy summery
+    double userBilledBillsPharmacyTotal;
+    double userCancellededBillsPharmacyTotal;
+    double userRefundedBillsPharmacyTotal;
 
     @Inject
     DepartmentController departmentController;
@@ -236,6 +249,62 @@ public class RevinewReportController implements Serializable {
         this.userRefundedBillsPharmacyList = userRefundedBillsPharmacyList;
     }
 
+    public double getUserBilledBillsTotal() {
+        return userBilledBillsTotal;
+    }
+
+    public void setUserBilledBillsTotal(double userBilledBillsTotal) {
+        this.userBilledBillsTotal = userBilledBillsTotal;
+    }
+
+    public double getUserCancellededBillsTotal() {
+        return userCancellededBillsTotal;
+    }
+
+    public void setUserCancellededBillsTotal(double userCancellededBillsTotal) {
+        this.userCancellededBillsTotal = userCancellededBillsTotal;
+    }
+
+    public double getUserRefundedBillsTotal() {
+        return userRefundedBillsTotal;
+    }
+
+    public void setUserRefundedBillsTotal(double userRefundedBillsTotal) {
+        this.userRefundedBillsTotal = userRefundedBillsTotal;
+    }
+
+    public double getUserBilledBillsPharmacyTotal() {
+        return userBilledBillsPharmacyTotal;
+    }
+
+    public void setUserBilledBillsPharmacyTotal(double userBilledBillsPharmacyTotal) {
+        this.userBilledBillsPharmacyTotal = userBilledBillsPharmacyTotal;
+    }
+
+    public double getUserCancellededBillsPharmacyTotal() {
+        return userCancellededBillsPharmacyTotal;
+    }
+
+    public void setUserCancellededBillsPharmacyTotal(double userCancellededBillsPharmacyTotal) {
+        this.userCancellededBillsPharmacyTotal = userCancellededBillsPharmacyTotal;
+    }
+
+    public double getUserRefundedBillsPharmacyTotal() {
+        return userRefundedBillsPharmacyTotal;
+    }
+
+    public void setUserRefundedBillsPharmacyTotal(double userRefundedBillsPharmacyTotal) {
+        this.userRefundedBillsPharmacyTotal = userRefundedBillsPharmacyTotal;
+    }
+
+    public List<BillsTotals> getReNewReportFinalTotal() {
+        return reNewReportFinalTotal;
+    }
+
+    public void setReNewReportFinalTotal(List<BillsTotals> reNewReportFinalTotal) {
+        this.reNewReportFinalTotal = reNewReportFinalTotal;
+    }
+
     public void makNull() {
         webUser = null;
         department = null;
@@ -249,6 +318,16 @@ public class RevinewReportController implements Serializable {
         userBilledBillsPharmacyList = new ArrayList<>();
         userCancellededBillsPharmacyList = new ArrayList<>();
         userRefundedBillsPharmacyList = new ArrayList<>();
+        reNewReportFinalTotal=new ArrayList<>();
+    }
+
+    public void makeZero() {
+        userBilledBillsTotal = 0.0;
+        userCancellededBillsTotal = 0.0;
+        userRefundedBillsTotal = 0.0;
+        userBilledBillsPharmacyTotal = 0.0;
+        userCancellededBillsPharmacyTotal = 0.0;
+        userRefundedBillsPharmacyTotal = 0.0;
     }
 
     public void createCashierTableByDepartment() {
@@ -257,9 +336,13 @@ public class RevinewReportController implements Serializable {
 
         makeListNull();
 
+        makeZero();
+
         List<Department> departments = getDepartmentController().listAllDepatrments();
 
         for (Department dep : departments) {
+            BillsTotals bt = new BillsTotals();
+
             System.out.println("dep" + dep.getName());
 
             userBilledBills = getOpdPreBillReportController().createBillsTotals(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment(), dep);
@@ -304,7 +387,36 @@ public class RevinewReportController implements Serializable {
                 userRefundedBillsPharmacyList.add(userRefundedBillsPharmacy);
             }
 
+            bt.setName(dep.getName());
+            bt.setCash(userBilledBills.getCash() + userCancellededBills.getCash() + userRefundedBills.getCash()
+                    + userBilledBillsPharmacy.getCash() + userCancellededBillsPharmacy.getCash() + userRefundedBillsPharmacy.getCash());
+            bt.setAgent(userBilledBills.getAgent() + userCancellededBills.getAgent() + userRefundedBills.getAgent()
+                    + userBilledBillsPharmacy.getAgent() + userCancellededBillsPharmacy.getAgent() + userRefundedBillsPharmacy.getAgent());
+            bt.setCard(userBilledBills.getCard() + userCancellededBills.getCard() + userRefundedBills.getCard()
+                    + userBilledBillsPharmacy.getCard() + userCancellededBillsPharmacy.getCard() + userRefundedBillsPharmacy.getCard());
+            bt.setCheque(userBilledBills.getCheque() + userCancellededBills.getCheque() + userRefundedBills.getCheque()
+                    + userBilledBillsPharmacy.getCheque() + userCancellededBillsPharmacy.getCheque() + userRefundedBillsPharmacy.getCheque());
+            bt.setCredit(userBilledBills.getCredit() + userCancellededBills.getCredit() + userRefundedBills.getCredit()
+                    + userBilledBillsPharmacy.getCredit() + userCancellededBillsPharmacy.getCredit() + userRefundedBillsPharmacy.getCredit());
+            bt.setSlip(userBilledBills.getSlip() + userCancellededBills.getSlip() + userRefundedBills.getSlip()
+                    + userBilledBillsPharmacy.getSlip() + userCancellededBillsPharmacy.getSlip() + userRefundedBillsPharmacy.getSlip());
+            
+            if (bt.getCash() != 0 || bt.getCard() != 0 || bt.getAgent() != 0 || bt.getCheque() != 0
+                    || bt.getSlip() != 0 || bt.getCredit() != 0) {
+                reNewReportFinalTotal.add(bt);
+            }
+
         }
+
+    }
+
+    public void getTotal() {
+        double cash;
+        double card;
+        double agent;
+        double cheque;
+        double slip;
+        double credit;
 
     }
 
