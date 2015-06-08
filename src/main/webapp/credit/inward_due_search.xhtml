@@ -98,7 +98,7 @@
                             </p:column>
                             
                             
-                            <p:column headerText="Due"  style="text-align: right;">
+                            <p:column headerText="Due"  style="text-align: right;" >
 
                                 <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)):0.00}">
                                     <f:convertNumber pattern="#,##0.00"/>
