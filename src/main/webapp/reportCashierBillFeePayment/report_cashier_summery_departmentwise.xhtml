@@ -59,7 +59,7 @@
 
                         </h:panelGrid>
 
-                        <p:dataTable id="billed" value="#{revinewReportController.userBilledBillsList}" rendered="#{revinewReportController.userBilledBillsList.size()>0}" var="b">
+                        <p:dataTable id="billed" value="#{revinewReportController.userBilledBillsList}" rendered="#{revinewReportController.userBilledBillsList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Billed"/>
                             </f:facet>
@@ -77,43 +77,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -123,7 +123,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="cancelled" value="#{revinewReportController.userCancellededBillsList}" 
-                                     rendered="#{revinewReportController.userCancellededBillsList.size()>0}" var="b">
+                                     rendered="#{revinewReportController.userCancellededBillsList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Cancell"/>
                             </f:facet>
@@ -141,43 +141,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -187,7 +187,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="refunded" value="#{revinewReportController.userRefundedBillsList}" 
-                                     rendered="#{revinewReportController.userRefundedBillsList.size()>0}" var="b">
+                                     rendered="#{revinewReportController.userRefundedBillsList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Refun"/>
                             </f:facet>
@@ -205,43 +205,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -251,7 +251,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="pbilled" value="#{revinewReportController.userBilledBillsPharmacyList}" 
-                                     rendered="#{revinewReportController.userBilledBillsPharmacyList.size()>0}" var="b">
+                                     rendered="#{revinewReportController.userBilledBillsPharmacyList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Pharmacy Billed"/>
                             </f:facet>
@@ -269,43 +269,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -315,7 +315,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="pcancelled" value="#{revinewReportController.userCancellededBillsPharmacyList}" 
-                                     rendered="#{revinewReportController.userCancellededBillsPharmacyList.size()>0}" var="b">
+                                     rendered="#{revinewReportController.userCancellededBillsPharmacyList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Pharmacy Cancell"/>
                             </f:facet>
@@ -333,43 +333,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -379,7 +379,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="prefunded" value="#{revinewReportController.userRefundedBillsPharmacyList}" 
-                                     rendered="#{revinewReportController.userRefundedBillsPharmacyList.size()>0}" var="b">
+                                     rendered="#{revinewReportController.userRefundedBillsPharmacyList.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="Pharmacy Refund"/>
                             </f:facet>
@@ -397,43 +397,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -443,7 +443,7 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="renew" value="#{revinewReportController.reNewReportFinalTotal}" 
-                                     rendered="#{revinewReportController.reNewReportFinalTotal.size()>0}" var="b">
+                                     rendered="#{revinewReportController.reNewReportFinalTotal.size()>1}" var="b">
                             <f:facet name="header">  
                                 <h:outputLabel value="ReNew Total"/>
                             </f:facet>
@@ -461,43 +461,43 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cash"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cash}" >
+                                <h:outputLabel value="#{b.cash}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Credit" style=" text-align: right" >
+                            <p:column headerText="Credit" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.credit}"  >
+                                <h:outputLabel value="#{b.credit}"  style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="C Card" style=" text-align: right" >
+                            <p:column headerText="C Card" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="C Card"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.card}" >
+                                <h:outputLabel value="#{b.card}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Checque" style=" text-align: right" >
+                            <p:column headerText="Checque" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Checque"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.cheque}" >
+                                <h:outputLabel value="#{b.cheque}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Slip" style=" text-align: right" >
+                            <p:column headerText="Slip" styleClass="averageNumericColumn">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.slip}" >
+                                <h:outputLabel value="#{b.slip}" style="#{b.bold ? 'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
