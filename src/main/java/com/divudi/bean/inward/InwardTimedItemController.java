@@ -187,7 +187,7 @@ public class InwardTimedItemController implements Serializable {
 
         total = 0.0;
         for (PatientItem pi : items) {
-            long l=(pi.getToTime().getTime()-pi.getFromTime().getTime())/1000*60;
+            long l=(pi.getToTime().getTime()-pi.getFromTime().getTime())/(1000*60);
             System.out.println("l = " + l);
             pi.setTmpConsumedTime(l);
             total += pi.getServiceValue();
