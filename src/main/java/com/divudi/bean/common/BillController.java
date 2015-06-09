@@ -156,6 +156,15 @@ public class BillController implements Serializable {
     private List<BillFee> lstBillFeesPrint;
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
+    BillType billType;
+
+    public BillType getBillType() {
+        return billType;
+    }
+
+    public void setBillType(BillType billType) {
+        this.billType = billType;
+    }
 
     public double getCashRemain() {
         return cashRemain;
@@ -204,13 +213,13 @@ public class BillController implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public void calculateSelectedBillTotals(){
+    public void calculateSelectedBillTotals() {
         BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
         grosTotal = bt.getGrossTotal();
         netTotal = bt.getNetTotal();
         discount = bt.getDiscount();
     }
-    
+
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -617,8 +626,26 @@ public class BillController implements Serializable {
     }
 
     public void getPharmacySaleBills() {
-        BillType[] billTypes = {BillType.PharmacySale , BillType.PharmacyWholeSale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        BillType[] billTypes;
+        if (billType == null) {
+            billTypes =  new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
+        } else {
+            billTypes = new BillType[]{billType};
+        }
+        
+        BillListWithTotals r =null;
+        
+        if(paymentMethod==null){
+            r= billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        }else{
+            PaymentMethod[] pms = new PaymentMethod[] {
+                paymentMethod,
+            };
+            r= billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, pms);
+        }
+        
+        
+        
         if (r == null) {
             r = new BillListWithTotals();
             bills = r.getBills();
@@ -641,7 +668,6 @@ public class BillController implements Serializable {
         }
     }
 
-    
     public Double getGrosTotal() {
         return grosTotal;
     }
@@ -662,7 +688,7 @@ public class BillController implements Serializable {
 
     public void getPharmacyBills() {
         BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
@@ -671,7 +697,7 @@ public class BillController implements Serializable {
 
     public void getPharmacyWholeBills() {
         BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution,  null);
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
@@ -687,8 +713,8 @@ public class BillController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
-            fromDate=CommonFunctions.getStartOfDay(new Date());
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -698,8 +724,8 @@ public class BillController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
-            toDate=CommonFunctions.getEndOfDay(new Date());
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1098,7 +1124,6 @@ public class BillController implements Serializable {
         //System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
         //System.out.println("bill = " + bill);
         //System.out.println("bill.getInstitution() = " + bill.getInstitution());
-
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -1155,6 +1180,11 @@ public class BillController implements Serializable {
 
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            return true;
+        }
+        
+        if (getNewPatient().getPerson().getPhone()==null) {
+            UtilityController.addErrorMessage("Please Insert a Phone Number");
             return true;
         }
 

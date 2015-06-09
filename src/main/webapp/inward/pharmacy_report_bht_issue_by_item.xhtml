@@ -47,7 +47,7 @@
                             #{i.count}
                             
                         </p:column>                          
-                        <p:column headerText="Gross Value" style="text-align: right;">
+                        <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.gross}">
                                 <f:convertNumber  pattern="#,#00.00"/>
                             </h:outputLabel>  
@@ -57,7 +57,7 @@
                                 </h:outputLabel> 
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Margin Value" style="text-align: right;">
+                        <p:column headerText="Margin Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.margin}">
                                  <f:convertNumber  pattern="#,#00.00"/>
                             </h:outputLabel> 
@@ -67,7 +67,7 @@
                                 </h:outputLabel>  
                             </f:facet>
                         </p:column>  
-                        <p:column headerText="Discount Value" style="text-align: right;">
+                        <p:column headerText="Discount Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.discount}">
                                 <f:convertNumber  pattern="#,#00.00"/>
                             </h:outputLabel> 
@@ -77,7 +77,7 @@
                                 </h:outputLabel>  
                             </f:facet>
                         </p:column>  
-                        <p:column headerText="Net Value" style="text-align: right;">
+                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.net}">
                                 <f:convertNumber  pattern="#,#00.00"/>
                             </h:outputLabel>   

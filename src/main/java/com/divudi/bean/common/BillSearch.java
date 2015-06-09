@@ -25,6 +25,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.LazyBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashTransaction;
@@ -35,6 +36,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemBatchFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
@@ -98,6 +100,8 @@ public class BillSearch implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    PaymentFacade paymentFacade;
     ////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -114,6 +118,8 @@ public class BillSearch implements Serializable {
     private WebUserController webUserController;
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
+    @Inject
+    OpdPreSettleController opdPreSettleController;
     private SearchKeyword searchKeyword;
     Institution creditCompany;
     PatientInvestigation patientInvestigation;
@@ -378,6 +384,19 @@ public class BillSearch implements Serializable {
                 UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
                 return false;
             }
+            //Add for check refund is already done
+            String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + i.getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                System.err.println("rbi = " + rbi.getId());
+                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                System.out.println("rbi.getBill().getDeptId() = " + rbi.getBill().getDeptId());
+                System.err.println("rbi = " + rbi.getId());
+                UtilityController.addErrorMessage("This Bill Item Already Refunded");
+                return false;
+            }
+            //
 
 //            if (!i.isRefunded()) {
             refundTotal += i.getGrossValue();
@@ -619,8 +638,13 @@ public class BillSearch implements Serializable {
             }
 
             RefundBill rb = (RefundBill) createRefundBill();
-
-            refundBillItems(rb);
+            Payment p=getOpdPreSettleController().createPayment(rb, paymentMethod);
+            refundBillItems(rb,p);
+            System.out.println("getOpdPreSettleController().calBillPaidValue(rb) = " + getOpdPreSettleController().calBillPaidValue(rb));
+            System.out.println("1p.getPaidValue() = " + p.getPaidValue());
+            p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
+            System.out.println("2p.getPaidValue() = " + p.getPaidValue());
+            paymentFacade.edit(p);
 
             calculateRefundBillFees(rb);
 
@@ -791,12 +815,49 @@ public class BillSearch implements Serializable {
 
             bi.setRefunded(Boolean.TRUE);
             getBillItemFacede().edit(bi);
+            System.out.println("bi.getRefunded() = " + bi.getRefunded());
+            BillItem bbb = getBillItemFacade().find(bi.getId());
+            System.out.println("bbb.getRefunded() = " + bbb.getRefunded());
 
             String sql = "Select bf From BillFee bf where "
                     + " bf.retired=false and bf.billItem.id=" + bi.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
 
             returnBillFee(rb, rbi, tmp);
+
+        }
+    }
+    
+    public void refundBillItems(RefundBill rb,Payment p) {
+        for (BillItem bi : refundingItems) {
+            //set Bill Item as Refunded
+
+            BillItem rbi = new BillItem();
+            rbi.copy(bi);
+            rbi.invertValue(bi);
+            rbi.setBill(rb);
+            rbi.setCreatedAt(Calendar.getInstance().getTime());
+            rbi.setCreater(getSessionController().getLoggedUser());
+            rbi.setReferanceBillItem(bi);
+            getBillItemFacede().create(rbi);
+
+            bi.setRefunded(Boolean.TRUE);
+            getBillItemFacede().edit(bi);
+            System.out.println("bi.getRefunded() = " + bi.getRefunded());
+            BillItem bbb = getBillItemFacade().find(bi.getId());
+            System.out.println("bbb.getRefunded() = " + bbb.getRefunded());
+
+            String sql = "Select bf From BillFee bf where "
+                    + " bf.retired=false and bf.billItem.id=" + bi.getId();
+            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+
+            returnBillFee(rb, rbi, tmp);
+
+            //create BillFeePayments For Refund
+            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + rbi.getId();
+            List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
+            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(rb, tmpC, p);
+            //
 
         }
     }
@@ -999,7 +1060,8 @@ public class BillSearch implements Serializable {
                     || (getBill().getBillType() == BillType.OpdBill && getWebUserController().hasPrivilege("OpdCancel"))) {
 
                 getBillFacade().create(cb);
-                List<BillItem> list = cancelBillItems(cb);
+                Payment p=getOpdPreSettleController().createPayment(cb, paymentMethod);
+                List<BillItem> list = cancelBillItems(cb,p);
                 cb.setBillItems(list);
                 billFacade.edit(cb);
                 getBill().setCancelled(true);
@@ -1145,6 +1207,7 @@ public class BillSearch implements Serializable {
             bf.invertValue(nB);
             bf.setBill(rb);
             bf.setBillItem(bt);
+            bf.setSettleValue(0 - nB.getSettleValue());
             bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             bf.setCreater(getSessionController().getLoggedUser());
 
@@ -1243,7 +1306,7 @@ public class BillSearch implements Serializable {
     public void setBillsApproving(List<Bill> billsApproving) {
         this.billsApproving = billsApproving;
     }
-
+    
     private List<BillItem> cancelBillItems(Bill can) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : getBillItems()) {
@@ -1289,6 +1352,57 @@ public class BillSearch implements Serializable {
         return list;
     }
 
+    private List<BillItem> cancelBillItems(Bill can,Payment p) {
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem nB : getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(can);
+
+            if (can.getBillType() != BillType.PaymentBill) {
+                b.setItem(nB.getItem());
+            } else {
+                b.setReferanceBillItem(nB.getReferanceBillItem());
+            }
+
+            b.setNetValue(0 - nB.getNetValue());
+            b.setGrossValue(0 - nB.getGrossValue());
+            b.setRate(0 - nB.getRate());
+
+            b.setCatId(nB.getCatId());
+            b.setDeptId(nB.getDeptId());
+            b.setInsId(nB.getInsId());
+            b.setDiscount(nB.getDiscount());
+            b.setQty(1.0);
+            b.setRate(nB.getRate());
+
+            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            b.setPaidForBillFee(nB.getPaidForBillFee());
+
+            getBillItemFacede().create(b);
+
+            cancelBillComponents(can, b);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
+            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+////////////////////////
+
+            cancelBillFee(can, b, tmp);
+
+            //create BillFeePayments For cancel
+            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+            List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
+            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(can, tmpC, p);
+            //
+
+            list.add(b);
+
+        }
+
+        return list;
+    }
+
     private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
@@ -1303,6 +1417,7 @@ public class BillSearch implements Serializable {
             bf.setBill(can);
             bf.setBillItem(bt);
             bf.setFeeValue(0 - nB.getFeeValue());
+            bf.setSettleValue(0 - nB.getSettleValue());
 
             bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             bf.setCreater(getSessionController().getLoggedUser());
@@ -2019,6 +2134,14 @@ public class BillSearch implements Serializable {
 
     public void setBillItemList(List<BillItem> billItemList) {
         this.billItemList = billItemList;
+    }
+
+    public OpdPreSettleController getOpdPreSettleController() {
+        return opdPreSettleController;
+    }
+
+    public void setOpdPreSettleController(OpdPreSettleController opdPreSettleController) {
+        this.opdPreSettleController = opdPreSettleController;
     }
 
     public class BillTypeIncomeRecord {

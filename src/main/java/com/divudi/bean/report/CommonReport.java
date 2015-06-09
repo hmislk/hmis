@@ -1173,9 +1173,21 @@ public class CommonReport implements Serializable {
     List<BillItem> billItems;
 
     public void createGRNBillItemForAsset() {
+        billItems = new ArrayList<>();
+        billItems=createStoreGRNBillItem(DepartmentType.Inventry);
+        System.out.println("billItems Size = " + billItems.size());
+    }
+    
+    public void createGRNBillItemForStore() {
+        billItems = new ArrayList<>();
+        billItems=createStoreGRNBillItem(DepartmentType.Store);
+        System.out.println("billItems Size = " + billItems.size());
+    }
+    
+    public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
         String sql;
         Map m = new HashMap();
-        billItems = new ArrayList<>();
+        List<BillItem> bs=new ArrayList<>();
 
         sql = " SELECT bi FROM BillItem bi WHERE "
                 + " type(bi.bill)=:bill "
@@ -1189,11 +1201,13 @@ public class CommonReport implements Serializable {
         m.put("toDate", getToDate());
         m.put("bill", BilledBill.class);
         m.put("btp", BillType.StoreGrnBill);
-        m.put("dt", DepartmentType.Inventry);
+        m.put("dt", dt);
 
-        billItems = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bs = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
         //System.out.println("billItems = " + billItems);
-        //System.out.println("billItems Size = " + billItems.size());
+        System.out.println("billItems Size = " + bs.size());
+        
+        return bs;
     }
 
     public List<BillItem> getBillItems() {

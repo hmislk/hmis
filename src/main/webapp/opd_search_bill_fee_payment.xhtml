@@ -66,6 +66,22 @@
                                 <h:outputLabel value="#{bfp.payment.paidValue}" >                                      
                                 </h:outputLabel>
                             </p:column>
+                            <p:column headerText="dep" >
+                                <h:outputLabel value="#{bfp.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="dep payment" >
+                                <h:outputLabel value="#{bfp.payment.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="institution" >
+                                <h:outputLabel value="#{bfp.institution.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="institution payment" >
+                                <h:outputLabel value="#{bfp.payment.institution.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>
                             <p:column headerText="Billed by" >
                                 <h:outputLabel value="#{bfp.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
