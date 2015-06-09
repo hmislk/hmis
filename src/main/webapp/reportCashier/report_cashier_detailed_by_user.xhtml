@@ -258,7 +258,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column colspan="2" footerText="Total"/>
-                                    <p:column style="text-align: right;" footerText="#{commonReport.cashInBills.cash}">
+                                    <p:column footerText="#{commonReport.cashInBills.cash}" styleClass="averageNumericColumn">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBills.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -319,7 +319,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column colspan="2" footerText="Total"/>
-                                    <p:column style="text-align: right;" footerText="#{commonReport.cashInBillsCancel.cash}">
+                                    <p:column  footerText="#{commonReport.cashInBillsCancel.cash}" styleClass="averageNumericColumn">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBillsCancel.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -380,7 +380,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column colspan="2" footerText="Total"/>
-                                    <p:column style="text-align: right;" footerText="#{commonReport.cashOutBills.cash}">
+                                    <p:column styleClass="averageNumericColumn" footerText="#{commonReport.cashOutBills.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBills.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -441,7 +441,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column colspan="2" footerText="Total"/>
-                                    <p:column style="text-align: right;" footerText="#{commonReport.cashOutBillsCancel.cash}">
+                                    <p:column styleClass="averageNumericColumn" footerText="#{commonReport.cashOutBillsCancel.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBillsCancel.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -502,7 +502,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column colspan="2" footerText="Total"/>
-                                    <p:column style="text-align: right;" footerText="#{commonReport.cashAdjustmentBills.cash}">
+                                    <p:column styleClass="averageNumericColumn" footerText="#{commonReport.cashAdjustmentBills.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashAdjustmentBills.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
