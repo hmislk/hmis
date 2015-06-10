@@ -70,10 +70,12 @@
                         <h:outputLabel value="#{p.creater.staff.person.nameWithTitle}"/>                          
                     </p:column>
                     
-                    <p:column headerText="Value">                       
+                    <p:column headerText="Value" styleClass="averageNumericColumn">                       
                         <h:outputLabel value="#{p.netTotal}"/>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{searchController.netTotalValue}"/>
+                            <h:outputLabel value="#{searchController.netTotalValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
                         </f:facet>
                     </p:column>
                     

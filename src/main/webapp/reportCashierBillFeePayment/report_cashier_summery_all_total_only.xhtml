@@ -21,14 +21,14 @@
                                          value="Process" 
                                          styleClass="noPrintButton" 
                                          style="float: right;" 
-                                         actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentDetail}" />  
+                                         actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentSummery}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="reportPrint" />
                         </p:commandButton>  
 
-                        <p:commandButton actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentDetail}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
+                        <p:commandButton actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentSummery}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" subTable="true"/>
                         </p:commandButton>  
 
@@ -62,7 +62,6 @@
 
                     </h:panelGrid>
                     <br/>
-                    #{opdPreBillReportController.webUser.webUserPerson.name}
                     <p:dataTable id="tbl" value="#{opdPreBillReportController.webUserBillsTotals}" var="csh">
 
                         <p:columnGroup type="header">
@@ -73,6 +72,8 @@
                                 <p:column headerText="C Card"/>
                                 <p:column headerText="Cheque"/>
                                 <p:column headerText="Slip"/>
+                                <p:column headerText="Handover Date"/>
+                                <p:column headerText="Checked By"/>
                             </p:row>
                         </p:columnGroup>
 
@@ -86,38 +87,44 @@
                                 </h:commandLink>
                             </f:facet>
 
-                            <p:column>
-                                <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
+                            <p:column >
+                                <h:outputLabel value="#{dt.name}" />
                             </p:column>
 
                             <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dt.cash}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.cash}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dt.credit}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.credit}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dt.card}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.card}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
                             <p:column style="text-align: right;">
-                                <h:outputLabel value="#{dt.cheque}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.cheque}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
                             <p:column style="text-align: right;" >
-                                <h:outputLabel value="#{dt.slip}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.slip}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <h:outputLabel value="...../...../......." />
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value=".............." />
                             </p:column>
                         </p:subTable>
 
