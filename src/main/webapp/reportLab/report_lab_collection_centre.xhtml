@@ -116,7 +116,7 @@
                         <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
                     </p:column>
 
-                    <p:column headerText="Discount" style="text-align: right;" >
+                    <p:column headerText="Discount" styleClass="averageNumericColumn" >
                         <f:facet name="header">
                             <h:outputLabel value="Discount"/>                        
                         </f:facet>
@@ -124,7 +124,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>                    
-                    <p:column headerText="Pro Total" style="text-align: right;">
+                    <p:column headerText="Pro Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Pro Total"/>                        
                         </f:facet>
@@ -133,7 +133,7 @@
                         </h:outputLabel>
                     </p:column>
                     
-                     <p:column headerText="Hos Total" style="text-align: right;">
+                     <p:column headerText="Hos Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Hos Total"/>                        
                         </f:facet>
@@ -142,7 +142,7 @@
                         </h:outputLabel>
                     </p:column>
                     
-                    <p:column headerText="Net Total" style="text-align: right;">
+                    <p:column headerText="Net Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Net Total"/>                        
                         </f:facet>

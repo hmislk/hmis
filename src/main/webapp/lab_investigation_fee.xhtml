@@ -49,7 +49,8 @@
 
 
                                     <h:outputText value="Institution"/>
-                                    <h:selectOneListbox id="cmbInstitution" size="1" value="#{itemFeeController.currentFee.institution}" >
+                                    <h:selectOneListbox id="cmbInstitution" size="1"
+                                                        value="#{itemFeeController.currentFee.institution}" >
                                         <f:selectItem itemLabel="Select Institution"/>
                                         <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                         <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
@@ -89,8 +90,7 @@
                                         #{bi.staff.person.nameWithTitle}
                                     </p:column>
                                     <p:column headerText="Institution">
-                                        
-                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" converter="institutionConverter">                                            
+                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" converter="institutionConverter" >                                            
                                             <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                             <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                         </h:selectOneListbox>

@@ -105,7 +105,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Charges"  >
+                                <p:column headerText="Charges" styleClass="averageNumericColumn" >
                                     <h:outputLabel value="#{billedBill.netValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -157,7 +157,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Charges"  >
+                                <p:column headerText="Charges"  styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{cancelledBill.netValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -210,7 +210,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Charges"  >
+                                <p:column headerText="Charges" styleClass="averageNumericColumn" >
                                     <h:outputLabel value="#{refundBill.paidForBillFee.feeValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>

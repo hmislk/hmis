@@ -72,17 +72,21 @@
                         <f:facet name="header">
                             <p:outputLabel value="Bill No"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.insId}" />
+                        <p:outputLabel value="#{b.deptId}" />
                     </p:column>
 
-                    <p:column headerText="Staff Code">
+                    <p:column headerText="Staff Code" 
+                              filterBy="#{b.toStaff.code}" 
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Staff Code"/>
                         </f:facet>
                         <p:outputLabel value="#{b.toStaff.code}" />
                     </p:column>
 
-                    <p:column headerText="Staff Name">
+                    <p:column headerText="Staff Name" 
+                              filterBy="#{b.toStaff.person.nameWithTitle}" 
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Staff Name"/>
                         </f:facet>

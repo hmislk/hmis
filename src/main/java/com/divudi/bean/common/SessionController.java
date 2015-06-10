@@ -75,8 +75,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
     WebUser webUser;
-    
-    
+
     String billNo;
     String phoneNo;
 
@@ -226,6 +225,22 @@ public class SessionController implements Serializable, HttpSessionListener {
             UtilityController.addErrorMessage("Please enter a username");
             return false;
         }
+
+        if (false) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(2015, 05, 05, 23, 59, 59);//2015/june/05/23:00:00
+            calendar.set(Calendar.MILLISECOND, 999);
+
+            Date expired = calendar.getTime();
+            System.out.println("expired = " + expired);
+            Date nowDate = new Date();
+            System.out.println("nowDate = " + nowDate);
+
+            if (nowDate.after(expired)) {
+                UtilityController.addErrorMessage("Your Application has Expired");
+                return false;
+            }
+        }
         // password
         if (isFirstVisit()) {
             prepareFirstVisit();
@@ -365,7 +380,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
     }
-    
+
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
@@ -700,8 +715,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
     }
-    
-    
 
     public void setPrivilegeses(List<Privileges> privilegeses) {
         this.privilegeses = privilegeses;
