@@ -156,7 +156,8 @@
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
                             <p:column headerText="Gross Value"  
-                                      sortBy="#{bill.total}">
+                                      sortBy="#{bill.total}"
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -164,7 +165,8 @@
 
                             </p:column>
                             <p:column headerText="Discount" 
-                                      sortBy="#{bill.discount}">
+                                      sortBy="#{bill.discount}" 
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -172,7 +174,8 @@
 
                             </p:column>
                             <p:column headerText="Net Value" 
-                                      sortBy="#{bill.netTotal}" >
+                                      sortBy="#{bill.netTotal}" 
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
