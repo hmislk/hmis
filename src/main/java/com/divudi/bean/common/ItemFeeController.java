@@ -154,7 +154,8 @@ public class ItemFeeController implements Serializable {
         itemFeeFacade.edit(itemFee);
 
         itemFee.getItem().setTotal(calTot());
-        ejbFacade.edit((Investigation) itemFee.getItem());
+//        ejbFacade.edit((Investigation) itemFee.getItem());
+        getEjbFacade().edit((Investigation)itemFee.getItem());
     }
 
     public void removeFee() {
