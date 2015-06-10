@@ -26,7 +26,11 @@
             <artifactId>joda-time</artifactId>
             <version>2.7</version>
         </dependency>
-
+<!--        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.3</version>
+        </dependency> -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
@@ -61,11 +65,7 @@
             <artifactId>primefaces</artifactId>  
             <version>4.0</version>  
         </dependency>  
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.6</version>
-        </dependency>
+       
 
         <dependency>
             <groupId>com.lowagie</groupId>
@@ -132,11 +132,7 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1</version>
         </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.3</version>
-        </dependency>            
+                   
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>

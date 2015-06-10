@@ -19,6 +19,9 @@
         </p:commandButton>
         <p:dataTable id="tb1" value="#{cc.attrs.bill.billItems}" var="bip"
                      rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?bip.inwardChargeType.label eq 'Linen Charges' ?'redText':'':'noDisplayRow' }">
+            <p:column headerText="searialNo">
+                <h:outputLabel   value="#{bip.searialNo}"/>
+            </p:column>
             <p:column headerText="Inward Charge Type">
                 <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
             </p:column>
