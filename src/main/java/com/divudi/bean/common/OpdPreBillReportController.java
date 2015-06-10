@@ -92,13 +92,13 @@ public class OpdPreBillReportController implements Serializable {
      */
     public OpdPreBillReportController() {
     }
-    
-    public void makeNull(){
-        bills=new ArrayList<>();
-        webUserBillsTotals=new ArrayList<>();
-        webUser=null;
-        department=null;
-        toDepartment=null;
+
+    public void makeNull() {
+        bills = new ArrayList<>();
+        webUserBillsTotals = new ArrayList<>();
+        webUser = null;
+        department = null;
+        toDepartment = null;
     }
 
     public void createCashierTableByUser() {
@@ -119,7 +119,9 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByUserPayment() {
-
+        System.err.println("getWebUser() = " + getWebUser());
+        System.err.println("Date F = " + getFromDate());
+        System.err.println("Date T = " + getToDate());
         if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
@@ -134,8 +136,27 @@ public class OpdPreBillReportController implements Serializable {
         userRefundedBillsPharmacy = createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment());
 
     }
+    
+    public String createCashierTableByUserPaymentForDetail() {
+        System.err.println("getWebUser() = " + getWebUser());
+        System.err.println("Date F = " + getFromDate());
+        System.err.println("Date T = " + getToDate());
 
-    public void createCashierTableByAllUserPayment() {
+        createCashierTableByUserPayment();
+        
+        return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment";
+        
+    }
+    
+    public void createCashierTableByAllUserPaymentDetail(){
+        createCashierTableByAllUserPayment(true);
+    }
+    
+    public void createCashierTableByAllUserPaymentSummery(){
+        createCashierTableByAllUserPayment(false);
+    }
+
+    public void createCashierTableByAllUserPayment(boolean detail) {
         System.out.println("in");
         webUserBillsTotals = new ArrayList<>();
         System.out.println("getCashiers() = " + getCashiers());
@@ -167,7 +188,9 @@ public class OpdPreBillReportController implements Serializable {
                             || billsTotals.getCredit() != 0
                             || billsTotals.getSlip() != 0) {
 
-                        billls.add(billsTotals);
+                        if (detail) {
+                            billls.add(billsTotals);
+                        }
                         uCard += billsTotals.getCard();
                         uCash += billsTotals.getCash();
                         uCheque += billsTotals.getCheque();
@@ -767,6 +790,14 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setFinalChequeTot(double finalChequeTot) {
         this.finalChequeTot = finalChequeTot;
+    }
+
+    public boolean isBack() {
+        return back;
+    }
+
+    public void setBack(boolean back) {
+        this.back = back;
     }
 
 }
