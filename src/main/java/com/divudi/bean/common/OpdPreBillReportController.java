@@ -792,12 +792,12 @@ public class OpdPreBillReportController implements Serializable {
         this.finalChequeTot = finalChequeTot;
     }
 
-    public boolean isBack() {
-        return back;
-    }
-
-    public void setBack(boolean back) {
-        this.back = back;
-    }
+//    public boolean isBack() {
+//        return back;
+//    }
+//
+//    public void setBack(boolean back) {
+//        this.back = back;
+//    }
 
 }
