@@ -463,7 +463,7 @@ public class BookingController implements Serializable {
         }
     }
     
-    public void generateSessionsFutureBooking(SelectEvent event) {
+    public  void generateSessionsFutureBooking(SelectEvent event) {
         date = null;
         date = ((Date) event.getObject());
         serviceSessions = new ArrayList<>();
@@ -494,7 +494,7 @@ public class BookingController implements Serializable {
             serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }        
         
-        billSessions = new ArrayList<>();        
+        billSessions = new ArrayList<>();
     }
 
     public boolean isPrintPreview() {

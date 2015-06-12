@@ -3999,17 +3999,17 @@ public class PharmacySaleReport implements Serializable {
 
         billedPaymentSummery.setBills(listRow);
 
-        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash));
+        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash));
 
         ////////////
-        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit));
+        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit));
 
         ////////////////
-        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card));
+        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card));
 
-        grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+        grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card);
+        grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
+        grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
     }
 

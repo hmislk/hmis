@@ -88,18 +88,14 @@
                                     </p:column>
                                     <p:column headerText="Staff">
                                         #{bi.staff.person.nameWithTitle}
-                                    </p:column>
+                                    </p:column>                                   
+
                                     <p:column headerText="Institution">
-                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" converter="institutionConverter" >                                            
-                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                        </h:selectOneListbox>
-                                    </p:column>
-                                    <p:column headerText="Department">
-                                        
-                                        <h:selectOneListbox id="cmbDep" size="1" value="#{bi.department.name}">                                            
-                                            <f:selectItems value="#{itemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
-                                        </h:selectOneListbox>
+                                        <h:outputLabel value="#{bi.institution.name}"/>
+                                    </p:column>                                   
+
+                                    <p:column headerText="Department">                                        
+                                        <h:outputLabel value="#{bi.department.name}"/>
                                     </p:column>
 
                                     <p:column headerText="Id">

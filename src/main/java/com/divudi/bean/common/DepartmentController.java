@@ -90,11 +90,11 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> listAllDepatrments() {
-
+        List<Department> departments;
         String sql = "Select d From Department d "
                 + " where d.retired=false ";
-        items = getFacade().findBySQL(sql);
-        return items;
+        departments = getFacade().findBySQL(sql);
+        return departments;
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins) {
