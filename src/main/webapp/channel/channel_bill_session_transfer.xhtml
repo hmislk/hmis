@@ -28,7 +28,8 @@
                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
-                            <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"/> 
+                            <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                     listener="#{bookingController.generateSessions}"/> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -37,7 +38,7 @@
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
-                                 selection="#{bookingController.selectedServiceSession}" >
+                                 selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} "
@@ -67,11 +68,11 @@
                     </p:dataTable>
                 </p:panel>
 
-                <p:panel header="Bookings">
+                <p:panel header="Absent Bookings">
                     <p:dataTable id="tblBookingsOfSelectedSession"
                                  value="#{bookingController.billSessions}" var='bs'
                                  rowKey="#{bs.id}"
-                                 selection="#{bookingController.getSelectedBillSession}">                        
+                                 selection="#{bookingController.getSelectedBillSession}" scrollable="true" scrollHeight="260">                        
                         <p:ajax event="rowSelect" process="@this" update="" 
                                 listener="#{channelBillController.createBillfees}" />  
 

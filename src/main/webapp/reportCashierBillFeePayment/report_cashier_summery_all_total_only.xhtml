@@ -21,27 +21,27 @@
                                          value="Process" 
                                          styleClass="noPrintButton" 
                                          style="float: right;" 
-                                         actionListener="#{cashierReportController.calCashierData()}" />  
+                                         actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentSummery}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="reportPrint" />
                         </p:commandButton>  
 
-                        <p:commandButton actionListener="#{cashierReportController.calCashierData()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
+                        <p:commandButton actionListener="#{opdPreBillReportController.createCashierTableByAllUserPaymentSummery}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" subTable="true"/>
                         </p:commandButton>  
 
-                        <h:outputLabel value="All Cashier Report"/><br/>
+                        <h:outputLabel value="All Cashier Summery Report"/><br/>
 <!--                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> -->
-                        
+
 
                         <h:outputLabel value="From :"/>
-                        <h:outputLabel value="#{cashierReportController.fromDate}">
+                        <h:outputLabel value="#{opdPreBillReportController.fromDate}">
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel value="#{cashierReportController.toDate}">
+                        <h:outputLabel value="#{opdPreBillReportController.toDate}">
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel><br/>
 
@@ -52,17 +52,17 @@
                     <h:panelGrid columns="5"  styleClass="noPrintButton">
 
                         <h:outputLabel value="From Date" />
-                        <p:calendar id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <p:spacer width="30" height="1"/>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss">
+                        <p:calendar id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss">
                         </p:calendar>
 
 
                     </h:panelGrid>
                     <br/>
-                    <p:dataTable id="tbl" value="#{cashierReportController.webUserBillsTotals}" var="csh">
+                    <p:dataTable id="tbl" value="#{opdPreBillReportController.webUserBillsTotals}" var="csh">
 
                         <p:columnGroup type="header">
                             <p:row>
@@ -72,51 +72,59 @@
                                 <p:column headerText="C Card"/>
                                 <p:column headerText="Cheque"/>
                                 <p:column headerText="Slip"/>
+                                <p:column headerText="Handover Date"/>
+                                <p:column headerText="Checked By"/>
                             </p:row>
                         </p:columnGroup>
 
 
-                        <p:subTable value="#{csh.billsTotals}" var="dt"  rendered="#{csh.billsTotals.size()>0}"
-                                    >
+                        <p:subTable value="#{csh.billsTotals}" var="dt"  rendered="#{csh.billsTotals.size()>0}">
 
                             <f:facet name="header">
-                                <h:outputLabel value="#{csh.webUser.code}-"/>
-                                <h:outputLabel value="#{csh.webUser.webUserPerson.name}"/>
-
+                                <h:outputLabel value="#{csh.webUser.code}-#{csh.webUser.webUserPerson.name}"/>
                             </f:facet>
 
-                            <p:column>
-                                <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
+                            <p:column >
+                                <h:commandLink value="#{dt.name}" action="#{opdPreBillReportController.createCashierTableByUserPaymentForDetail()}" >
+                                    <h:outputLabel value=" "/>
+                                    <f:setPropertyActionListener value="#{csh.webUser}" target="#{opdPreBillReportController.webUser}" />
+                                </h:commandLink>
                             </p:column>
 
-                            <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.cash}" style="#{dt.bold?'font-weight: bold':''}">
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{dt.cash}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.credit}" style="#{dt.bold?'font-weight: bold':''}">
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{dt.credit}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.card}" style="#{dt.bold?'font-weight: bold':''}">
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{dt.card}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
-                            <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.cheque}" style="#{dt.bold?'font-weight: bold':''}">
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{dt.cheque}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
-                            <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.slip}" style="#{dt.bold?'font-weight: bold':''}">
+                            <p:column style="text-align: right;" >
+                                <h:outputLabel value="#{dt.slip}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <h:outputLabel value="...../...../......." />
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value=".............." />
                             </p:column>
                         </p:subTable>
 
@@ -127,41 +135,41 @@
 
                                 </p:column>
 
-                                <p:column footerText="#{cashierReportController.finalCashTot}" style="text-align: right;">
+                                <p:column footerText="#{opdPreBillReportController.finalCashTot}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cashierReportController.finalCashTot}">
+                                        <h:outputLabel value="#{opdPreBillReportController.finalCashTot}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column footerText="#{cashierReportController.finalCreditTot}" style="text-align: right;">
+                                <p:column footerText="#{opdPreBillReportController.finalCreditTot}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cashierReportController.finalCreditTot}">
+                                        <h:outputLabel value="#{opdPreBillReportController.finalCreditTot}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column footerText="#{cashierReportController.finalCardTot}" style="text-align: right;">
+                                <p:column footerText="#{opdPreBillReportController.finalCardTot}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cashierReportController.finalCardTot}">
+                                        <h:outputLabel value="#{opdPreBillReportController.finalCardTot}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column footerText="#{cashierReportController.finalChequeTot}" style="text-align: right;">
+                                <p:column footerText="#{opdPreBillReportController.finalChequeTot}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cashierReportController.finalChequeTot}">
+                                        <h:outputLabel value="#{opdPreBillReportController.finalChequeTot}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column footerText="#{cashierReportController.finalSlipTot}" style="text-align: right;">
+                                <p:column footerText="#{opdPreBillReportController.finalSlipTot}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cashierReportController.finalSlipTot}">
+                                        <h:outputLabel value="#{opdPreBillReportController.finalSlipTot}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>

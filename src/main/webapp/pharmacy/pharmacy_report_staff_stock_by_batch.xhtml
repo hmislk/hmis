@@ -98,7 +98,7 @@
                                 </p:column>
                                 
                                 <p:column headerText="Purchase Rate"
-                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
                                           sortBy="#{i.itemBatch.purcahseRate}">
                                      <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>
@@ -109,7 +109,7 @@
                                 </p:column>
                                 
                                 <p:column headerText="Purchase Value" 
-                                          style="text-align: right;"
+                                         styleClass="averageNumericColumn"
                                           sortBy="#{i.itemBatch.purcahseRate * i.stock}"
                                           >
                                      <f:facet name="header">
@@ -126,7 +126,7 @@
                                 </p:column>
 
                                 <p:column headerText="Retail Sale Rate" 
-                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
                                           sortBy="#{i.itemBatch.retailsaleRate}">
                                      <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Rate"/>
@@ -137,7 +137,7 @@
                                 </p:column>
                                 
                                 <p:column headerText="Retail Sale Value" 
-                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
                                           sortBy="#{i.itemBatch.retailsaleRate * i.stock}">
                                      <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>
