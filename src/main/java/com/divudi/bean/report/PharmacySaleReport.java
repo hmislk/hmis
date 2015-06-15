@@ -2350,13 +2350,13 @@ public class PharmacySaleReport implements Serializable {
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             String formattedDate = df.format(date);
 
-            //String1Value3 newRow = (String1Value3) hm.get(date);
-//            if (newRow == null) {
-//                newRow = new String1Value3();
-//                newRow.setDate(date);
-//            } else {
-//                hm.remove(date);
-//            }
+            String1Value3 newRow = (String1Value3) hm.get(date);
+            if (newRow == null) {
+                newRow = new String1Value3();
+                newRow.setDate(date);
+            } else {
+                hm.remove(date);
+            }
             String1Value3 sv3 = new String1Value3();
             sv3.setDate(date);
 
@@ -2377,15 +2377,17 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
-//        Collections.s
-//        List<String1Value3> listRow = new ArrayList<>();
-//        Iterator it = hm.entrySet().iterator();
-//        while (it.hasNext()) {
-////            Map.Entry pairs = (Map.Entry) it.next();
-////            System.out.println(pairs.getKey() + " = " + pairs.getValue());
-////            listRow.add((String1Value3) pairs.getValue());
-////            it.remove(); // avoids a ConcurrentModificationException
-//        }
+        //Collections.s
+        //List<String1Value3> listRow = new ArrayList<>();
+        Iterator it = hm.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            listRow.add((String1Value3) pairs.getValue());
+            //it.remove(); // avoids a ConcurrentModificationException
+        }
+        
+        
         return listRow;
     }
 //    public void createSaleReportByDate() {
@@ -3999,17 +4001,17 @@ public class PharmacySaleReport implements Serializable {
 
         billedPaymentSummery.setBills(listRow);
 
-        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash));
+        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash));
 
         ////////////
-        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit));
+        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit));
 
         ////////////////
-        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card));
+        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card));
 
-        grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+        grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card);
+        grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
+        grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
     }
 
