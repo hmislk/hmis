@@ -90,7 +90,7 @@
                                     </p:column>
                                     <p:column headerText="Institution">
                                         
-                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" >                                            
+                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" converter="institutionConverter">                                            
                                             <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                             <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                         </h:selectOneListbox>
