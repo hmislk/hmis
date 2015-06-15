@@ -19,7 +19,7 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="printing.css" />
         <div>
-            <p:panel   id="gpBillPreview" style="margin:auto  ; padding: 0px; font-size: 20px!important; margin-top: 50px;"  >
+            <p:panel   id="gpBillPreview" style="margin:auto  ; padding: 0px; font-size: 20px!important; margin-top: 100px;"  >
                 <div class="a4bill" >
 
                     <!--                    <table>
@@ -128,34 +128,38 @@
                     <p:spacer height="20px"></p:spacer>
                     <div>
                         <h:outputLabel value ="You Ref"/>
-                        <h:outputLabel  value=":"/>  
+                        <h:outputLabel  value=":"/>
                     </div>
-
+                     <p:spacer height="20px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="Member No"/>
+                        <h:outputLabel  value=":"/>
+                    </div>
                     <p:spacer height="20px"></p:spacer>
 
                     <div>
                         <h:outputLabel value="Manager"/>
                     </div>
                     <div>
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" />
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}"/>
                     </div>
-                               
-                    <table>
-<!--                        <tr>
-                                                        <td >
-                                                            <h:outputLabel value="Address" style="font-size: 11px;"/>
-                                                        </td>
-                                                        <td>
-                                                            <h:outputLabel value=":" />
-                                                        </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" style="font-size: 13px;"/>
-                            </td>
-                            <td>
-                                <h:outputLabel value="" />
-                            </td>
 
-                        </tr>-->
+                    <table>
+                        <!--                        <tr>
+                                                                                <td >
+                                                                                    <h:outputLabel value="Address" style="font-size: 11px;"/>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <h:outputLabel value=":" />
+                                                                                </td>
+                                                    <td >
+                                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" style="font-size: 13px;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="" />
+                                                    </td>
+                        
+                                                </tr>-->
 
                     </table>
 
@@ -191,7 +195,7 @@
                     <div style="font-size: 13px;">
                         <h:outputLabel value ="Enclosed please find our bill for Rs."/>
                         <h:outputLabel value="&nbsp;&nbsp;"/>
-                        <b> <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                        <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}" >
                                 <f:convertNumber pattern="#,###.##" ></f:convertNumber>
                             </h:outputLabel> </b>
                         <h:outputLabel value="&nbsp;&nbsp;  "/>
@@ -243,7 +247,7 @@
 
                     <p:spacer height="50px"></p:spacer>
 
-                    <div>
+<!--                    <div>
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="margin-left: 60%; text-decoration: overline;">
                         </h:outputLabel>
                     </div>
@@ -251,7 +255,7 @@
                     <div>
                         <h:outputLabel value="     Patient/Guardian     " style="margin-left: 60%; text-decoration: overline;">
                         </h:outputLabel>
-                    </div>
+                    </div>-->
                 </div>
 
 

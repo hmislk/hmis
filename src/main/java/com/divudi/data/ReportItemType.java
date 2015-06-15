@@ -45,6 +45,10 @@ public enum ReportItemType {
     Person,
     Institution,
     DateTime,
+    
+    
+    
+    DataEntered,
     ;
     
     public String getLabel(){

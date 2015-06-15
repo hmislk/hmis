@@ -32,6 +32,18 @@
                             <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{billController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:selectOneMenu value="#{billController.paymentMethod}" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{enumController.paymentMethods}"  />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Bill Type" ></h:outputLabel>
+                            <p:selectOneMenu value="#{billController.billType}" >
+                                <f:selectItem itemLabel="Retail + Wholesale" ></f:selectItem>
+                                <f:selectItems value="#{enumController.pharmacySaleBillTypes}"  />
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">

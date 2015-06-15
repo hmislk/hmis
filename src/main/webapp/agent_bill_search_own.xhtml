@@ -88,7 +88,7 @@
                                 </h:commandLink>
                             </p:column>  
 
-                            <p:column headerText="Net Value" >
+                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                 <h:commandLink action="agent_bill_reprint" >
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>

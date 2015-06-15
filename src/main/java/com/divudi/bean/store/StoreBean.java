@@ -252,6 +252,7 @@ public class StoreBean {
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
 
+    
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
         HashMap hm = new HashMap();
@@ -261,7 +262,22 @@ public class StoreBean {
                 + " and m.toDepartment=:to";
         hm.put("frm", fromDepartment);
         hm.put("to", toDepartment);
-        return issueRateMarginsFacade.findFirstBySQL(sql, hm);
+        IssueRateMargins m = issueRateMarginsFacade.findFirstBySQL(sql, hm);
+        if(m==null){
+            m = new IssueRateMargins();
+            m.setAtPurchaseRate(true);
+            m.setCreatedAt(new Date());
+            m.setFromDepartment(fromDepartment);
+            m.setFromInstitution(fromDepartment.getInstitution());
+            m.setToDepartment(toDepartment);
+            m.setToInstitution(toDepartment.getInstitution());
+            m.setName("auto created issue rate margin");
+            m.setRateForConsumables(0.0);
+            m.setRateForInventory(0.0);
+            m.setRateForPharmaceuticals(0.0);
+            issueRateMarginsFacade.create(m);
+        }
+        return m;
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {

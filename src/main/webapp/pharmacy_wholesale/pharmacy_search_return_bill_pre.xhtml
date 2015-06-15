@@ -14,7 +14,7 @@
                         <f:facet name="header" >                            
                             <h:outputLabel value="SEARCH RETURN BILL"/>     
 
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="6" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -22,12 +22,13 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createReturnWholeSaleBills}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                               <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createReturnWholeSaleAllBills()}"/>
+                                <p:spacer height="30"/>
+                                </h:panelGrid>
+                            <h:panelGrid columns="3" >
                                 <h:outputLabel value="Sale Bill No"/>   
                                 <h:outputLabel value="Return Bill No"/> 
                                 <h:outputLabel value="Net Total"/>
-                                <h:outputLabel/><h:outputLabel/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />   
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>                               

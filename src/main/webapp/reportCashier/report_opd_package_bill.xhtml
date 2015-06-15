@@ -14,7 +14,7 @@
                 <f:facet name="header">
                     <p:outputLabel value="Package Detail Report - By Bill" />
                 </f:facet>
-                <h:panelGrid columns="2" style="min-width: 100%;">                    
+                <h:panelGrid columns="2">                    
 
                     <h:outputLabel value="From"/>
                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
@@ -41,7 +41,8 @@
                             #{ix.name}
                         </p:column>
                     </p:autoComplete>
-
+                   </h:panelGrid>
+                <h:panelGrid columns="4" > 
                     <p:commandButton ajax="false" value="Search" 
                                      action="#{billPackageMedicalController.createOtherPackageBills()}"
                                      onclick="onSubmitButton();" />
@@ -62,13 +63,13 @@
                     <f:facet name="header">
                         <p:outputLabel value="Package Detail Report - By Bill" /><br/>
                         <p:outputLabel value="From : "/>
-                        <p:outputLabel value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.frmDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel>
                         <p:spacer width="30" height="1"/>
                         <p:outputLabel value="To : "/>
-                        <p:outputLabel value="#{commonReport.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel><br/>
                         <p:outputLabel value="Package: #{billPackageMedicalController.serviceItem.name}" />
                         <p:spacer width="30" height="1"/>
@@ -119,7 +120,7 @@
                         </f:facet>
                         <p:outputLabel value="#{bill.billPackege.name}" />
                     </p:column>
-                    <p:column headerText="Net Total">
+                    <p:column headerText="Net Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <p:outputLabel value="Net Total" />
                         </f:facet>
@@ -135,7 +136,7 @@
 
                 </p:dataTable>
                 <f:facet name="footer">
-                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                 </f:facet>
             </p:panel>
             <!--</p:panel>-->

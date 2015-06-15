@@ -81,13 +81,13 @@
                             <p:outputLabel value="Medical Package Detail Report" />
                             <br/>
                             <p:outputLabel value="From : "/>
-                        <p:outputLabel value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.frmDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel>
                         <p:spacer width="30" height="1"/>
                         <p:outputLabel value="To : "/>
-                        <p:outputLabel value="#{commonReport.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                        <p:outputLabel value="#{billPackageMedicalController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </p:outputLabel><br/>
                         <p:outputLabel value=" #{billPackageMedicalController.currentBillItem.item.name}" />
                         <p:spacer width="30" height="1"/>
@@ -146,7 +146,7 @@
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.billPackege.name}" />
                         </p:column>
-                        <p:column headerText="Net Value">
+                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
                             <f:facet name="header">
                                 <p:outputLabel value="Net Value" />
                             </f:facet>
@@ -173,7 +173,7 @@
                     </p:dataTable>
                 </p:panel>
                 <f:facet name="footer">
-                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                 </f:facet>
             </p:panel>
 

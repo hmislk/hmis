@@ -63,6 +63,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
+                                    #{i.billType}
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>                                    
                                 </p:column>
 
@@ -89,7 +90,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Gross Value" style="text-align: right;">
+                                <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -103,7 +104,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Margin Value" style="text-align: right;">
+                                <p:column headerText="Margin Value" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Margin Value"/>
                                     </f:facet>
@@ -117,7 +118,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Discount Value" style="text-align: right;">
+                                <p:column headerText="Discount Value" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
@@ -132,7 +133,7 @@
                                 </p:column>
 
 
-                                <p:column headerText="Net Value" style="text-align: right;">
+                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>

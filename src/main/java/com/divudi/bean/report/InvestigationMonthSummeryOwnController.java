@@ -14,7 +14,6 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
@@ -34,11 +33,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
@@ -165,8 +162,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
-        items = new ArrayList<>();
+        if(items==null){
+            createInvestigationMonthEndSummeryCounts();
+        }
+        return items;
+    }
 
+    public void createInvestigationMonthEndSummeryCounts() {
+        items = new ArrayList<>();
         for (Item w : getInvestigations()) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInvestigation(w);
@@ -175,8 +178,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 items.add(temp);
             }
         }
-
-        return items;
     }
 
     public List<InvestigationSummeryData> getItems2() {
@@ -445,7 +446,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("bType2", BillType.InwardBill);
         temMap.put("ins", getSessionController().getInstitution());
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
-
     }
 
     private long getCount(Bill bill, Machine m, List<BillType> bts) {
@@ -705,16 +705,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select distinct ix from BillItem bi join bi.item ix where type(ix) =:ixtype  "
-                + "and bi.bill.billType=:bType and bi.bill.toInstitution=:ins "
-                + "and bi.bill.createdAt between :fromDate and :toDate order by ix.name";
-
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by ix.name";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ixtype", Investigation.class);
-        temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
         return investigations;
     }
 
@@ -866,7 +863,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     double totalCount;
-    
 
     public double getTotalCount() {
         return totalCount;
@@ -936,18 +932,20 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         investigationCountWithMachines = new ArrayList<>();
         totalCount = 0;
         for (Machine w : getInvestigationMachines()) {
-            
-            if(w==null) continue;
-            
+
+            if (w == null) {
+                continue;
+            }
+
             InvestigationCountWithMachine tempMac = new InvestigationCountWithMachine();
             List<InvestigationCountWithMachine> lst = new ArrayList<>();
-            
+
             tempMac.setMachine(w);
 
             long grandCount = 0;
-            long opdCount=0;
-            long ccCount=0;
-            long inwardCount=0;
+            long opdCount = 0;
+            long ccCount = 0;
+            long inwardCount = 0;
 
             for (Item ix : getBilledMachineItems(w)) {
                 InvestigationCountWithMachine temp = new InvestigationCountWithMachine();
@@ -966,7 +964,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 cancelled = getItemCount(new CancelledBill(), ix, BillType.OpdBill);
                 refunded = getItemCount(new RefundBill(), ix, BillType.OpdBill);
                 net = billed - (cancelled + refunded);
-                opdCount+=net;
+                opdCount += net;
                 temp.setOpdCount(net);
                 //System.out.println("temp.getInvestigation().getName() = " + temp.getInvestigation().getName());
                 //System.out.println("billed = " + billed);
@@ -978,14 +976,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 cancelled = getItemCount(new CancelledBill(), ix, BillType.LabBill);
                 refunded = getItemCount(new RefundBill(), ix, BillType.LabBill);
                 net = billed - (cancelled + refunded);
-                ccCount+=net;
+                ccCount += net;
                 temp.setCcCount(net);
-                
+
                 billed = getItemCount(new BilledBill(), ix, BillType.InwardBill);
                 cancelled = getItemCount(new CancelledBill(), ix, BillType.InwardBill);
                 refunded = getItemCount(new RefundBill(), ix, BillType.InwardBill);
                 net = billed - (cancelled + refunded);
-                inwardCount+=net;
+                inwardCount += net;
                 temp.setInwardCount(net);
 
                 if (temp.getCount() != 0) {

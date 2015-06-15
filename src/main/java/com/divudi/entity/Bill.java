@@ -67,6 +67,8 @@ public class Bill implements Serializable {
     private List<Bill> returnCashBills = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsPre = new ArrayList<>();
+    @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
+    private List<Bill> cashBillsOpdPre = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
@@ -89,7 +91,7 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy("searialNo")
+    @OrderBy("inwardChargeType, searialNo")
     List<BillItem> billItems;
 
     @OneToMany(mappedBy = "expenseBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -1391,6 +1393,17 @@ public class Bill implements Serializable {
         cashBillsPre = bills;
 
         return cashBillsPre;
+    }
+
+    public List<Bill> getCashBillsOpdPre() {
+        List<Bill> bills = new ArrayList<>();
+        for (Bill b : cashBillsOpdPre) {
+            if (b instanceof BilledBill && b.getBillType() == BillType.OpdBill) {
+                bills.add(b);
+            }
+        }
+        cashBillsOpdPre = bills;
+        return cashBillsOpdPre;
     }
 
     public boolean checkActiveCashPreBill() {

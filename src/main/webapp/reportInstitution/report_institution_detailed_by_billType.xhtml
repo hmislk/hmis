@@ -22,70 +22,68 @@
 
                         <h:outputLabel value="Day-End Detailed Report - By Bill Type"/>
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
 
-                        <p:commandButton  id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createTableByBillType()}" style="float: right;" />  
-                        <p:defaultCommand target="btnRefresh"/>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
 
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="reportPrint"/>
-                        </p:commandButton>  
-                        <p:commandButton ajax="false" actionListener="#{commonReport.createTableByBillType()}" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" 
-                                         target="#{commonReport.institutionBilledBillsOwn.bills.size()>0 and commonReport.billType eq 'OpdBill' ?'billed,':''}
-                                         #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'cancelled,':''}
-                                         #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'refunded,':''}
-                                         #{commonReport.institutionBilledBillsOwnPh.bills.size() ne 0 ?'billedPh,':''}
-                                         #{commonReport.institutionCancelledBillsOwnPh.bills.size() ne 0 ?'cancelledPh,':''}
-                                         #{commonReport.institutionRefundedBillsOwnPh.bills.size() ne 0 ?'refundPh,':''}
-                                         #{commonReport.institutionPaymentBillsOwn.bills.size() ne 0  and commonReport.billType eq 'PaymentBill'?'payment,':''}
-                                         #{commonReport.institutionPaymentCancelBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PaymentBill' ?'paymentCancel,':''}
-                                         #{commonReport.institutionPettyPaymentBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'petty,':''}
-                                         #{commonReport.institutionPettyCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'pettyCancel,':''}
-                                         #{commonReport.institutionCashRecieveBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyPay,':''}
-                                         #{commonReport.institutionCashRecieveCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyCancel,':''}
-                                         #{commonReport.institutionAgentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill'?'agent,':''}
-                                         #{commonReport.institutionAgentCancellBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill' ?'agentCancel,':''}
-                                         #{commonReport.institutionInwardPaymentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inward,':''}
-                                         #{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inwardCancel,':''}
-                                         sum"  fileName="Day_END_By_Bill_Type" />
-                        </p:commandButton> 
-                        <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
 
-                            <h:outputLabel value="Cashier Day End Detailed Report "/>
-                            <p:spacer width="20" height="0"/>
-                            <h:outputLabel value="From" />
-                            <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                            <p:spacer width="10" height="0"/>
-                            <h:outputLabel value="To"/>
-                            <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
+
+                            <h:outputLabel value="Select Bill Type"/>
+                            <h:selectOneMenu value="#{commonReport.billType}">
+                                <f:selectItem itemLabel="Select Bill Type"/>
+                                <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                            </h:selectOneMenu>
                         </h:panelGrid>
+                        <h:panelGrid columns="5" styleClass="noPrintButton" >
+                            <p:spacer width="95" height="1"/>
+                            <p:commandButton  id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
+                                              actionListener="#{commonReport.createTableByBillType()}" style="float: right;" />  
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"/>
+                            </p:commandButton>  
+                            <p:commandButton ajax="false" actionListener="#{commonReport.createTableByBillType()}" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" 
+                                             target="#{commonReport.institutionBilledBillsOwn.bills.size()>0 and commonReport.billType eq 'OpdBill' ?'billed,':''}
+                                             #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'cancelled,':''}
+                                             #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'refunded,':''}
+                                             #{commonReport.institutionBilledBillsOwnPh.bills.size() ne 0 ?'billedPh,':''}
+                                             #{commonReport.institutionCancelledBillsOwnPh.bills.size() ne 0 ?'cancelledPh,':''}
+                                             #{commonReport.institutionRefundedBillsOwnPh.bills.size() ne 0 ?'refundPh,':''}
+                                             #{commonReport.institutionPaymentBillsOwn.bills.size() ne 0  and commonReport.billType eq 'PaymentBill'?'payment,':''}
+                                             #{commonReport.institutionPaymentCancelBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PaymentBill' ?'paymentCancel,':''}
+                                             #{commonReport.institutionPettyPaymentBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'petty,':''}
+                                             #{commonReport.institutionPettyCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'pettyCancel,':''}
+                                             #{commonReport.institutionCashRecieveBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyPay,':''}
+                                             #{commonReport.institutionCashRecieveCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyCancel,':''}
+                                             #{commonReport.institutionAgentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill'?'agent,':''}
+                                             #{commonReport.institutionAgentCancellBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill' ?'agentCancel,':''}
+                                             #{commonReport.institutionInwardPaymentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inward,':''}
+                                             #{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inwardCancel,':''}
+                                             sum"  fileName="Day_END_By_Bill_Type" />
+                            </p:commandButton> 
+                        </h:panelGrid>
+                            <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
+
+                                <h:outputLabel value="Cashier Day End Detailed Report "/>
+                                <p:spacer width="20" height="0"/>
+                                <h:outputLabel value="From" />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <p:spacer width="10" height="0"/>
+                                <h:outputLabel value="To"/>
+                                <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                            </h:panelGrid>
                     </f:facet>
-
-
-                    <h:panelGrid columns="8" styleClass="noPrintButton" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-
-
-                        <h:outputLabel value="Select Bill Type"/>
-                        <h:selectOneMenu value="#{commonReport.billType}">
-                            <f:selectItem itemLabel="Select Bill Type"/>
-                            <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
-                        </h:selectOneMenu>
-                    </h:panelGrid>
-
-
                     <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >                       
                         <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" rowStyleClass="noDisplayRow"
                                      rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  style="width: 95%;" 
@@ -1665,7 +1663,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cashier Agent Payment Detail Report"/>
                             </f:facet> 
-                            
+
                             <p:column headerText="Cashier Code"  >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cashier Code"/>
@@ -1705,7 +1703,7 @@
                                 </f:facet>
                                 <h:outputLabel value="#{b7.fromInstitution.name}" />
                             </p:column>
-                            
+
                             <p:column headerText="Agent Name"  style="">      
                                 <f:facet name="header">  
                                     <h:outputLabel value="Agent Name"/>
@@ -1740,6 +1738,16 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column>  
+
+                            <p:column headerText="Credit Card" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Card"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Card'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>  
                             
                             <p:column headerText="Slip Date" style="">
                                 <f:facet name="header">  
@@ -1749,7 +1757,7 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Slip Bank" style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip Bank"/>
@@ -1758,7 +1766,7 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Descripion"/>
@@ -1870,7 +1878,17 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column> 
-
+                            
+                            <p:column headerText="Credit Card" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Card"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Card'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+                            
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Descripion"/>
@@ -2103,9 +2121,10 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                     </p:dataTable>
-
-
                 </p:panel>
             </h:form>
         </h:panelGroup>

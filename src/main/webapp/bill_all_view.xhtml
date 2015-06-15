@@ -50,13 +50,13 @@
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
 
                                         <h:outputLabel value="Billed bill:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.id}" />
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.id}" />
 
                                         <h:outputLabel value="Billed bill No (Ins Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.insId}" />
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.insId}" />
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.deptId}" />
+                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.deptId}" />
 
                                         <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billedBill.createdAt}" />
@@ -260,6 +260,10 @@
                                     <p:column>
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                        <h:outputLabel value="#{bip.paidValue}"/>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Gross Fee Value</f:facet>

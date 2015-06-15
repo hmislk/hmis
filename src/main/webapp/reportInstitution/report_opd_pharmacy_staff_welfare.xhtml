@@ -25,7 +25,7 @@
                     </p:calendar>
                 </h:panelGrid>
             </p:panel>
-            <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint"  styleClass=" summeryBorder">
                 <p:panelGrid columns="4">
                     <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;" 
@@ -51,11 +51,11 @@
                         <h:outputLabel value="Staff Welfare Bills" />
                         <h:outputLabel value="&emsp;&emsp;From " style="white-space:pre-line;"/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime  pattern="dd MMMM yyyy  HH:mm" />
+                            <f:convertDateTime  pattern="dd MMMM yyyy  hh:mm:ss a" />
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To "/> 
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime  pattern="dd MMMM yyyy  HH:mm" />
+                            <f:convertDateTime  pattern="dd MMMM yyyy  hh:mm:ss a" />
                         </h:outputLabel>
 
 
@@ -72,17 +72,21 @@
                         <f:facet name="header">
                             <p:outputLabel value="Bill No"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.insId}" />
+                        <p:outputLabel value="#{b.deptId}" />
                     </p:column>
 
-                    <p:column headerText="Staff Code">
+                    <p:column headerText="Staff Code" 
+                              filterBy="#{b.toStaff.code}" 
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Staff Code"/>
                         </f:facet>
                         <p:outputLabel value="#{b.toStaff.code}" />
                     </p:column>
 
-                    <p:column headerText="Staff Name">
+                    <p:column headerText="Staff Name" 
+                              filterBy="#{b.toStaff.person.nameWithTitle}" 
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Staff Name"/>
                         </f:facet>
@@ -145,9 +149,9 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <f:facet name="footer" >
-                        <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                    </f:facet>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                 </p:dataTable> 
 
 

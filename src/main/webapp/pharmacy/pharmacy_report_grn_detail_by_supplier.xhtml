@@ -75,12 +75,14 @@
                         <f:facet name="header"> 
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="dd MM yyyy HH:mm a"/>
                             </h:outputLabel>                          
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                            </h:outputLabel><br/>
+                                <f:convertDateTime pattern="dd MM yyyy HH:mm a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="GRN by - #{commonReport.department.name}"/> 
+                            <br/>
                             <h:outputLabel value="GRN"/>
                         </f:facet>
 

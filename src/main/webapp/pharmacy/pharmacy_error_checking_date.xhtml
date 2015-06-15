@@ -23,10 +23,10 @@
                             <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy" ></p:calendar>
                         </h:panelGroup>
                         <h:panelGroup>
-                            <h:outputLabel value="To Daate " ></h:outputLabel>
+                            <h:outputLabel value="To Date " ></h:outputLabel>
                             <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy" ></p:calendar>
                         </h:panelGroup>
-                        <p:autoComplete value="#{pharmacyErrorChecking.department}"  
+                        <p:autoComplete id="dep" value="#{pharmacyErrorChecking.department}"  
                                         style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
                                         forceSelection="true" rendered="true" 
                                         requiredMessage="You must select a department" >
@@ -38,7 +38,8 @@
                             </p:column>
 
                         </p:autoComplete>
-                        <p:autoComplete value="#{pharmacyErrorChecking.item}"  
+                        <p:watermark for="dep" value="Select Department"  />
+                        <p:autoComplete id="itm" value="#{pharmacyErrorChecking.item}"  
                                         style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  
                                         completeMethod="#{itemController.completeAmpItemAll}" 
                                         var="item" itemValue="#{item}" itemLabel="#{item.name}" 
@@ -50,6 +51,7 @@
                                 <h:outputLabel value="#{item.code}"/>
                             </p:column>
                         </p:autoComplete>
+                         <p:watermark for="itm" value="Select Item"  />
                     </h:panelGrid>
 
                 </f:facet>
@@ -60,7 +62,7 @@
 
                     <p:panel header="All Bills" >
                         <p:commandButton ajax="false" value="List All Bill Items" action="#{pharmacyErrorChecking.listPharmacyMovementByDateRangeOnlyStockChange() }" >
-                          
+
                         </p:commandButton>
 
 
@@ -117,7 +119,7 @@
                                     <h:outputLabel value="Stock Id "/>
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.stock.id}" >
                                     </h:outputLabel>
-                                       <h:outputLabel value="Stock History Id "/>
+                                    <h:outputLabel value="Stock History Id "/>
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.id}" >
                                     </h:outputLabel>
                                     <h:outputLabel value="Batch Id "/>
@@ -170,15 +172,15 @@
                                     </h:outputLabel>
                                 </h:panelGrid>
                             </p:column>
-                            
+
                             <p:column headerText="billItem Id"> 
                                 <p:outputLabel value="#{pb.id}"></p:outputLabel>
-                                
+
                             </p:column>
-                            
+
                             <p:column headerText="ph Id">
                                 <p:outputLabel value="#{pb.pharmaceuticalBillItem.id}"></p:outputLabel>
-                                
+
                             </p:column>
 
                         </p:dataTable>

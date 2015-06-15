@@ -78,6 +78,12 @@
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}" />
                                     </p:column>
+                                    
+                                    <p:column >
+                                        <f:facet name="header">ID</f:facet>
+                                        <h:outputLabel value="#{b.id}"/>
+                                    </p:column>
+                                    
                                     <p:column >
                                         <f:facet name="header">Item Name</f:facet>
                                         <h:outputLabel value="#{b.item.name}"/>
@@ -87,7 +93,7 @@
                                         <h:outputLabel value="#{b.netValue}"/>
                                     </p:column >
                                     <p:column headerText="Refunded" >
-                                        <h:outputLabel rendered="#{b.refunded}" value="Refunded" />
+                                        <h:outputLabel  value="#{b.refunded}" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
