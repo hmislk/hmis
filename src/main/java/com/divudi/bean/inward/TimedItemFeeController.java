@@ -16,9 +16,11 @@ import com.divudi.entity.inward.TimedItem;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.TimedItemFeeFacade;
 import com.divudi.facade.TimedItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -34,7 +36,7 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -132,6 +134,26 @@ public class TimedItemFeeController implements Serializable {
 
     }
 
+    public void updateFee(TimedItemFee tif) {
+        if (currentIx == null) {
+            UtilityController.addErrorMessage("Please select a Time Item");
+            return;
+        }
+        if (tif.getName() == null) {
+            UtilityController.addErrorMessage("Please Enter Fee Name.");
+            return;
+        }
+        tif.setEditedAt(new Date());
+        tif.setCreater(getSessionController().getLoggedUser());
+        System.out.println("tif.getFee() = " + tif.getFee());
+        getTimedItemFeeFacade().edit(tif);
+        System.out.println("tif.getFee() = " + tif.getFee());
+        JsfUtil.addSuccessMessage("Fee Updated");
+        currentIx.setTotal(calTot());
+        getEjbFacade().edit(currentIx);
+        JsfUtil.addSuccessMessage("Time Item Updated");
+    }
+
     public void removeFee() {
         if (currentIx == null) {
             UtilityController.addErrorMessage("Please select a investigation");
@@ -157,7 +179,6 @@ public class TimedItemFeeController implements Serializable {
 //            setCharges(null);
 //            getCharges();
 //            getCurrentIx().setTotal(calTot());
-
         }
     }
 
@@ -181,14 +202,23 @@ public class TimedItemFeeController implements Serializable {
         return ejbFacade;
     }
 
-    public List<TimedItemFee> getCharges() {
+    public void fillCharges() {
+        fees = new ArrayList<>();
         if (currentIx != null && currentIx.getId() != null) {
             HashMap hm = new HashMap();
             hm.put("it", getCurrentIx());
-            setCharges(getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it",hm));
-        } else {
-            setCharges(new ArrayList<TimedItemFee>());
+            fees = getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
         }
+    }
+
+    public List<TimedItemFee> getCharges() {
+//        if (currentIx != null && currentIx.getId() != null) {
+//            HashMap hm = new HashMap();
+//            hm.put("it", getCurrentIx());
+//            setCharges(getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm));
+//        } else {
+//            setCharges(new ArrayList<TimedItemFee>());
+//        }
         if (fees == null) {
             fees = new ArrayList<TimedItemFee>();
         }
@@ -217,7 +247,6 @@ public class TimedItemFeeController implements Serializable {
 
     public void setTimedItemFeeFacade(TimedItemFeeFacade itemFeeFacade) {
         this.itemFeeFacade = itemFeeFacade;
-
 
     }
 
@@ -264,7 +293,7 @@ public class TimedItemFeeController implements Serializable {
     /**
      *
      */
-     @FacesConverter(forClass = TimedItemFee.class)
+    @FacesConverter(forClass = TimedItemFee.class)
     public static class TimedItemFeeConverter implements Converter {
 
         @Override
@@ -303,8 +332,7 @@ public class TimedItemFeeController implements Serializable {
             }
         }
     }
-    
-    
+
     @FacesConverter("conTimFee")
     public static class TimedItemFeeControllerConverter implements Converter {
 
