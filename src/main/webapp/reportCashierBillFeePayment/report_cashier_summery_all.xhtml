@@ -34,7 +34,7 @@
 
                         <h:outputLabel value="All Cashier Summery Report"/><br/>
 <!--                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> -->
-                        
+
 
                         <h:outputLabel value="From :"/>
                         <h:outputLabel value="#{opdPreBillReportController.fromDate}">
@@ -80,14 +80,13 @@
                         <p:subTable value="#{csh.billsTotals}" var="dt"  rendered="#{csh.billsTotals.size()>0}">
 
                             <f:facet name="header">
-                                <h:commandLink value="#{csh.webUser.code}-#{csh.webUser.webUserPerson.name}" action="#{opdPreBillReportController.createCashierTableByUserPaymentForDetail()}" >
-                                    <h:outputLabel value=" "/>
+                                <h:outputLabel value=" #{csh.webUser.code}-#{csh.webUser.webUserPerson.name}"/>
+                            </f:facet>
+                            <p:column>
+                                <h:commandLink action="#{opdPreBillReportController.createCashierTableByUserPaymentForDetail()}" >
+                                    <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                                     <f:setPropertyActionListener value="#{csh.webUser}" target="#{opdPreBillReportController.webUser}" />
                                 </h:commandLink>
-                            </f:facet>
-
-                            <p:column>
-                                <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                             </p:column>
 
                             <p:column style="text-align: right;">
