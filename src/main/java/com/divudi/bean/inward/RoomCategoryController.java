@@ -10,17 +10,13 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.inward.RoomFacility;
-import com.divudi.entity.Department;
 import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.RoomCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-import javax.inject.Inject;
 import javax.inject.Named; import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
