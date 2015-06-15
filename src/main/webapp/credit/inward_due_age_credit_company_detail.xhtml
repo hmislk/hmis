@@ -11,12 +11,15 @@
             <ui:define name="content">
                 <h:form>            
                     <p:commandButton id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}" onclick="onSubmitButton();" />
+                    <p:commandButton id="btnProcess" ajax="false" 
+                                     value="Process Due Age" 
+                                     action="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" onclick="onSubmitButton();" />
                     <p:defaultCommand target="btnSearch"/>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i">                       
                         <p:column headerText="Dealor Name" filterBy="#{i.institution.name}">       
-                            <h:outputLabel id="colComDetail"  value="#{i.institution.name}"/>
-                            <p:tooltip for="colComDetail"  >
+                            <h:outputLabel id="colComDetailDue"  value="#{i.institution.name}"/>
+                            <p:tooltip for="colComDetailDue"  >
                                 <h:outputLabel value="Address : #{i.institution.address}" >
                                 </h:outputLabel>
                                 <br/>
@@ -201,6 +204,67 @@
 
                             </p:dataTable>
                         </p:column>                      
+                    </p:dataTable>
+
+
+                    <p:dataTable id="lstDue" value="#{creditCompanyDueController.dealerDueDetailRows}"
+                                 var="r">                       
+                        <p:column headerText="Dealor Name" >       
+                            <h:outputLabel id="colComDetailDue"  value="#{r.dealer.name}"/>
+                            <p:tooltip for="colComDetailDue"  >
+                                <h:outputLabel value="Address : #{r.dealer.address}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Tel : #{r.dealer.mobile}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Fax : #{r.dealer.fax}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="E-Mail : #{r.dealer.email}" >
+                                </h:outputLabel>
+                            </p:tooltip>
+                        </p:column>                               
+                        <p:column headerText="0-30"> 
+                            <h:outputLabel value="#{r.zeroToThirty}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>  
+                        </p:column>
+
+                        <p:column>
+                            <h:outputLabel id="colp1DetailDue"  value="#{r.zeroToThirtyEncounter.bhtNo}"/>
+                            <p:tooltip for="colp1DetailDue"  >
+                                <h:outputLabel value="Ploicy Number : #{r.zeroToThirtyEncounter.policyNo}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Referance Number : #{r.zeroToThirtyEncounter.referanceNo}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Credit Limit : #{r.zeroToThirtyEncounter.creditLimit}" >
+                                </h:outputLabel>
+                            </p:tooltip>
+                        </p:column>
+                        <p:column>
+                            #{r.zeroToThirtyEncounter.patient.person.name}
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfAdmission}" >
+                                <f:convertDateTime pattern="dd MM yy"/>
+                            </h:outputLabel>                                    
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{r.zeroToThirtyEncounter.dateOfDischarge}" >
+                                <f:convertDateTime pattern="dd MM yy"/>
+                            </h:outputLabel>                                      
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount)}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>  
+                        </p:column>
+
+
+
                     </p:dataTable>
                 </h:form>
             </ui:define>
