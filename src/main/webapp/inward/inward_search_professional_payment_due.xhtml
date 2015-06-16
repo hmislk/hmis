@@ -25,7 +25,8 @@
                                 <p:commandButton id="btnSearchAllCancelled" rendered="false" ajax="false" value="Search All with cancelled bills" action="#{searchController.createDueFeeTableInwardAllWithCancelled()}" onclick="onSubmitButton();" />                                 
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
                                     <pe:exporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
-                                </p:commandButton>  
+                                </p:commandButton>
+
                                 <p:spacer height="30"/>
                                 <h:outputLabel/><h:outputLabel/> 
                                 <h:outputLabel/><h:outputLabel/>
@@ -45,27 +46,32 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
 
-                            </h:panelGrid>
+                            </h:panelGrid>                           
 
                         </f:facet>
                         <br/><br/>
 
 
                         <p:defaultCommand target="btnSearch" />
+                        <p:panel>
+                            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="tblFee" />
+                            </p:commandButton>
+                        </p:panel>
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                             <f:facet name="header">
-                                 <h:outputLabel value=" #{searchController.total}"/>
-                               
+                                <h:outputLabel value=" #{searchController.total}"/>
+
                             </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
-                             <p:column headerText="No" styleClass="alignTop">
+                            <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{bf.id}"/>
                             </p:column>
-                            
+
                             <p:column>
                                 <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>
@@ -100,7 +106,7 @@
                                 <h:outputLabel value="#{bf.bill.insId}" 
                                                rendered="#{bf.bill.cancelled}" style="color: red;">
                                 </h:outputLabel>
-                                  <h:outputLabel value="#{bf.bill.insId}" 
+                                <h:outputLabel value="#{bf.bill.insId}" 
                                                rendered="#{!bf.bill.cancelled}" >
                                 </h:outputLabel>
                             </p:column>
@@ -112,7 +118,7 @@
                                 <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Discharged At" >
                                 <h:outputLabel value="#{bf.bill.patientEncounter.dateOfDischarge}" >
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
@@ -141,7 +147,7 @@
                                 </f:facet>
                                 <h:outputLabel value="#{bf.feeValue}" />
                             </p:column>
-                           
+
                         </p:dataTable>
 
                     </p:panel>

@@ -46,7 +46,7 @@
                             <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController.fillProfessionalPaymentDone()}" onclick="onSubmitButton();"  ></p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
+                                <pe:exporter type="xlsx" target="tb1,tb2,tb3" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -54,7 +54,7 @@
 
                         </p:panelGrid>
                         <p:panel id="gpBillPreview">
-                            <p:dataTable value="#{inwardReportController.billedBill}" var="billedBill">
+                            <p:dataTable value="#{inwardReportController.billedBill}" var="billedBill" id="tb1">
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Bill"></h:outputLabel>
                                 </f:facet>
@@ -120,7 +120,7 @@
 
                             <p:spacer height="20px"/>
 
-                            <p:dataTable value="#{inwardReportController.cancelledBill}" var="cancelledBill">
+                            <p:dataTable value="#{inwardReportController.cancelledBill}" var="cancelledBill" id="tb2">
                                 <f:facet name="header">
                                     <h:outputLabel value="CancelledBill Bill"></h:outputLabel>
                                 </f:facet>
@@ -172,7 +172,7 @@
 
                             <p:spacer height="20px"/>
 
-                            <p:dataTable value="#{inwardReportController.refundBill}" var="refundBill">
+                            <p:dataTable value="#{inwardReportController.refundBill}" var="refundBill" id="tb3">
                                 <f:facet name="header">
                                     <h:outputLabel value="Refund Bill"></h:outputLabel>
                                 </f:facet>
@@ -224,7 +224,7 @@
 
                             </p:dataTable>
 
-                            <p:panelGrid columns="2">
+                            <p:panelGrid columns="2" id="tb4">
                                 <h:outputLabel value="Billed Bill Total"></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.totalBilledBill}">
                                     <f:convertNumber pattern="#,##0.00"/>

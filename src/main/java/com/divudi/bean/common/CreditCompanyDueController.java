@@ -225,6 +225,8 @@ public class CreditCompanyDueController implements Serializable {
             }
 
         }
+        
+        creditCompanyAge=new ArrayList<>();
 
     }
 
