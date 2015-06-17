@@ -881,7 +881,7 @@ public class ChannelBillController implements Serializable {
 //                UtilityController.addErrorMessage("Select Area");
 //                return true;
 //            }
-//        }
+   //     }
         if (patientTabId.equals("tabSearchPt")) {
             if (getSearchPatient() == null) {
                 UtilityController.addErrorMessage("Please select Patient");
