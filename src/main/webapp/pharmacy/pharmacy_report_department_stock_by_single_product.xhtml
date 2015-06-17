@@ -14,7 +14,7 @@
                     <p:panel header="Stock Report of Single Product" >
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="Product" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{vmpController.completeVmp}" var="vmp"

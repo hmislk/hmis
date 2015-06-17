@@ -128,7 +128,7 @@
                                         <h:outputLabel value="Department :" ></h:outputLabel>
                                         <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.department}" converter="dep"/>
+                                                        value="#{billSearch.billSearch.department}" converter="departmentConverter"/>
 
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
@@ -156,7 +156,7 @@
                                         <h:outputLabel value="To Department :" ></h:outputLabel>
                                         <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.toDepartment}" converter="dep"/>
+                                                        value="#{billSearch.billSearch.toDepartment}" converter="departmentConverter"/>
 
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
@@ -173,7 +173,7 @@
                                         <h:outputLabel value="From Department :" ></h:outputLabel>
                                         <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.fromDepartment}" converter="dep"/>
+                                                        value="#{billSearch.billSearch.fromDepartment}" converter="departmentConverter"/>
 
                                         <h:outputLabel value="Company Name : " />  
                                         <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"

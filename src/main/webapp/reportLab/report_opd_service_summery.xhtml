@@ -55,7 +55,7 @@
                         <h:outputLabel value="Department"/>
                         <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                        value="#{serviceSummery.department}" converter="dep"/>
+                                        value="#{serviceSummery.department}" converter="departmentConverter"/>
 
                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
                         <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     

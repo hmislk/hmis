@@ -17,7 +17,7 @@
 
                         <h:panelGrid columns="5" >
                             
-                            <p:autoComplete converter="dep" completeMethod="#{departmentController.completeDept}" styleClass="noPrintButton"
+                            <p:autoComplete converter="departmentConverter" completeMethod="#{departmentController.completeDept}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="d" itemLabel="#{d.name}" itemValue="#{d}"
                                             value="#{pharmacySaleReport.department}" ></p:autoComplete>

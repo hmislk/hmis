@@ -20,7 +20,7 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}"
                                             var="dept" itemLabel="#{dept.name}" 
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsStock.department}" converter="dep" >
+                                            value="#{reportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
                                              actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>

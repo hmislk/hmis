@@ -16,6 +16,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.pharmacy.Amp;
@@ -92,6 +93,10 @@ public class PharmacyAdjustmentController implements Serializable {
     Stock stock;
 
     String comment;
+    
+    Department fromDepartment;
+    Department toDepartment;
+    
 
     private Double qty;
     private Double pr;
@@ -104,6 +109,24 @@ public class PharmacyAdjustmentController implements Serializable {
     List<BillItem> billItems;
     private boolean printPreview;
 
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
+    
+    
     public void makeNull() {
         printPreview = false;
         clearBill();
