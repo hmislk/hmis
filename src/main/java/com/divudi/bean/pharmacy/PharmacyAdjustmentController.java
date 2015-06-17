@@ -81,6 +81,7 @@ public class PharmacyAdjustmentController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     ItemBatchFacade itemBatchFacade;
+
 /////////////////////////
 //    Item selectedAlternative;
     private Bill deptAdjustmentPreBill;
@@ -93,10 +94,9 @@ public class PharmacyAdjustmentController implements Serializable {
     Stock stock;
 
     String comment;
-    
+
     Department fromDepartment;
     Department toDepartment;
-    
 
     private Double qty;
     private Double pr;
@@ -125,8 +125,6 @@ public class PharmacyAdjustmentController implements Serializable {
         this.toDepartment = toDepartment;
     }
 
-    
-    
     public void makeNull() {
         printPreview = false;
         clearBill();
@@ -507,8 +505,197 @@ public class PharmacyAdjustmentController implements Serializable {
         return false;
     }
 
-    public void adjustDepartmentStock() {
+    public void transferAllDepartmentStockAsAdjustment() {
+        if (fromDepartment == null) {
+            JsfUtil.addErrorMessage("From ?");
+            return;
+        }
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("To ?");
+            return;
+        }
+        if (fromDepartment.equals(toDepartment)) {
+            JsfUtil.addErrorMessage("From and To are same");
+            return;
+        }
 
+        Bill fromBill = new PreBill();
+        fromBill.setBillType(BillType.PharmacyAdjustment);
+        fromBill.setBillDate(Calendar.getInstance().getTime());
+        fromBill.setBillTime(Calendar.getInstance().getTime());
+        fromBill.setCreatedAt(Calendar.getInstance().getTime());
+        fromBill.setCreater(getSessionController().getLoggedUser());
+        fromBill.setDeptId(getBillNumberBean().institutionBillNumberGenerator(fromDepartment, BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        fromBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(fromDepartment.getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        fromBill.setBillType(BillType.PharmacyAdjustment);
+        fromBill.setDepartment(fromDepartment);
+        fromBill.setInstitution(fromDepartment.getInstitution());
+        fromBill.setToDepartment(toDepartment);
+        fromBill.setToInstitution(toDepartment.getInstitution());
+        fromBill.setFromDepartment(fromDepartment);
+        fromBill.setFromInstitution(fromDepartment.getInstitution());
+        fromBill.setComments(comment);
+        getBillFacade().create(fromBill);
+
+        Bill toBill = new PreBill();
+        toBill.setBillType(BillType.PharmacyAdjustment);
+        toBill.setBillDate(Calendar.getInstance().getTime());
+        toBill.setBillTime(Calendar.getInstance().getTime());
+        toBill.setCreatedAt(Calendar.getInstance().getTime());
+        toBill.setCreater(getSessionController().getLoggedUser());
+        toBill.setDeptId(getBillNumberBean().institutionBillNumberGenerator(toDepartment, BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        toBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(toDepartment.getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        toBill.setBillType(BillType.PharmacyAdjustment);
+        toBill.setDepartment(toDepartment);
+        toBill.setInstitution(toDepartment.getInstitution());
+        toBill.setToDepartment(toDepartment);
+        toBill.setToInstitution(toDepartment.getInstitution());
+        toBill.setFromDepartment(fromDepartment);
+        toBill.setFromInstitution(fromDepartment.getInstitution());
+        toBill.setComments(comment);
+        getBillFacade().create(toBill);
+
+        String sql;
+        Map m = new HashMap();
+        m.put("dept", fromDepartment);
+        sql = "select s from Stock s where s.department=:dept";
+        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        int i = 0;
+        for (Stock s : stocks) {
+            BillItem fromBi = new BillItem();
+            PharmaceuticalBillItem fromPbi = new PharmaceuticalBillItem();
+            fromBi.setPharmaceuticalBillItem(null);
+            fromPbi.setStock(s);
+            fromBi.setItem(s.getItemBatch().getItem());
+            fromBi.setQty(0 - ((double) s.getStock()));
+            //pharmaceutical Bill Item
+            fromPbi.setDoe(s.getItemBatch().getDateOfExpire());
+            fromPbi.setFreeQty(0.0);
+            fromPbi.setItemBatch(s.getItemBatch());
+            fromPbi.setQty(fromBi.getQty());
+            //Rates
+            fromBi.setNetRate(s.getItemBatch().getPurcahseRate());
+            fromBi.setRate(s.getItemBatch().getRetailsaleRate());
+            //Values
+            fromBi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getStock());
+            fromBi.setNetValue(s.getStock() * fromBi.getNetRate());
+            fromBi.setDiscount(0.0);
+            fromBi.setInwardChargeType(InwardChargeType.Medicine);
+            fromBi.setItem(s.getItemBatch().getItem());
+            fromBi.setBill(fromBill);
+            fromBi.setSearialNo(i + 1);
+            fromBi.setCreatedAt(Calendar.getInstance().getTime());
+            fromBi.setCreater(getSessionController().getLoggedUser());
+
+            fromPbi.setBillItem(null);
+
+            if (fromPbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(fromPbi);
+            }
+            fromBi.setPharmaceuticalBillItem(fromPbi);
+            if (fromBi.getId() == null) {
+                getBillItemFacade().create(fromBi);
+            }
+            fromPbi.setBillItem(fromBi);
+            getPharmaceuticalBillItemFacade().edit(fromPbi);
+            fromBill.getBillItems().add(fromBi);
+            getBillFacade().edit(fromBill);
+
+            BillItem toBi = new BillItem();
+            PharmaceuticalBillItem toPbi = new PharmaceuticalBillItem();
+            toBi.setPharmaceuticalBillItem(null);
+            toPbi.setStock(s);
+            toBi.setItem(s.getItemBatch().getItem());
+            toBi.setQty(0 - ((double) s.getStock()));
+            //pharmaceutical Bill Item
+            toPbi.setDoe(s.getItemBatch().getDateOfExpire());
+            toPbi.setFreeQty(0.0);
+            toPbi.setItemBatch(s.getItemBatch());
+            toPbi.setQty(toBi.getQty());
+            //Rates
+            toBi.setNetRate(s.getItemBatch().getPurcahseRate());
+            toBi.setRate(s.getItemBatch().getRetailsaleRate());
+            //Values
+            toBi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getStock());
+            toBi.setNetValue(s.getStock() * toBi.getNetRate());
+            toBi.setDiscount(0.0);
+            toBi.setInwardChargeType(InwardChargeType.Medicine);
+            toBi.setItem(s.getItemBatch().getItem());
+            toBi.setBill(toBill);
+            toBi.setSearialNo(i + 1);
+            toBi.setCreatedAt(Calendar.getInstance().getTime());
+            toBi.setCreater(getSessionController().getLoggedUser());
+
+            toPbi.setBillItem(null);
+
+            if (toPbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(toPbi);
+            }
+            toBi.setPharmaceuticalBillItem(toPbi);
+            if (toBi.getId() == null) {
+                getBillItemFacade().create(toBi);
+            }
+            toPbi.setBillItem(toBi);
+            getPharmaceuticalBillItemFacade().edit(toPbi);
+            toBill.getBillItems().add(toBi);
+            getBillFacade().edit(toBill);
+
+            getPharmacyBean().resetStock(fromPbi, s, 0.0, fromDepartment);
+            getPharmacyBean().addToStock(toPbi, s.getStock(), toDepartment);
+            
+            
+            i++;
+        }
+        printPreview = true;
+    }
+
+    public void tem() {
+        Stock s = new Stock();
+        Bill toBill = new PreBill();
+        int i = 0;
+
+        BillItem toBi = new BillItem();
+        PharmaceuticalBillItem toPbi = new PharmaceuticalBillItem();
+        toBi.setPharmaceuticalBillItem(null);
+        toPbi.setStock(s);
+        toBi.setItem(s.getItemBatch().getItem());
+        toBi.setQty(0 - ((double) s.getStock()));
+        //pharmaceutical Bill Item
+        toPbi.setDoe(s.getItemBatch().getDateOfExpire());
+        toPbi.setFreeQty(0.0);
+        toPbi.setItemBatch(s.getItemBatch());
+        toPbi.setQty(toBi.getQty());
+        //Rates
+        toBi.setNetRate(s.getItemBatch().getPurcahseRate());
+        toBi.setRate(s.getItemBatch().getRetailsaleRate());
+        //Values
+        toBi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getStock());
+        toBi.setNetValue(s.getStock() * toBi.getNetRate());
+        toBi.setDiscount(0.0);
+        toBi.setInwardChargeType(InwardChargeType.Medicine);
+        toBi.setItem(s.getItemBatch().getItem());
+        toBi.setBill(toBill);
+        toBi.setSearialNo(i + 1);
+        toBi.setCreatedAt(Calendar.getInstance().getTime());
+        toBi.setCreater(getSessionController().getLoggedUser());
+
+        toPbi.setBillItem(null);
+
+        if (toPbi.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(toPbi);
+        }
+        toBi.setPharmaceuticalBillItem(toPbi);
+        if (toBi.getId() == null) {
+            getBillItemFacade().create(toBi);
+        }
+        toPbi.setBillItem(toBi);
+        getPharmaceuticalBillItemFacade().edit(toPbi);
+        toBill.getBillItems().add(toBi);
+        getBillFacade().edit(toBill);
+
+    }
+
+    public void adjustDepartmentStock() {
         if (errorCheck()) {
             return;
         }
