@@ -27,11 +27,21 @@
 
                                         <p:autoComplete minQueryLength="2"  style="width: 400px;"
                                                         forceSelection="true" 
-                                                        value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
+                                                        value="#{channelStaffPaymentBillController.staff}" id="scStaff"
                                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         converter="stfcon"   >                                            
+                                            <p:ajax event="change" update="lstSelect" process="@this scStaff"  
+                                                    listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>
+
+                                        <p:selectOneMenu  id="lstSelect" converter="sscon"  
+                                                          value="#{channelStaffPaymentBillController.selectedServiceSession}" style="min-width: 100%;" >
+                                            <f:selectItem itemLabel="Select"  ></f:selectItem>
+                                            <f:selectItems  value="#{channelStaffPaymentBillController.serviceSessionList}" var="ses" 
+                                                            itemValue="#{ses}" 
+                                                            itemLabel="#{ses.name}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
                                         <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy" />
                                         <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />

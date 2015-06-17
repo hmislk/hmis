@@ -972,6 +972,8 @@ public class ChannelBillController implements Serializable {
         bookingController.fillBillSessions();
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
+        
+        bookingController.generateSessions();
 
     }
 

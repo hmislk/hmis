@@ -79,12 +79,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     private List<BillFee> billFees;
     private List<ServiceSession> serviceSessions;
+    private List<ServiceSession> serviceSessionList;
     /////////////////////    
     private Date fromDate;
     private Date toDate;
     private Date date;
     private Bill current;
     Staff currentStaff;
+    Staff staff;
     Institution institution;
     double totalDue;
     double totalPaying;
@@ -409,10 +411,21 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
 
     }
+
+    public Staff getStaff() {
+        System.out.println("staff = " + staff);
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        System.out.println("staff = " + staff);
+        this.staff = staff;
+    }
+    
+    
 
     public void prepareAdd() {
         current = new BilledBill();
@@ -420,6 +433,20 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSelectedItems(List<Bill> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+    
+    public void fillSessions() {
+        System.out.println("Inside");
+        String sql;
+        Map m = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and s.staff=:doc "
+                + " order by s.sessionWeekday, s.sessionAt";
+        m.put("doc", staff);
+        System.out.println("getStaff() = " + staff);
+        serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
+        System.out.println("serviceSessionList = " + serviceSessionList);
     }
 
     private Bill createPaymentBill() {
@@ -777,6 +804,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setServiceSession(List<ServiceSession> serviceSession) {
         this.serviceSessions = serviceSession;
+    }
+
+    public List<ServiceSession> getServiceSessionList() {
+        return serviceSessionList;
+    }
+
+    public void setServiceSessionList(List<ServiceSession> serviceSessionList) {
+        this.serviceSessionList = serviceSessionList;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {
