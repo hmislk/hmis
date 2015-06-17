@@ -27,11 +27,11 @@
 
                                         <p:autoComplete minQueryLength="2"  style="width: 400px;"
                                                         forceSelection="true" 
-                                                        value="#{channelStaffPaymentBillController.staff}" id="scStaff"
+                                                        value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
                                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         converter="stfcon"   >                                            
-                                            <p:ajax event="change" update="lstSelect" process="@this scStaff"  
+                                            <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
                                                     listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>
 
@@ -43,8 +43,8 @@
                                                             itemLabel="#{ses.name}" ></f:selectItems>
                                         </p:selectOneMenu>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
                                         <p:watermark value="Staff" for="scStaff"/>
 
                                         <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
