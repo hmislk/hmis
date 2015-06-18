@@ -3213,7 +3213,7 @@ public class SearchController implements Serializable {
                 + " b.referenceBill.billType=:refBillType "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false "
                 // for remove cancel bills
-                + " and b.referenceBill.canceled=false ";
+                + " and b.referenceBill.cancelled=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.deptId) like :billNo )";
