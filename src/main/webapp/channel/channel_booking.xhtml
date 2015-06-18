@@ -12,10 +12,11 @@
 
         <h:form>
 
+
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <p:ajax  event="change" process="@this" update="scStaff" /> 
                             <p:ajax  event="click" process="@this" update="scStaff" /> 
@@ -25,10 +26,11 @@
 
                 <p:panel header="Consultants" id="scStaff" >    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
-                            <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
+                            <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                     listener="#{bookingController.generateSessions}"/>
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -37,57 +39,55 @@
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
-                                 selection="#{bookingController.selectedServiceSession}" >
+                                 selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                 listener="#{bookingController.fillBillSessions}" />  
 
 
-                        <p:column headerText="Session">
-                            #{ses.name}
+                        <p:column headerText="Session" style="text-wrap: none;" >
+                            <p:outputLabel id="lblSesName" value="#{ses.name}"></p:outputLabel>
+                            <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                         </p:column>
-                        <p:column headerText="Max">
-                            #{ses.maxNo}
+                        <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                            <p:outputLabel value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                <f:convertNumber pattern="00" ></f:convertNumber>
+                            </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Booked">
-                            #{ses.displayCount}
+                        <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
+                            <p:outputLabel value="#{ses.displayCount}">
+                                <f:convertNumber pattern="00" ></f:convertNumber>
+                            </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Date">
+                        <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                             <p:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                <f:convertDateTime pattern="dd MMM"/>
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Time">
+                        <p:column headerText="Time" style="width: 40px!important; text-align: center;">
                             <p:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime pattern="hh:mm"/>
                             </p:outputLabel>
                         </p:column>
-
-                        <p:column headerText="Fee">
+                        <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
                             <p:outputLabel value="#{ses.originatingSession.totalFee}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
                             </p:outputLabel>                                                            
                         </p:column>   
-
-                        <p:column >
-                            <p:commandLink value="Edit" onclick="PF('dlgSessionEdit').show();" />
-
-                        </p:column>
-
                     </p:dataTable>
                 </p:panel>
 
-                <p:panel header="Bookings">
-                    <p:dataTable id="tblBookingsOfSelectedSession"
+                <p:panel header="Bookings" style="min-height: 370px!important;"  >
+                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
                                  value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
-                                 selection="#{bookingController.selectedBillSession}">
+                                 selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="260">
                         <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                 listener="#{channelBillController.createBillfees}" />  
 
                         <p:column headerText="No">#{bs.serialNo}</p:column>
-                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Patient Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                         <p:column headerText="Paid or Not">
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
@@ -122,8 +122,7 @@
                                 </p:outputLabel>
                                 <p:outputLabel  
                                     value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
-                                    rendered="#{!channelBillController.foriegn}"
-                                    >
+                                    rendered="#{!channelBillController.foriegn}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
 
@@ -134,7 +133,7 @@
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip" event="change" />
                             </p:selectOneMenu>
-                            
+
                             <h:outputLabel/>
                             <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
                                 <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
@@ -153,7 +152,7 @@
 
                             <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            
+
                             <h:panelGroup id="creditCard" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{channelBillController.paymentMethodData}"/>
                             </h:panelGroup>
@@ -180,6 +179,7 @@
                                 <h:outputLabel value="Name"/>
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
                                 </p:inputText>
+                                
                                 <h:outputLabel value="Phone"/>
                                 <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
                                 </p:inputMask>
@@ -216,14 +216,19 @@
                             </h:panelGrid>   
                         </p:tab>
                     </p:tabView>
-                    <h:panelGrid columns="2" style="min-width: 100%;">
+                    <h:panelGrid columns="3" style="min-width: 100%;">
 
 
                         <p:commandButton   value="Add" process="@form" 
                                            update="gpThisBookingDetails" style="float: right;" 
-                                          action="#{channelBillController.add}" 
-                                           oncomplete="PF('dlgAdd').show();">                        
+                                           action="#{channelBillController.add}" 
+                                           oncomplete="PF('dlgAdd').show();">   
+                            <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
                         </p:commandButton>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
 
                         <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
                     </h:panelGrid>
@@ -314,7 +319,7 @@
                                 </div>
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
-                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -336,13 +341,13 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                            action="#{channelBillController.cancelCashFlowBill}"
+                                             action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel Credit" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                            action="#{channelBillController.cancelCreditPaidBill}"
+                                             action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
@@ -375,14 +380,14 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                            action="#{channelBillController.refundCashFlowBill}" 
+                                             action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Refund Credit" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
-                                            action="#{channelBillController.refundCreditPaidBill}" 
+                                             action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
@@ -420,7 +425,7 @@
                                 <p:commandButton id="setBtn"  value="Settle Credit"
                                                  process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                                  update="gpSettlePrint"
-                                                action="#{channelBillController.settleCredit}" 
+                                                 action="#{channelBillController.settleCredit}" 
                                                  disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                                              or channelBillController.billSession.bill.cancelled==true
                                                              or  channelBillController.billSession.bill.paidAmount ne 0}" 
@@ -447,10 +452,10 @@
                                             <div >
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                                     <div>
-                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                                     </div>
                                                     <div>
-                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                                     </div>
                                                 </h:panelGroup>
                                             </div>
@@ -468,7 +473,7 @@
                         </p:tab>
 
 
-                        <p:tab title="Change" id="change">
+                        <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
@@ -478,15 +483,18 @@
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                                 <p:outputLabel value="Patient"/>
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
-                                <p:outputLabel value="Serial No"/>
+                                <p:outputLabel value="Current Serial No"/>
                                 <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                    <p:inputText autocomplete="off" value="#{bis.billSession.serialNo}">                                        
-                                    </p:inputText>
+                                    <p:outputLabel value="#{bis.billSession.serialNo}">                                        
+                                    </p:outputLabel>
                                 </ui:repeat>
+                                <p:outputLabel value="Serial No"/>
+                                <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
+                                </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
-                               
+
                                 <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
                                                              or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
@@ -662,10 +670,6 @@
             </h:panelGrid>
 
         </h:form>
-
-        <p:dialog  widgetVar="dlgSessionEdit" modal="true" height="100">
-
-        </p:dialog> 
 
 
     </ui:define>

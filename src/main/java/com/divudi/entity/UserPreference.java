@@ -44,6 +44,7 @@ public class UserPreference implements Serializable {
     boolean institutionSpecificItems=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
+    boolean partialPaymentOfOpdPreBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
@@ -57,6 +58,7 @@ public class UserPreference implements Serializable {
     boolean pharmayPurchaseWithLastRate;
     boolean inwardAddServiceBillTimeCheck;
     boolean inwardMoChargeCalculateInitialTime;
+    boolean inwardChangeAdmissionFee;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -339,6 +341,22 @@ public class UserPreference implements Serializable {
 
     public void setInwardMoChargeCalculateInitialTime(boolean inwardMoChargeCalculateInitialTime) {
         this.inwardMoChargeCalculateInitialTime = inwardMoChargeCalculateInitialTime;
+    }
+
+    public boolean isInwardChangeAdmissionFee() {
+        return inwardChangeAdmissionFee;
+    }
+
+    public void setInwardChangeAdmissionFee(boolean inwardChangeAdmissionFee) {
+        this.inwardChangeAdmissionFee = inwardChangeAdmissionFee;
+    }
+
+    public boolean isPartialPaymentOfOpdPreBillsAllowed() {
+        return partialPaymentOfOpdPreBillsAllowed;
+    }
+
+    public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
+        this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
     
     @Override

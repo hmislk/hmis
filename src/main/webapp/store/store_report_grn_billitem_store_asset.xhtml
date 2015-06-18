@@ -4,31 +4,57 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel  >
+                    <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Store Asset BillItems "/>                                                         
-                            <h:panelGrid columns="5" >
+                            <h:outputLabel value="Store Asset BillItems "/> 
+                            </f:facet>
+                            <h:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{commonReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar  id="fromDate" value="#{commonReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport.createGRNBillItemForAsset()}"/>
+                                <h:outputLabel/>
                             </h:panelGrid>
-
-                        </f:facet>
-
-
-                        <p:dataTable rowIndexVar="i" 
+                        <h:panelGrid columns="4" >
+                            <p:spacer width="70" height="1"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport.createGRNBillItemForAsset()}"/>
+                                <p:commandButton value="Print" ajax="false">
+                                    <p:printer target="billPrint"></p:printer>
+                                </p:commandButton>
+                                <p:commandButton value="Excel" ajax="false">
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="Department_asset_by_bill_item"
+                                                 facetBackground="#008000" facetFontSize="15"
+                                                 facetFontColor="#FFFFFF" facetFontStyle="BOLD"
+                                                 cellFontColor="#0000FF" cellFontSize="12" cellFontStyle="NORMAL"
+                                                 fontName="Courier New"></pe:exporter>
+                                </p:commandButton>
+                           </h:panelGrid>
+                        <p:panel>
+                            <h:panelGroup id="billPrint">
+                            <p:dataTable rowIndexVar="i" 
                                      id="tblBills" 
                                      value="#{commonReport.billItems}" var="bi" stickyHeader="true" editingRow="true"  >
+                                <f:facet name="header">
+                                <h:outputLabel value="Department Assets By Bill Item"/><br/>
+                                <h:outputLabel value="From :" style="white-space: pre-line"/>
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <p:spacer width="10" height="0"/>
+                                <h:outputLabel value="&emsp;To :"/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <f:facet name="header" >
@@ -54,19 +80,24 @@
                                 </f:facet>
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
                             </p:column>
-                            <p:column headerText="Qty" styleClass="alignTop">
+                            <p:column headerText="Qty" styleClass="averageNumericColumn">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Qty"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}"/>
                             </p:column>
-                            <p:column headerText="Purchase Rate" styleClass="alignTop">
+                            <p:column headerText="Purchase Rate" styleClass="averageNumericColumn">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Purchase Rate"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}"/>
                             </p:column>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                         </p:dataTable>
+                               </h:panelGroup>
+                            </p:panel>
                     </p:panel>
 
                 </h:form>

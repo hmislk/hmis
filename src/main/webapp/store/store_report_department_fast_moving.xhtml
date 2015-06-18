@@ -15,9 +15,9 @@
 
                     <p:panel header="Fast Moving Items" >
 
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsTransfer.department}" converter="dep" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsTransfer.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="" ></h:outputLabel>
                             <h:outputLabel value="" ></h:outputLabel>
@@ -47,9 +47,17 @@
                                     </f:facet>
 
                                     <p:dataTable id="tblVals"  value="#{storeReportsTransfer.movementRecords}" var="i">
-                                        
+
                                         <f:facet name="header">
                                             <h:outputLabel value="#{storeReportsTransfer.department.name} - Fast Moving Items by Value"/>
+                                            <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                            <h:outputLabel  value="#{storeReportsTransfer.fromDate}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                            </h:outputLabel>                          
+                                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                                            <h:outputLabel  value="#{storeReportsTransfer.toDate}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                            </h:outputLabel>
                                         </f:facet>
 
                                         <p:column headerText="Code" style="width: 70px;" >
@@ -124,7 +132,15 @@
 
                                     <p:dataTable id="tblQtys"  value="#{storeReportsTransfer.movementRecordsQty}" var="i"  >
                                         <f:facet name="header">
-                                            <h:outputLabel value="#{storeReportsTransfer.department.name} - Fast Moving Items by Quentity"/>  
+                                            <h:outputLabel value="#{storeReportsTransfer.department.name} - Fast Moving Items by Quentity"/>
+                                            <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                            <h:outputLabel  value="#{storeReportsTransfer.fromDate}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                            </h:outputLabel>                          
+                                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                                            <h:outputLabel  value="#{storeReportsTransfer.toDate}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                            </h:outputLabel>
                                         </f:facet>
                                         <p:column headerText="Code" style="width: 70px;" >
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
@@ -159,11 +175,13 @@
                                 </p:panel>
 
                             </p:tab>
-
-
-                        </p:tabView>
+                        </p:tabView> 
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
 
                     </p:panel>
+
                 </h:form>
 
 

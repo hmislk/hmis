@@ -55,17 +55,17 @@
                     <p:column headerText="Name" filterBy="#{bill.patient.person.name}" filterMatchMode="contains">
                         #{bill.patient.person.name}
                     </p:column>
-                    <p:column style="text-align:right;" headerText="Hospital Fee">
+                    <p:column styleClass="averageNumericColumn" headerText="Hospital Fee">
                         <h:outputLabel  value="#{bill.hospitalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align:right;" headerText="Professional Fee">
+                    <p:column styleClass="averageNumericColumn" headerText="Professional Fee">
                         <h:outputLabel value="#{bill.professionalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align:right;" headerText="Total">
+                    <p:column styleClass="averageNumericColumn" headerText="Total">
                         <h:outputLabel  value="#{bill.netTotal}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>

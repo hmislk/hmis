@@ -16,16 +16,19 @@
 
                     <p:panel header="Department Stock Report by Batch" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="dep"/>
+                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter"/>
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.category}" >
                             </p:autoComplete>
+                             </h:panelGrid>
+                        <h:panelGrid columns="4" >
+                            <p:spacer width="75" height="1"/>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillCategoryStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -33,12 +36,12 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                       </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock in #{storeReportsStock.department.name} "/>   <br/>                                 
+                                    <h:outputLabel value="Category Stock in #{storeReportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{storeReportsStock.category.name}"/>                                    
                                 </f:facet> 
                                 
@@ -121,6 +124,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

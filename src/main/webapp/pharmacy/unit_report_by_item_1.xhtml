@@ -13,19 +13,20 @@
 
             <ui:define name="content">
                 <h:form >
-                    <h:panelGrid columns="4" >
+                    <p:panel header="Unit Issue By Item"> 
+                        <h:panelGrid columns="4" >
                         <h:outputLabel value="From Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
                                         itemValue="#{dept}" forceSelection="true" 
-                                        value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                                        value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
                         </p:autoComplete>
 
                         <h:outputLabel value="To Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
                                         itemValue="#{dept}" forceSelection="true" 
-                                        value="#{reportsTransfer.toDepartment}" converter="dep" >
+                                        value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
                         </p:autoComplete>
 
                         <h:outputLabel value="From" ></h:outputLabel>
@@ -80,9 +81,12 @@
                                         <f:convertNumber  pattern="#0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>
-                        </p:dataTable>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    
                     </p:panel>
+                    
                 </h:form>
             </ui:define>
         </ui:composition>

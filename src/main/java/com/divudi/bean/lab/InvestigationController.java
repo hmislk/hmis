@@ -14,6 +14,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.SymanticType;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
@@ -74,6 +75,8 @@ public class InvestigationController implements Serializable {
     private DepartmentFacade departmentFacade;
 
     List<Investigation> itemsToRemove;
+
+    Institution institution;
 
     public List<Investigation> getItemsToRemove() {
         return itemsToRemove;
@@ -273,6 +276,32 @@ public class InvestigationController implements Serializable {
         this.bulkText = bulkText;
     }
 
+    public List<Investigation> getInstitutionSelectedItems() {
+        Map m = new HashMap();
+        String sql;
+        sql = "select c "
+                + " from Investigation c "
+                + " where c.retired=:r ";
+        m.put("r", false);
+        if (selectText != null && !selectText.trim().equals("")) {
+            sql += " and upper(c.name) like :st ";
+            m.put("st", "%" + getSelectText().toUpperCase() + "%");
+        }
+        sql += " and c.institution=:ins";
+        m.put("ins", institution);
+        sql += " order by c.name";
+        selectedItems = getFacade().findBySQL(sql, m);
+        return selectedItems;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
     public List<Investigation> getSelectedItems() {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false order by c.name");
@@ -283,6 +312,26 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeItem(String qry) {
+        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        return completeItems;
+    }
+
+    public List<Investigation> completeDepartmentItem(String qry) {
+        String sql;
+        Map m = new HashMap();
+        m.put("qry", "'%" + qry.toUpperCase() + "%'");
+        m.put("inv", Investigation.class);
+        m.put("ser", Investigation.class);
+        m.put("pak", Investigation.class);
+        m.put("ins", getSessionController().getInstitution());
+        sql = "select c "
+                + " from Item c "
+                + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
+                + " and c.retired=false "
+                + " and upper(c.name) like :qry ";
+        
+        sql += "order by c.name";
+
         List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
@@ -348,6 +397,7 @@ public class InvestigationController implements Serializable {
 //        }
         getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
+        getCurrent().setInstitution(institution);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             ////System.out.println("1");
             if (billedAs == false) {
@@ -472,8 +522,6 @@ public class InvestigationController implements Serializable {
         String sql = "select i from Investigation i where i.retired=false order by i.department.name, i.name";
         items = getFacade().findBySQL(sql);
     }
-
-    
 
     public SpecialityFacade getSpecialityFacade() {
         return specialityFacade;

@@ -14,7 +14,7 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Opd All Bill" >
+                    <p:panel header="Pharmacy Whole Sale Report" >
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Institution" ></h:outputLabel>
@@ -26,7 +26,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}" converter="dep" >
+                                            value="#{billController.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
@@ -156,7 +156,8 @@
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
                             <p:column headerText="Gross Value"  
-                                      sortBy="#{bill.total}">
+                                      sortBy="#{bill.total}"
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -164,7 +165,8 @@
 
                             </p:column>
                             <p:column headerText="Discount" 
-                                      sortBy="#{bill.discount}">
+                                      sortBy="#{bill.discount}" 
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -172,7 +174,8 @@
 
                             </p:column>
                             <p:column headerText="Net Value" 
-                                      sortBy="#{bill.netTotal}" >
+                                      sortBy="#{bill.netTotal}" 
+                                      styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>

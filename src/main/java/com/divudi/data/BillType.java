@@ -139,6 +139,8 @@ public enum BillType {
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
+            case PharmacyWholeSale:
+                return "Pharmacy WholeSale Bill";
             case PharmacyPre:
                 return "Pharmacy Sale Bill (Pre)";
             case PharmacyAdjustment:
@@ -163,10 +165,10 @@ public enum BillType {
                 return "Channel On Call";
             case ChannelStaff:
                 return "Channel Staff";
-           case StoreOrder:
+            case StoreOrder:
                 return "Store Order Request";
-           case ChannelPaid:
-               return "Channel Settle";
+            case ChannelPaid:
+                return "Channel Settle";
             case StoreOrderApprove:
                 return "Store Order Aproved";
             case StoreGrnBill:
@@ -191,9 +193,11 @@ public enum BillType {
                 return "Pharmacy Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
-                case OpdPreBill:
+            case OpdPreBill:
                 return "OPD Bills To Pay";
-            
+            case OpdBathcBill:
+                return "OPD Accepet Payment";
+
         }
 
         return "Other";

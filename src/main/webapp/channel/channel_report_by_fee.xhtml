@@ -19,7 +19,7 @@
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill Fees">
 
                 </p:panel>
-                <h:panelGrid columns="7" styleClass="noPrintButton"> 
+                <h:panelGrid columns="2" styleClass="noPrintButton"> 
                     <h:outputLabel value="From Date"/>
                     <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
@@ -33,6 +33,7 @@
                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                     value="#{channelReportController.webUser}" >
                     </p:autoComplete>
+                    <h:outputLabel/>
                     <p:commandButton id="btnRefresh" ajax="false" value="Process" action="#{channelReportController.createFeeTypeBillFeeList()}">
                     </p:commandButton>
                 </h:panelGrid>
@@ -43,8 +44,16 @@
 
                     <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
                         <f:facet name="header">
-                            <p:outputLabel value="Billed Bill List"></p:outputLabel>
+                            <p:outputLabel value="BILL FEES  &emsp; #{channelReportController.webUser.webUserPerson.name}" ></p:outputLabel>
                             <p:outputLabel value="Billed Bill Total - #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -134,10 +143,10 @@
                                 <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
                             </p:column>
 
-                            <p:column headerText="Channel Fee">
+                            <p:column headerText="Channel Fee" styleClass="averageNumericColumn">
                                 <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Paid Value"  >
+                            <p:column headerText="Paid Value"  styleClass="averageNumericColumn">
 
                                 <h:outputLabel value="#{bf.bill.netTotal}" >
                                     <f:convertNumber pattern="#,#00.00"/>
@@ -242,10 +251,10 @@
                                 <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
                             </p:column>
 
-                            <p:column headerText="Channel Fee">
+                            <p:column headerText="Channel Fee" styleClass="averageNumericColumn">
                                 <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Paid Value"  >
+                            <p:column headerText="Paid Value" styleClass="averageNumericColumn" >
 
                                 <h:outputLabel value="#{bf.bill.netTotal}" >
                                     <f:convertNumber pattern="#,#00.00"/>
@@ -350,10 +359,10 @@
                                 <h:outputLabel value="#{bf.bill.paymentScheme.name}" />
                             </p:column>
 
-                            <p:column headerText="Channel Fee">
+                            <p:column headerText="Channel Fee" styleClass="averageNumericColumn">
                                 <p:outputLabel value="#{bf.fee.fee}"></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Paid Value"  >
+                            <p:column headerText="Paid Value" styleClass="averageNumericColumn" >
 
                                 <h:outputLabel value="#{bf.bill.netTotal}" >
                                     <f:convertNumber pattern="#,#00.00"/>
@@ -372,6 +381,9 @@
                         <p:outputLabel value="Refund Bill Total"></p:outputLabel>
                         <p:outputLabel value="#{channelReportController.refundBillTotal}"></p:outputLabel>
                     </p:panelGrid>
+                    <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                 </p:panel>
             </h:form>
         </h:panelGroup>

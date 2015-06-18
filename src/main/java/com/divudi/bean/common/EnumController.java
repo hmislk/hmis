@@ -182,6 +182,8 @@ public class EnumController implements Serializable {
             InwardChargeType.Equipment,
             InwardChargeType.MealCharges,
             InwardChargeType.OperationTheatreCharges,
+            InwardChargeType.OperationTheatreNursingCharges,
+            InwardChargeType.OperationTheatreMachineryCharges,
             InwardChargeType.LarbourRoomCharges,
             InwardChargeType.ETUCharges,
             InwardChargeType.TreatmentCharges,
@@ -271,7 +273,8 @@ public class EnumController implements Serializable {
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyWholeSale,
-            BillType.PharmacyIssue};
+            BillType.PharmacyIssue,
+            BillType.PharmacyTransferReceive};
 
         return b;
     }
@@ -308,6 +311,13 @@ public class EnumController implements Serializable {
         return b;
     }
 
+    public BillType[] getPharmacySaleBillTypes() {
+        BillType[] bt = {
+            BillType.PharmacySale,
+            BillType.PharmacyWholeSale,};
+        return bt;
+    }
+
     public PaymentMethod[] getPaymentMethods() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -335,7 +345,7 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
-        PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent,  PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
         return p;
     }

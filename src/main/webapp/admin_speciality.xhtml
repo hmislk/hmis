@@ -50,6 +50,8 @@
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Speciality Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{specialityController.current.name}"  ></h:inputText>
+                                    <h:outputText id="lblId" value="ID" ></h:outputText>
+                                    <h:outputText id="lblIdValue" value="#{specialityController.current.id}" ></h:outputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{specialityController.saveSelected()}" styleClass="buttons">

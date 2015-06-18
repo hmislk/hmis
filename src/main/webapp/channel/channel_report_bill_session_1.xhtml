@@ -40,6 +40,19 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable value="#{channelReportController.billSessionsBilled}" var="bs">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BILL SESSION"/>
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{commonReport.department.name}"/>
+                                    
+                                </f:facet>
                                 <p:column headerText="Booking ID">
                                     #{bs.bill.bookingId}
                                 </p:column>
@@ -61,10 +74,10 @@
                                 <p:column headerText="Session Name">
                                     #{bs.serviceSession.name}
                                 </p:column>
-                                <p:column headerText="Doctor Fee">
+                                <p:column headerText="Doctor Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.staffFee}
                                 </p:column>
-                                <p:column headerText="Hospital Fee">
+                                <p:column headerText="Hospital Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.hospitalFee}
                                 </p:column>
                                 <p:column headerText="Payment Method">
@@ -103,13 +116,13 @@
                                 <p:column headerText="Session Name">
                                     #{bs.serviceSession.name}
                                 </p:column>
-                                <p:column headerText="Doctor Fee">
+                                <p:column headerText="Doctor Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.staffFee}
                                 </p:column>
-                                <p:column headerText="Hospital Fee">
+                                <p:column headerText="Hospital Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.hospitalFee}
                                 </p:column>
-                                <p:column headerText="Payment Method">
+                                <p:column headerText="Payment Method" styleClass="averageNumericColumn">
                                     #{bs.bill.paymentMethod}
                                 </p:column>
                                 <p:column headerText="Status">
@@ -145,10 +158,10 @@
                                 <p:column headerText="Session Name">
                                     #{bs.serviceSession.name}
                                 </p:column>
-                                <p:column headerText="Doctor Fee">
+                                <p:column headerText="Doctor Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.staffFee}
                                 </p:column>
-                                <p:column headerText="Hospital Fee">
+                                <p:column headerText="Hospital Fee" styleClass="averageNumericColumn">
                                     #{bs.billItem.hospitalFee}
                                 </p:column>
                                 <p:column headerText="Payment Method">
@@ -194,6 +207,10 @@
                                         </p:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>
 

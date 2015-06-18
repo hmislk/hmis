@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{reportsStock.department}" converter="dep"/>
+                                            forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter"/>
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
@@ -73,7 +73,7 @@
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Before Stock Quentity" style="text-align: center;">
+                                <p:column headerText="Before Stock Quentity" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Before Stock Quantity"/>    
                                     </f:facet>
@@ -82,7 +82,7 @@
                                     </h:outputLabel>                                  
                                 </p:column>
                                 
-                                <p:column headerText="After Stock Quentity" style="text-align: center;">
+                                <p:column headerText="After Stock Quentity" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="After Stock Quantity"/>    
                                     </f:facet>

@@ -99,10 +99,14 @@
                         <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                          
                     </p:column>
                     
-                    <p:column headerText="Value">                       
-                        <h:outputLabel value="#{p.netTotal}"/>
+                    <p:column headerText="Value" styleClass="averageNumericColumn">                       
+                        <h:outputLabel value="#{p.netTotal}">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{searchController.netTotalValue}"/>
+                            <h:outputLabel value="#{searchController.netTotalValue}">
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
                         </f:facet>
                     </p:column>
                     

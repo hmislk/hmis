@@ -16,16 +16,16 @@
 
                     <p:panel header="Detailed Transfer Listing (Do not consider receieve) - By Bills" >
 
-                        <h:panelGrid columns="8" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
+                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="Transfer To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="dep" >
+                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
@@ -33,7 +33,8 @@
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="4">
+                            <p:spacer width="85" height="1"/>
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersIssueByBill}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -49,18 +50,18 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List To "/>
+                                    <h:outputLabel value="Transfer Issue by Bill &emsp; From : "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
+                                    <h:outputLabel value="Transfer Issue by Bill &emsp; To : "/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                         <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; HH:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy  hh:mm:ss a" />
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="&emsp;To : "/>
                                         <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; HH:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
                                         </h:outputLabel>
-                                    </h:panelGrid>
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
@@ -113,6 +114,9 @@
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

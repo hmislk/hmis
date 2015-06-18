@@ -49,7 +49,12 @@
                 </h:panelGrid>
 
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
+                    rows="20"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="20, 50, 100" 
+                    >   
                     <f:facet name="header">
                         <p:outputLabel value="#{bookKeepingSummery.institution.name} Summary Report By Date" />
                         <h:outputLabel value="From : "/>
@@ -62,13 +67,16 @@
                         </h:outputLabel>
                     </f:facet>
 
-                    <p:column headerText="Date">
+                    <p:column headerText="Date"
+                        sortBy="#{i.string}" 
+                        filterBy="#{i.string}"
+                        filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Date" />
                         </f:facet>
                         <h:outputLabel value="#{i.string}" />
                     </p:column>
-                    <p:column headerText="Hospital Fee" style="text-align: right;">
+                    <p:column headerText="Hospital Fee" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Hospital Fee" />
                         </f:facet>
@@ -76,7 +84,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Regent Fee" style="text-align: right;">
+                    <p:column headerText="Regent Fee" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Regent Fee" />
                         </f:facet>
@@ -84,7 +92,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Staff Fee" style="text-align: right;">
+                    <p:column headerText="Staff Fee" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Staff Fee" />
                         </f:facet>
@@ -92,7 +100,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Net Value" style="text-align: right;">
+                    <p:column headerText="Net Value" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Net Value" />
                         </f:facet>

@@ -16,16 +16,19 @@
 
                     <p:panel header="Before Stock Taking Report" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="dep"/>
+                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter"/>
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.category}" >
                             </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="4" >
+                                 <p:spacer width="80" height="1"/>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillCategoryStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -38,9 +41,10 @@
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock in #{storeReportsStock.department.name} "/>   <br/>                                 
-                                    <h:outputLabel value="for #{storeReportsStock.category.name}"/> <br/><br/>
-                                    <h:outputLabel value="Date : "><p:clock pattern="dd MM yy HH:mm:ss a" /></h:outputLabel>
+                                    <h:outputLabel value="Before Stock Taking Report in #{storeReportsStock.department.name} "/>                                  
+                                    <h:outputLabel value="for #{storeReportsStock.category.name}"/><br/><br/>
+                                    <h:outputLabel value="Date : ">
+                                        <p:clock pattern="dd MM yy HH:mm:ss a"/></h:outputLabel>
                                 </f:facet> 
                                 
                                 <p:column headerText="Item">
@@ -96,10 +100,10 @@
                                     <h:outputLabel value="__________________"  ></h:outputLabel>
                                 </p:column>
                                 
-                              
-                                
-                                
 
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
                             
                             

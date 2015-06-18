@@ -13,35 +13,24 @@
             <ui:define name="content">
 
                 <h:form>
+                    <p:panel header="OPD Dues and Access">
+                        <h:panelGrid columns="2" styleClass="alignTop" style="margin: auto;" >
+                            <p:panel header="OPD Credit Due" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton action="/credit/credit_company_opd_due" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
+                                    <p:commandButton  action="/credit/credit_company_opd_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
+                                </h:panelGrid>
+                            </p:panel>
 
-                    <h:panelGrid columns="2"  >
-
-
-                        <p:panel header="OPD Credit Due" >
-                            <p:commandButton action="/credit/credit_company_opd_due" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
-                            <p:commandButton  action="/credit/credit_company_opd_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
-                        </p:panel>
-
-
-
-                        <p:panel header="OPD Credit Excess" >
-                            <p:commandButton action="/credit/credit_company_opd_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
+                            <p:panel header="OPD Credit Excess" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton action="/credit/credit_company_opd_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
                             <p:commandButton   action="/credit/credit_company_opd_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
+                                </h:panelGrid>
+                            </p:panel>
+                        </h:panelGrid>
 
-                        </p:panel>
-
-
-
-
-
-
-
-
-
-
-
-                    </h:panelGrid>
-
+                    </p:panel>                    
                 </h:form>
             </ui:define>
 

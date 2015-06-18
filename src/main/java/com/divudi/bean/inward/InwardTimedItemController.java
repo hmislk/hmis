@@ -89,6 +89,7 @@ public class InwardTimedItemController implements Serializable {
     Date frmDate;
     Date toDate;
     double total;
+    double totalMins;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -186,8 +187,12 @@ public class InwardTimedItemController implements Serializable {
         items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
+        totalMins=0.0;
         for (PatientItem pi : items) {
+            long l=(pi.getToTime().getTime()-pi.getFromTime().getTime())/(1000*60);
+            pi.setTmpConsumedTime(l);
             total += pi.getServiceValue();
+            totalMins+=pi.getTmpConsumedTime();
         }
     }
 
@@ -544,6 +549,8 @@ public class InwardTimedItemController implements Serializable {
 
         if (tmpPI.getToTime() == null) {
             tmpPI.setToTime(Calendar.getInstance().getTime());
+//            UtilityController.addErrorMessage("Please Enter Stopped Time");
+//            return;
         }
 
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) tmpPI.getItem());
@@ -660,6 +667,14 @@ public class InwardTimedItemController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public double getTotalMins() {
+        return totalMins;
+    }
+
+    public void setTotalMins(double totalMins) {
+        this.totalMins = totalMins;
     }
 
 }

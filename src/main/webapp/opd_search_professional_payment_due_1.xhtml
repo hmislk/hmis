@@ -75,16 +75,17 @@
 
                                 <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                                     <f:facet name="header">
+                                         <p:outputLabel value="Due Payments" /><br/>
                                         <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <p:spacer width="30" height="10"/>
                                         <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </h:outputLabel><p:spacer width="30" height="10"/>
-                                        <p:outputLabel value="Due Payments" />
+                                       
                                     </f:facet>
                                     <p:column headerText="No" styleClass="alignTop">
                                         <f:facet name="No">
@@ -141,7 +142,7 @@
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Charge" style="text-align: right;">
+                                    <p:column headerText="Charge" styleClass="averageNumericColumn">
                                         <f:facet name="header">
                                             <h:outputLabel value="Charge"/>
                                         </f:facet>
@@ -163,17 +164,18 @@
 
                                 <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
                                     <f:facet name="header">
+                                         <p:outputLabel value="Done Payments" /><br/>
                                         <h:outputLabel value="From : "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <p:spacer width="30" height="1"/>
                                         <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:spacer width="30" height="1"/>
-                                        <p:outputLabel value="Done Payments" />
+                                       
                                     </f:facet>
                                     <p:column headerText="No" styleClass="alignTop">
                                         <f:facet name="No">
@@ -229,7 +231,7 @@
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Charge" style="text-align: right;">
+                                    <p:column headerText="Charge" styleClass="averageNumericColumn">
                                         <f:facet name="header">
                                             <h:outputLabel value="Charge"/>
                                         </f:facet>
@@ -244,7 +246,7 @@
                                         </f:facet>
                                     </p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                    <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                                 </f:facet>
                                 </p:dataTable>
                             </p:panel>

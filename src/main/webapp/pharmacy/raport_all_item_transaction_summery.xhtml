@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel header="All Item Transaction Summery" styleClass="alignTop">
+
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="Department" ></h:outputLabel>
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
+                                        forceSelection="true" 
+                                        value="#{pharmacyController.department}" 
+                                        converter="departmentConverter" >
+                        </p:autoComplete>
+
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
+                                    navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <p:commandButton ajax="false"
+                                         action="#{pharmacyController.createAllItemTransactionSummery()}" value="Process"/>
+
+
+                    </h:panelGrid>
+                    <p:dataTable value="#{pharmacyController.itemTransactionSummeryRows}" var="r" rowIndexVar="i"
+                                 rowKey="#{r.item.id}" 
+                                 rows="20"
+                                 paginator="true"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="20,50,100"
+                                 >
+                        <p:column headerText="Item" 
+                                  sortBy="#{r.item.name}" 
+                                  filterBy="#{r.item.name}" 
+                                  filterMatchMode="contains"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.item.name}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Retail Quantity" sortBy="#{r.retailSaleQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.retailSaleQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Retail Value" sortBy="#{r.retailSaleVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.retailSaleVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Wholesale Quantity" sortBy="#{r.wholeSaleQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.wholeSaleQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Wholesale Value" sortBy="#{r.wholeSaleVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.wholeSaleVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Inward Issue Quantity" sortBy="#{r.bhtSaleQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.bhtSaleQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Inward Issue Value" sortBy="#{r.bhtSaleVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.bhtSaleVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Issue Quantity" sortBy="#{r.issueQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.issueQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Issue Value" sortBy="#{r.issueVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.issueVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Transfer out Quantity" sortBy="#{r.transferOutQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.transferOutQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Transfer Out Value" sortBy="#{r.transferOutVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.transferOutVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Purchase Quantity" sortBy="#{r.purchaseQty}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.purchaseQty}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Purchase Value" sortBy="#{r.purchaseVal}"  styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.purchaseVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column> 
+                        <p:column headerText="Transfer In Quantity" sortBy="#{r.transferInVal}" styleClass="averageNumericColumn">
+                            <p:outputLabel value="#{r.transferInVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Transfer In Value" sortBy="#{r.transferInVal}" styleClass="averageNumericColumn" >
+                            <p:outputLabel value="#{r.transferInVal}" ><f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

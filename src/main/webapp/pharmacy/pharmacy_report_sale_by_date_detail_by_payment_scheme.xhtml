@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail by Discount Scheme">
                 <h:panelGrid columns="8" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  >
@@ -48,18 +48,7 @@
                     </p:commandButton>
                 </h:panelGrid>
 
-                <h:panelGrid styleClass="printBlock" columns="2">
-                    <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
-                    <h:outputLabel value=" DEPARTMENT SALE REPORT DETAIL"/>                   
-                    <h:outputLabel value="From Date :  "/>
-                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
-                    </h:outputLabel>
-                    <h:outputLabel value="To Date"/>
-                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM hh mm ss a" />
-                    </h:outputLabel>                       
-                </h:panelGrid>
+                
 
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedDetail.datedBills}" var="i">
