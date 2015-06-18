@@ -249,17 +249,17 @@
                                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
                                                         size="30"  style="width: 400px;" >
-                                            <p:column>
-                                                #{ix.name}
+                                            <p:column style="max-width: 200px;" headerText="Name">
+                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                    <p:outputLabel value=" (#{ix.fullName})" ></p:outputLabel>
+                                                </h:panelGroup>
                                             </p:column>
-                                            <p:column>
-                                                #{ix.fullName}
+                                            <p:column style="max-width: 200px;" headerText="Dept">
+                                                <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
                                             </p:column>
-                                            <p:column>
-                                                #{ix.department.name}
-                                            </p:column>
-                                            <p:column>
-                                                #{ix.total}
+                                            <p:column style="text-align: right; max-width: 80px;" headerText="Value">
+                                                <h:outputLabel value="#{ix.total}"></h:outputLabel>
                                             </p:column>
                                             <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                         </p:autoComplete>
