@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Channel Agent Reperence Book Bulk Delete ">
+
+                <p:panel>
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{agentReferenceBookController.frmDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{agentReferenceBookController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                    </p:calendar>
+                    <p:outputLabel value="Agent Name" />
+                    <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
+                                    forceSelection="true"
+                                    completeMethod="#{agentReferenceBookController.completeAgent}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+
+
+                    <p:commandButton action="#{agentReferenceBookController.createAllBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{agentReferenceBookController.bulkDeleteChannelBooks()}" value="Delete Books" ajax="false" ></p:commandButton>  
+
+                </p:panel>
+                <p:panel id="reportPrint">
+                    <p:dataTable value="#{agentReferenceBookController.agentReferenceBooks}" 
+                                 var="a" 
+                                 id="tbl1" 
+                                 selection="#{agentReferenceBookController.selectedList}"
+                                 rowIndexVar="i"
+                                 rowKey="#{a.id}">
+                        
+                        <f:facet name="header">
+                            <p:outputLabel value="Channel Book Details" />
+                        </f:facet>
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Agent" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Book Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.bookNumber}" >
+                                <f:convertNumber pattern="0000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Starting Reference Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                <f:convertNumber pattern="00000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Ending Reference Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                <f:convertNumber pattern="00000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Creater" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.createdAt}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Editor" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.editor.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Edited Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.editedAt}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column exportable="false">
+                            <f:facet name="header">
+                                <p:outputLabel value="Deactivate" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.deactivate}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
