@@ -13,6 +13,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ public class AgentReferenceBookController implements Serializable {
     SessionController sessionController;
 
     List<AgentReferenceBook> agentReferenceBooks;
+    List<AgentReferenceBook> selectedList;
     Date frmDate;
     Date toDate;
 
@@ -137,6 +139,29 @@ public class AgentReferenceBookController implements Serializable {
 
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
+    
+    public void bulkDeleteChannelBooks(){
+        if (selectedList==null) {
+            JsfUtil.addSuccessMessage("Nothing to Delete");
+            return;
+        }
+        if (selectedList.isEmpty()) {
+            JsfUtil.addSuccessMessage("Nothing to Delete(Empty)");
+            return;
+        }
+        System.err.println("selectedList.size()"+selectedList.size());
+        for (AgentReferenceBook rb : selectedList) {
+            System.out.println("rb = " + rb.getBookNumber());
+            System.out.println("rb.getInstitution().getName() = " + rb.getInstitution().getName());
+            rb.setRetired(true);
+            rb.setRetireComments("Bulk Delete");
+            rb.setDeactivate(true);
+            rb.setRetirer(getSessionController().getLoggedUser());
+            rb.setRetiredAt(new Date());
+            getAgentReferenceBookFacade().edit(rb);
+        }
+        createAllBooks();
+    }
 
     public void updateDecactivateAgentBook(AgentReferenceBook a) {
 
@@ -181,7 +206,7 @@ public class AgentReferenceBookController implements Serializable {
         } else {
             return false;
         }
-        
+
     }
 
     public AgentReferenceBook getAgentReferenceBook() {
@@ -255,6 +280,14 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public List<AgentReferenceBook> getSelectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(List<AgentReferenceBook> selectedList) {
+        this.selectedList = selectedList;
     }
 
 }
