@@ -3211,7 +3211,9 @@ public class SearchController implements Serializable {
         sql = "select b from PreBill b where b.billType = :billType and "
                 + " b.institution=:ins and (b.billedBill is null) and "
                 + " b.referenceBill.billType=:refBillType "
-                + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
+                + " and b.createdAt between :fromDate and :toDate and b.retired=false "
+                // for remove cancel bills
+                + " and b.referenceBill.cancelled=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.deptId) like :billNo )";

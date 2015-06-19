@@ -540,6 +540,9 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             //To null payment methord
             getBill().setPaymentMethod(null);
+            cb.setPaymentMethod(null);
+            
+            getBillFacade().edit(cb);
             getBillFacade().edit((BilledBill) getBill());
             UtilityController.addSuccessMessage("Cancelled");
 
