@@ -317,23 +317,26 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeDepartmentItem(String qry) {
-        String sql;
-        Map m = new HashMap();
-        m.put("qry", "'%" + qry.toUpperCase() + "%'");
-        m.put("inv", Investigation.class);
-        m.put("ser", Investigation.class);
-        m.put("pak", Investigation.class);
-        m.put("ins", getSessionController().getInstitution());
-        sql = "select c "
-                + " from Item c "
-                + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
-                + " and c.retired=false "
-                + " and upper(c.name) like :qry ";
-        
-        sql += "order by c.name";
-
-        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        return completeItems;
+        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+            String sql;
+            Map m = new HashMap();
+            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+            m.put("inv", Investigation.class);
+            m.put("ser", Investigation.class);
+            m.put("pak", Investigation.class);
+            m.put("ins", getSessionController().getInstitution());
+            sql = "select c "
+                    + " from Item c "
+                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
+                    + " and c.retired=false "
+                    + " and upper(c.name) like :qry "
+                    + " and c.institution=:ins ";
+            sql += "order by c.name";
+            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+            return completeItems;
+        } else {
+            return completeItem(qry);
+        }
     }
 
     public void prepareAdd() {

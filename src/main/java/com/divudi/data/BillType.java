@@ -31,6 +31,7 @@ public enum BillType {
     InwardAppointmentBill,
     InwardBill,
     InwardProfessional,
+    InwardProfessionalEstimates,
     InwardIntrimBill,
     @Deprecated
     InwardAdditionalBill,

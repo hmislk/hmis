@@ -14,14 +14,13 @@
             <h:form  >
                 <p:panel >
                     <f:facet name="header" >
-                        <h:panelGrid columns="10"  >
-                            <h:outputLabel value="Inward Timed Service" />                            
+                        <h:outputLabel value="Manage Inward Timed Services" />                            
 
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}" onclick="onSubmitButton();"  />
-                        </h:panelGrid>
                     </f:facet>
-                    <h:panelGrid columns="2" style="min-width: 100%;">
-                        <p:panel header="BHT">
+
+                    <h:panelGrid columns="2" style="min-width: 100%;" styleClass="alignTop">
+                        <p:panel header="BHT Details">
+
                             <p:autoComplete  converter="admis"
                                              widgetVar="aPt" id="acPt" forceSelection="true" 
                                              value="#{inwardTimedItemController.current.patientEncounter}"
@@ -37,27 +36,48 @@
                                 <p:column>
                                     #{myItem.patient.person.nameWithTitle}
                                 </p:column>
-                            </p:autoComplete>    
+                            </p:autoComplete>   
+                            <p:spacer width="10" height="1" ></p:spacer>
+                            <p:commandButton ajax="false" value="Clear Patient" action="#{inwardTimedItemController.makeNull}" onclick="onSubmitButton();"  />
 
-                            <h:panelGrid id="panSearch2" columns="2" >
-                                <h:outputLabel  value="Name:" />
+                            <h:panelGrid id="panSearch2" columns="5" >
+                                <h:outputLabel  value="Name" />
+                                <p:spacer width="10" height="1" ></p:spacer>
+                                <h:outputLabel  value=":" />
+                                <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                
                                 <h:outputLabel  value="Sex" />
+                                <p:spacer width="10" height="1" ></p:spacer>
+                                <h:outputLabel  value=":" />
+                                <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.age}" ></h:outputLabel>
+                                
                                 <h:outputLabel  value="DOB"  />
+                                <p:spacer width="10" height="1" ></p:spacer>
+                                <h:outputLabel  value=":" />
+                                <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.dob}"   >
                                     <f:convertDateTime pattern="dd/MM/yy" />
                                 </h:outputLabel>
+                                
                                 <h:outputLabel  value="Adress" />
+                                <p:spacer width="10" height="1" ></p:spacer>
+                                <h:outputLabel  value=":" />
+                                <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.address}" ></h:outputLabel>
+                                
                                 <h:outputLabel  value="Date of Admission"  />
+                                <p:spacer width="10" height="1" ></p:spacer>
+                                <h:outputLabel  value=":" />
+                                <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.dateOfAdmission}"   >
                                     <f:convertDateTime pattern="dd/MM/yy" />
                                 </h:outputLabel>
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel header="Timed Item">
+                        <p:panel header="Timed Service Item">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Timed Item"/>
                                 <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
@@ -79,7 +99,7 @@
                                 </p:calendar>   
 
                                 <p:commandButton value="Add Service" ajax="false"
-                                                action="#{inwardTimedItemController.save}" 
+                                                 action="#{inwardTimedItemController.save}" 
                                                  styleClass="highLight" onclick="onSubmitButton();" />
 
                             </h:panelGrid>
@@ -89,31 +109,26 @@
 
                     <p:panel header="Consumed Timed Sevice" id="con">                          
                         <p:dataTable value="#{inwardTimedItemController.items}" var="ti">
-                            
-                            <p:column headerText="ID">
-                                #{ti.id}
-                            </p:column>
-                            
                             <p:column headerText="Service Name">
                                 #{ti.item.name}
                             </p:column>
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
+                                            pattern="dd MMMM yyyy hh mm a" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />  
+                                            pattern="dd MMMM yyyy hh mm a" />  
                             </p:column>
-                            <p:column headerText="Total">
+                            <p:column headerText="Total" styleClass="averageNumericColumn">
                                 <h:outputLabel  value="#{ti.serviceValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column >
-                                <h:outputLabel value="#{ti.creater.webUserPerson.name}"/>     
+                            <p:column headerText="Comments">
+                                <h:outputLabel value="Added by #{ti.creater.webUserPerson.name}"/>     
                                 <br/>
                                 <h:panelGroup rendered="#{ti.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted By " />
@@ -121,13 +136,13 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>     
-                            <p:column >
-                                <p:commandButton value="Save" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" onclick="onSubmitButton();">                                                                    
+                            <p:column headerText="Update" >
+                                <p:commandButton value="Update" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" onclick="onSubmitButton();">                                                                    
                                 </p:commandButton>
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove "  
-                                                action="#{inwardTimedItemController.removePatientItem(ti)}"
+                                                 action="#{inwardTimedItemController.removePatientItem(ti)}"
                                                  disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
                             </p:column>
                         </p:dataTable>

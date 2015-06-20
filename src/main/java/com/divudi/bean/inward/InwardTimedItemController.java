@@ -33,16 +33,20 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import org.apache.commons.beanutils.BeanUtils;
 
 /**
  *
@@ -187,12 +191,12 @@ public class InwardTimedItemController implements Serializable {
         items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
-        totalMins=0.0;
+        totalMins = 0.0;
         for (PatientItem pi : items) {
-            long l=(pi.getToTime().getTime()-pi.getFromTime().getTime())/(1000*60);
+            long l = (pi.getToTime().getTime() - pi.getFromTime().getTime()) / (1000 * 60);
             pi.setTmpConsumedTime(l);
             total += pi.getServiceValue();
-            totalMins+=pi.getTmpConsumedTime();
+            totalMins += pi.getTmpConsumedTime();
         }
     }
 
@@ -325,8 +329,7 @@ public class InwardTimedItemController implements Serializable {
         }
 
     }
-    
-    
+
     public void removePatientItem(PatientItem patientItem) {
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
@@ -507,11 +510,9 @@ public class InwardTimedItemController implements Serializable {
             UtilityController.addErrorMessage("Please Select BHT");
             return true;
         }
-
         if (getCurrent().getItem() == null) {
             return true;
         }
-
         return false;
     }
 
@@ -539,26 +540,34 @@ public class InwardTimedItemController implements Serializable {
 
     }
 
-    public void finalizeService(PatientItem tmpPI) {
-        if (tmpPI.getToTime() != null) {
-            if (tmpPI.getToTime().before(tmpPI.getFromTime())) {
+    public void finalizeService(PatientItem pic) {
+        PatientItem temPi;
+        if (pic.getToTime() != null) {
+            if (pic.getToTime().before(pic.getFromTime())) {
                 UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
         }
 
-        if (tmpPI.getToTime() == null) {
-            tmpPI.setToTime(Calendar.getInstance().getTime());
-//            UtilityController.addErrorMessage("Please Enter Stopped Time");
-//            return;
+        if (pic.getToTime() == null) {
+            temPi = new PatientItem();
+            try {
+                BeanUtils.copyProperties(temPi, pic);
+                temPi.setId(null);
+                temPi.setToTime(Calendar.getInstance().getTime());
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                Logger.getLogger(InwardTimedItemController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            temPi = pic;
         }
 
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) tmpPI.getItem());
-        double count = getInwardBean().calCount(timedItemFee, tmpPI.getFromTime(), tmpPI.getToTime());
+        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
+        double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
 
-        tmpPI.setServiceValue(count * timedItemFee.getFee());
+        pic.setServiceValue(count * timedItemFee.getFee());
 
-        getPatientItemFacade().edit(tmpPI);
+        getPatientItemFacade().edit(pic);
 
         createPatientItems();
 
