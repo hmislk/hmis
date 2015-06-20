@@ -287,8 +287,10 @@ public class InvestigationController implements Serializable {
             sql += " and upper(c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
-        sql += " and c.institution=:ins";
-        m.put("ins", institution);
+        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+            sql += " and c.institution=:ins";
+            m.put("ins", institution);
+        }
         sql += " order by c.name";
         selectedItems = getFacade().findBySQL(sql, m);
         return selectedItems;
@@ -317,23 +319,26 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeDepartmentItem(String qry) {
-        String sql;
-        Map m = new HashMap();
-        m.put("qry", "'%" + qry.toUpperCase() + "%'");
-        m.put("inv", Investigation.class);
-        m.put("ser", Investigation.class);
-        m.put("pak", Investigation.class);
-        m.put("ins", getSessionController().getInstitution());
-        sql = "select c "
-                + " from Item c "
-                + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
-                + " and c.retired=false "
-                + " and upper(c.name) like :qry ";
-        
-        sql += "order by c.name";
-
-        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        return completeItems;
+        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+            String sql;
+            Map m = new HashMap();
+            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+            m.put("inv", Investigation.class);
+            m.put("ser", Investigation.class);
+            m.put("pak", Investigation.class);
+            m.put("ins", getSessionController().getInstitution());
+            sql = "select c "
+                    + " from Item c "
+                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
+                    + " and c.retired=false "
+                    + " and upper(c.name) like :qry "
+                    + " and c.institution=:ins ";
+            sql += "order by c.name";
+            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+            return completeItems;
+        } else {
+            return completeItem(qry);
+        }
     }
 
     public void prepareAdd() {
@@ -397,7 +402,7 @@ public class InvestigationController implements Serializable {
 //        }
         getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
-        getCurrent().setInstitution(institution);
+//        getCurrent().setInstitution(institution);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             ////System.out.println("1");
             if (billedAs == false) {
