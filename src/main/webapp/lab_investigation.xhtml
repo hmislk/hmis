@@ -39,7 +39,7 @@
                                     </p:inputText>
 
                                     <p:selectOneListbox converter="ixcon"   id="lstSelect"   value="#{investigationController.current}" style="min-width: 223px; height: 300px;">
-                                        <f:selectItems  value="#{investigationController.institutionSelectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <f:selectItems  value="#{investigationController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                         </p:ajax>
                                     </p:selectOneListbox>
@@ -98,7 +98,11 @@
                                         <f:selectItem itemLabel="Please select a Tube"/>
                                         <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>
-
+                                    <h:outputText value="Machine" ></h:outputText>
+                                    <h:selectOneListbox id="cmbmac"  size="1" value="#{investigationController.current.machine}" >
+                                        <f:selectItem itemLabel="Please select a Machine"/>
+                                        <f:selectItems value="#{machineController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </h:selectOneListbox>
                                     <h:outputText value="Serial Numbers" ></h:outputText>
                                     <h:selectOneListbox id="cmbSerial" size="1" 
                                                         value="#{investigationController.current.sessionNumberType}" >
