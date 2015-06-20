@@ -20,7 +20,7 @@
 
                     <h:panelGrid columns="2" style="min-width: 100%;" styleClass="alignTop">
                         <p:panel header="BHT Details">
-
+                            <p:watermark value="Start typing BHT Number or Patient Name" for="acPt" ></p:watermark>
                             <p:autoComplete  converter="admis"
                                              widgetVar="aPt" id="acPt" forceSelection="true" 
                                              value="#{inwardTimedItemController.current.patientEncounter}"
@@ -46,13 +46,13 @@
                                 <h:outputLabel  value=":" />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                                
+
                                 <h:outputLabel  value="Sex" />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel  value=":" />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.age}" ></h:outputLabel>
-                                
+
                                 <h:outputLabel  value="DOB"  />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel  value=":" />
@@ -60,13 +60,13 @@
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.dob}"   >
                                     <f:convertDateTime pattern="dd/MM/yy" />
                                 </h:outputLabel>
-                                
+
                                 <h:outputLabel  value="Adress" />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel  value=":" />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.address}" ></h:outputLabel>
-                                
+
                                 <h:outputLabel  value="Date of Admission"  />
                                 <p:spacer width="10" height="1" ></p:spacer>
                                 <h:outputLabel  value=":" />
@@ -77,18 +77,18 @@
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel header="Timed Service Item">
+                        <p:panel header="Timed Service">
                             <h:panelGrid columns="2">
-                                <h:outputLabel value="Timed Item"/>
+                                <h:outputLabel value="Service"/>
                                 <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeTimedService}" var="ix" 
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                    <p:column>
-                                        #{ix.name}
+                                    <p:column headerText="Service">
+                                        <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column>
-                                        #{ix.total}
+                                    <p:column headerText="Rate">
+                                        <h:outputLabel  value="#{ix.total}" ></h:outputLabel>
                                     </p:column>
 
                                 </p:autoComplete>
@@ -98,6 +98,8 @@
                                             pattern="dd MMMM yyyy hh mm ss a" >
                                 </p:calendar>   
 
+
+                                <p:watermark value="Start typing Service Name" for="it" ></p:watermark>
                                 <p:commandButton value="Add Service" ajax="false"
                                                  action="#{inwardTimedItemController.save}" 
                                                  styleClass="highLight" onclick="onSubmitButton();" />

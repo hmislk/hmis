@@ -172,7 +172,7 @@ public class TimedItemFeeController implements Serializable {
             getRemovedTimedItemFee().setRetirer(getSessionController().getLoggedUser());
             getRemovedTimedItemFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getTimedItemFeeFacade().edit(getRemovedTimedItemFee()); // Flag as retired, so that will never appearing when calling from database
-
+            fillCharges();
             currentIx.setTotal(calTot());
             getEjbFacade().edit(currentIx);
 
@@ -208,6 +208,7 @@ public class TimedItemFeeController implements Serializable {
             HashMap hm = new HashMap();
             hm.put("it", getCurrentIx());
             fees = getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
+
         }
     }
 
@@ -220,7 +221,7 @@ public class TimedItemFeeController implements Serializable {
 //            setCharges(new ArrayList<TimedItemFee>());
 //        }
         if (fees == null) {
-            fees = new ArrayList<TimedItemFee>();
+            fillCharges();
         }
         return fees;
     }
