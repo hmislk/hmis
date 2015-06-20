@@ -287,8 +287,10 @@ public class InvestigationController implements Serializable {
             sql += " and upper(c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
-        sql += " and c.institution=:ins";
-        m.put("ins", institution);
+        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+            sql += " and c.institution=:ins";
+            m.put("ins", institution);
+        }
         sql += " order by c.name";
         selectedItems = getFacade().findBySQL(sql, m);
         return selectedItems;
@@ -400,7 +402,7 @@ public class InvestigationController implements Serializable {
 //        }
         getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
-        getCurrent().setInstitution(institution);
+//        getCurrent().setInstitution(institution);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             ////System.out.println("1");
             if (billedAs == false) {
