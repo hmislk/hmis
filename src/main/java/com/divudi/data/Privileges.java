@@ -282,6 +282,7 @@ public enum Privileges {
     
     //Administration
     SearchAll,
+    ChannelBookingChange,
     
     
    

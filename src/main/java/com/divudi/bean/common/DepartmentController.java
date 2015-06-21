@@ -300,7 +300,7 @@ public class DepartmentController implements Serializable {
     /**
      *
      */
-    @FacesConverter("dep")
+    @FacesConverter("departmentConverter")
     public static class DepartmentControllerConverter implements Converter {
 
         @Override

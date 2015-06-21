@@ -19,7 +19,10 @@
                     <p:panelGrid columns="1" >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Select Investigation" />
-                            <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" value="#{itemFeeController.currentIx}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:autoComplete widgetVar="aIx" id="acIx"
+                                            forceSelection="true" 
+                                            value="#{itemFeeController.currentIx}" 
+                                            completeMethod="#{investigationController.completeDepartmentItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
                         </p:panelGrid>

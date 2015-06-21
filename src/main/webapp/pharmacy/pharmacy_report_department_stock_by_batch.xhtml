@@ -23,7 +23,7 @@
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" 
                                             value="#{reportsStock.department}" 
-                                            converter="dep"  >
+                                            converter="departmentConverter"  >
                             </p:autoComplete>
                             <p:spacer width="10" height="1" ></p:spacer>
                             <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentStocks()}" ></p:commandButton>

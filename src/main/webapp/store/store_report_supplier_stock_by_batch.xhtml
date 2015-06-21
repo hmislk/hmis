@@ -20,7 +20,7 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
 
-                            <p:autoComplete style="position: relative; width: " completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
+                            <p:autoComplete style="position: relative; width: " completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="DEALER" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.institution}" >

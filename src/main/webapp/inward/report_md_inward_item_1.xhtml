@@ -29,7 +29,7 @@
                                 #{ix.name}
                             </p:column>
                         </p:autoComplete>
-                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="dep" >
+                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="departmentConverter" >
                         </p:autoComplete>
                         <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
                                         forceSelection="true"

@@ -510,10 +510,10 @@ public class OpdPreBillReportController implements Serializable {
             name += "Billed";
         }
         if (b.getClass().equals(RefundBill.class)) {
-            name += "Cancelled";
+            name += "Refunded";
         }
         if (b.getClass().equals(CancelledBill.class)) {
-            name += "Refunded";
+            name += "Cancelled";
         }
         billsTotals.setName(name);
         System.out.println("name = " + name);

@@ -493,6 +493,8 @@ public class ServiceController implements Serializable {
             getFacade().edit(s);
             //System.out.println("undeleted = " + s);
         }
+        deletingServices = null;
+        listDeletedServices();
     }
     
 
