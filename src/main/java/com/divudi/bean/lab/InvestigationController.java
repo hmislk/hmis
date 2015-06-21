@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,61 @@ public class InvestigationController implements Serializable {
 
     Institution institution;
 
+    
+    List<Investigation> deletedIxs;
+    List<Investigation> selectedIxs;
+    
+    public void listDeletedIxs() {
+        String sql = "select c from Service c where c.retired=true order by c.category.name,c.department.name";
+        deletedIxs = getFacade().findBySQL(sql);
+        if (deletedIxs == null) {
+            deletedIxs = new ArrayList<>();
+        }
+    }
+
+    public void undeleteSelectedIxs(){
+        for(Investigation s:selectedIxs){
+            s.setRetired(false);
+            s.setRetiredAt(null);
+            s.setRetirer(null);
+            getFacade().edit(s);
+            //System.out.println("undeleted = " + s);
+        }
+        selectedIxs = null;
+        listDeletedIxs();
+    }
+    
+    public void deleteSelectedServices(){
+        for(Investigation s:selectedIxs){
+            s.setRetired(true);
+            s.setRetiredAt(new Date());
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+    }
+    
+    
+    
+    public List<Investigation> getDeletedIxs() {
+        return deletedIxs;
+    }
+
+    public void setDeletedIxs(List<Investigation> deletedIxs) {
+        this.deletedIxs = deletedIxs;
+    }
+
+    public List<Investigation> getSelectedIxs() {
+        return selectedIxs;
+    }
+
+    public void setSelectedIxs(List<Investigation> selectedIxs) {
+        this.selectedIxs = selectedIxs;
+    }
+
+    
+    
+    
+    
     public List<Investigation> getItemsToRemove() {
         return itemsToRemove;
     }
