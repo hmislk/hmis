@@ -17,15 +17,15 @@
 
                 <p:panel header="Undelete Services" >
 
-                    <p:commandButton value="List Deleted Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
-                    <p:commandButton value="Undelete Selected" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
+                    <p:commandButton value="List Deleted Services" action="#{investigationController.listDeletedIxs}" ajax="false" ></p:commandButton>
+                    <p:commandButton value="Undelete Selected" action="#{investigationController.undeleteSelectedIxs() }" ajax="false" ></p:commandButton>
 
-                    <p:dataTable value="#{serviceController.deletedServices}" var="item" rowKey="#{item.id}"
+                    <p:dataTable value="#{investigationController.deletedIxs}" var="item" rowKey="#{item.id}"
                                  paginator="true" paginatorAlwaysVisible="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,30,50,100,250"
                                  rows="50"
-                                 selection="#{serviceController.deletingServices}">
+                                 selection="#{investigationController.selectedIxs}">
                         <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
                         <p:column headerText="Category" sortBy="#{item.category.name}" filterBy="#{item.category.name}" >
                             <p:outputLabel value="#{item.category.name}" ></p:outputLabel>

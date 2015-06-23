@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -13,6 +14,7 @@ import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.ItemBatch;
@@ -138,7 +140,21 @@ public class DataAdministrationController {
             categoryFacade.edit(c);
         }
     }
+    
+    @Inject
+    InvestigationController investigationController;
 
+    public void addInstitutionToInvestigationsWithoutInstitution(){
+        List<Investigation> lst = investigationController.getItems();
+        for(Investigation ix:lst){
+            if(ix.getInstitution()==null){
+                ix.setInstitution(ix.getDepartment().getInstitution());
+                System.out.println("ix = " + ix);
+                itemFacade.edit(ix);
+            }
+        }
+    }
+    
     public void detectWholeSaleBills() {
         String sql;
         Map m = new HashMap();
