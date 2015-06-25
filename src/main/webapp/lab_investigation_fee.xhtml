@@ -19,7 +19,10 @@
                     <p:panelGrid columns="1" >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Select Investigation" />
-                            <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" value="#{itemFeeController.currentIx}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:autoComplete widgetVar="aIx" id="acIx"
+                                            forceSelection="true" 
+                                            value="#{itemFeeController.currentIx}" 
+                                            completeMethod="#{investigationController.completeDepartmentItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
                         </p:panelGrid>
@@ -49,7 +52,8 @@
 
 
                                     <h:outputText value="Institution"/>
-                                    <h:selectOneListbox id="cmbInstitution" size="1" value="#{itemFeeController.currentFee.institution}" >
+                                    <h:selectOneListbox id="cmbInstitution" size="1"
+                                                        value="#{itemFeeController.currentFee.institution}" >
                                         <f:selectItem itemLabel="Select Institution"/>
                                         <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                         <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
@@ -87,19 +91,14 @@
                                     </p:column>
                                     <p:column headerText="Staff">
                                         #{bi.staff.person.nameWithTitle}
-                                    </p:column>
+                                    </p:column>                                   
+
                                     <p:column headerText="Institution">
-                                        
-                                        <h:selectOneListbox id="cmbIns" size="1" value="#{bi.institution.name}" >                                            
-                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                        </h:selectOneListbox>
-                                    </p:column>
-                                    <p:column headerText="Department">
-                                        
-                                        <h:selectOneListbox id="cmbDep" size="1" value="#{bi.department.name}" >                                            
-                                            <f:selectItems value="#{itemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
-                                        </h:selectOneListbox>
+                                        <h:outputLabel value="#{bi.institution.name}"/>
+                                    </p:column>                                   
+
+                                    <p:column headerText="Department">                                        
+                                        <h:outputLabel value="#{bi.department.name}"/>
                                     </p:column>
 
                                     <p:column headerText="Id">

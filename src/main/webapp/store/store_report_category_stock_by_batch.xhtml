@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="dep"/>
+                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter"/>
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 

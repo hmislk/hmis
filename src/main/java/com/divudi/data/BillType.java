@@ -31,6 +31,7 @@ public enum BillType {
     InwardAppointmentBill,
     InwardBill,
     InwardProfessional,
+    InwardProfessionalEstimates,
     InwardIntrimBill,
     @Deprecated
     InwardAdditionalBill,
@@ -195,6 +196,8 @@ public enum BillType {
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:
                 return "OPD Bills To Pay";
+            case OpdBathcBill:
+                return "OPD Accepet Payment";
 
         }
 

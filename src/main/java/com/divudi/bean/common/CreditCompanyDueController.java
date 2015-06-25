@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.DealerDueDetailRow;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.dataStructure.InstitutionEncounters;
 import com.divudi.data.table.String1Value5;
@@ -161,6 +162,71 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+
+    }
+
+    List<DealerDueDetailRow> dealerDueDetailRows;
+
+    public List<DealerDueDetailRow> getDealerDueDetailRows() {
+        return dealerDueDetailRows;
+    }
+
+    public void setDealerDueDetailRows(List<DealerDueDetailRow> dealerDueDetailRows) {
+        this.dealerDueDetailRows = dealerDueDetailRows;
+    }
+
+    
+    
+    public void createInwardAgeDetailAnalysis() {
+        dealerDueDetailRows = new ArrayList<>();
+        createInwardAgeTable();
+        Institution dealer = null;
+        for (String1Value5 s : creditCompanyAge) {
+            DealerDueDetailRow row = new DealerDueDetailRow();
+            if (dealer == null || dealer != s.getInstitution()) {
+                dealer = s.getInstitution();
+                row.setDealer(dealer);
+                row.setZeroToThirty(s.getValue1());
+                row.setThirtyToSixty(s.getValue2());
+                row.setSixtyToNinty(s.getValue3());
+                row.setMoreThanNinty(s.getValue4());
+                dealerDueDetailRows.add(row);
+            }
+
+            int rowsForDealer = 0;
+            if (rowsForDealer < s.getValue1PatientEncounters().size()) {
+                rowsForDealer = s.getValue1PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue2PatientEncounters().size()) {
+                rowsForDealer = s.getValue2PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue3PatientEncounters().size()) {
+                rowsForDealer = s.getValue3PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue4PatientEncounters().size()) {
+                rowsForDealer = s.getValue4PatientEncounters().size();
+            }
+
+            for (int i = 0; i < rowsForDealer; i++) {
+                DealerDueDetailRow rowi = new DealerDueDetailRow();
+                if (s.getValue1PatientEncounters().size() > i) {
+                    rowi.setZeroToThirtyEncounter(s.getValue1PatientEncounters().get(i));
+                }
+                if (s.getValue2PatientEncounters().size() > i) {
+                    rowi.setThirtyToSixtyEncounter(s.getValue2PatientEncounters().get(i));
+                }
+                if (s.getValue3PatientEncounters().size() > i) {
+                    rowi.setSixtyToNintyEncounter(s.getValue3PatientEncounters().get(i));
+                }
+                if (s.getValue4PatientEncounters().size() > i) {
+                    rowi.setMoreThanNintyEncounter(s.getValue4PatientEncounters().get(i));
+                }
+                dealerDueDetailRows.add(rowi);
+            }
+
+        }
+        
+        creditCompanyAge=new ArrayList<>();
 
     }
 
@@ -482,12 +548,12 @@ public class CreditCompanyDueController implements Serializable {
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td "
-                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) !=0.1";
+                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 1 ";
+
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-
         if (institution != null) {
             sql += " and b.creditCompany =:ins ";
             m.put("ins", institution);

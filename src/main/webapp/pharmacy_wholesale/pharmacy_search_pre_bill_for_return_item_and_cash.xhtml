@@ -84,7 +84,7 @@
 
                             <p:column>
                                 <p:commandButton ajax="false" value="Return Item and Cash"
-                                                action="pharmacy_bill_return_retail"
+                                                action="/pharmacy/pharmacy_bill_return_retail"
                                                  disabled="#{bill.cancelled eq true}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>
                                 </p:commandButton>

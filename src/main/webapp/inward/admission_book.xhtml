@@ -217,7 +217,7 @@
                                 </p:column>
 
 
-                                <p:column style="text-align: right;"  headerText="Total" rendered="#{inwardReportController.finalBillTotal}">
+                                <p:column styleClass="averageNumericColumn"  headerText="Total" rendered="#{inwardReportController.finalBillTotal}">
                                     <h:outputLabel value="#{i.transTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -228,7 +228,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
+                                <p:column styleClass="averageNumericColumn"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
                                     <h:outputLabel value="#{i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -239,7 +239,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Due" rendered="#{inwardReportController.finalBillTotal}">
+                                <p:column styleClass="averageNumericColumn" headerText="Due" rendered="#{inwardReportController.finalBillTotal}">
                                     <h:outputLabel value="#{i.transTotal-i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

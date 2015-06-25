@@ -14,7 +14,7 @@
                 <f:facet name="header">
                     <p:outputLabel value="Package Detail Report - By Bill" />
                 </f:facet>
-                <h:panelGrid columns="2" style="min-width: 100%;">                    
+                <h:panelGrid columns="2">                    
 
                     <h:outputLabel value="From"/>
                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
@@ -41,7 +41,8 @@
                             #{ix.name}
                         </p:column>
                     </p:autoComplete>
-
+                   </h:panelGrid>
+                <h:panelGrid columns="4" > 
                     <p:commandButton ajax="false" value="Search" 
                                      action="#{billPackageMedicalController.createOtherPackageBills()}"
                                      onclick="onSubmitButton();" />
@@ -119,7 +120,7 @@
                         </f:facet>
                         <p:outputLabel value="#{bill.billPackege.name}" />
                     </p:column>
-                    <p:column headerText="Net Total">
+                    <p:column headerText="Net Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <p:outputLabel value="Net Total" />
                         </f:facet>

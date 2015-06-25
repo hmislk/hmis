@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+
+
+
+    <ui:define name="content">       
+
+        <h:panelGroup rendered="true" styleClass="opdPanel" >
+            <h:form id="form">
+
+                <p:panel style="min-height: 600px; position:relative;"  >
+                    <f:facet name="header" >
+                        <h:panelGrid columns="10"  >
+                            <h:outputLabel value="Inward Estimated Professional Charges" />                           
+
+                            <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" onclick="onSubmitButton();">
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+
+                    <h:panelGrid columns="2" >
+                        <h:panelGrid columns="1" >
+                            <h:panelGroup id="panelPatient" >
+                                <p:panel header="Patient Details">
+                                    <h:outputLabel value="Type Patient Name or BHT : "/>
+                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                                    value="#{inwardProfessionalBillController.current.patientEncounter}" 
+                                                    completeMethod="#{admissionController.completePatient}"
+                                                    var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                        <p:ajax event="itemSelect" process="acPt2" update="panSearch2" listener="#{inwardProfessionalBillController.makeNullList()}"/>
+                                        <p:column >
+                                            <h:outputLabel value="#{apt2.bhtNo}"/>
+                                        </p:column>
+                                        <p:column >
+                                            <h:outputLabel value="#{apt2.patient.person.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>  
+
+                                    <br/><br/>
+                                    <h:panelGroup id="panSearch2">
+                                        <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </h:panelGroup>
+
+
+                            <h:panelGroup id="panelIx" >
+
+
+                                <p:panel id='pIxAdd' header="Professional Fee" style="min-height: 350px;"  >
+                                    <p:panelGrid columns="2" id="profPanel">
+                                        <h:outputLabel  value="Select Speciality" ></h:outputLabel>
+                                        <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.speciality}" id="acSpeciality"
+                                                        completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        converter="specilityCon"   >
+                                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff pIxAdd  pBillDetails" />
+                                        </p:autoComplete>
+
+                                        <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
+                                        <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.staff}" id="scStaff"
+                                                         completeMethod="#{inwardProfessionalBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                         converter="stfcon"   >
+                                            <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails"  />
+                                        </p:autoComplete>
+                                        <h:outputLabel value="Professional Fee"/>
+                                        <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.currentBillFee.feeValue}"/>
+                                        <h:outputLabel value="Fee At"/>
+                                        <p:calendar styleClass="dateTimePicker" id="feeAt" value="#{inwardProfessionalBillController.currentBillFee.feeAt}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                            <f:ajax event="dateSelect"  render="feeAt"/>
+                                        </p:calendar>
+                                        <h:outputLabel/>
+                                        <p:commandButton value="Add" id="btn" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" onclick="onSubmitButton();"/>
+
+                                    </p:panelGrid>
+
+                                </p:panel>
+
+                            </h:panelGroup>
+
+                        </h:panelGrid>
+
+
+                        <h:panelGrid columns="1" >
+
+                            <h:panelGroup id="panelBillItems" >
+                                <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardProfessionalBillController.lstBillFees}" var="bif" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Professional Fees"/>
+                                    </f:facet>
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}">
+                                            <p:ajax event="blur" process="txtFeeVal"
+                                                    update=":#{p:component('pBillDetails')}"
+                                                    listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
+                                        </h:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Payee</f:facet> 
+                                        <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">Fee At</f:facet>
+                                        <h:outputLabel value="#{bif.feeAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton ajax="false" value="Remove" action="#{inwardProfessionalBillController.remove(bif)}" onclick="onSubmitButton();"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="panelBillTotals" >
+
+                                <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel id="tot" value="#{inwardProfessionalBillController.current.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                       
+                                    </p:panelGrid>
+
+                                </p:panel>
+                            </h:panelGroup>
+
+
+
+
+                        </h:panelGrid>
+
+
+                    </h:panelGrid>
+
+                </p:panel>
+
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

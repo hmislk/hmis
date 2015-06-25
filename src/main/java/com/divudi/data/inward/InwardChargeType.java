@@ -50,6 +50,8 @@ public enum InwardChargeType {
     Echo("Echo"),
     SyringePump("Syringe Pump"),
     ExerciseECG("Exercise E.C.G"),
+    OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
+    OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     @Deprecated
     Investigations("Investigations"),
     @Deprecated

@@ -182,6 +182,8 @@ public class EnumController implements Serializable {
             InwardChargeType.Equipment,
             InwardChargeType.MealCharges,
             InwardChargeType.OperationTheatreCharges,
+            InwardChargeType.OperationTheatreNursingCharges,
+            InwardChargeType.OperationTheatreMachineryCharges,
             InwardChargeType.LarbourRoomCharges,
             InwardChargeType.ETUCharges,
             InwardChargeType.TreatmentCharges,

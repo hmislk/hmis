@@ -32,7 +32,7 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleWholeSaleReportByDate()}"/>
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDate()}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
@@ -134,7 +134,7 @@
                     </p:columnGroup>
                 </p:dataTable>
                 
-                <p:dataTable id="sum2" value="#{pharmacySaleReport.billedWholeSaleSummery.bills}" var="i" >   
+<!--                <p:dataTable id="sum2" value="#{pharmacySaleReport.billedWholeSaleSummery.bills}" var="i" >   
                     <f:facet name="header" >
                         <p:outputLabel value="Whole Sale Summary Report By Date" />
                     </f:facet>
@@ -209,7 +209,7 @@
 
                         </p:row>
                     </p:columnGroup>
-                </p:dataTable>
+                </p:dataTable>-->
 
                 <!--                <h:panelGrid columns="2" style="min-width: 100%;">
                                     <h:outputLabel value="Net Amount"/>
