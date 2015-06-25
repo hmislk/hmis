@@ -3082,6 +3082,12 @@ public class SearchController implements Serializable {
 //                + " pi.billItem.bill.createdAt between :fromDate and :toDate  ";
         Map temMap = new HashMap();
 
+        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+            System.out.println("inside ins");
+            sql+="and b.institution =:ins ";
+            temMap.put("ins", getSessionController().getInstitution());
+        }
+        
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(p.name) like :patientName )";
 //            sql += " and  (upper(pi.billItem.bill.patient.person.name) like :patientName )";
@@ -3102,6 +3108,8 @@ public class SearchController implements Serializable {
             sql += " and  (upper(i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
+        
+        
 
         sql += " order by pi.id desc  ";
 //    
@@ -3163,6 +3171,12 @@ public class SearchController implements Serializable {
                 + " b.createdAt between :fromDate and :toDate  ";
 
         Map temMap = new HashMap();
+        
+        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+            System.out.println("inside ins");
+            sql+="and b.institution =:ins ";
+            temMap.put("ins", getSessionController().getInstitution());
+        }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(p.name) like :patientName )";
