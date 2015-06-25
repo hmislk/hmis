@@ -132,6 +132,9 @@
                                     </p:selectBooleanCheckbox>
                                     <p:autoComplete converter="ixcon" disabled="#{!investigationController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{investigationController.current.reportedAs}" completeMethod="#{investigationController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
                                     </p:autoComplete>
+                                    
+                                    <h:outputText value="Repoted as ID" ></h:outputText>
+                                    <h:outputText value="#{investigationController.current.reportedAs}" ></h:outputText>
 
 
                                     <h:outputText value="Sample" ></h:outputText>
