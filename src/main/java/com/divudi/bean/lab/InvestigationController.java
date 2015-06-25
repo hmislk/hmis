@@ -84,11 +84,8 @@ public class InvestigationController implements Serializable {
     List<Investigation> selectedIxs;
     
     public void listDeletedIxs() {
-        String sql = "select c from Investigation c where c.retired=true order by c.category.name,c.department.name";
+        String sql = "select c from Investigation c where c.retired=true ";
         deletedIxs = getFacade().findBySQL(sql);
-        if (deletedIxs == null) {
-            deletedIxs = new ArrayList<>();
-        }
     }
 
     public void undeleteSelectedIxs(){
