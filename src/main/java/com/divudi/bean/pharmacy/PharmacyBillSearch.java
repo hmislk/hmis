@@ -1105,11 +1105,13 @@ public class PharmacyBillSearch implements Serializable {
             //get billfees from using cancel billItem
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            System.out.println("tmp = " + tmp);
             cancelBillFee(can, b, tmp);
             
             //create BillFeePayments For cancel
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
+            System.out.println("tmpC = " + tmpC);
             calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
 
@@ -1323,7 +1325,9 @@ public class PharmacyBillSearch implements Serializable {
                 getBillFacade().create(cb);
             }
 
-            pharmacyCancelBillItems(cb);
+            //for Payment,billFee and BillFeepayment
+            Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            pharmacyCancelBillItems(cb,p);
 
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
