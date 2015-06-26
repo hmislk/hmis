@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:st="http://java.sun.com/jsf/composite/store">
+      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward">
 
     <body>
 
@@ -20,7 +20,7 @@
                             <p:commandButton value="Reprint" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Back" ajax="false" action="/store/store_search_issue_bill_return" />
+                            <p:commandButton value="Back" ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return" />
                         </f:facet>
 
                     </p:panel>
@@ -29,7 +29,7 @@
 
 
                     <h:panelGroup id="gpBillPreview" >
-                        <st:returnBill_1 bill="#{storeBillSearch.bill}" duplicate="true" />
+                        <ph:returnBill bill="#{pharmacyIssueController.bill}" duplicate="true" />
                     </h:panelGroup>
 
 

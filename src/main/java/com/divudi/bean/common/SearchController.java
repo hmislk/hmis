@@ -781,53 +781,11 @@ public class SearchController implements Serializable {
     }
 
     public void listPharmacyReturns() {
-        listPharmacyReturnedBills(BillType.PharmacyIssue);
+        listPharmacyStoreReturnedBills(BillType.PharmacyIssue);
     }
 
     public void listStoreReturns() {
-        Map m = new HashMap();
-        m.put("bt", BillType.StoreIssue);
-        m.put("class", RefundBill.class);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ins", getSessionController().getInstitution());
-        String sql;
-
-        sql = "Select b from Bill b where "
-                + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt "
-                + " and b.institution=:ins "
-                + " and type(b)=:class ";
-
-        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
-            sql += " and  (upper(b.invoiceNumber) like :requestNo )";
-            m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (upper(b.deptId) like :billNo )";
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  (upper(b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  (upper(b.netTotal) like :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  (upper(b.total) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.createdAt desc  ";
-//    
-        //     ////System.out.println("sql = " + sql);
-        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+        listPharmacyStoreReturnedBills(BillType.StoreIssue);
     }
 
     public void listPharmacyBilledBills(BillType bt) {
@@ -842,8 +800,8 @@ public class SearchController implements Serializable {
         listPharmacyBills(bt, CancelledBill.class);
     }
 
-    public void listPharmacyReturnedBills(BillType bt) {
-        listPharmacyBills(bt, RefundBill.class);
+    public void listPharmacyStoreReturnedBills(BillType bt) {
+        listReturnBills(bt, RefundBill.class);
     }
 
     public ServiceSession getSelectedServiceSession() {
@@ -878,6 +836,56 @@ public class SearchController implements Serializable {
                 + " and b.institution=:ins "
                 + " and type(b)=:class "
                 + " and b.billedBill is null ";
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            sql += " and  (upper(b.invoiceNumber) like :requestNo )";
+            m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  (upper(b.department.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.total) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        //     ////System.out.println("sql = " + sql);
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+
+    }
+    
+    public void listReturnBills(BillType bt, Class bc) {
+
+        Map m = new HashMap();
+        m.put("bt", bt);
+        m.put("class", bc);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        m.put("dept", getSessionController().getDepartment());
+        String sql;
+
+        sql = "Select b from Bill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt "
+                + " and b.institution=:ins "
+                + " and b.department=:dept "
+                + " and type(b)=:class ";
 
         if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  (upper(b.invoiceNumber) like :requestNo )";
