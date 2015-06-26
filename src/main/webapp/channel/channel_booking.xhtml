@@ -91,6 +91,13 @@
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </p:outputLabel>
                                     </p:column>
+                                    
+                                    <p:column headerText="Max Table" style="width: 20px!important; text-align: center;">
+                                        <p:outputLabel value="#{ses.maxTableRows}" rendered="#{ses.maxNo ne 0}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+                                    
                                     <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
                                         <p:outputLabel value="#{ses.displayCount}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>

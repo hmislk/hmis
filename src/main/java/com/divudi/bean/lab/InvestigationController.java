@@ -84,11 +84,8 @@ public class InvestigationController implements Serializable {
     List<Investigation> selectedIxs;
     
     public void listDeletedIxs() {
-        String sql = "select c from Investigation c where c.retired=true order by c.category.name,c.department.name";
+        String sql = "select c from Investigation c where c.retired=true ";
         deletedIxs = getFacade().findBySQL(sql);
-        if (deletedIxs == null) {
-            deletedIxs = new ArrayList<>();
-        }
     }
 
     public void undeleteSelectedIxs(){
@@ -374,22 +371,40 @@ public class InvestigationController implements Serializable {
         return completeItems;
     }
 
+//    public List<Investigation> completeDepartmentItem(String qry) {
+//        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+//            String sql;
+//            Map m = new HashMap();
+//            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+//            m.put("inv", Investigation.class);
+//            m.put("ser", Investigation.class);
+//            m.put("pak", Investigation.class);
+//            m.put("ins", getSessionController().getInstitution());
+//            sql = "select c "
+//                    + " from Item c "
+//                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
+//                    + " and c.retired=false "
+//                    + " and upper(c.name) like :qry "
+//                    + " and c.institution=:ins ";
+//            sql += "order by c.name";
+//            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+//            return completeItems;
+//        } else {
+//            return completeItem(qry);
+//        }
+//    }
+    
     public List<Investigation> completeDepartmentItem(String qry) {
         if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
             String sql;
             Map m = new HashMap();
-            m.put("qry", "'%" + qry.toUpperCase() + "%'");
-            m.put("inv", Investigation.class);
-            m.put("ser", Investigation.class);
-            m.put("pak", Investigation.class);
+//            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+//            m.put("inv", Investigation.class);
+//            m.put("ser", Investigation.class);
+//            m.put("pak", Investigation.class);
             m.put("ins", getSessionController().getInstitution());
-            sql = "select c "
-                    + " from Item c "
-                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
-                    + " and c.retired=false "
-                    + " and upper(c.name) like :qry "
-                    + " and c.institution=:ins ";
-            sql += "order by c.name";
+            sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
+                    + "and c.retired=false and c.institution=:ins and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
             List<Investigation> completeItems = getFacade().findBySQL(sql, m);
             return completeItems;
         } else {

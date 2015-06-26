@@ -70,7 +70,7 @@ public class StoreErrorChecking implements Serializable {
     }
 
     public void listPharmacyMovementByDateRangeOnlyStockChange() {
-        billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
+        billItems = getEjb().allBillItemsByDateOnlyStockStore(item, department, fromDate, toDate);
     }
 
     public void listPharmacyMovementNew() {
