@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/horizon?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="neo28" object-type="user" pool-name="mysql_horizon_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="neo29" object-type="user" pool-name="mysql_horizon_rootPool"/>
 </resources>
