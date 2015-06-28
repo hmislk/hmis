@@ -22,7 +22,8 @@
                             <p:autoComplete widgetVar="aIx" id="acIx"
                                             forceSelection="true" 
                                             value="#{itemFeeController.currentIx}" 
-                                            completeMethod="#{investigationController.completeDepartmentItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            completeMethod="#{investigationController.completeDepartmentItem}" var="ix" itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
                         </p:panelGrid>
