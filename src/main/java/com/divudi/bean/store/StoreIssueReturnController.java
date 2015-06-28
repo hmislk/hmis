@@ -252,7 +252,9 @@ public class StoreIssueReturnController implements Serializable {
         saveReturnBill();
         saveComponent();
 
-        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
+        if (getBill().getPatientEncounter()!=null) {
+            updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
+        }
 
         getBillFacade().edit(getReturnBill());
 
