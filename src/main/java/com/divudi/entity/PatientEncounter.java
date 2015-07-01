@@ -127,6 +127,8 @@ public class PatientEncounter implements Serializable {
     double transPaidByCompany;
     @Transient
     double transPaidByPatient;
+    @Transient
+    long transDayCount;
     @ManyToOne
     Bill finalBill;
     
@@ -785,6 +787,14 @@ public class PatientEncounter implements Serializable {
 
     public void setReferralId(String referralId) {
         this.referralId = referralId;
+    }
+
+    public long getTransDayCount() {
+        return transDayCount;
+    }
+
+    public void setTransDayCount(long transDayCount) {
+        this.transDayCount = transDayCount;
     }
 
 }
