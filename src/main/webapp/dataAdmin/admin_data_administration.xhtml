@@ -50,7 +50,8 @@
                             <p:commandLink ajax="false" action="#{dataAdministrationController.addInstitutionToInvestigationsWithoutInstitution}" 
                                            value="11. Add Institutions to Investigations without Institution" ></p:commandLink>
 
-
+                            <p:commandLink ajax="false" action="#{staffShiftController.updateStaffShiftWithoutRoster()}" value="12. Update Staff Shift Without Roster(For Analyse)" onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
 
                         </p:panelGrid>
 
