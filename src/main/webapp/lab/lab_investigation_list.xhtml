@@ -41,10 +41,10 @@
                         <p:column headerText="Category" >
                             <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
                         </p:column>
-                        <p:column headerText="Institution" >
+                        <p:column headerText="Institution" sortBy="#{ix.institution.name}">
                             <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
                         </p:column>
-                        <p:column headerText="Department" >
+                        <p:column headerText="Department" sortBy="#{ix.department.name}">
                             <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                         </p:column>
                         
