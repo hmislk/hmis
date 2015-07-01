@@ -53,7 +53,7 @@
                             <p:panel header="(2) Reports By Bht" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                 <h:panelGrid columns="1">
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="BHT Break Down (TAB Format)" action="inward_bill_intrim_finalized" /> 
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="BHT Break Down (TAB Format)" action="inward_bill_intrim_finalized" actionListener="#{bhtSummeryFinalizedController.makeNull()}" /> 
                                     <p:commandButton styleClass="linkButton" ajax="false" value="BHT Break Down (Table Format)" action="inward_bill_final_break_down" /> 
                                     <p:commandButton styleClass="linkButton" ajax="false" value="BHT Sevice Errror Diduction" action="inward_bill_final_break_down_error" rendered="false" /> 
                                     <p:commandButton styleClass="linkButton" ajax="false" value="BHT Intrim Errror Correction" action="inward_bill_intrim_finalized_error_correction" /> 
