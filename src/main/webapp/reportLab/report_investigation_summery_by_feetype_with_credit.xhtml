@@ -11,43 +11,46 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+        <h:form  >
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Investigation Summary Fee type with Credit"  styleClass="noPrintButton" />
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                    action="#{bookKeepingSummery.createOPdLabListWithProDayEndTableWithCredit()}"/>
+                    <h:outputLabel value="Investigation Summary Fee type with Credit"   />
+                </f:facet>    
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new"
-                                     fileName="Book_Keeping_Summery_without_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
-
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy " >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy " >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
                         <p:inputText value="#{sessionController.loggedUser.institution.name}"></p:inputText>
                     </h:panelGrid>
+                    <h:panelGrid columns="3">
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                    action="#{bookKeepingSummery.createOPdLabListWithProDayEndTableWithCredit()}"/>
 
-                </f:facet>
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new"
+                                         fileName="Book_Keeping_Summery_without_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                
             </p:panel>
             <!--            <p:spacer height="30" />-->
-
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
             <lab:opd_new id="opd_new" professional="true" reagentWithCredit="true" hospital="true"/>
-
+</p:panel>
                 
 
         </h:form>
