@@ -133,11 +133,11 @@ public class StaffShiftController implements Serializable {
         System.err.println("Date " + date);
 
     }
-    
+
     public void viewStaffShift(StaffShift sts) {
         staffshift = sts;
     }
-    
+
     public void saveStaffShift() {
         if (staffshift != null) {
             getEjbFacade().edit(staffshift);
@@ -168,6 +168,28 @@ public class StaffShiftController implements Serializable {
         return staffShifts;
     }
 
+    public void updateStaffShiftWithoutRoster() {
+
+        String sql = "Select s from StaffShift s where s.roster is null order by s.id desc";
+        List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql, 100000);
+        System.err.println("lststaffShifts = "+lststaffShifts.size());
+        for (StaffShift ss : lststaffShifts) {
+            if (ss.getRoster() == null) {
+                System.out.println("ss = " + ss);
+                System.out.println("ss.getId()" + ss.getId());
+                System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName());
+                System.out.println("ss.getShiftDate() = " + ss.getShiftDate());
+                if (ss.getStaff().getRoster() != null) {
+                    ss.setRoster(ss.getStaff().getRoster());
+                    System.out.println("ss.getStaff().getRoster() = " + ss.getStaff().getRoster());
+                    ejbFacade.edit(ss);
+                } else {
+                    System.out.println("ss.getStaff().getRoster() is nnull");
+                }
+            }
+        }
+    }
+
     @EJB
     StaffShiftFacade staffShiftFacade;
     @Inject
@@ -186,7 +208,7 @@ public class StaffShiftController implements Serializable {
 
         staffShiftFacade.create(shiftReplace);
     }
-    
+
     public void createStaffShiftTablebyCreatedDate() {
         String sql;
         Map m = new HashMap();
@@ -198,22 +220,22 @@ public class StaffShiftController implements Serializable {
             sql += " and ss.staff=:st ";
             m.put("st", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.roster.department.institution=:ins ";
             m.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:ros ";
             m.put("ros", getReportKeyWord().getRoster());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.staff.designation=:des ";
             m.put("des", getReportKeyWord().getDesignation());
@@ -225,7 +247,7 @@ public class StaffShiftController implements Serializable {
         staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
 //    public void createStaffShiftTablebyShiftDate() {
 //        String sql;
 //        Map m = new HashMap();
@@ -244,7 +266,6 @@ public class StaffShiftController implements Serializable {
 //        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //
 //    }
-    
     public void createStaffShiftTablebyShiftDate() {
         String sql;
         Map m = new HashMap();
@@ -256,23 +277,23 @@ public class StaffShiftController implements Serializable {
             sql += " and ss.staff=:st ";
             m.put("st", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.roster.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.roster.department.institution=:ins ";
             m.put("ins", getReportKeyWord().getInstitution());
         }
-        
+
         if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.roster=:ros ";
             m.put("ros", getReportKeyWord().getRoster());
         }
-        
-        if (getReportKeyWord().getDesignation()!= null) {
+
+        if (getReportKeyWord().getDesignation() != null) {
             sql += " and ss.staff.designation=:des ";
             m.put("des", getReportKeyWord().getDesignation());
         }
@@ -351,8 +372,6 @@ public class StaffShiftController implements Serializable {
     public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
         this.staffShiftFacade = staffShiftFacade;
     }
-    
-    
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {

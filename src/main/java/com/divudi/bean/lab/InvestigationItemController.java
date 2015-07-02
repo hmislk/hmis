@@ -63,7 +63,6 @@ public class InvestigationItemController implements Serializable {
     Investigation copyingToInvestigation;
     String ixXml;
 
-
     public String copyInvestigation() {
         if (copyingFromInvestigation == null) {
             JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
