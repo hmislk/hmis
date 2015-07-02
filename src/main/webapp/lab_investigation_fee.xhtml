@@ -42,21 +42,21 @@
 
                         </p:panelGrid>
                     </h:form>
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                    <p:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
                         <p:panel header="Fee List" >
                             <h:form >
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{itemFeeController.charges}" var="bi" >
                                     <p:column headerText="Fee Name">
-                                        <h:inputText value="#{bi.name}"/>                                        
+                                        <h:inputText value="#{bi.name}" style="width: 90px"/>                                        
                                     </p:column>
                                     <p:column headerText="Fee Type">
-                                        <h:selectOneListbox size="1" value="#{bi.feeType}" >
+                                        <h:selectOneListbox size="1" value="#{bi.feeType}" style="width: 120px">
                                             <f:selectItem itemLabel="Select Fee Type"/>
                                             <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                         </h:selectOneListbox>
                                     </p:column>
-                                    <p:column headerText="Staff/Speciality/Institution/Department">
+                                    <p:column headerText="Staff/Speciality/Institution/Department" >
                                         <p:outputLabel value="#{bi.speciality.name}" ></p:outputLabel>
                                         <p:outputLabel rendered="#{bi.speciality ne null}" value="&lt;br/&gt;" escape="false" ></p:outputLabel>
                                         <p:outputLabel value="#{bi.staff.person.nameWithTitle}"></p:outputLabel>
@@ -66,11 +66,11 @@
                                         <h:outputLabel value="#{bi.department.name}"/>
                                     </p:column>                                   
 
-                                    <p:column headerText="Local Fee">
-                                        <p:inputText value="#{bi.fee}"/>                                        
+                                    <p:column headerText="Local Fee" >
+                                        <p:inputText value="#{bi.fee}" style="width: 60px"/>                                        
                                     </p:column>
                                     <p:column headerText="Foreign Fee">
-                                        <p:inputText value="#{bi.ffee}"/>                                        
+                                        <p:inputText value="#{bi.ffee}" style="width: 60px"/>                                        
                                     </p:column>
 
                                     <p:column headerText="Coments">
@@ -83,8 +83,8 @@
                                         <h:outputLabel rendered="#{bi.editer ne null}"  value="."/>
                                     </p:column>
                                     <p:column headerText="Actions">
-                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}"/>
-                                        <p:commandButton id="remove" ajax="false" value="Remove" action="#{itemFeeController.removeFee}" >
+                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}" style="width: 90px"/>
+                                        <p:commandButton id="remove" ajax="false" value="Remove" action="#{itemFeeController.removeFee}" style="width: 90px">
                                             <f:setPropertyActionListener value="#{bi}" target="#{itemFeeController.removedItemFee}"/>
                                         </p:commandButton>
                                     </p:column>
@@ -100,11 +100,12 @@
                                     <h:outputLabel value="Add New  Fee" ></h:outputLabel>
 
                                 </f:facet>
-                                <h:panelGrid columns="2">
+                                <p:panelGrid columns="2">
                                     <h:outputText value="Fee Name"/>
-                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{itemFeeController.currentFee.name}"/>
+                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{itemFeeController.currentFee.name}" required="true" requiredMessage="Please Enter Fee Name" />
+                                        
                                     <h:outputText value="Fee Type"/>
-                                    <h:selectOneListbox size="1" value="#{itemFeeController.currentFee.feeType}" >
+                                    <h:selectOneListbox size="1" value="#{itemFeeController.currentFee.feeType}" required="true" requiredMessage="Please Select Fee Type">
                                         <f:selectItem itemLabel="Please select the type"/>
                                         <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                     </h:selectOneListbox>
@@ -136,11 +137,11 @@
                                     <h:inputText autocomplete="off" id="txtFFee" value="#{itemFeeController.currentFee.ffee}"/>
 
                                     <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" action="#{itemFeeController.saveCharge}" 
-                                                     styleClass="buttons">
-                                    </h:commandButton>
+                                    <p:commandButton id="btnAddTo" value="Add"  action="#{itemFeeController.saveCharge}" 
+                                                     styleClass="buttons" ajax="false">
+                                    </p:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
 
 
 
@@ -148,7 +149,7 @@
                         </h:form>
 
 
-                    </h:panelGrid>
+                    </p:panelGrid>
 
                 </p:panelGrid>
 

@@ -10,8 +10,8 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <h:panelGrid columns="6" styleClass="noPrintButton">
+            <p:panel>
+                <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
                     </p:calendar>
@@ -20,12 +20,13 @@
                     </p:calendar>
                     <h:outputLabel value="Instituion"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{bookKeepingSummery.institution}"  
-                                    style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                                      completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                 </h:panelGrid>
 
-                <h:panelGrid columns="3">
+                <h:panelGrid columns="4">
+                    <p:spacer height="1" width="80"/>
                     <p:commandButton ajax="false" value="Process" action="#{bookKeepingSummery.createLabSummeryInward}"/>
                     <p:commandButton ajax="false" value="Excel" actionListener="#{bookKeepingSummery.createLabSummeryInward}" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
@@ -47,14 +48,14 @@
                         <f:convertDateTime pattern="dd MMMM yyyy" />
                     </h:outputLabel>                       
                 </h:panelGrid>
-
-
+            </p:panel>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
-                    rows="20"
-                    paginator="true"
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                    rowsPerPageTemplate="20, 50, 100" 
-                    >   
+                             rows="20"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100" 
+                             >   
                     <f:facet name="header">
                         <p:outputLabel value="#{bookKeepingSummery.institution.name} Summary Report By Date" />
                         <h:outputLabel value="From : "/>
@@ -68,9 +69,9 @@
                     </f:facet>
 
                     <p:column headerText="Date"
-                        sortBy="#{i.string}" 
-                        filterBy="#{i.string}"
-                        filterMatchMode="contains">
+                              sortBy="#{i.string}" 
+                              filterBy="#{i.string}"
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Date" />
                         </f:facet>
