@@ -146,14 +146,14 @@
                                     <h:inputText autocomplete="off"  class="pdInputText" value="#{investigationController.current.sampleVolume}"  ></h:inputText>
                                     <h:outputText value="Institution" ></h:outputText>
                                     <h:selectOneListbox id="cmbIns"   size="1" value="#{investigationController.current.institution}" >
-                                        <f:selectItem itemLabel="Please select a Institution"/>
+                                        <f:selectItem itemLabel="Master Item"/>
                                         <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                     </h:selectOneListbox>
                                     <h:outputText value="Department" ></h:outputText>
                                     <h:selectOneListbox id="cmbDep" size="1" value="#{investigationController.current.department}" >
                                         <f:selectItem itemLabel="Please select a Department"/>
-                                        <f:selectItems value="#{investigationController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:selectItems value="#{departmentController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>
 
                                     <h:outputText value="" ></h:outputText>
@@ -171,6 +171,8 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{investigationController.current.discountAllowed}" itemLabel="Discount Allowed"/>
+                                    
+                                    <h:outputText value="Inward Category" ></h:outputText>
                                     <p:selectOneMenu id="cmbInward" value="#{investigationController.current.inwardChargeType}" >
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
