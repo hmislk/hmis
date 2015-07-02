@@ -97,7 +97,7 @@ public class StaffShift implements Serializable {
     private StaffShift referenceStaffShiftEarlyOut;
     @OneToMany(mappedBy = "referenceStaffShiftLateIn", fetch = FetchType.LAZY)
     private List<StaffShift> referenceStaffShiftLateIns = new ArrayList<>();
-     @OneToMany(mappedBy = "referenceStaffShiftEarlyOut", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "referenceStaffShiftEarlyOut", fetch = FetchType.LAZY)
     private List<StaffShift> referenceStaffShiftEarlyOuts = new ArrayList<>();
 
     //Multiplying Factor Always come by subtrating 1
@@ -171,6 +171,8 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
 //    int leaveDivident;
+
+  
 
     public DayType getDayType() {
         return dayType;
@@ -586,8 +588,6 @@ public class StaffShift implements Serializable {
         }
 
     }
-    
-   
 
     public void calExtraTimeWithStartOrEndRecord() {
         if (getStartRecord() == null || getEndRecord() == null) {
@@ -661,7 +661,7 @@ public class StaffShift implements Serializable {
 
             if (dayType == DayType.DayOff
                     || dayType == DayType.SleepingDay
-                    || dayType==DayType.Extra) {
+                    || dayType == DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
                 Calendar toCalendar = Calendar.getInstance();
