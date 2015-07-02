@@ -420,8 +420,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public List<String1Value2> getChannelBills() {
-        if(channelBills==null){
-            channelBills=new ArrayList<>();
+        if (channelBills == null) {
+            channelBills = new ArrayList<>();
         }
         return channelBills;
     }
@@ -429,8 +429,6 @@ public class BookKeepingSummery implements Serializable {
     public void setChannelBills(List<String1Value2> channelBills) {
         this.channelBills = channelBills;
     }
-    
-    
 
     public double getOpdHospitalTotal() {
         return opdHospitalTotal;
@@ -899,6 +897,7 @@ public class BookKeepingSummery implements Serializable {
         double sf = 0;
         double hf = 0;
         double rf = 0;
+        grantTotal = 0;
 
         long icount = 0l;
         bookKeepingSummeryRow sr = null;
@@ -1107,7 +1106,7 @@ public class BookKeepingSummery implements Serializable {
         sr.setProFee(sf);
         sr.setReagentFee(rf);
         sr.setCatCount(countBilled - countCancelled);
-
+        
         sr.setTotal(hf + sf + rf);
         t.add(sr);
 //        //System.out.println("previous tot row added - " + sr.getCategoryName());
