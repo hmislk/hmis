@@ -11,12 +11,13 @@
     <ui:define name="content">
 
         <h:panelGroup >
-            <h:form id="form"  >
-                <p:growl autoUpdate="true" />
 
-                <p:panel header="Manage Investigation Fees" >
+            <p:growl autoUpdate="true" />
 
-                    <p:panelGrid columns="1" >
+            <p:panel header="Manage Investigation Fees" >
+
+                <p:panelGrid columns="1" >
+                    <h:form >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Select Investigation" />
                             <p:autoComplete widgetVar="aIx" id="acIx"
@@ -25,16 +26,28 @@
                                             completeMethod="#{investigationController.completeDepartmentItem}" 
                                             var="ix" itemLabel="#{ix.name}" 
                                             itemValue="#{ix}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{itemFeeController.createCharges()}"></p:ajax>
+                                <p:ajax event="itemSelect" process="@this" update=":#{p:component('gpDetail')} :#{p:component('dtbFee')}" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
-                            
-                        </p:panelGrid>
 
-                        <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                            <p:outputLabel value="Total For Locals"/>
+                            <p:outputLabel style="float:right;" id="lblTotal"  value="#{itemFeeController.currentIx.total}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Total for Foreigners"/>
+                            <p:outputLabel style="float:right;" id="lblFtotal"  value="#{itemFeeController.currentIx.totalFfee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+
+
+                        </p:panelGrid>
+                    </h:form>
+                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                        <h:form >
                             <p:panel id="gpDetail" >                                    
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Charge Detail" ></h:outputLabel>
-                                    <h:outputText style="float:right;" id="lblTotal" value="Total : #{itemFeeController.currentIx.total}"/>
+                                    <h:outputLabel value="Add New  Fee" ></h:outputLabel>
+
                                 </f:facet>
                                 <h:panelGrid columns="2">
                                     <h:outputText value="Fee Name"/>
@@ -74,11 +87,17 @@
                                     <h:outputText value=""/>
                                     <h:commandButton id="btnAddTo" value="Add" action="#{itemFeeController.saveCharge}" 
                                                      styleClass="buttons">
-                                        <!--<f:ajax render="gpDetail" execute="gpDetail"  />-->
                                     </h:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
                                 </h:panelGrid>
 
+
+
+                            </p:panel>
+                        </h:form>
+
+                        <p:panel header="Fee List" >
+                            <h:form >
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{itemFeeController.charges}" var="bi" >
                                     <p:column headerText="Fee Name">
                                         <h:inputText value="#{bi.name}"/>                                        
@@ -89,11 +108,11 @@
                                             <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                         </h:selectOneListbox>
                                     </p:column>
-                                    <p:column headerText="Speciality">
-                                        #{bi.speciality.name}
-                                    </p:column>
-                                    <p:column headerText="Staff">
-                                        #{bi.staff.person.nameWithTitle}
+                                    <p:column headerText="Staff/Speciality/Institution/Department">
+                                        <p:outputLabel value="#{bi.speciality.name}" ></p:outputLabel>
+                                        <p:outputLabel rendered="#{bi.speciality ne null}" value="<br/>" ></p:outputLabel>
+                                        <p:outputLabel value="#{bi.staff.person.nameWithTitle}"></p:outputLabel>
+                                        
                                     </p:column>                                   
 
                                     <p:column headerText="Institution">
@@ -129,23 +148,22 @@
                                     <p:column headerText="Remove">
                                         <h:commandButton id="remove" value="Remove" action="#{itemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{itemFeeController.removedItemFee}"/>
-                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee" process="remove dtbFee" />
+                                            <p:ajax update=":#{p:component('lblTotal')} :#{p:component('lblFtotal')} dtbFee" process="remove dtbFee" />
                                         </h:commandButton>
                                     </p:column>
                                 </p:dataTable>
+                            </h:form>
+                        </p:panel>
+                    </h:panelGrid>
 
-                            </p:panel>
-
-                        </h:panelGrid>
-
-                    </p:panelGrid>
-
+                </p:panelGrid>
 
 
 
 
-                </p:panel>
-            </h:form>
+
+            </p:panel>
+
 
         </h:panelGroup>
 
