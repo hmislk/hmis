@@ -11,20 +11,20 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+        <h:form >
 
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Investigation Summary Regent Fee by Payment Method"  styleClass="noPrintButton" />
+                </f:facet>
 
-
-                    <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy " >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy " >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
@@ -42,7 +42,7 @@
                         <p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/>
 
                     </h:panelGrid>
-                    <h:panelGroup style="float: right">
+                <h:panelGrid columns="3">
                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                         action="#{bookKeepingSummery.createOPdLabListWithProDayEndTablebyPaymentMethod()}"/>
 
@@ -55,13 +55,14 @@
                                          facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
                         </p:commandButton>
-                    </h:panelGroup>
-                </f:facet>
+                    </h:panelGrid>
+                
             </p:panel>
             <!--            <p:spacer height="30" />-->
-
-            <lab:opd_new id="opd_new" reagentByPayMethod="true"/>
-
+            
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <lab:opd_new id="opd_new" reagentByPayMethod="true"/>
+            </p:panel>
 
 
         </h:form>

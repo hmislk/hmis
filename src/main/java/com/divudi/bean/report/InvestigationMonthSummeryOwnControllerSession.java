@@ -88,7 +88,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public Item getItem() {
         return item;
     }
-    
+
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
         for (Item w : getInvestigations()) {
@@ -281,15 +281,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         insInvestigationCountRows.addAll((List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.DATE));
 
-        int c =1;
-        for (ItemInstitutionCollectingCentreCountRow r: insInvestigationCountRows){
+        int c = 1;
+        for (ItemInstitutionCollectingCentreCountRow r : insInvestigationCountRows) {
             r.setId(c);
             c++;
         }
 
     }
-    
-    
+
     public void createIxCountByInstitutionAndCollectingCentre() {
         String jpql;
         Map m;
@@ -330,7 +329,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
     }
-    
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
 //        String jpql;
@@ -619,6 +617,20 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
 
         is.setTotal(getTotal(w));
+        if (net > 0) {
+            is.setTurnOverValue(setTurnOverValue(net));
+        }
+
+    }
+
+    private double setTurnOverValue(long count) {
+
+        long timeInMinutes = (getToDate().getTime() - getFromDate().getTime()) / 60000;
+
+        long turnOverTime = timeInMinutes / count;
+        System.out.println("turnOverTime = " + turnOverTime);
+
+        return turnOverTime;
     }
 
     private void setCountTotal2(InvestigationSummeryData is, Item w) {

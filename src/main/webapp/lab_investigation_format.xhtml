@@ -14,6 +14,9 @@
 
                 <h:panelGroup>
                     <p:panel header="Investigation">
+                        <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                            <p:ajax event="change" process="@this" update="acPt" />
+                        </p:selectBooleanCheckbox>
                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
                                         value="#{investigationItemController.currentInvestigation}" 
                                         completeMethod="#{investigationController.completeInvest}" 

@@ -76,6 +76,9 @@
                     <p:column headerText="ID">
                         #{sts.id}
                     </p:column>
+                    <p:column headerText="roster name">
+                        #{sts.roster.name}
+                    </p:column>
                      
                     <p:column headerText="Shift Start">
                         <h:outputLabel value="#{sts.shiftStartTime}" >
@@ -88,8 +91,29 @@
                         </h:outputLabel>
                         
                     </p:column>
+                    
+                    <p:column headerText="Shift Date" styleClass="singleLine">                       
+                        <h:outputLabel id="lblShiftDate" value="#{sts.shiftDate}" >
+                            <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
+                        </h:outputLabel>  
+                        <p:tooltip for="lblShiftDate" >
+                            <h:outputLabel value="Worked Time : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.workedWithinTimeFrameVarified div (60*60)}" ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Half Shift : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shift.halfShift}" ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Leave Type : " ></h:outputLabel>
+                            <h:outputLabel value=" #{sts.leaveType} " ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Full Day Leave : " ></h:outputLabel>
+                            <h:outputLabel value=" #{sts.leaveType.fullDayLeave} " ></h:outputLabel>
+                            
+                        </p:tooltip>
+                    </p:column>
+                    
                     <p:column headerText="Leave/Replace" styleClass="singleLine">                       
-                        <h:outputLabel value="#{sts.leaveType}"  />                     
+                        <h:outputLabel value="#{sts.leaveType}"  />
                     </p:column>
                     
                      <p:column headerText="Halfday" styleClass="singleLine">                       
