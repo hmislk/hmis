@@ -29,6 +29,7 @@
                                      selection="#{dataAdministrationController.selectedBills}"
                                      rowIndexVar="i"
                                      rowKey="#{bill.id}"
+                                     rowStyleClass="#{bill.paymentMethod eq 'Card' ? 'greenText':''}"
                                      >    
                             <p:column  selectionMode="multiple" >                            
                             </p:column>
@@ -38,10 +39,12 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
-                            <p:column headerText="Bill No">                               
+                            <p:column headerText="Bill No(insId)">                               
                                 <h:outputLabel value="#{bill.insId}"></h:outputLabel>                                
                             </p:column>
-
+                            <p:column headerText="Bill No(deptId)">                               
+                                <h:outputLabel value="#{bill.deptId}"></h:outputLabel>                                
+                            </p:column>
                             <p:column headerText="Bht No">                              
                                 <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
                             </p:column>

@@ -14,6 +14,7 @@ import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
+import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.LeaveFormSystem;
 import com.divudi.entity.hr.StaffLeave;
@@ -501,6 +502,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
     }
+    
+    
+   
 
     public void saveLeaveform() {
         if (currentLeaveForm.getId() != null) {
