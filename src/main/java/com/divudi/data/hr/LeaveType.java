@@ -17,7 +17,7 @@ public enum LeaveType {
 
     Casual, //7 working Days
     CasualHalf(Casual),
-    Annual, //14
+    Annual, //14 AnnualHalf
     AnnualHalf(Annual),
     Medical, //14   
     Maternity1st, // 84 working days 
