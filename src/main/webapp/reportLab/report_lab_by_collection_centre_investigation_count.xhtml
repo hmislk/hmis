@@ -13,58 +13,62 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
 
-            <p:panel id="panelPrint"  styleClass="noBorder summeryBorder" header="Collecting Centre Sale Report">
-                <f:facet name="header"  >
-                    <p:outputLabel value="REPORT BY COLLECTION CENTER COUNT" styleClass="noPrintButton"/>
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+            <p:panel>
+                <f:facet name="header" >
+                    <p:outputLabel value="REPORT BY COLLECTION CENTER COUNT" />
+                </f:facet>
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+                    <h:outputLabel value="Credit Company"/>
+                    <p:autoComplete forceSelection="true" value="#{investigationMonthSummeryOwnController.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:column>
+                            #{ix.name}
+                        </p:column>
+                        <p:column>
+                            #{ix.institutionCode}
+                        </p:column>
+                    </p:autoComplete>
+
+                </h:panelGrid>
+                <h:panelGrid columns="4">
+                    <p:spacer height="1" width="110"/>
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;" />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
                         <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
-                    </p:commandButton>  
+                    </p:commandButton>
+                </h:panelGrid>
 
-                    <p:panelGrid columns="5" style="min-width: 100%;" styleClass="noPrintButton">
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <p:autoComplete forceSelection="true" value="#{investigationMonthSummeryOwnController.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                            <p:column>
-                                #{ix.institutionCode}
-                            </p:column>
-                        </p:autoComplete>
-
-                    </p:panelGrid>
-                </f:facet>
-                <br/><br/>
-                
+            </p:panel>
+            <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
                 <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
-                
+
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
-                    rows="20"
-                    paginator="true"
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                    rowsPerPageTemplate="20, 50, 100" 
-                    >
+                             rows="20"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100" 
+                             >
 
                     <f:facet name="header">
 
                         <h:outputLabel value="Investigation Month End Summary By "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.creditCompany.name} "/>
-                        <br/>
+                        <br/> 
+                        <h:outputLabel value="From : "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate} ">
                             <f:convertDateTime pattern="dd MMMM yyyy" />
                         </h:outputLabel>
-
+                        <h:outputLabel value="To &emsp;: "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate} ">
                             <f:convertDateTime pattern="dd MMMM yyyy" />
                         </h:outputLabel>
@@ -72,15 +76,15 @@
                     </f:facet>
 
                     <p:column headerText="Test Name" style="text-align:center"
-                            sortBy="#{c.investigation.name}" 
-                            filterBy="#{c.investigation.name}"
-                            filterMatchMode="contains">
-                          <f:facet name="header">
-                              <h:outputLabel value="Test Name"/>
-                          </f:facet>
+                              sortBy="#{c.investigation.name}" 
+                              filterBy="#{c.investigation.name}"
+                              filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputLabel value="Test Name"/>
+                        </f:facet>
                         <h:outputLabel value="#{c.investigation.name}"  />
                     </p:column>
-                    <p:column headerText="Count" style="text-align: center">
+                    <p:column headerText="Count" style="text-align: center" sortBy="#{c.count}">
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
                     <p:columnGroup type="footer">  

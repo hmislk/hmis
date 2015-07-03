@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <h:panelGroup rendered="false" >
+                        <table>
+                            <tr>
+                                <th>
+                                    User Selected Reorders
+                                </th>
+                                <th>
+                                    User Selected Items
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <ui:repeat value="#{reorderController.userSelectedReorders}" var="usr" >
+                                        <h:outputLabel value="#{usr.item.name}" ></h:outputLabel> <br/>
+                                    </ui:repeat>
+                                </td>
+                                <td>
+                                    <ui:repeat value="#{reorderController.userSelectedItems}" var="usi" >
+                                        <h:outputLabel value="#{usi.name}" ></h:outputLabel> <br/>
+                                    </ui:repeat>
+                                </td>
+                            </tr>
+                        </table>
+                    </h:panelGroup>
+
+                    <p:panel header="Auto ordering by items below Reorder Level" >
+
+                        <h:panelGrid columns="1" class="alignTop" >
+
+
+
+                            <h:panelGrid columns="3" class="alignTop" >
+
+                                <p:panel header="Ordering" >
+
+                                    <h:panelGrid columns="2" >
+
+
+                                        <h:outputLabel value="Ordering Date" ></h:outputLabel>
+                                        <p:calendar value="#{reorderController.orderingDate}"
+                                                    pattern="dd MMM yyyy" ></p:calendar>
+
+                                        <h:outputLabel value="Expected Delivery Date" ></h:outputLabel>
+                                        <p:calendar value="#{reorderController.expectedDeliveryDate}"
+                                                    pattern="dd MMM yyyy" ></p:calendar>
+
+                                        <h:outputLabel value="Next Delivery Date" ></h:outputLabel>
+                                        <p:calendar value="#{reorderController.nextDeliveryDate}"
+                                                    pattern="dd MMM yyyy" ></p:calendar>
+
+                                        <h:outputLabel value="Days to Order" ></h:outputLabel>
+                                        <h:outputLabel value="#{(reorderController.nextDeliveryDate.time  - reorderController.expectedDeliveryDate.time) div (1000*60*60*24)}" >
+                                            <f:convertNumber pattern="0" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+
+                                </p:panel>
+
+                                <p:panel header="Analysis" >
+                                    <h:panelGrid columns="2" >
+                                        <h:outputLabel value="From" ></h:outputLabel>
+                                        <p:calendar value="#{reorderController.fromDate}"
+                                                    pattern="dd MMM yyyy" ></p:calendar>
+
+                                        <h:outputLabel value="To" ></h:outputLabel>
+                                        <p:calendar value="#{reorderController.toDate}"
+                                                    pattern="dd MMM yyyy" ></p:calendar>
+
+                                        <h:outputLabel value="Bill types" ></h:outputLabel>
+                                        <p:selectManyMenu style="width: 300px;height: 150px;"
+                                                          value="#{reorderController.billTypes}" >
+                                            <f:selectItems value="#{enumController.pharmacyBillTypes}" ></f:selectItems>
+                                        </p:selectManyMenu>
+
+                                        <h:outputLabel value="Department List Method" ></h:outputLabel>
+                                        <p:selectOneMenu style="width: 300px;   "
+                                                         value="#{reorderController.departmentListMethod}" >
+                                            <f:selectItems value="#{enumController.departmentListMethods}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
+
+                                    </h:panelGrid>
+
+                                </p:panel>
+
+                                <p:panel >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Actions" ></h:outputLabel>
+                                    </f:facet>
+                                    <p:panel >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Order Request" ></p:outputLabel>
+                                        </f:facet>
+                                        <h:panelGrid columns="2" >
+                                            <h:outputLabel value="Supplier" ></h:outputLabel>
+                                            <p:autoComplete 
+                                                completeMethod="#{institutionController.completeSupplier}" 
+                                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
+                                                forceSelection="true" value="#{reorderController.institution}"
+                                                converter="institutionConverter" >
+                                            </p:autoComplete>
+                                            <h:outputLabel value="For" ></h:outputLabel>
+                                            <p:selectOneMenu value="#{reorderController.department}" >
+                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                            </p:selectOneMenu>
+                                            <p:commandButton ajax="false" value="Create" 
+                                                             action="#{reorderController.createPharmacyOrderRequest()}" ></p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+
+                                    <p:panel >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Transfer Request" ></p:outputLabel>
+                                        </f:facet>
+                                        <h:panelGrid columns="2" >
+                                            <h:outputLabel value="From" ></h:outputLabel>
+                                            <p:selectOneMenu value="#{reorderController.fromDepartment}" >
+                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                            </p:selectOneMenu>
+                                            <h:outputLabel value="To" ></h:outputLabel>
+                                            <p:selectOneMenu value="#{reorderController.toDepartment}" >
+                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                            </p:selectOneMenu>
+
+                                            <p:commandButton ajax="false" value="Create" 
+                                                             action="#{reorderController.createPharmacyTransferRequest()}" ></p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+
+
+                                </p:panel>
+
+                            </h:panelGrid>
+
+
+
+
+
+                            <h:panelGrid columns="5"  >
+                                <p:commandButton ajax="false" value="Generate Reorders"
+                                                 actionListener="#{reorderController.generateReorders()}" ></p:commandButton>
+
+                                <p:commandButton ajax="false" value="Fill All Items"
+                                                 actionListener="#{reorderController.fillReorders()}" ></p:commandButton>
+
+                                <p:commandButton ajax="false" value="Fill Required Items"
+                                                 actionListener="#{reorderController.fillReordersForRequiredItems()}" ></p:commandButton>
+
+
+                                <p:commandButton ajax="false" value="Save Reorders"
+                                                 actionListener="#{reorderController.saveReorders()}" ></p:commandButton>
+                                <p:selectBooleanButton id="value2" value="#{reorderController.readOnly}" 
+                                                       onLabel="Make Editable" offLabel="Remove Editable" 
+                                                       onIcon="ui-icon-check" offIcon="ui-icon-close">
+                                    <p:ajax update="tbl"  />
+                                </p:selectBooleanButton>
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+
+
+
+
+
+
+                        <p:dataTable id="tbl" 
+                                     styleClass="noBorder" value="#{reorderController.itemReorders}" var="ir"
+                                     rows="20"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20,50,100"
+                                     editable="true"
+                                     editMode="cell"
+                                     >
+                            <f:facet name="header">
+                                Ordering Analysis
+                            </f:facet>
+
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="2"  headerText="Department" ></p:column>
+                                    <p:column rowspan="2"  headerText="Stocks" ></p:column>
+                                    <p:column colspan="5"  headerText="Reordering" ></p:column>
+                                    <p:column colspan="3"  headerText="Usage" ></p:column>
+                                    <p:column colspan="2"  headerText="Timing" ></p:column>
+                                </p:row>
+                                <p:row >
+                                    <p:column  headerText="Ordering Qty" />
+                                    <p:column  headerText="Sufficient Stocks For" />
+                                    <p:column  headerText="Buffer Stocks" />
+                                    <p:column  headerText="Reorder Level" />
+                                    <p:column  headerText="Reorder Quentity" />
+
+                                    <p:column  headerText="Daily Usage" />
+                                    <p:column  headerText="Monthly Usage" />
+                                    <p:column  headerText="Annual Usage" />
+                                    <p:column  headerText="Lead Time" />
+                                    <p:column  headerText="Purchase Cycle" />
+                                </p:row>
+                            </p:columnGroup>
+
+                            <p:subTable value="#{ir.reorders}" var="r"  >
+                                <f:facet name="header">
+                                    <h:outputText 
+                                        style="text-align: right; padding-right: 10px;width: 60px!important;" 
+                                        value="#{ir.item.name} - #{ir.item.code}"  />
+                                </f:facet>
+                                <p:column >
+                                    <p:outputLabel value="#{r.department.name} " styleClass="#{(r.rol gt r.transientStock )?'redText':'greenText'}" ></p:outputLabel>
+                                    <p:commandLink value="(Graph)" styleClass="#{(r.rol gt r.transientStock )?'redText':'greenText'}" style="text-decoration: underline;"
+                                                   actionListener="#{reorderController.createDailyItemSummery(ir.item,r.department)}"
+                                                   action="/pharmacy/item_stock_history">
+                                    </p:commandLink>
+
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <p:outputLabel value="#{r.transientStock}" >
+                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important; height: 18px!important;">
+                                    <h:panelGroup rendered="#{r.transientOrderingQty > 0.0}"  >
+                                        <p:outputLabel value="#{r.transientOrderingQty}" style="color: green;" 
+                                                       rendered="#{reorderController.readOnly}">
+                                            <f:convertNumber pattern="0" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important; width: 90px;"  value="#{r.transientOrderingQty}" rendered="#{!reorderController.readOnly}" >
+                                    </h:inputText>
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:panelGroup rendered="#{r.transientStock ne 0.0 and r.demandInUnitsPerDay ne 0.0}" >
+                                        <p:outputLabel value="#{r.transientStock div r.demandInUnitsPerDay}" >
+                                            <f:convertNumber pattern="0" ></f:convertNumber>
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" days" ></p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{r.transientStock eq 0.0 and r.demandInUnitsPerDay ne 0.0}" >
+                                        <p:outputLabel value="No Stocks" ></p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{r.demandInUnitsPerDay eq 0.0 and r.transientStock ne 0.0 }" >
+                                        <p:outputLabel value="No Movement." ></p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{r.demandInUnitsPerDay eq 0.0 and r.transientStock eq 0.0 }" >
+                                        <p:outputLabel value="No Movement. No Stocks." ></p:outputLabel>
+                                    </h:panelGroup>
+
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:outputText style="text-align: right; padding-right: 10px;width: 60px!important;" value="#{r.bufferStocks}" rendered="#{reorderController.readOnly}" >
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important;"  value="#{r.bufferStocks}" rendered="#{!reorderController.readOnly}" >
+                                    </h:inputText>
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:outputText style="text-align: right; padding-right: 10px;width: 60px!important;" value="#{r.rol}" rendered="#{reorderController.readOnly}" >
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important;"  value="#{r.rol}" rendered="#{!reorderController.readOnly}" />
+                                </p:column>
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important; width: 90px;"  value="#{r.roq}" rendered="#{!reorderController.readOnly}" >
+                                    </h:inputText>
+                                    <p:outputLabel value="#{r.roq}" rendered="#{reorderController.readOnly}">
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <p:outputLabel value="#{r.demandInUnitsPerDay}" >
+                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <p:outputLabel value="#{(r.demandInUnitsPerDay)*30}" >
+                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <p:outputLabel value="#{(r.demandInUnitsPerDay)*365}" >
+                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:outputText style="text-align: right; padding-right: 10px;width: 60px!important;" value="#{r.leadTimeInDays}" rendered="#{reorderController.readOnly}" >
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important;" value="#{r.leadTimeInDays}" rendered="#{!reorderController.readOnly}" >
+                                    </h:inputText>
+
+                                </p:column>
+                                <p:column style="text-align: right; width:80px!important;">
+                                    <h:outputText style="text-align: right; padding-right: 10px;width: 60px!important;" value="#{r.purchaseCycleDurationInDays}"  rendered="#{reorderController.readOnly}" >
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:inputText style="text-align: right; padding-right: 10px;width: 60px!important;"  value="#{r.purchaseCycleDurationInDays}"  rendered="#{!reorderController.readOnly}" >
+                                    </h:inputText>
+
+                                </p:column>
+
+
+                            </p:subTable>
+
+                        </p:dataTable>     
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

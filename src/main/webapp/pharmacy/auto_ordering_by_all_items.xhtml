@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Auto ordering - All Items" >
+
+
+
+
+                        <h:panelGrid columns="2" class="alignTop" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:selectOneMenu value="#{reorderController.department}" >
+                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="alignTop" >
+                            <p:commandButton ajax="false" value="List All Items" 
+                                             actionListener="#{reorderController.listAllItems()}" ></p:commandButton>
+
+                            <p:commandButton ajax="false"
+                                             value="To Reorder Analysis of Selected Items"
+                                             actionListener="#{reorderController.generateUserSelectedItemsFromUserSelectedReorders()}"
+                                             action="auto_ordering_by_selected_items"></p:commandButton>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable id="tblRol" 
+                                     styleClass="noBorder" value="#{reorderController.reordersAvailableForSelection}"
+                                     var="irl"
+                                     rows="20"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20,50,100"
+                                     editable="true"
+                                     editMode="cell" rowKey="#{irl.id}"
+                                     selection="#{reorderController.userSelectedReorders}"
+                                     >
+                            <f:facet name="header">
+                                Items Below Reorder Level
+                            </f:facet>
+
+                            <p:column style="width: 30px;" selectionMode="multiple" ></p:column>
+
+                            <p:column headerText="Name"  sortBy="#{irl.item.name}" filterBy="#{irl.item.name}">
+                                <h:outputText  value="#{irl.item.name}"  />
+                                <p:commandLink value="(Graph)" 
+                                               style="text-decoration: underline;"
+                                               actionListener="#{reorderController.createDailyItemSummery(irl.item,reorderController.department)}"
+                                               action="/pharmacy/item_stock_history">
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column sortBy="#{irl.item.code}" filterBy="#{irl.item.code}" >
+                                <h:outputText  value="#{irl.item.code}"  />
+                            </p:column>
+
+                            <p:column sortBy="#{irl.transientStock}" headerText="Stock" style="text-align: right; width:80px!important;">
+                                <p:outputLabel value="#{irl.transientStock}" >
+                                    <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column sortBy="#{irl.rol}" headerText="Reorder Level" style="text-align: right; width:80px!important;">
+                                <p:outputLabel value="#{irl.rol}" >
+                                    <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
