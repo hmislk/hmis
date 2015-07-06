@@ -925,6 +925,67 @@ public class PharmacyBillSearch implements Serializable {
 
         getBillFacade().edit(can);
     }
+    
+    private void pharmacyCancelBillItemsReduceStock(CancelledBill can,Payment p) {
+        for (BillItem nB : getBill().getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(can);
+            b.copy(nB);
+            b.invertValue(nB);
+
+            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
+                b.setReferanceBillItem(nB.getReferanceBillItem());
+            } else {
+                b.setReferanceBillItem(nB);
+            }
+
+            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+            ph.copy(nB.getPharmaceuticalBillItem());
+            ph.invertValue(nB.getPharmaceuticalBillItem());
+
+            getPharmaceuticalBillItemFacade().create(ph);
+
+            b.setPharmaceuticalBillItem(ph);
+
+            if (b.getId() == null) {
+                getBillItemFacede().create(b);
+            }
+
+            ph.setBillItem(b);
+            getPharmaceuticalBillItemFacade().edit(ph);
+
+            //    updateRemainingQty(nB);
+            //  b.setPharmaceuticalBillItem(b.getReferanceBillItem().getPharmaceuticalBillItem());
+            double qty = ph.getFreeQtyInUnit() + ph.getQtyInUnit();
+            //System.err.println("Updating QTY " + qty);
+            boolean returnFlag = getPharmacyBean().deductFromStock(ph.getStock(), Math.abs(qty), ph, getSessionController().getDepartment());
+
+            if (!returnFlag) {
+                b.setTmpQty(0);
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+            //get billfees from using cancel billItem
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
+            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            System.out.println("tmp = " + tmp);
+            cancelBillFee(can, b, tmp);
+            
+            //create BillFeePayments For cancel
+            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+            List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
+            System.out.println("tmpC = " + tmpC);
+            calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
+            //
+            getBillItemFacede().edit(b);
+
+            can.getBillItems().add(b);
+        }
+
+        getBillFacade().edit(can);
+    }
 
     private void pharmacyCancelIssuedItems(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
@@ -1161,6 +1222,9 @@ public class PharmacyBillSearch implements Serializable {
         bfp.setAmount(bf.getSettleValue());
         bfp.setInstitution(p.getBill().getFromInstitution());
         bfp.setDepartment(p.getBill().getFromDepartment());
+        if (bfp.getDepartment()==null) {
+            bfp.setDepartment(p.getDepartment());
+        }
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);
@@ -1930,8 +1994,10 @@ public class PharmacyBillSearch implements Serializable {
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
+            
+            Payment p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
 
-            pharmacyCancelBillItemsReduceStock(cb);
+            pharmacyCancelBillItemsReduceStock(cb,p);
 
 //            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
@@ -2018,7 +2084,7 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
     }
-
+    
     @Inject
     private BillBeanController billBean;
 
