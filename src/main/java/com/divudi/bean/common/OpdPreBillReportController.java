@@ -142,7 +142,8 @@ public class OpdPreBillReportController implements Serializable {
 
         userBilledBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
         userCancellededBillsPharmacyPurchase = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
-        userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new RefundBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        //purchase bill return as billed bill and bill type purchase return
+        userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
 
     }
 
