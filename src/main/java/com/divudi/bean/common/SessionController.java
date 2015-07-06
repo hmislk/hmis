@@ -69,6 +69,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Privileges> privilegeses;
     @Inject
     SecurityController securityController;
+    @Inject
+    SessionController sessionController;
     Department department;
     Institution institution;
     @EJB
@@ -82,6 +84,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void updateUserPreferences() {
         if (institutionPreference != null) {
             if (institutionPreference.getId() == null || institutionPreference.getId() == 0) {
+                userPreference.setInstitution(sessionController.getInstitution());
                 userPreferenceFacade.create(institutionPreference);
                 JsfUtil.addSuccessMessage("Preferences Saved");
             } else {
