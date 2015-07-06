@@ -33,7 +33,7 @@
                             <h:outputLabel value="#{revinewReportController.toDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
-                            <au:department value="#{revinewReportController.toDepartment}" />
+<!--                            <au:department value="#{revinewReportController.department}" />-->
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
                                              styleClass="noPrintButton" style="float: right;"
                                              action="#{revinewReportController.createCashierTableByDepartment()}" />  
