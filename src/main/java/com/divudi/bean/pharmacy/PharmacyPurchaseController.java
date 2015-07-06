@@ -15,18 +15,25 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -66,6 +73,12 @@ public class PharmacyPurchaseController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    BillFeeFacade billFeeFacade;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    PaymentFacade paymentFacade;
     @Inject
     PharmacyCalculation pharmacyBillBean;
     ////////////
@@ -349,6 +362,8 @@ public class PharmacyPurchaseController implements Serializable {
         saveBill();
         //   saveBillComponent();
         getPharmacyBillBean().calSaleFreeValue(getBill());
+        
+        Payment p = createPayment(getBill());
 
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
@@ -366,13 +381,13 @@ public class PharmacyPurchaseController implements Serializable {
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
-
+            saveBillFee(i, p);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-
+            
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
@@ -398,6 +413,63 @@ public class PharmacyPurchaseController implements Serializable {
 
         currentBillItem = null;
 
+    }
+    
+    public Payment createPayment(Bill bill) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, bill.getPaymentMethod());
+        return p;
+    }
+    
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
+
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+
+    }
+    
+    public void saveBillFee(BillItem bi, Payment p) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(Calendar.getInstance().getTime());
+        bf.setCreater(getSessionController().getLoggedUser());
+        bf.setBillItem(bi);
+        bf.setPatienEncounter(bi.getBill().getPatientEncounter());
+        bf.setPatient(bi.getBill().getPatient());
+        bf.setFeeValue(bi.getNetValue());
+        bf.setFeeGrossValue(bi.getGrossValue());
+        bf.setSettleValue(bi.getNetValue());
+        bf.setCreatedAt(new Date());
+        bf.setDepartment(getSessionController().getDepartment());
+        bf.setInstitution(getSessionController().getInstitution());
+        bf.setBill(bi.getBill());
+
+        if (bf.getId() == null) {
+            getBillFeeFacade().create(bf);
+        }
+        createBillFeePaymentAndPayment(bf, p);
+    }
+    
+    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(bf.getSettleValue());
+        bfp.setInstitution(getSessionController().getInstitution());
+        bfp.setDepartment(getSessionController().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        getBillFeePaymentFacade().create(bfp);
     }
 //
 //    public void recreate() {
@@ -647,6 +719,30 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setSaleRate(double saleRate) {
         this.saleRate = saleRate;
+    }
+
+    public BillFeeFacade getBillFeeFacade() {
+        return billFeeFacade;
+    }
+
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
+    public BillFeePaymentFacade getBillFeePaymentFacade() {
+        return billFeePaymentFacade;
+    }
+
+    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
+        this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
     }
 
 }
