@@ -417,7 +417,7 @@ public class SaleReturnController implements Serializable {
         Payment p = createPayment(b, b.getPaymentMethod());
         saveSaleComponent(b, p);
 
-//        getReturnBill().getReturnCashBills().add(b);
+        getReturnBill().getReturnCashBills().add(b);
         getBillFacade().edit(getReturnBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getReturnBill(), getSessionController().getLoggedUser());
