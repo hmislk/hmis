@@ -55,17 +55,17 @@
                             rowsPerPageTemplate="5,10,15"
                             >
 
-                            <p:column headerText="No" styleClass="alignTop">
+                            <p:column headerText="No" styleClass="alignTop" style="width: 30px">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
-                            <p:column headerText="Bill No" >
+                            <p:column headerText="Bill No" style="width: 80px">
                                 <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                             </p:column>   
-                            <p:column headerText="Department"  >
+                            <p:column headerText="Department"  style="width: 90px">
                                 <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                             </p:column>   
-                            <p:column headerText="Billed at"  >
+                            <p:column headerText="Billed at"  style="width: 150px">
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
@@ -78,7 +78,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>                 
-                            <p:column headerText="Billed by" >
+                            <p:column headerText="Billed by" style="width: 90px">
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
                                 <br/>
@@ -88,7 +88,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>                                                          
-                            <p:column headerText="Net Value" >
+                            <p:column headerText="Net Value" style="width: 90px">
 
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -96,7 +96,7 @@
 
                             </p:column>
 
-                            <p:column>
+                            <p:column headerText="Accept" style="width: 150px">
                                 <p:commandButton ajax="false"  value="AcceptPayment" 
                                                 action="#{pharmacyPreSettleController.toSettle(bill)}" 
                                                  disabled="#{bill.referenceBill ne null or bill.cancelled}">   
