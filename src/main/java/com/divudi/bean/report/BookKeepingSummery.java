@@ -111,6 +111,7 @@ public class BookKeepingSummery implements Serializable {
     double slipTotal;
     double grantTotal;
     double channelTotal;
+    long countTotals;
     @Inject
     SessionController sessionController;
 
@@ -343,6 +344,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setOpdRegentTotal(double opdRegentTotal) {
         this.opdRegentTotal = opdRegentTotal;
+    }
+
+    public long getCountTotals() {
+        return countTotals;
+    }
+
+    public void setCountTotals(long countTotals) {
+        this.countTotals = countTotals;
     }
 
     public List<String1Value2> getCollections2Hos() {
@@ -897,7 +906,7 @@ public class BookKeepingSummery implements Serializable {
         double sf = 0;
         double hf = 0;
         double rf = 0;
-        grantTotal = 0;
+        countTotals = 0l;
 
         long icount = 0l;
         bookKeepingSummeryRow sr = null;
@@ -1090,6 +1099,12 @@ public class BookKeepingSummery implements Serializable {
                 }
 
             }
+
+            System.out.println("sr.getCatTotal() = " + sr.getCatCount());
+            System.out.println("sr.getCountTotal() = " + sr.getCountTotal());
+
+            calCountTotal(sr.getCatCount());
+            System.out.println("End");
 //            //System.out.println("n = " + n);
             n++;
         }
@@ -1105,8 +1120,12 @@ public class BookKeepingSummery implements Serializable {
         sr.setHosFee(hf);
         sr.setProFee(sf);
         sr.setReagentFee(rf);
-        sr.setCatCount(countBilled - countCancelled);
-        
+        sr.setCatCount(countBilled - countCancelled);        
+//        System.out.println("sr.setCatCount = " + sr.getCatCount());
+//        countTotal=calCountTotal(sr.getCatCount());
+//        sr.setCountTotal(countTotal);
+//        System.out.println("sr.setCountTotal = " + sr.getCountTotal());
+
         sr.setTotal(hf + sf + rf);
         t.add(sr);
 //        //System.out.println("previous tot row added - " + sr.getCategoryName());
@@ -1124,6 +1143,13 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalWithCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
+    }
+
+    public long calCountTotal(long count) {
+        System.out.println("countTotals = " + countTotals);
+        countTotals += count;
+        System.out.println("countTotals = " + countTotals);
+        return countTotals;
     }
 
     @EJB
@@ -3398,6 +3424,7 @@ public class BookKeepingSummery implements Serializable {
         boolean catRow;
         boolean totalRow;
         long catCount;
+        long countTotal;
         double hosFee;
         double proFee;
         double reagentFee;
@@ -3510,6 +3537,14 @@ public class BookKeepingSummery implements Serializable {
 
         public void setSubTotal(double subTotal) {
             this.subTotal = subTotal;
+        }
+
+        public long getCountTotal() {
+            return countTotal;
+        }
+
+        public void setCountTotal(long countTotal) {
+            this.countTotal = countTotal;
         }
 
         @Override

@@ -58,6 +58,7 @@
                             </p:calendar>                            
 
                         </h:panelGrid>
+                        <p:panel toggleable="true" header="Detail Summery">
 
                         <p:dataTable id="billed" value="#{revinewReportController.userBilledBillsList}" rendered="#{revinewReportController.userBilledBillsList.size()>1}" var="b">
                             <f:facet name="header">  
@@ -439,6 +440,7 @@
                             </p:column>
 
                         </p:dataTable>
+                        </p:panel>
 
                         <p:spacer height="30"/>
 
