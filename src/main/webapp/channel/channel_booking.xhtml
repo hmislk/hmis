@@ -404,7 +404,7 @@
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Cancel Credit" 
+                            <p:commandButton ajax="false" value="Cancel Paid" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
@@ -444,7 +444,7 @@
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
-                            <p:commandButton ajax="false" value="Refund Credit" 
+                            <p:commandButton ajax="false" value="Refund Paid" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true

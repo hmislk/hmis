@@ -14,7 +14,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="OPD BILL SEARCH TO PAY "/>
 
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="7" >
                                 <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
@@ -22,19 +22,22 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdBathcBillPreTable}"/>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search Paid Only" action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
                                 <p:commandButton id="btnSearch3" ajax="false" value="Search Not Paid Only" action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel />
+                                <p:commandButton  ajax="false" value="Pharmacy Payment" action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
+                                
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>                               
                                 <h:outputLabel value="Total"/>
                                 <h:outputLabel value="Net Total"/>   
-                                <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                             </h:panelGrid>
 
