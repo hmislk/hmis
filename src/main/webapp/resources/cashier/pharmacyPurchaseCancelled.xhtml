@@ -13,34 +13,30 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="refundPh" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="brPh" sortBy="#{brPh.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
-
+        <p:dataTable id="cancelledPh" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="b1Ph"  rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
-                <h:outputLabel value="Pharmacy Return" />
+                <h:outputLabel value="Pharmacy Purchase Cancelled"/>
             </f:facet> 
-
             <p:column headerText="Time"   >
                 <f:facet name="header">  
                     <h:outputLabel value="Time"/>
                 </f:facet> 
-                <h:outputLabel value="#{brPh.createdAt}" >
+                <h:outputLabel value="#{b1Ph.createdAt}" >
                     <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputLabel>
             </p:column>
-
-            <p:column headerText="Refunded Id" >
+            <p:column headerText="Cancelled Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Refunded Id"/>
+                    <h:outputLabel value="Cancelled Id"/>
                 </f:facet> 
-                <h:outputLabel value="#{brPh.deptId}" ></h:outputLabel>
-                <h:outputLabel value="#{brPh.referenceBill.deptId}" rendered="#{brPh.deptId eq null}" ></h:outputLabel>
+                <h:outputLabel value="#{b1Ph.deptId}"/>
             </p:column>
 
             <p:column headerText="Billed Id" >
                 <f:facet name="header">  
                     <h:outputLabel value="Billed Id"/>
                 </f:facet> 
-                <h:outputLabel value="#{brPh.billedBill.deptId}" >
+                <h:outputLabel value="#{b1Ph.billedBill.deptId}" >
                 </h:outputLabel>
             </p:column>
 
@@ -48,61 +44,57 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Patient Name"/>
                 </f:facet> 
-                <h:outputLabel value="#{brPh.patient.person.nameWithTitle}" >
-                </h:outputLabel>
+                <h:outputLabel value="#{b1Ph.patient.person.nameWithTitle}"/>
 
             </p:column>
 
-            <p:column headerText="Cash" styleClass="averageNumericColumn"  >
+            <p:column headerText="Cash"  styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="Cash"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{brPh.paymentMethod=='Cash'}" value="#{brPh.netTotal}" >
+                <h:outputLabel rendered="#{b1Ph.paymentMethod=='Cash'}" value="#{b1Ph.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{brPh.paymentMethod!='Cash'}" value="0.00"/>
+                <h:outputLabel rendered="#{b1Ph.paymentMethod!='Cash'}" value="0.00"/>
             </p:column>
-
-            <p:column headerText="Credit" styleClass="averageNumericColumn" >
+            <p:column headerText="Credit"  styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{brPh.paymentMethod=='Credit'}" value="#{brPh.netTotal}" >
+                <h:outputLabel rendered="#{b1Ph.paymentMethod=='Credit'}" value="#{b1Ph.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{brPh.paymentMethod!='Credit'}" value="0.00"/>
-            </p:column>
+                <h:outputLabel rendered="#{b1Ph.paymentMethod!='Credit'}" value="0.00"/>
 
-            <p:column headerText="C Card" styleClass="averageNumericColumn" >
+            </p:column>
+            <p:column headerText="C Card"  styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="C Card"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{brPh.paymentMethod=='Card'}" value="#{brPh.netTotal}" >
+                <h:outputLabel rendered="#{b1Ph.paymentMethod=='Card'}" value="#{b1Ph.netTotal}"  >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{brPh.paymentMethod!='Card'}" value="0.00"/>
+                <h:outputLabel rendered="#{b1Ph.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
-
-            <p:column headerText="Checque" styleClass="averageNumericColumn" >
+            <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Checque"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{brPh.paymentMethod=='Cheque'}" value="#{brPh.netTotal}" >
+                <h:outputLabel rendered="#{b1Ph.paymentMethod=='Cheque'}" value="#{b1Ph.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{brPh.paymentMethod!='Cheque'}" value="0.00"/>
+                <h:outputLabel rendered="#{b1Ph.paymentMethod!='Cheque'}" value="0.00"/>
             </p:column>
 
             <p:column headerText="Slip" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="Slip"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{brPh.paymentMethod=='Slip'}" value="#{brPh.netTotal}" >
+                <h:outputLabel rendered="#{b1Ph.paymentMethod=='Slip'}" value="#{b1Ph.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{brPh.paymentMethod!='Slip'}" value="0.00"/>
+                <h:outputLabel rendered="#{b1Ph.paymentMethod!='Slip'}" value="0.00"/>
             </p:column>
-
             <p:column exportable="false">
                 <p:selectBooleanCheckbox style="border: black 2px solid;"/>
             </p:column>
@@ -136,7 +128,7 @@
                             <h:outputLabel value="#{cc.attrs.data.cheque}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                        </f:facet> 
+                        </f:facet>
                     </p:column>
                     <p:column footerText="#{cc.attrs.data.slip}" style=" text-align: right">
                         <f:facet name="footer">
@@ -145,8 +137,6 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-
-
                 </p:row>  
             </p:columnGroup>  
 

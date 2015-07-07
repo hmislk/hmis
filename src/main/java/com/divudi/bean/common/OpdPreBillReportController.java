@@ -84,6 +84,11 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userCancellededBillsPharmacy;
     BillsTotals userRefundedBillsPharmacy;
 
+    //Pharmacy Purchase summery
+    BillsTotals userBilledBillsPharmacyPurchase;
+    BillsTotals userCancellededBillsPharmacyPurchase;
+    BillsTotals userRefundedBillsPharmacyPurchase;
+
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
     List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
 
@@ -135,24 +140,29 @@ public class OpdPreBillReportController implements Serializable {
         userCancellededBillsPharmacy = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment());
         userRefundedBillsPharmacy = createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment());
 
+        userBilledBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        userCancellededBillsPharmacyPurchase = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        //purchase bill return as billed bill and bill type purchase return
+        userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+
     }
-    
+
     public String createCashierTableByUserPaymentForDetail() {
         System.err.println("getWebUser() = " + getWebUser());
         System.err.println("Date F = " + getFromDate());
         System.err.println("Date T = " + getToDate());
 
         createCashierTableByUserPayment();
-        
+
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment";
-        
+
     }
-    
-    public void createCashierTableByAllUserPaymentDetail(){
+
+    public void createCashierTableByAllUserPaymentDetail() {
         createCashierTableByAllUserPayment(true);
     }
-    
-    public void createCashierTableByAllUserPaymentSummery(){
+
+    public void createCashierTableByAllUserPaymentSummery() {
         createCashierTableByAllUserPayment(false);
     }
 
@@ -583,9 +593,10 @@ public class OpdPreBillReportController implements Serializable {
             BillType.InwardPaymentBill,
             BillType.PharmacySale,
             BillType.ChannelCash,
-            BillType.ChannelPaid, //            BillType.PharmacyPurchaseBill,
-        //            BillType.GrnPayment,
-        };
+            BillType.ChannelPaid,
+            BillType.PharmacyPurchaseBill,
+            BillType.PurchaseReturn,
+            BillType.GrnPayment,};
 
         return b;
     }
@@ -800,4 +811,27 @@ public class OpdPreBillReportController implements Serializable {
 //        this.back = back;
 //    }
 
+    public BillsTotals getUserBilledBillsPharmacyPurchase() {
+        return userBilledBillsPharmacyPurchase;
+    }
+
+    public void setUserBilledBillsPharmacyPurchase(BillsTotals userBilledBillsPharmacyPurchase) {
+        this.userBilledBillsPharmacyPurchase = userBilledBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserCancellededBillsPharmacyPurchase() {
+        return userCancellededBillsPharmacyPurchase;
+    }
+
+    public void setUserCancellededBillsPharmacyPurchase(BillsTotals userCancellededBillsPharmacyPurchase) {
+        this.userCancellededBillsPharmacyPurchase = userCancellededBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyPurchase() {
+        return userRefundedBillsPharmacyPurchase;
+    }
+
+    public void setUserRefundedBillsPharmacyPurchase(BillsTotals userRefundedBillsPharmacyPurchase) {
+        this.userRefundedBillsPharmacyPurchase = userRefundedBillsPharmacyPurchase;
+    }
 }
