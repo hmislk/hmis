@@ -88,6 +88,7 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userBilledBillsPharmacyPurchase;
     BillsTotals userCancellededBillsPharmacyPurchase;
     BillsTotals userRefundedBillsPharmacyPurchase;
+    BillsTotals userRefundedBillsPharmacyPurchaseCancel;
 
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
     List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
@@ -144,6 +145,8 @@ public class OpdPreBillReportController implements Serializable {
         userCancellededBillsPharmacyPurchase = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
         //purchase bill return as billed bill and bill type purchase return
         userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+        //purchase retrn bills
+        userRefundedBillsPharmacyPurchaseCancel= createBillsTotalsPayment(new CancelledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
 
     }
 
@@ -595,6 +598,7 @@ public class OpdPreBillReportController implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelPaid,
             BillType.PharmacyPurchaseBill,
+            BillType.PurchaseReturn,
             BillType.GrnPayment,};
 
         return b;
@@ -832,5 +836,13 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setUserRefundedBillsPharmacyPurchase(BillsTotals userRefundedBillsPharmacyPurchase) {
         this.userRefundedBillsPharmacyPurchase = userRefundedBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyPurchaseCancel() {
+        return userRefundedBillsPharmacyPurchaseCancel;
+    }
+
+    public void setUserRefundedBillsPharmacyPurchaseCancel(BillsTotals userRefundedBillsPharmacyPurchaseCancel) {
+        this.userRefundedBillsPharmacyPurchaseCancel = userRefundedBillsPharmacyPurchaseCancel;
     }
 }
