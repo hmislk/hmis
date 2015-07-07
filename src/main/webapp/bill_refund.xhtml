@@ -78,12 +78,17 @@
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}" />
                                     </p:column>
-                                    
+
                                     <p:column >
                                         <f:facet name="header">ID</f:facet>
                                         <h:outputLabel value="#{b.id}"/>
                                     </p:column>
-                                    
+
+                                    <p:column >
+                                        <f:facet name="header">ID</f:facet>
+                                        <h:outputLabel value="#{b.id}"/>
+                                    </p:column>
+
                                     <p:column >
                                         <f:facet name="header">Item Name</f:facet>
                                         <h:outputLabel value="#{b.item.name}"/>
@@ -104,30 +109,30 @@
 
                         <h:panelGroup rendered="#{billSearch.printPreview}" >
 
-                        <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                            </div>
-                            <ui:repeat value="#{billSearch.bill}" var="b">
-                                <bi:opdBillPrintRuhunu bill="#{b}" refund="true"/>
-                            </ui:repeat>
+                            <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <ui:repeat value="#{billSearch.printingBill}" var="b">
+                                    <bi:opdBillPrintRuhunu bill="#{b}" dup="false"/>
+                                </ui:repeat>
 
-                        </h:panelGroup>
-                        
-                        <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreviewCoop" ></p:printer>
-                                </p:commandButton>
-                            </div>
-                            <ui:repeat value="#{billSearch.bill}" var="b">
-                                <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
-                            </ui:repeat>
+                            </h:panelGroup>
 
+                            <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <ui:repeat value="#{billSearch.printingBill}" var="b">
+                                    <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
+                                </ui:repeat>
+
+                            </h:panelGroup>
                         </h:panelGroup>
-                    </h:panelGroup>
 
                     </h:form>
                 </h:panelGroup>   
