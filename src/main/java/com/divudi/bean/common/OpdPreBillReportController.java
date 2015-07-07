@@ -595,6 +595,7 @@ public class OpdPreBillReportController implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelPaid,
             BillType.PharmacyPurchaseBill,
+            BillType.PurchaseReturn,
             BillType.GrnPayment,};
 
         return b;
