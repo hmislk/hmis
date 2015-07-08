@@ -610,10 +610,7 @@
                             </div>
                             <h:panelGroup id="gpPosBill">
                                 <div>
-                                    
-                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="b" duplicate="false"/>                     
-                                    </ui:repeat>
+                                    <bi:posOpdBillPre bill="#{opdPreBillController.bills.get(0)}" duplicate="false"/>
                                 </div>
                             </h:panelGroup>
                         </h:panelGrid>
