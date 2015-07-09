@@ -900,7 +900,7 @@ public class OpdPreBillController implements Serializable {
     private boolean errorCheck() {
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
 
@@ -951,7 +951,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Scheme");
+            UtilityController.addErrorMessage("Select Payment Method.");
             return true;
         }
 
@@ -981,18 +981,7 @@ public class OpdPreBillController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-
-            if (cashPaid == 0.0) {
-                UtilityController.addErrorMessage("Please enter the paid amount");
-                return true;
-            }
-
-        }
-
-//        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
-//            return true;
-//        }
+        
         return false;
     }
 
