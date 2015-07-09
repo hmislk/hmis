@@ -706,7 +706,8 @@ public class OpdPreSettleController implements Serializable {
             return "/bill_print";
         } else {
             JsfUtil.addSuccessMessage("Sucessfully Paid");
-            return "";
+            getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
+            return "/bill_print_advance";
         }
     }
 

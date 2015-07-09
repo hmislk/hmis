@@ -102,9 +102,9 @@
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                    <h:panelGroup rendered="#{pi.billItem.refunded eq true}" >
                                         <h:outputLabel style="color: red;" value="Refunded : " />
-                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded eq true}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
