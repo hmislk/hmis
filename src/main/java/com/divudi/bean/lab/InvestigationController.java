@@ -287,8 +287,8 @@ public class InvestigationController implements Serializable {
 
         if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
             System.out.println("inside intitution null and logged institution only");
-            sql += " and c.institution is null "
-                    + " and c.institution=:ins ";
+            sql += " and (c.institution is null "
+                    + " or c.institution=:ins) ";
             m.put("ins", sessionController.getInstitution());
         }
 
