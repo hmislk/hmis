@@ -133,7 +133,7 @@
                                         </h:outputLabel>                                  
                                     </p:column>
                                     <p:column headerText="Net Total" >
-                                        <h:outputLabel value="#{rb.netTotal}">
+                                        <h:outputLabel value="#{rb.total - rb.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>
