@@ -60,9 +60,7 @@
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
                                 <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                    <div>
-                                        <bi:opdBillPrintCoop bill="#{b}" dup="false"/> 
-                                    </div>
+                                    <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -83,13 +81,13 @@
                             <h:panelGroup id="gpPosBill">
                                 <div style="page-break-after: always;">
                                     <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                        <bi:posOpdBillAdvance bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
                                 </div>
                                 <div></div>
                                 <div style="page-break-after: always;">
                                     <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                        <bi:posOpdBillAdvance bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
                                 </div>
                             </h:panelGroup>

@@ -13,10 +13,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="refundPh" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="brPh" sortBy="#{brPh.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="refundPh" rowStyleClass="noDisplayRow" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="brPh" sortBy="#{brPh.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
 
             <f:facet name="header">  
-                <h:outputLabel value="Pharmacy Return" />
+                <h:outputLabel value="Pharmacy Purchase Return" />
             </f:facet> 
 
             <p:column headerText="Time"   >
@@ -53,7 +53,7 @@
 
             </p:column>
 
-            <p:column headerText="Cash" styleClass="averageNumericColumn"  >
+            <p:column headerText="Cash" style=" text-align: right"  >
                 <f:facet name="header">  
                     <h:outputLabel value="Cash"/>
                 </f:facet> 
@@ -63,7 +63,7 @@
                 <h:outputLabel rendered="#{brPh.paymentMethod!='Cash'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="Credit" styleClass="averageNumericColumn" >
+            <p:column headerText="Credit" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
@@ -73,7 +73,7 @@
                 <h:outputLabel rendered="#{brPh.paymentMethod!='Credit'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="C Card" styleClass="averageNumericColumn" >
+            <p:column headerText="C Card" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="C Card"/>
                 </f:facet> 
@@ -83,7 +83,7 @@
                 <h:outputLabel rendered="#{brPh.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="Checque" styleClass="averageNumericColumn" >
+            <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Checque"/>
                 </f:facet> 
@@ -93,7 +93,7 @@
                 <h:outputLabel rendered="#{brPh.paymentMethod!='Cheque'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="Slip" styleClass="averageNumericColumn" >
+            <p:column headerText="Slip" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Slip"/>
                 </f:facet> 
