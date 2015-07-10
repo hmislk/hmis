@@ -60,7 +60,9 @@
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
                                 <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                    <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                                    <div>
+                                        <bi:opdBillPrintCoop bill="#{b}" dup="false"/> 
+                                    </div>
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>

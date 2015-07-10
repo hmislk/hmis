@@ -17,9 +17,9 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="posbillBreak">
+        <div class="posbillBreak" style="text-align: center;">
 
-            <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 7cm; margin: auto; " ></h:graphicImage>
+            <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 90%; margin: auto; text-align: center; " ></h:graphicImage>
 
             <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
@@ -41,7 +41,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="INVOICE"   />    
+                <h:outputLabel value="DUE PAYMENTS"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -192,7 +192,7 @@
 
 
             </div>
-            
+
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
@@ -206,7 +206,7 @@
                             <h:outputLabel value="Value" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.netTotal}" >
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -215,27 +215,15 @@
                 </table>
 
             </div>
-            
+
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div>
-                <h:outputLabel value="" ></h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>
-                <h:outputLabel value="Signature :"> </h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>  
-            </div>
-
             <div class="footer">
-                <br/>
-                The Greatest Wealth is Health<br/>
                 <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
                 <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null }">
-                    <br/>
                 </h:panelGroup>
-                Software by www.lakmedi.com - 0715812399<br/>
             </div>
 
 

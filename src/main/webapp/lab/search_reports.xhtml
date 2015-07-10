@@ -34,8 +34,14 @@
                                       rowsPerPageTemplate="10,20,50"
                                       >
 
-                            <p:column  headerText="Dept Id" styleClass="alignTop" >
+                            <p:column  headerText="Bill No" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
+                                               value="#{pi.billItem.bill.deptId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column  headerText="Ins Id" styleClass="alignTop" >
+                                <h:outputLabel id="lblInsId" 
                                                value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
                             </p:column>
