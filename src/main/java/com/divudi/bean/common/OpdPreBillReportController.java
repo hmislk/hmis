@@ -95,6 +95,7 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userBilledBillsPharmacyGRN;
     BillsTotals userCancellededBillsPharmacyGRN;
     BillsTotals userRefundedBillsPharmacyGRN;
+    BillsTotals userRefundedBillsPharmacyGRNCancel;
 
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
     List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
@@ -156,7 +157,8 @@ public class OpdPreBillReportController implements Serializable {
         
         userBilledBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
         userCancellededBillsPharmacyGRN = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
-        userRefundedBillsPharmacyGRN = createBillsTotalsPayment(new RefundBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
+        userRefundedBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
+        userRefundedBillsPharmacyGRNCancel = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
 
     }
 
@@ -612,6 +614,7 @@ public class OpdPreBillReportController implements Serializable {
             BillType.PharmacyPurchaseBill,
             BillType.PurchaseReturn,
             BillType.PharmacyGrnBill,
+            BillType.PharmacyGrnReturn,
             BillType.GrnPayment,};
 
         return b;
@@ -881,5 +884,13 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setUserRefundedBillsPharmacyGRN(BillsTotals userRefundedBillsPharmacyGRN) {
         this.userRefundedBillsPharmacyGRN = userRefundedBillsPharmacyGRN;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyGRNCancel() {
+        return userRefundedBillsPharmacyGRNCancel;
+    }
+
+    public void setUserRefundedBillsPharmacyGRNCancel(BillsTotals userRefundedBillsPharmacyGRNCancel) {
+        this.userRefundedBillsPharmacyGRNCancel = userRefundedBillsPharmacyGRNCancel;
     }
 }
