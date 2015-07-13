@@ -128,7 +128,7 @@
                                     <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{webUserController.hasPrivilege('LabSearchBillLoggedInstitution')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/reportLab/report_lab_matro" value="Summeries"  ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_administration" value="Administration"  ></p:menuitem>
                                 </p:submenu>
 
@@ -754,7 +754,7 @@
                                     <p:menuitem ajax="false" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/reportLab/report_lab_matro" value="Summeries"  ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_administration" value="Administration"  ></p:menuitem>
                                 </p:submenu>
 

@@ -1926,8 +1926,12 @@ public class PharmacyBillSearch implements Serializable {
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-
-            pharmacyCancelBillItemsReduceStock(cb);
+            
+            //to create payments for cancel bill
+            Payment p = pharmacySaleController.createPayment(cb, paymentMethod); 
+            
+//            pharmacyCancelBillItemsReduceStock(cb); //for create billfees ,billfee payments
+            pharmacyCancelBillItemsReduceStock(cb,p);
 //
 //            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //
