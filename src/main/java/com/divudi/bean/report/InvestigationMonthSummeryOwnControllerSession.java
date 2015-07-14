@@ -121,28 +121,32 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public void createInvestigationTurnoverTime() {
         progressStarted = true;
         progressValue = 0;
-        double averateMins =0;
-        double totalMins =0;
+        double averateMins = 0;
+        double totalMins = 0;
         double averageCount = 0;
         List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
-                fromDate, 
-                toDate, 
+                fromDate,
+                toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
                 new Class[]{Bill.class},
-                true, 
-                null, 
                 true,
-                null, 
+                null,
                 true,
-                null, 
-                true, 
+                null,
+                true,
+                null,
+                true,
                 null);
-        double singleItem = 100 / pis.size();
+        double singleItem = 0;
+        if (pis.size() != 0) {
+            singleItem = 100 / pis.size();
+        }
+
         for (PatientInvestigation pi : pis) {
             System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
             progressValue += (int) singleItem;
-            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime())/(1000*60);
-            totalMins +=averateMins;
+            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+            totalMins += averateMins;
             averageCount++;
         }
         totalCount = (long) (totalMins / averageCount);

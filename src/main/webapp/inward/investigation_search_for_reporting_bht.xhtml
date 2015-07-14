@@ -19,7 +19,7 @@
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                             </p:calendar>                                
-                            <h:outputLabel value="Bill No"/>
+                            <h:outputLabel value="BHT No"/>
                             <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardReportController.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
@@ -145,6 +145,12 @@
                                     <h:outputLabel value="BHT No : #{pi.encounter.bhtNo}" >
                                     </h:outputLabel>
                                 </p:tooltip>
+                            </p:column>
+                            
+                            <p:column headerText="BHT Number"  styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.encounter.bhtNo}" >
+                                </h:outputLabel>
+
                             </p:column>
 
                             <p:column headerText="Investigation"  styleClass="alignTop" >
