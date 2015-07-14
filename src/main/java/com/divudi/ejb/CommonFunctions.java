@@ -244,6 +244,10 @@ public class CommonFunctions {
         return dMin;
     }
 
+    public static Date getStartOfDay() {
+        return getStartOfDay(new Date());
+    }
+    
     public static Date getStartOfDay(Date date) {
         if (date == null) {
             date = new Date();
@@ -258,6 +262,27 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static Date getStartOfMonth() {
+        return getStartOfMonth(new Date());
+    }
+    
+    public static Date getStartOfMonth(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+        calendar.set(year, month, 1, 0, 0, 0);
+        return calendar.getTime();
+    }
+
+    public static Date getEndOfDay() {
+        return getEndOfDay(new Date());
+    }
+    
     public static Date getEndOfDay(Date date) {
         if (date == null) {
             date = new Date();

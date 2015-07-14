@@ -111,7 +111,7 @@ public class BillBeanController implements Serializable {
     PackageFeeFacade packageFeeFacade;
     @EJB
     ServiceSessionBean serviceSessionBean;
-
+    
     @EJB
     CategoryFacade categoryFacade;
     @EJB
@@ -582,7 +582,8 @@ public class BillBeanController implements Serializable {
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
                 + " and b.referenceBill.billType=:refType "
-                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.bill.institution=:ins "
                 + " group by b.referenceBill.toDepartment "
                 + " order by b.referenceBill.toDepartment.name ";
         HashMap hm = new HashMap();
@@ -590,6 +591,28 @@ public class BillBeanController implements Serializable {
         hm.put("refType", refBillType);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", sessionController.getInstitution());
+
+        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public List<Object[]> fetchDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
+        String sql = "Select b.referenceBill.toDepartment,sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.bill.institution=:ins "
+                + " group by b.referenceBill.toDepartment "
+                + " order by b.referenceBill.toDepartment.name ";
+        HashMap hm = new HashMap();
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType", refBillType);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("ins", i);
 
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
@@ -754,6 +777,25 @@ public class BillBeanController implements Serializable {
         hm.put("refType", refBillType);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+
+        return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double calDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
+        String sql = "Select sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.bill.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+        HashMap hm = new HashMap();
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType", refBillType);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("ins", i);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
