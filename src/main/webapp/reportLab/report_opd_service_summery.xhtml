@@ -10,64 +10,67 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
+        <h:form >
+           
             <p:panel>
                 <f:facet name="header" >                
                     <h:outputLabel value="Daily Summary"/>
-                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;" 
-                                    action="#{serviceSummery.createServiceSummeryLab()}"/>
-                    <p:defaultCommand target="btnRefresh"/>
+                </f:facet>
+                
+                <h:panelGrid columns="2" >
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  " >
+                    </p:calendar>
 
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy " >
+                    </p:calendar>
+
+                    <h:outputLabel value="Service Name"/>
+                    <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeService}" var="ix" 
+                                    itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
+                        <p:column>
+                            #{ix.name}
+                        </p:column>
+                        <p:column>
+                            #{ix.department.name}
+                        </p:column>  
+                        <p:column>
+                            #{ix.category.name}
+                        </p:column> 
+                    </p:autoComplete>
+
+                    <h:outputLabel value="Department"/>
+                    <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
+                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                    value="#{serviceSummery.department}" converter="departmentConverter"/>
+
+                    <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                    <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
+                        <f:selectItems value="#{enumController.paymentMethods}"  />
+                    </p:selectOneMenu>
+
+                </h:panelGrid>
+                <h:panelGrid columns="4">
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
+                                 styleClass="noPrintButton" style="float: right;" 
+                                action="#{serviceSummery.createServiceSummeryLab()}"/>
+                    <p:defaultCommand target="btnRefresh"/>
                     <p:commandButton ajax="false" value="Print"  
                                      styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-
                     <p:commandButton value="Excel" ajax="false" style="float: right;">
                         <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
                     </p:commandButton>
-
-                    <h:panelGrid columns="2" style="min-width: 100%;border: none;">
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
-                        </p:calendar>
-                        
-                        <h:outputLabel value="Service Name"/>
-                        <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeService}" var="ix" 
-                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                            <p:column>
-                                #{ix.department.name}
-                            </p:column>  
-                            <p:column>
-                                #{ix.category.name}
-                            </p:column> 
-                        </p:autoComplete>
-
-                        <h:outputLabel value="Department"/>
-                        <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
-                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                        value="#{serviceSummery.department}" converter="departmentConverter"/>
-
-                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                        <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
-                            <f:selectItems value="#{enumController.paymentMethods}"  />
-                        </p:selectOneMenu>
-
-                    </h:panelGrid>
-                </f:facet>
+                </h:panelGrid>
+                
+              
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd" rowIndexVar="i" 
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <p:dataTable id="opd" rowIndexVar="i" 
                          rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          value="#{serviceSummery.serviceSummery}" var="d"
                          rows="20"
@@ -204,6 +207,8 @@
 
             </p:dataTable> 
 
+            </p:panel>
+            
 
         </h:form>
     </ui:define>
