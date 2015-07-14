@@ -64,7 +64,7 @@
 
 
                                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation Month End Summary From #{investigationMonthSummeryOwnControllerSession.fromDate} To #{investigationMonthSummeryOwnControllerSession.toDate}"
+                                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
                                                      facetBackground="#008000" facetFontSize="15" 
                                                      facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                                      fontName="Courier New"  />
@@ -108,7 +108,7 @@
                                             <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy" />
                                             </h:outputLabel>
-                                            <h:outputLabel value="&emsp;&emsp;TO : "/>
+                                            <h:outputLabel value=" TO : "/>
                                             <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy" />
                                             </h:outputLabel>
@@ -143,10 +143,9 @@
                                 <p:row>       
                                     <p:column ></p:column>
                                     <p:column footerText="Total" />
-                                    <p:column footerText="#{investigationMonthSummeryOwnControllerSession.countTotal}"  style="text-align:right">
+                                    <p:column footerText="#{investigationMonthSummeryOwnControllerSession.totalCount}"  style="text-align:right">
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.countTotal}">
-
+                                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>                             
