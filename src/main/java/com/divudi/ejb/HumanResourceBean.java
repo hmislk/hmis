@@ -828,7 +828,6 @@ public class HumanResourceBean {
     public LeaveType getLeaveType(Staff staff, Date date) {
         StaffLeaveEntitle staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, date);
 
-        System.out.println("staffLeaveEntitle.getCount() = " + staffLeaveEntitle.getCount());
 
         if (staffLeaveEntitle != null
                 && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Annual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
