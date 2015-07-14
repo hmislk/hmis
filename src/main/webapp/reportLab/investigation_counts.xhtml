@@ -13,7 +13,7 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
         <h:panelGroup rendered="true" >
-            <h:form>
+            <h:form id="frm">
 
 
                 <p:panel header="Investigation Counts">
@@ -54,9 +54,14 @@
                                     <p:commandButton ajax="false"  value="Process"  
                                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
                                                      styleClass="noPrintButton" style="float: right;" />
-                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float:right;">
-                                        <p:printer target="panelPrint" />
+                                    <p:commandButton value="Print" actionListener="#{investigationMonthSummeryOwnControllerSession.prepareForPrint()}" 
+                                                     oncomplete="$('#frm\\:print').click()"
+                                                     update=":frm:tbl"/>
+                                    <p:commandButton id="print" value="Actual print" style="display: none">
+                                        <p:ajax event="click" listener="#{investigationMonthSummeryOwnControllerSession.prepareForView()}" update=":frm:tbl"/>
+                                        <p:printer target=":frm:tbl" />
                                     </p:commandButton>
+
 
                                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
                                         <pe:exporter type="xlsx" target="tbl" fileName="Investigation Month End Summary From #{investigationMonthSummeryOwnControllerSession.fromDate} To #{investigationMonthSummeryOwnControllerSession.toDate}"

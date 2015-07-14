@@ -70,6 +70,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
+    
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController
@@ -171,6 +174,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.commonFunctions = commonFunctions;
     }
 
+    
+    
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
@@ -900,6 +905,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.creditCompany = creditCompany;
     }
 
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -955,6 +976,17 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             this.count = count;
         }
 
+    }
+    
+    
+    public void prepareForPrint(){
+        paginator=false;
+       
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
     }
 
 }
