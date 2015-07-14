@@ -38,7 +38,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
     private StaffPaysheetComponent current;
     private PaysheetComponent paysheetComponent;
     private Date fromDate;
-    private Date toDate;    
+    private Date toDate;
     ReportKeyWord reportKeyWord;
     ////////////////
     private List<StaffPaysheetComponent> filteredStaffPaysheet;
@@ -171,7 +171,6 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
         items = null;
     }
 
-
     public void save() {
 
         if (errorCheck()) {
@@ -209,7 +208,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
     }
 
     public void makeNullWithout() {
-        current = null;        
+        current = null;
         filteredStaffPaysheet = null;
         items = null;
         selectedStaffComponent = null;
@@ -222,11 +221,18 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
+                + " and ss.paysheetComponent.componentType=:pct "
                 + " and ss.fromDate <=:fd"
                 + " and ss.toDate >=:fd ";
-
+        
         HashMap hm = new HashMap();
         hm.put("fd", getFromDate());
+        hm.put("pct", PaysheetComponentType.PerformanceAllowancePercentage);
+        
+//        if (paysheetComponent != null) {
+//            sql += " and ss.paysheetComponent=:tp ";
+//            hm.put("tp", getPaysheetComponent());
+//        }
 
         if (paysheetComponent != null) {
             sql += " and ss.paysheetComponent=:tp ";
@@ -367,8 +373,6 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-
-  
 
     public List<StaffPaysheetComponent> getRepeatedComponent() {
         if (repeatedComponent == null) {

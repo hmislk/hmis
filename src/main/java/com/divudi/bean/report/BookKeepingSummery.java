@@ -2806,7 +2806,7 @@ public class BookKeepingSummery implements Serializable {
     public void createDoctorPaymentOpd() {
         System.err.println("Doctor Payment OPD");
         departmentProfessionalPayments = new ArrayList<>();
-        List<Object[]> list = getBillBean().fetchDoctorPayment(fromDate, toDate, BillType.OpdBill);
+        List<Object[]> list = getBillBean().fetchDoctorPayment(fromDate, toDate, BillType.OpdBill,institution);
 
         for (Object[] obj : list) {
             Department department = (Department) obj[0];
@@ -3065,7 +3065,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2Hos();
-        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill);
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill,institution);
 
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelCash);

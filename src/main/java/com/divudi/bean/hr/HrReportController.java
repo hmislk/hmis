@@ -1042,8 +1042,8 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-         if (getReportKeyWord().getInstitution() != null) {
+
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
             hm.put("ins", getReportKeyWord().getDepartment());
         }
@@ -1373,7 +1373,7 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins ";
             hm.put("ins", getReportKeyWord().getInstitution());
@@ -1582,6 +1582,78 @@ public class HrReportController implements Serializable {
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
+    private void fetchWorkedTimeTemporary(Staff staff) {
+        String sql = "";
+
+//                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+//                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
+//                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:tp"
+                + " and ss.staff=:stf"
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :frm  and :to ";
+        System.out.println("hm = " + hm);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("tp", StaffShiftExtra.class);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.id ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+
+        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+        for (StaffShift ss : sss) {
+            System.out.println("ss = " + ss.getId());
+            System.out.println("ss.workedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
+            System.out.println("ss.leavedTime = " + ss.getLeavedTime());
+            System.out.println("ss.extraTimeFromStartRecordVarified = " + ss.getExtraTimeFromStartRecordVarified());
+            System.out.println("ss.extraTimeFromEndRecordVarified = " + ss.getExtraTimeFromEndRecordVarified());
+            System.out.println("ss.multiplyingFactorOverTime = " + ss.getMultiplyingFactorOverTime());
+            System.out.println("ss.overTimeValuePerSecond = " + ss.getOverTimeValuePerSecond());
+
+            //                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+//                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
+//                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)
+        }
+
+    }
+
     private List<Object[]> fetchWorkedTime(Staff staff) {
         String sql = "";
 
@@ -1594,7 +1666,7 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false "
                 + " and type(ss)!=:tp"
                 + " and ss.staff=:stf"
-//                + " and ss.leavedTime=0 "
+                //                + " and ss.leavedTime=0 "
                 + " and ss.dayType not in :dtp "
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
@@ -1639,6 +1711,67 @@ public class HrReportController implements Serializable {
         sql += " group by ss.dayOfWeek "
                 + " order by ss.dayOfWeek,ss.staff.codeInterger ";
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    private List<Object[]> fetchWorkedTimeByDateOnly(Staff staff) {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select ss.dayOfWeek,"
+                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond), "
+                + " ss, "
+                + " sum(ss.leavedTime)"
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:tp"
+                + " and ss.staff=:stf"
+                //                + " and ss.leavedTime=0 "
+                + " and ss.dayType not in :dtp "
+                //                + " and ((ss.startRecord.recordTimeStamp is not null "
+                //                + " and ss.endRecord.recordTimeStamp is not null) "
+                //                + " or (ss.leaveType is not null) ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("tp", StaffShiftExtra.class);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by ss.dayOfWeek "
+                + " order by ss.dayOfWeek,ss.staff.codeInterger ";
+        return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
 
     private List<Object[]> fetchStaffShiftData() {
@@ -2031,18 +2164,42 @@ public class HrReportController implements Serializable {
         for (Staff stf : staffList) {
             WeekDayWork weekDayWork = new WeekDayWork();
             weekDayWork.setStaff(stf);
-            List<Object[]> list = fetchWorkedTime(stf);
+//            List<Object[]> list = fetchWorkedTime(stf);
 
+            List<Object[]> list = fetchWorkedTimeByDateOnly(stf); // Added by Buddhika
+
+            System.err.println("list = " + list);
+            System.out.println("list size " + list.size());
+
+//            fetchWorkedTimeTemporary(stf); // For Testing
+            int i = 0;
             for (Object[] obj : list) {
+                i++;
+                System.out.println("i" + i);
                 Integer dayOfWeek = (Integer) obj[0] != null ? (Integer) obj[0] : -1;
+                System.out.println("dayOfWeek = " + dayOfWeek);
+                System.out.println("obj[0] = " + obj[0]);
                 Double value = (Double) obj[1] != null ? (Double) obj[1] : 0;
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
-                System.err.println("Staff "+stf.getCodeInterger()+" :Value : "+value);                
+                StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
+                Double leavedTimeValue = (Double) obj[5] != null ? (Double) obj[5] : 0;
+                
+                System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
+                if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue>0) {
+                    System.out.println("value = " + value);
+                    System.out.println("leavedTimeValue = " + leavedTimeValue);
+                    System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin()*60);
+                    if ((ss.getShift().getDurationMin() * 60) < value) {
+                        value= ss.getShift().getDurationMin() * 60;
+                        System.out.println("4.b dbl(else) = " + value);
+                    } 
+                }
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
                         weekDayWork.setSunDay(value);
                         weekDayWork.setSunDayExtra(valueExtra);
+                        System.out.println("sunday = ");
                         break;
                     case Calendar.MONDAY:
                         weekDayWork.setMonDay(value);
@@ -2562,16 +2719,18 @@ public class HrReportController implements Serializable {
     }
 
     public void createStaffSalary() {
-        //System.out.println("Creating Staff Salary");
+        System.out.println("Creating Staff Salary");
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffSalaryQuary(hm);
         sql += " order by ss.staff.codeInterger ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);
-
     }
+
     String chequeNo;
 
     public String getChequeNo() {
