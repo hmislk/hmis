@@ -272,14 +272,16 @@ public class CreditBean {
         String sql = "select sum(b.netTotal) from"
                 + " Bill b where "
                 + " b.retired=false "
-                + " and b.paymentMethod=:pm "
+//                + " and b.paymentMethod=:pm "
                 + " and b.referenceBill=:refBill "
                 + " and b.billType in :bts";
 
         HashMap hm = new HashMap();
         hm.put("refBill", refBill);
-        hm.put("pm", PaymentMethod.Credit);
+//        hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
+        System.out.println("hm = " + hm);
+        System.out.println("getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE) = " + getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE));
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 

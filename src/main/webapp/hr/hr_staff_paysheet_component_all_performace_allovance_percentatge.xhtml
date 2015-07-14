@@ -136,9 +136,9 @@
                     <p:panel id="Allperformancepid">
                        
                     <p:dataTable  value="#{staffPaySheetComponentAllPerformancePercentageController.items}"  id="stb2"
-                                  var="i" scrollHeight="350"  editable="true"
+                                  var="i"  editable="true"
                                   rowStyleClass="#{i.exist eq true ? 'exist':null}"
-                                  scrollable="true"  selection="#{staffPaySheetComponentAllPerformancePercentageController.selectedStaffComponent}" 
+                                    selection="#{staffPaySheetComponentAllPerformancePercentageController.selectedStaffComponent}" 
                                   rowKey="#{i.id}"  >
 
                         <p:column  selectionMode="multiple" >                            
@@ -209,6 +209,12 @@
                                     <h:outputLabel value="Department"  />
                                 </f:facet>
                             <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                        </p:column>
+                        <p:column headerText="Component Type">
+                            <f:facet name="header">
+                                    <h:outputLabel value="componentType"  />
+                                </f:facet>
+                            <h:outputLabel value="#{i.paysheetComponent.componentType}"/>
                         </p:column>
                         <p:column headerText="Roster">
                             <f:facet name="header">
