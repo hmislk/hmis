@@ -379,7 +379,7 @@ public class CreditCompanyDueController implements Serializable {
         for (PatientEncounter b : lst) {
 
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
-
+            b.setTransDayCount(dayCount);
             double finalValue = b.getFinalBill().getNetTotal() - (b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
 
             if (dayCount < 30) {

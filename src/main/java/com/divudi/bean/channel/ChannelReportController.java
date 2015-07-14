@@ -1123,7 +1123,7 @@ public class ChannelReportController implements Serializable {
 
     public List<Bill> createUserBills(Bill billClass, WebUser webUser, Department department) {
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "

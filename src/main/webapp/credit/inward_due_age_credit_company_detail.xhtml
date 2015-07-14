@@ -41,8 +41,14 @@
                             <p:panel style="float: top;">
                                 <p:dataTable value="#{i.value1PatientEncounters}" var="p1" >
                                     <p:column>
-                                        <h:outputLabel id="colp1Detail"  value="#{p1.bhtNo}"/>
+                                        <p:commandLink id="colp1Detail"  value="#{p1.bhtNo}"
+                                                       action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                            <f:setPropertyActionListener value="#{p1}" target="#{bhtSummeryFinalizedController.patientEncounter}"/>   
+                                        </p:commandLink>
                                         <p:tooltip for="colp1Detail"  >
+                                            <h:outputLabel value="Duration Days : #{p1.transDayCount}" >
+                                            </h:outputLabel>
+                                            <br/>
                                             <h:outputLabel value="Ploicy Number : #{p1.policyNo}" >
                                             </h:outputLabel>
                                             <br/>
@@ -85,8 +91,14 @@
 
                             <p:dataTable value="#{i.value2PatientEncounters}" var="p1">
                                 <p:column>
-                                    <h:outputLabel id="colp2Detail"  value="#{p1.bhtNo}"/>
+                                    <p:commandLink id="colp2Detail"  value="#{p1.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{p1}" target="#{bhtSummeryFinalizedController.patientEncounter}"/>   
+                                    </p:commandLink>
                                     <p:tooltip for="colp2Detail"  >
+                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}" >
+                                        </h:outputLabel>
+                                        <br/>
                                         <h:outputLabel value="Ploicy Number : #{p1.policyNo}" >
                                         </h:outputLabel>
                                         <br/>
@@ -126,8 +138,14 @@
                         <p:column headerText="60-90" style="text-align: right;">                           
                             <p:dataTable value="#{i.value3PatientEncounters}" var="p1">
                                 <p:column>
-                                    <h:outputLabel id="colp3Detail"  value="#{p1.bhtNo}"/>
+                                    <p:commandLink id="colp3Detail"  value="#{p1.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{p1}" target="#{bhtSummeryFinalizedController.patientEncounter}"/>   
+                                    </p:commandLink>
                                     <p:tooltip for="colp3Detail"  >
+                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}" >
+                                        </h:outputLabel>
+                                        <br/>
                                         <h:outputLabel value="Ploicy Number : #{p1.policyNo}" >
                                         </h:outputLabel>
                                         <br/>
@@ -170,8 +188,14 @@
                             </h:outputLabel>
                             <p:dataTable value="#{i.value4PatientEncounters}" var="p1">
                                 <p:column>
-                                    <h:outputLabel id="colp4Detail"  value="#{p1.bhtNo}"/>
+                                    <p:commandLink id="colp4Detail"  value="#{p1.bhtNo}"
+                                                   action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
+                                        <f:setPropertyActionListener value="#{p1}" target="#{bhtSummeryFinalizedController.patientEncounter}"/>   
+                                    </p:commandLink>
                                     <p:tooltip for="colp4Detail"  >
+                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}" >
+                                        </h:outputLabel>
+                                        <br/>
                                         <h:outputLabel value="Ploicy Number : #{p1.policyNo}" >
                                         </h:outputLabel>
                                         <br/>

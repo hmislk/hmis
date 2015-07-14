@@ -70,6 +70,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
+    
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController
@@ -88,7 +91,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public Item getItem() {
         return item;
     }
-    
+
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
         for (Item w : getInvestigations()) {
@@ -171,6 +174,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.commonFunctions = commonFunctions;
     }
 
+    
+    
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
@@ -281,15 +286,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         insInvestigationCountRows.addAll((List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.DATE));
 
-        int c =1;
-        for (ItemInstitutionCollectingCentreCountRow r: insInvestigationCountRows){
+        int c = 1;
+        for (ItemInstitutionCollectingCentreCountRow r : insInvestigationCountRows) {
             r.setId(c);
             c++;
         }
 
     }
-    
-    
+
     public void createIxCountByInstitutionAndCollectingCentre() {
         String jpql;
         Map m;
@@ -330,7 +334,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
     }
-    
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
 //        String jpql;
@@ -619,6 +622,20 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
 
         is.setTotal(getTotal(w));
+        if (net > 0) {
+            is.setTurnOverValue(setTurnOverValue(net));
+        }
+
+    }
+
+    private double setTurnOverValue(long count) {
+
+        long timeInMinutes = (getToDate().getTime() - getFromDate().getTime()) / 60000;
+
+        long turnOverTime = timeInMinutes / count;
+        System.out.println("turnOverTime = " + turnOverTime);
+
+        return turnOverTime;
     }
 
     private void setCountTotal2(InvestigationSummeryData is, Item w) {
@@ -888,6 +905,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.creditCompany = creditCompany;
     }
 
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -943,6 +976,17 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             this.count = count;
         }
 
+    }
+    
+    
+    public void prepareForPrint(){
+        paginator=false;
+       
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
     }
 
 }

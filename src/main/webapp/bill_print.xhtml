@@ -32,7 +32,7 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
+                                <p:commandButton value="Back To Search" ajax="false" action="/opd_search_pre_batch_bill" >
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
@@ -60,7 +60,9 @@
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
                                 <ui:repeat value="#{opdPreBillController.bills}" var="b">
-                                    <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                                    <div>
+                                        <bi:opdBillPrintCoop bill="#{b}" dup="false"/> 
+                                    </div>
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>

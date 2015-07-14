@@ -84,6 +84,24 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userCancellededBillsPharmacy;
     BillsTotals userRefundedBillsPharmacy;
 
+    //Pharmacy Purchase summery
+    BillsTotals userBilledBillsPharmacyPurchase;
+    BillsTotals userCancellededBillsPharmacyPurchase;
+    BillsTotals userRefundedBillsPharmacyPurchase;
+    BillsTotals userRefundedBillsPharmacyPurchaseCancel;
+
+    //Pharmacy GRN
+    BillsTotals userBilledBillsPharmacyGRN;
+    BillsTotals userCancellededBillsPharmacyGRN;
+    BillsTotals userRefundedBillsPharmacyGRN;
+    BillsTotals userRefundedBillsPharmacyGRNCancel;
+
+    //Pharmacy GRN
+    BillsTotals userBilledBillsPharmacyGRNPayment;
+    BillsTotals userCancellededBillsPharmacyGRNPayment;
+    BillsTotals userRefundedBillsPharmacyGRNPayment;
+//    BillsTotals userRefundedBillsPharmacyGRNPaymentCancel;
+
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
     List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
 
@@ -135,24 +153,40 @@ public class OpdPreBillReportController implements Serializable {
         userCancellededBillsPharmacy = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment());
         userRefundedBillsPharmacy = createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment());
 
+        userBilledBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        userCancellededBillsPharmacyPurchase = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        //purchase bill return as billed bill and bill type purchase return
+        userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+        //purchase retrn bills
+        userRefundedBillsPharmacyPurchaseCancel = createBillsTotalsPayment(new CancelledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+
+        userBilledBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
+        userCancellededBillsPharmacyGRN = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
+        userRefundedBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
+        userRefundedBillsPharmacyGRNCancel = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
+
+        userBilledBillsPharmacyGRNPayment = createBillsTotalsPayment(new BilledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment());
+        userCancellededBillsPharmacyGRNPayment = createBillsTotalsPayment(new CancelledBill(), BillType.GrnPayment, getWebUser(), getDepartment());
+        userRefundedBillsPharmacyGRNPayment = createBillsTotalsPayment(new RefundBill(), BillType.GrnPayment, getWebUser(), getDepartment());
+
     }
-    
+
     public String createCashierTableByUserPaymentForDetail() {
         System.err.println("getWebUser() = " + getWebUser());
         System.err.println("Date F = " + getFromDate());
         System.err.println("Date T = " + getToDate());
 
         createCashierTableByUserPayment();
-        
+
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment";
-        
+
     }
-    
-    public void createCashierTableByAllUserPaymentDetail(){
+
+    public void createCashierTableByAllUserPaymentDetail() {
         createCashierTableByAllUserPayment(true);
     }
-    
-    public void createCashierTableByAllUserPaymentSummery(){
+
+    public void createCashierTableByAllUserPaymentSummery() {
         createCashierTableByAllUserPayment(false);
     }
 
@@ -551,6 +585,7 @@ public class OpdPreBillReportController implements Serializable {
         List<WebUser> cashiers = new ArrayList<>();
         BillType[] btpArr = getCashFlowBillTypes();
         List<BillType> btpList = Arrays.asList(btpArr);
+        System.out.println("btpList = " + btpList);
         sql = "select us from "
                 + " Payment p"
                 + " join p.bill b "
@@ -564,6 +599,7 @@ public class OpdPreBillReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
+        System.out.println("sql = " + sql);
         cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
@@ -583,9 +619,13 @@ public class OpdPreBillReportController implements Serializable {
             BillType.InwardPaymentBill,
             BillType.PharmacySale,
             BillType.ChannelCash,
-            BillType.ChannelPaid, //            BillType.PharmacyPurchaseBill,
-        //            BillType.GrnPayment,
-        };
+            BillType.ChannelPaid,
+            BillType.PharmacyPurchaseBill,
+            BillType.PurchaseReturn,
+            BillType.PharmacyGrnBill,
+            BillType.PharmacyGrnReturn,
+            BillType.GrnPayment,
+            BillType.GrnPaymentPre,};
 
         return b;
     }
@@ -799,5 +839,91 @@ public class OpdPreBillReportController implements Serializable {
 //    public void setBack(boolean back) {
 //        this.back = back;
 //    }
+    public BillsTotals getUserBilledBillsPharmacyPurchase() {
+        return userBilledBillsPharmacyPurchase;
+    }
 
+    public void setUserBilledBillsPharmacyPurchase(BillsTotals userBilledBillsPharmacyPurchase) {
+        this.userBilledBillsPharmacyPurchase = userBilledBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserCancellededBillsPharmacyPurchase() {
+        return userCancellededBillsPharmacyPurchase;
+    }
+
+    public void setUserCancellededBillsPharmacyPurchase(BillsTotals userCancellededBillsPharmacyPurchase) {
+        this.userCancellededBillsPharmacyPurchase = userCancellededBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyPurchase() {
+        return userRefundedBillsPharmacyPurchase;
+    }
+
+    public void setUserRefundedBillsPharmacyPurchase(BillsTotals userRefundedBillsPharmacyPurchase) {
+        this.userRefundedBillsPharmacyPurchase = userRefundedBillsPharmacyPurchase;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyPurchaseCancel() {
+        return userRefundedBillsPharmacyPurchaseCancel;
+    }
+
+    public void setUserRefundedBillsPharmacyPurchaseCancel(BillsTotals userRefundedBillsPharmacyPurchaseCancel) {
+        this.userRefundedBillsPharmacyPurchaseCancel = userRefundedBillsPharmacyPurchaseCancel;
+    }
+
+    public BillsTotals getUserBilledBillsPharmacyGRN() {
+        return userBilledBillsPharmacyGRN;
+    }
+
+    public void setUserBilledBillsPharmacyGRN(BillsTotals userBilledBillsPharmacyGRN) {
+        this.userBilledBillsPharmacyGRN = userBilledBillsPharmacyGRN;
+    }
+
+    public BillsTotals getUserCancellededBillsPharmacyGRN() {
+        return userCancellededBillsPharmacyGRN;
+    }
+
+    public void setUserCancellededBillsPharmacyGRN(BillsTotals userCancellededBillsPharmacyGRN) {
+        this.userCancellededBillsPharmacyGRN = userCancellededBillsPharmacyGRN;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyGRN() {
+        return userRefundedBillsPharmacyGRN;
+    }
+
+    public void setUserRefundedBillsPharmacyGRN(BillsTotals userRefundedBillsPharmacyGRN) {
+        this.userRefundedBillsPharmacyGRN = userRefundedBillsPharmacyGRN;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyGRNCancel() {
+        return userRefundedBillsPharmacyGRNCancel;
+    }
+
+    public void setUserRefundedBillsPharmacyGRNCancel(BillsTotals userRefundedBillsPharmacyGRNCancel) {
+        this.userRefundedBillsPharmacyGRNCancel = userRefundedBillsPharmacyGRNCancel;
+    }
+
+    public BillsTotals getUserBilledBillsPharmacyGRNPayment() {
+        return userBilledBillsPharmacyGRNPayment;
+    }
+
+    public void setUserBilledBillsPharmacyGRNPayment(BillsTotals userBilledBillsPharmacyGRNPayment) {
+        this.userBilledBillsPharmacyGRNPayment = userBilledBillsPharmacyGRNPayment;
+    }
+
+    public BillsTotals getUserCancellededBillsPharmacyGRNPayment() {
+        return userCancellededBillsPharmacyGRNPayment;
+    }
+
+    public void setUserCancellededBillsPharmacyGRNPayment(BillsTotals userCancellededBillsPharmacyGRNPayment) {
+        this.userCancellededBillsPharmacyGRNPayment = userCancellededBillsPharmacyGRNPayment;
+    }
+
+    public BillsTotals getUserRefundedBillsPharmacyGRNPayment() {
+        return userRefundedBillsPharmacyGRNPayment;
+    }
+
+    public void setUserRefundedBillsPharmacyGRNPayment(BillsTotals userRefundedBillsPharmacyGRNPayment) {
+        this.userRefundedBillsPharmacyGRNPayment = userRefundedBillsPharmacyGRNPayment;
+    }
 }

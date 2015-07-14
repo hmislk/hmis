@@ -71,6 +71,7 @@ public class BillSearch implements Serializable {
     private double refundAmount;
     String txtSearch;
     Bill bill;
+    Bill printingBill;
     PaymentMethod paymentMethod;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
@@ -326,7 +327,7 @@ public class BillSearch implements Serializable {
 
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
-
+       
         if (tmp.getPaidValue() != 0.0) {
             UtilityController.addErrorMessage("Already Staff FeePaid");
             return;
@@ -367,6 +368,16 @@ public class BillSearch implements Serializable {
     public void setEjbApplication(EjbApplication ejbApplication) {
         this.ejbApplication = ejbApplication;
     }
+
+    public Bill getPrintingBill() {
+        return printingBill;
+    }
+
+    public void setPrintingBill(Bill printingBill) {
+        this.printingBill = printingBill;
+    }
+    
+    
 
     private double refundTotal = 0;
     private double refundDiscount = 0;
@@ -638,8 +649,8 @@ public class BillSearch implements Serializable {
             }
 
             RefundBill rb = (RefundBill) createRefundBill();
-            Payment p=getOpdPreSettleController().createPayment(rb, paymentMethod);
-            refundBillItems(rb,p);
+            Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
+            refundBillItems(rb, p);
             System.out.println("getOpdPreSettleController().calBillPaidValue(rb) = " + getOpdPreSettleController().calBillPaidValue(rb));
             System.out.println("1p.getPaidValue() = " + p.getPaidValue());
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
@@ -654,6 +665,8 @@ public class BillSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
+            
+            printingBill=getBillFacade().find(rb.getId());
 
             printPreview = true;
             //UtilityController.addSuccessMessage("Refunded");
@@ -827,9 +840,10 @@ public class BillSearch implements Serializable {
 
         }
     }
-    
-    public void refundBillItems(RefundBill rb,Payment p) {
+
+    public void refundBillItems(RefundBill rb, Payment p) {
         for (BillItem bi : refundingItems) {
+            System.out.println("refundingItems = " + refundingItems);
             //set Bill Item as Refunded
 
             BillItem rbi = new BillItem();
@@ -858,6 +872,8 @@ public class BillSearch implements Serializable {
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
             getOpdPreSettleController().createOpdCancelRefundBillFeePayment(rb, tmpC, p);
             //
+            
+            rb.getBillItems().add(rbi);
 
         }
     }
@@ -1060,8 +1076,8 @@ public class BillSearch implements Serializable {
                     || (getBill().getBillType() == BillType.OpdBill && getWebUserController().hasPrivilege("OpdCancel"))) {
 
                 getBillFacade().create(cb);
-                Payment p=getOpdPreSettleController().createPayment(cb, paymentMethod);
-                List<BillItem> list = cancelBillItems(cb,p);
+                Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
+                List<BillItem> list = cancelBillItems(cb, p);
                 cb.setBillItems(list);
                 billFacade.edit(cb);
                 getBill().setCancelled(true);
@@ -1306,7 +1322,7 @@ public class BillSearch implements Serializable {
     public void setBillsApproving(List<Bill> billsApproving) {
         this.billsApproving = billsApproving;
     }
-    
+
     private List<BillItem> cancelBillItems(Bill can) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : getBillItems()) {
@@ -1352,7 +1368,7 @@ public class BillSearch implements Serializable {
         return list;
     }
 
-    private List<BillItem> cancelBillItems(Bill can,Payment p) {
+    private List<BillItem> cancelBillItems(Bill can, Payment p) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : getBillItems()) {
             BillItem b = new BillItem();
@@ -1699,18 +1715,20 @@ public class BillSearch implements Serializable {
     }
 
     public List<BillFee> getBillFees2() {
-        if (getBill() != null) {
-            String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
-        }
-
-        if (getBillSearch() != null) {
-            String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
-        }
-
         if (billFees == null) {
-            billFees = new ArrayList<>();
+            if (getBill() != null) {
+                String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
+                billFees = getBillFeeFacade().findBySQL(sql);
+            }
+
+            if (getBillSearch() != null) {
+                String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
+                billFees = getBillFeeFacade().findBySQL(sql);
+            }
+
+            if (billFees == null) {
+                billFees = new ArrayList<>();
+            }
         }
 
         return billFees;

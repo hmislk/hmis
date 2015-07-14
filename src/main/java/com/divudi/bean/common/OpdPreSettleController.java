@@ -564,6 +564,11 @@ public class OpdPreSettleController implements Serializable {
         System.out.println("cashPaid = " + cashPaid);
         System.out.println("getBilledBill() = " + getBilledBill());
 
+        if(cashPaid<1){
+            JsfUtil.addErrorMessage("Please enter a valid amount");
+            return "";
+        }
+        
         if (errorCheck()) {
             return "";
         }
@@ -698,7 +703,7 @@ public class OpdPreSettleController implements Serializable {
         getBilledBill().setBalance(dbl - pid);
         getBilledBill().setNetTotal(dbl);
         getBillFacade().edit(getBilledBill());
-        if (getBilledBill().getCashPaid() == getBilledBill().getNetTotal()) {
+        if (getBilledBill().getCashPaid() >= getBilledBill().getNetTotal()) {
             System.out.println("getOpdPreBillController().getBills().size() = " + getOpdPreBillController().getBills().size());
             getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
             System.out.println("getOpdPreBillController().getBills().size() = " + getOpdPreBillController().getBills().size());
@@ -706,7 +711,8 @@ public class OpdPreSettleController implements Serializable {
             return "/bill_print";
         } else {
             JsfUtil.addSuccessMessage("Sucessfully Paid");
-            return "";
+            getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
+            return "/bill_print_advance";
         }
     }
 

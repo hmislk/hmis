@@ -26,10 +26,12 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,9 @@ public class InvestigationController implements Serializable {
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    InvestigationItemController investigationItemController;
+
     @EJB
     private InvestigationFacade ejbFacade;
     @EJB
@@ -68,6 +73,7 @@ public class InvestigationController implements Serializable {
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
+    boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
@@ -77,6 +83,68 @@ public class InvestigationController implements Serializable {
     List<Investigation> itemsToRemove;
 
     Institution institution;
+
+    List<Investigation> deletedIxs;
+    List<Investigation> selectedIxs;
+
+    public String toEditReportFormat() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
+
+        return "lab_investigation_format";
+    }
+
+    public void listDeletedIxs() {
+        String sql = "select c from Investigation c where c.retired=true ";
+        deletedIxs = getFacade().findBySQL(sql);
+    }
+
+    public void undeleteSelectedIxs() {
+        for (Investigation s : selectedIxs) {
+            s.setRetired(false);
+            s.setRetiredAt(null);
+            s.setRetirer(null);
+            getFacade().edit(s);
+            //System.out.println("undeleted = " + s);
+        }
+        selectedIxs = null;
+        listDeletedIxs();
+    }
+
+    public void deleteSelectedInvestigations() {
+        for (Investigation s : selectedIxs) {
+            s.setRetired(true);
+            s.setRetiredAt(new Date());
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+    }
+
+    public List<Investigation> getDeletedIxs() {
+        return deletedIxs;
+    }
+
+    public void setDeletedIxs(List<Investigation> deletedIxs) {
+        this.deletedIxs = deletedIxs;
+    }
+
+    public List<Investigation> getSelectedIxs() {
+        return selectedIxs;
+    }
+
+    public void setSelectedIxs(List<Investigation> selectedIxs) {
+        this.selectedIxs = selectedIxs;
+    }
 
     public List<Investigation> getItemsToRemove() {
         return itemsToRemove;
@@ -194,20 +262,38 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeInvest(String query) {
+        System.out.println("master" + listMasterItemsOnly);
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }
         List<Investigation> suggestions;
         String sql;
         Map m = new HashMap();
-        m.put("n", "%" + query.toUpperCase() + "%");
+
+        //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
                 + " and (upper(c.name) like :n or "
                 + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) "
-                + " order by c.name";
+                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
         ////System.out.println(sql);
+
+        m.put("n", "%" + query.toUpperCase() + "%");
+
+        if (listMasterItemsOnly == true) {
+            System.out.println("inside intitution null only");
+            sql += " and c.institution is null ";
+        }
+
+        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+            System.out.println("inside intitution null and logged institution only");
+            sql += " and (c.institution is null "
+                    + " or c.institution=:ins) ";
+            m.put("ins", sessionController.getInstitution());
+        }
+
+        sql += " order by c.name";
+
         suggestions = getFacade().findBySQL(sql, m);
 
         return suggestions;
@@ -241,6 +327,14 @@ public class InvestigationController implements Serializable {
 
     public void setReportedAs(boolean reportedAs) {
         this.reportedAs = reportedAs;
+    }
+
+    public boolean isListMasterItemsOnly() {
+        return listMasterItemsOnly;
+    }
+
+    public void setListMasterItemsOnly(boolean listMasterItemsOnly) {
+        this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
     public void correctIx() {
@@ -318,22 +412,39 @@ public class InvestigationController implements Serializable {
         return completeItems;
     }
 
+//    public List<Investigation> completeDepartmentItem(String qry) {
+//        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+//            String sql;
+//            Map m = new HashMap();
+//            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+//            m.put("inv", Investigation.class);
+//            m.put("ser", Investigation.class);
+//            m.put("pak", Investigation.class);
+//            m.put("ins", getSessionController().getInstitution());
+//            sql = "select c "
+//                    + " from Item c "
+//                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
+//                    + " and c.retired=false "
+//                    + " and upper(c.name) like :qry "
+//                    + " and c.institution=:ins ";
+//            sql += "order by c.name";
+//            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+//            return completeItems;
+//        } else {
+//            return completeItem(qry);
+//        }
+//    }
     public List<Investigation> completeDepartmentItem(String qry) {
         if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
             String sql;
             Map m = new HashMap();
-            m.put("qry", "'%" + qry.toUpperCase() + "%'");
-            m.put("inv", Investigation.class);
-            m.put("ser", Investigation.class);
-            m.put("pak", Investigation.class);
+//            m.put("qry", "'%" + qry.toUpperCase() + "%'");
+//            m.put("inv", Investigation.class);
+//            m.put("ser", Investigation.class);
+//            m.put("pak", Investigation.class);
             m.put("ins", getSessionController().getInstitution());
-            sql = "select c "
-                    + " from Item c "
-                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
-                    + " and c.retired=false "
-                    + " and upper(c.name) like :qry "
-                    + " and c.institution=:ins ";
-            sql += "order by c.name";
+            sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
+                    + "and c.retired=false and c.institution=:ins and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
             List<Investigation> completeItems = getFacade().findBySQL(sql, m);
             return completeItems;
         } else {

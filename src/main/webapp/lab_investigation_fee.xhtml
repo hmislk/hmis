@@ -11,33 +11,101 @@
     <ui:define name="content">
 
         <h:panelGroup >
-            <h:form id="form"  >
-                <p:growl autoUpdate="true" />
 
-                <p:panel header="Manage Investigation Fees" >
+            <p:growl autoUpdate="true" />
 
-                    <p:panelGrid columns="1" >
+            <p:panel header="Manage Investigation Fees" >
+
+                <p:panelGrid columns="1" >
+                    <h:form >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Select Investigation" />
                             <p:autoComplete widgetVar="aIx" id="acIx"
-                                            forceSelection="true" 
+                                            forceSelection="true" converter="ixcon" 
                                             value="#{itemFeeController.currentIx}" 
-                                            completeMethod="#{investigationController.completeDepartmentItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{itemFeeController.createCharges()}"></p:ajax>
+                                            completeMethod="#{investigationController.completeDepartmentItem}" 
+                                            var="ix" itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" size="30"  style="width: 400px;">
+                                <p:ajax event="itemSelect" process="@this" update=":#{p:component('gpDetail')} :#{p:component('dtbFee')}" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
-                        </p:panelGrid>
 
-                        <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                            <p:outputLabel value="Total For Locals"/>
+                            <p:outputLabel style="float:right;" id="lblTotal"  value="#{itemFeeController.currentIx.total}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Total for Foreigners"/>
+                            <p:outputLabel style="float:right;" id="lblFtotal"  value="#{itemFeeController.currentIx.totalFfee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+
+
+                        </p:panelGrid>
+                    </h:form>
+                    <p:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+
+                        <p:panel header="Fee List" >
+                            <h:form >
+                                <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{itemFeeController.charges}" var="bi" >
+                                    <p:column headerText="Fee Name">
+                                        <h:inputText value="#{bi.name}" style="width: 90px"/>                                        
+                                    </p:column>
+                                    <p:column headerText="Fee Type">
+                                        <h:selectOneListbox size="1" value="#{bi.feeType}" style="width: 120px">
+                                            <f:selectItem itemLabel="Select Fee Type"/>
+                                            <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
+                                        </h:selectOneListbox>
+                                    </p:column>
+                                    <p:column headerText="Staff/Speciality/Institution/Department" >
+                                        <p:outputLabel value="#{bi.speciality.name}" ></p:outputLabel>
+                                        <p:outputLabel rendered="#{bi.speciality ne null}" value="&lt;br/&gt;" escape="false" ></p:outputLabel>
+                                        <p:outputLabel value="#{bi.staff.person.nameWithTitle}"></p:outputLabel>
+                                        <p:outputLabel rendered="#{bi.staff ne null}" value="&lt;br/&gt;" escape="false" ></p:outputLabel>
+                                        <h:outputLabel value="#{bi.institution.name}"/>
+                                        <p:outputLabel rendered="#{bi.institution ne null}" value="&lt;br/&gt;" escape="false" ></p:outputLabel>
+                                        <h:outputLabel value="#{bi.department.name}"/>
+                                    </p:column>                                   
+
+                                    <p:column headerText="Local Fee" >
+                                        <p:inputText value="#{bi.fee}" style="width: 60px"/>                                        
+                                    </p:column>
+                                    <p:column headerText="Foreign Fee">
+                                        <p:inputText value="#{bi.ffee}" style="width: 60px"/>                                        
+                                    </p:column>
+
+                                    <p:column headerText="Coments">
+                                        <h:outputLabel  rendered="#{bi.editer ne null}"  value="Last edit at "/>
+                                        <h:outputLabel value="#{bi.editedAt}"  rendered="#{bi.editer ne null}"  >
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bi.editer ne null}"  value=" by "/>
+                                        <h:outputLabel rendered="#{bi.editer ne null}"  value="#{bi.editer.webUserPerson.nameWithTitle}"/>
+                                        <h:outputLabel rendered="#{bi.editer ne null}"  value="."/>
+                                    </p:column>
+                                    <p:column headerText="Actions">
+                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}" style="width: 90px"/>
+                                        <p:commandButton id="remove" ajax="false" value="Remove" action="#{itemFeeController.removeFee}" style="width: 90px">
+                                            <f:setPropertyActionListener value="#{bi}" target="#{itemFeeController.removedItemFee}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </p:panel>
+
+
+
+                        <h:form >
                             <p:panel id="gpDetail" >                                    
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Charge Detail" ></h:outputLabel>
-                                    <h:outputText style="float:right;" id="lblTotal" value="Total : #{itemFeeController.currentIx.total}"/>
+                                    <h:outputLabel value="Add New  Fee" ></h:outputLabel>
+
                                 </f:facet>
-                                <h:panelGrid columns="2">
+                                <p:panelGrid columns="2">
                                     <h:outputText value="Fee Name"/>
-                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{itemFeeController.currentFee.name}"/>
+                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{itemFeeController.currentFee.name}" required="true" requiredMessage="Please Enter Fee Name" />
+                                        
                                     <h:outputText value="Fee Type"/>
-                                    <h:selectOneListbox size="1" value="#{itemFeeController.currentFee.feeType}" >
+                                    <h:selectOneListbox size="1" value="#{itemFeeController.currentFee.feeType}" required="true" requiredMessage="Please Select Fee Type">
                                         <f:selectItem itemLabel="Please select the type"/>
                                         <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                     </h:selectOneListbox>
@@ -69,80 +137,28 @@
                                     <h:inputText autocomplete="off" id="txtFFee" value="#{itemFeeController.currentFee.ffee}"/>
 
                                     <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" action="#{itemFeeController.saveCharge}" 
-                                                     styleClass="buttons">
-                                        <!--<f:ajax render="gpDetail" execute="gpDetail"  />-->
-                                    </h:commandButton>
+                                    <p:commandButton id="btnAddTo" value="Add"  action="#{itemFeeController.saveCharge}" 
+                                                     styleClass="buttons" ajax="false">
+                                    </p:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
 
-                                <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{itemFeeController.charges}" var="bi" >
-                                    <p:column headerText="Fee Name">
-                                        <h:inputText value="#{bi.name}"/>                                        
-                                    </p:column>
-                                    <p:column headerText="Fee Type">
-                                        <h:selectOneListbox size="1" value="#{bi.feeType}" >
-                                            <f:selectItem itemLabel="Select Fee Type"/>
-                                            <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
-                                        </h:selectOneListbox>
-                                    </p:column>
-                                    <p:column headerText="Speciality">
-                                        #{bi.speciality.name}
-                                    </p:column>
-                                    <p:column headerText="Staff">
-                                        #{bi.staff.person.nameWithTitle}
-                                    </p:column>                                   
 
-                                    <p:column headerText="Institution">
-                                        <h:outputLabel value="#{bi.institution.name}"/>
-                                    </p:column>                                   
-
-                                    <p:column headerText="Department">                                        
-                                        <h:outputLabel value="#{bi.department.name}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Id">
-                                        <p:outputLabel value="#{bi.id}"/>                                        
-                                    </p:column>
-
-                                    <p:column headerText="Local Fee">
-                                        <p:inputText value="#{bi.fee}"/>                                        
-                                    </p:column>
-                                    <p:column headerText="Foreign Fee">
-                                        <p:inputText value="#{bi.ffee}"/>                                        
-                                    </p:column>
-
-                                    <p:column headerText="Edited Date">
-                                        #{bi.editedAt}
-                                    </p:column>
-
-                                    <p:column headerText="Edited Person">
-                                        #{bi.editer.webUserPerson.nameWithTitle}
-                                    </p:column>
-
-                                    <p:column headerText="Update">
-                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}"/>
-                                    </p:column>
-                                    <p:column headerText="Remove">
-                                        <h:commandButton id="remove" value="Remove" action="#{itemFeeController.removeFee}" >
-                                            <f:setPropertyActionListener value="#{bi}" target="#{itemFeeController.removedItemFee}"/>
-                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee" process="remove dtbFee" />
-                                        </h:commandButton>
-                                    </p:column>
-                                </p:dataTable>
 
                             </p:panel>
+                        </h:form>
 
-                        </h:panelGrid>
 
                     </p:panelGrid>
 
+                </p:panelGrid>
 
 
 
 
-                </p:panel>
-            </h:form>
+
+            </p:panel>
+
 
         </h:panelGroup>
 

@@ -21,20 +21,12 @@
                             <p:commandButton ajax="false" value="Reprint" >
                                 <p:printer target="gpBillPreview" ></p:printer>
 
-                          </p:commandButton>
+                            </p:commandButton>
                             <p:commandButton value="Cancel" ajax="false"
-                                            action="pharmacy_cancel_grn_return" 
+                                             action="pharmacy_cancel_grn_return" 
                                              disabled="#{pharmacyBillSearch.bill.cancelled}"/>
-                                
 
-                                <p:commandButton ajax="false"  value="Return" 
-                                                 action="pharmacy_return_purchase" 
-                                                  disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                                    <f:setPropertyActionListener 
-                                        target="#{purchaseReturnController.bill}"  
-                                        value="#{pharmacyBillSearch.bill}"/>
 
-                                </p:commandButton>
                         </f:facet>
 
 
