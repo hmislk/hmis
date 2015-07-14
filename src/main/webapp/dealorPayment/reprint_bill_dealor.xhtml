@@ -16,7 +16,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint"  ></h:outputLabel>
                             <hr/>                           
-                            <p:commandButton ajax="false" value="Cancel" action="cancel_bill_dealor" disabled="#{dealorPaymentBillSearch.bill.cancelled}">                           
+                            <p:commandButton ajax="false" value="Cancel" action="cancel_bill_dealor" disabled="#{dealorPaymentBillSearch.bill.cancelled}" rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Approve"
