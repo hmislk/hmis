@@ -28,13 +28,13 @@
                     <h:outputLabel value="Instituion"/>
                   
                     <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{pharmacySaleReport.institution}"  
-                                    style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select Institution" >
+                                    style="text-align: left;"  completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select Institution" >
                     </p:autoComplete>
 
                     <h:outputLabel value="Departmant"/>
                  
                     <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{pharmacySaleReport.department}"  
-                                    style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                                    style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                 </h:panelGrid>
