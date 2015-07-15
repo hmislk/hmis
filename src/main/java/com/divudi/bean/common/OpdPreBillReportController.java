@@ -76,6 +76,7 @@ public class OpdPreBillReportController implements Serializable {
 
     //Opd summery
     BillsTotals userBilledBills;
+    BillsTotals userBilledBillsForCashier;
     BillsTotals userCancellededBills;
     BillsTotals userRefundedBills;
 
@@ -145,7 +146,8 @@ public class OpdPreBillReportController implements Serializable {
             return;
         }
 
-        userBilledBills = createBillsTotalsPayment(new BilledBill(), BillType.OpdBathcBill, getWebUser(), getDepartment());
+        userBilledBills = createBillsTotalsPayment(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment());
+        userBilledBillsForCashier = createBillsTotalsPayment(new BilledBill(), BillType.OpdBathcBill, getWebUser(), getDepartment());
         userCancellededBills = createBillsTotalsPayment(new CancelledBill(), BillType.OpdBill, getWebUser(), getDepartment());
         userRefundedBills = createBillsTotalsPayment(new RefundBill(), BillType.OpdBill, getWebUser(), getDepartment());
 
@@ -925,5 +927,13 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setUserRefundedBillsPharmacyGRNPayment(BillsTotals userRefundedBillsPharmacyGRNPayment) {
         this.userRefundedBillsPharmacyGRNPayment = userRefundedBillsPharmacyGRNPayment;
+    }
+
+    public BillsTotals getUserBilledBillsForCashier() {
+        return userBilledBillsForCashier;
+    }
+
+    public void setUserBilledBillsForCashier(BillsTotals userBilledBillsForCashier) {
+        this.userBilledBillsForCashier = userBilledBillsForCashier;
     }
 }
