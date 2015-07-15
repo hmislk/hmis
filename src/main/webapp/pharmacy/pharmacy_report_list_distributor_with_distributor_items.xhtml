@@ -5,23 +5,20 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Pharmaceutical Item List Not include any Distributor" >
-                <p:commandButton ajax="false" value="Excel">
-                    <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
-                </p:commandButton>
+            <p:panel header="Pharmaceutical Item With Distributor" >
+
                 <p:commandButton ajax="false" value="Refresh"
                                  action="#{pharmacySaleReport.createItemsDistributersWithDistributer}"/>
 
 
                 <p:panel id="paItems">
-
-                    <p:dataTable id="tblItem" value="#{pharmacySaleReport.distributerWithDestributorItems}" var="di" >
+                    <p:dataTable value="#{pharmacySaleReport.distributerWithDestributorItems}" var="di" >
                         <f:facet name="header">
-                            <p:outputLabel value="Distributor Name" />
+                            <p:outputLabel value="Pharmaceutical Item With Distributor" ></p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -31,8 +28,7 @@
                                 <p:column headerText="Generic" />
                             </p:row>
                         </p:columnGroup>
-
-                        <p:subTable value="#{di.itemsDistributors}" var="i">
+                        <p:subTable value="#{di.itemsDistributors}" var="di"  >
                             <f:facet name="header">
                                 <p:outputLabel value="Distributor Name : #{di.distributor.name}" />
                             </f:facet>
@@ -52,7 +48,6 @@
                                 <p:outputLabel value="#{i.item.vmp.name}"></p:outputLabel>
                             </p:column>
                         </p:subTable>
-
                     </p:dataTable>
                 </p:panel>
 
