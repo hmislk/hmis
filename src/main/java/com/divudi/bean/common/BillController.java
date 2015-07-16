@@ -262,8 +262,7 @@ public class BillController implements Serializable {
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(opdPaymentCredit);
 
-        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
-        getBillFacade().edit(opdBill);
+        
 
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
         temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
@@ -290,11 +289,9 @@ public class BillController implements Serializable {
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
-        System.out.println("cashPaid = " + cashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        cashPaid=opdPaymentCredit;
+        reminingCashPaid=opdPaymentCredit;
         System.out.println("reminingCashPaid = " + reminingCashPaid);
-        System.out.println("cashPaid = " + cashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
         Payment p = createPayment(temp, paymentMethod);
@@ -310,6 +307,11 @@ public class BillController implements Serializable {
 
             calculateBillfeePayments(billFees, p);
         }
+        System.out.println("calBillPaidValue(opdBill) = " + calBillPaidValue(opdBill));
+        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
+        opdBill.setCashPaid(calBillPaidValue(opdBill));
+        opdBill.setNetTotal(calBillPaidValue(opdBill));
+        getBillFacade().edit(opdBill);
 
         JsfUtil.addSuccessMessage("Paid");
         opdBill = temp;
@@ -1726,9 +1728,8 @@ public class BillController implements Serializable {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
             System.out.println("reminingCashPaid = " + reminingCashPaid);
-            System.out.println("cashPaid = " + cashPaid);
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()||getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 System.err.println("IF In");
                 System.out.println("Math.abs((bf.getFeeValue()-bf.getSettleValue())) = " + Math.abs((bf.getFeeValue() - bf.getSettleValue())));
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
@@ -1781,6 +1782,18 @@ public class BillController implements Serializable {
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
+    }
+    
+    public double calBillPaidValue(Bill b) {
+        String sql;
+
+        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
+                + " bfp.retired=false "
+                + " and bfp.billFee.bill.id=" + b.getId();
+
+        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
+
+        return d;
     }
 
     public BillFacade getEjbFacade() {
