@@ -297,7 +297,7 @@ public class BillController implements Serializable {
         System.out.println("cashPaid = " + cashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
-        Payment p = createPayment(opdBill, paymentMethod);
+        Payment p = createPayment(temp, paymentMethod);
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
         List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
