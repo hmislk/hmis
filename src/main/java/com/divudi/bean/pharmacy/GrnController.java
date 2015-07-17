@@ -477,6 +477,19 @@ public class GrnController implements Serializable {
 
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
+
+    }
+    
+    public void netDiscount() {
+        //getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
+        double grossTotal = 0.0;
+        if (getGrnBill().getDiscount() > 0) {
+            grossTotal = getGrnBill().getTotal() + getGrnBill().getDiscount();
+            //System.out.println("gross" + grossTotal);
+            //System.out.println("net1" + getBill().getNetTotal());
+            getGrnBill().setNetTotal(grossTotal);
+            //System.out.println("net2" + getBill().getNetTotal());
+        }
     }
     
     public void saveBillFee(BillItem bi, Payment p) {

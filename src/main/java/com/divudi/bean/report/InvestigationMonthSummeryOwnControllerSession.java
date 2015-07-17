@@ -74,6 +74,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     int progressValue = 0;
     boolean progressStarted = false;
     boolean stopProgress;
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController
@@ -121,28 +123,32 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public void createInvestigationTurnoverTime() {
         progressStarted = true;
         progressValue = 0;
-        double averateMins =0;
-        double totalMins =0;
+        double averateMins = 0;
+        double totalMins = 0;
         double averageCount = 0;
         List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
-                fromDate, 
-                toDate, 
+                fromDate,
+                toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
                 new Class[]{Bill.class},
-                true, 
-                null, 
                 true,
-                null, 
+                null,
                 true,
-                null, 
-                true, 
+                null,
+                true,
+                null,
+                true,
                 null);
-        double singleItem = 100 / pis.size();
+        double singleItem = 0;
+        if (pis.size() != 0) {
+            singleItem = 100 / pis.size();
+        }
+
         for (PatientInvestigation pi : pis) {
             System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
             progressValue += (int) singleItem;
-            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime())/(1000*60);
-            totalMins +=averateMins;
+            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+            totalMins += averateMins;
             averageCount++;
         }
         totalCount = (long) (totalMins / averageCount);
@@ -985,6 +991,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.progressStarted = progressStarted;
     }
 
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -1040,6 +1062,16 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             this.count = count;
         }
 
+    }
+    
+    public void prepareForPrint(){
+        paginator=false;
+        rows=getItems().size();
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
     }
 
 }
