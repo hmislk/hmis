@@ -27,6 +27,7 @@
                         </p:columnGroup>
                         <p:subTable value="#{it.institutions}" var="i"  >
                             <f:facet name="header">
+                                <p:outputLabel value="Item Code : #{it.item.code}" style="float: right"/>
                                 <p:outputLabel value="Item Name : #{it.item.name}" />
                             </f:facet>
                             <p:column headerText="Dealor">
