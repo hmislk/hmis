@@ -5,6 +5,8 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.channel.SheduleController;
+import com.divudi.entity.ServiceSession;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -20,6 +22,7 @@ public class FinalVariables {
 //    public double getMaximumWorkingHourPerWeek() {
 //        return 45;
 //    }
+
     public double getWorkingDaysPerMonth() {
         return 26;
     }
@@ -29,13 +32,30 @@ public class FinalVariables {
     }
 
     public Integer getSessionSessionDayCounter() {
-        int maxRowNumber=0;
+        int maxRowNumber = 0;
         //System.out.println("maxRowNumber = " + maxRowNumber);
         maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
         //System.out.println("maxRowNumber = " + maxRowNumber);
-        if(getSheduleController().getCurrent().getMaxTableRows() == 0){
-           return 14;
+        if (maxRowNumber == 0) {
+            System.out.println("maxRowNumber" + maxRowNumber);
+            return 14;
         }
+        return maxRowNumber;
+    }
+
+    public Integer getSessionSessionDayCounter(List<ServiceSession> inputSessions) {
+        int maxRowNumber = 0;
+        //System.out.println("maxRowNumber = " + maxRowNumber);
+        for (ServiceSession ss : inputSessions) {
+            maxRowNumber = ss.getMaxTableRows();
+            //System.out.println("maxRowNumber = " + maxRowNumber);
+            if (maxRowNumber == 0) {
+                System.out.println("maxRowNumber" + maxRowNumber);
+                return 14;
+            }
+            return maxRowNumber;
+        }
+
         return maxRowNumber;
     }
 
@@ -54,15 +74,13 @@ public class FinalVariables {
     public double getHoliDayAllowanceMultiply() {
         return 1.5;
     }
-    
-      public double getDayOffAllowanceMultiply() {
+
+    public double getDayOffAllowanceMultiply() {
         return 1.5;
     }
 
-      
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-
     public SheduleController getSheduleController() {
         return sheduleController;
     }

@@ -13,12 +13,13 @@
         <h:panelGroup >
             <h:form id="form"  >
                 <p:growl autoUpdate="true" />
-                
-                <p:commandButton value="Fill Inactive Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
-                <p:commandButton value="Un-Activate Selected Services" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
 
-                <p:panel header="Inactive Services" >
-                
+
+                <p:panel header="Undelete Services" >
+
+                    <p:commandButton value="List Deleted Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
+                    <p:commandButton value="Undelete Selected" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
+
                     <p:dataTable value="#{serviceController.deletedServices}" var="item" rowKey="#{item.id}"
                                  paginator="true" paginatorAlwaysVisible="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -26,28 +27,34 @@
                                  rows="50"
                                  selection="#{serviceController.deletingServices}">
                         <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
-                        <p:column >
+                        <p:column headerText="Category" sortBy="#{item.category.name}" filterBy="#{item.category.name}" >
                             <p:outputLabel value="#{item.category.name}" ></p:outputLabel>
                         </p:column>
-                        <p:column >
+                        <p:column headerText="Institution"  sortBy="#{item.institution.name}" filterBy="#{item.institution.name}" >
+                            <p:outputLabel value="#{item.institution.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Department"  sortBy="#{item.department.name}" filterBy="#{item.department.name}" >
                             <p:outputLabel value="#{item.department.name}"></p:outputLabel>
                         </p:column>
-                        <p:column >
+                        <p:column headerText="Name"  sortBy="#{item.name}" filterBy="#{item.name}" >
                             <p:outputLabel value="#{item.name}"></p:outputLabel>
                         </p:column>
+                        <p:column headerText="Deleted By"  sortBy="#{item.retirer.webUserPerson.name}" 
+                                  filterBy="#{item.retirer.webUserPerson.name}" >
+                            <p:outputLabel value="#{item.retirer.webUserPerson.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Deleted At"  sortBy="#{item.retiredAt}"  >
+                            <p:outputLabel value="#{item.retiredAt}">
+                                <f:convertDateTime pattern="dd MMM yy hh:mm" ></f:convertDateTime>
+                            </p:outputLabel>
+                        </p:column>
+
                     </p:dataTable>
-                    
+
                 </p:panel>
             </h:form>
 
         </h:panelGroup>
-
-        <h:form>
-
-
-
-
-        </h:form>
 
 
     </ui:define>

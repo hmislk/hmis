@@ -504,6 +504,16 @@ a:hover {
     font-size: 13pt;
 }
 
+.noPaddingMargin{
+    padding: 0px!important;
+    margin: 0px!important;
+}
+
+.noPaddingMargin.ui-panel-content{
+    padding: 0px!important;
+    margin: 0px!important;
+}
+
 .alignTop {
     vertical-align: top;
 }

@@ -26,7 +26,7 @@
                                                 itemValue="#{dept}" 
                                                 forceSelection="true" 
                                                 value="#{searchController.department}" 
-                                                converter="dep" ></p:autoComplete>
+                                                converter="departmentConverter" ></p:autoComplete>
                                 
                                 <p:commandButton id="btnSearch" ajax="false" 
                                                  value="Search" 
@@ -124,19 +124,19 @@
                                 <h:outputLabel value="#{bill.paymentScheme.name}" />
                             </p:column>
 
-                            <p:column headerText="Gross Value"  >
+                            <p:column headerText="Gross Value"  styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{bill.total}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Discount">
+                            <p:column headerText="Discount" styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Net Value"  >
+                            <p:column headerText="Net Value" styleClass="averageNumericColumn" >
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>

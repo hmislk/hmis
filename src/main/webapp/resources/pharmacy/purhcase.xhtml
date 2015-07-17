@@ -107,6 +107,12 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
+                        <f:facet name="header">Wholesale Price</f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="7" footerText="Total"/>

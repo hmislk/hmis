@@ -16,6 +16,15 @@
                             <h:outputLabel value="Staff : "/>
                             <au:completeStaff value="#{staffShiftController.staffshift.staff}"/>
 
+                            <h:outputLabel value="ID"/>
+                            <h:outputLabel id="lblId1" value="#{staffShiftController.staffshift.id}">
+                            </h:outputLabel>
+
+                             <h:outputLabel value="Shift Name"/>
+                             <h:outputLabel  value="#{staffShiftController.staffshift.shift.name}">
+                            </h:outputLabel>
+
+
                             <h:outputLabel value="Shift Date"/>
                             <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftDate}"
                                         pattern="dd MM yy">
@@ -23,12 +32,12 @@
 
                             <h:outputLabel value="Shift Start Time"/>
                             <p:calendar value="#{staffShiftController.staffshift.shiftStartTime}"
-                                        pattern="hh:mm:ss">
+                                        pattern="yyyy MM dd hh:mm:ss">
                             </p:calendar>
 
                             <h:outputLabel value="Shift End Time"/>
                             <p:calendar value="#{staffShiftController.staffshift.shiftEndTime}"
-                                        pattern="hh:mm:ss">
+                                        pattern="yyyy MM dd hh:mm:ss">
                             </p:calendar>
 
                             <h:outputLabel value="Multiply"/>
@@ -40,6 +49,9 @@
                             <h:outputLabel value="Slary Mul Factor"/>
                             <p:inputText value="#{staffShiftController.staffshift.multiplyingFactorSalary}"/>
 
+                            <h:outputLabel value="Leave Type"/>
+                            <p:inputText value="#{staffShiftController.staffshift.leaveType}"/>
+
 
                             <h:outputLabel value="Roster"/>
                             <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
@@ -50,7 +62,7 @@
 
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                action="#{staffShiftController.saveStaffShift()}"/>
+                                                 action="#{staffShiftController.saveStaffShift()}"/>
                             </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 

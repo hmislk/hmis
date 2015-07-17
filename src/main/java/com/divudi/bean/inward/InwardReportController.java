@@ -22,10 +22,12 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.AdmissionTypeFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -58,6 +60,7 @@ public class InwardReportController implements Serializable {
     Institution institution;
     Date fromDate;
     Date toDate;
+    Admission patientEncounter;
     double grossTotals;
     double discounts;
     double netTotals;
@@ -70,12 +73,15 @@ public class InwardReportController implements Serializable {
     PatientEncounterFacade peFacade;
     @EJB
     AdmissionTypeFacade admissionTypeFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
     List<PatientEncounter> patientEncounters;
 
     Bill bill;
     List<BillItem> billedBill;
     List<BillItem> cancelledBill;
     List<BillItem> refundBill;
+    List<PatientInvestigation> patientInvestigations;
     double totalBilledBill;
     double totalCancelledBill;
     double totalRefundBill;
@@ -486,7 +492,7 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calTotalDischargedNoChanges();
-        
+
         List<PatientEncounter> list = patientEncounters;
         patientEncounters = null;
         patientEncounters = new ArrayList<>();
@@ -593,6 +599,56 @@ public class InwardReportController implements Serializable {
             total += b.getBill().getNetTotal();
         }
 
+    }
+
+    public void createPatientInvestigationsTableAll() {
+
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + "and pi.encounter is not null ";
+
+        Map temMap = new HashMap();
+
+        if (patientEncounter != null) {
+            sql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
+        }
+//       
+
+        sql += " order by pi.id desc  ";
+//    
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public Admission getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(Admission patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public PatientInvestigationFacade getPatientInvestigationFacade() {
+        return patientInvestigationFacade;
+    }
+
+    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
+        this.patientInvestigationFacade = patientInvestigationFacade;
+    }
+
+    public List<PatientInvestigation> getPatientInvestigations() {
+        return patientInvestigations;
+    }
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
     }
 
     public BhtSummeryController getBhtSummeryController() {

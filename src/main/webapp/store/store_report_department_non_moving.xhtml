@@ -19,7 +19,7 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsStock.fromDateE}" pattern="dd MM yyyy" ></p:calendar>
@@ -53,11 +53,11 @@
                                     <h:outputLabel value="#{storeReportsStock.department.name}:&emsp; Non Moving"/> 
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                     <h:outputLabel  value="#{storeReportsStock.fromDateE}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
                                     <h:outputLabel  value="#{storeReportsStock.toDateE}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </f:facet>                               
                                 <p:column headerText="Item"  >
@@ -113,11 +113,9 @@
                                     </f:facet>
 
                                 </p:column>
-
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
-
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

@@ -17,11 +17,11 @@
 
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel>                        
+                            <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>                        
                         </f:facet>
 
                         <h:panelGrid columns="20"  >
-                            <h:outputLabel value="Pharmacy Retail Bill" />
+                            <h:outputLabel value="OPD Bill" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.paymentMethod}"  >                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
@@ -47,7 +47,7 @@
                                              action="#{opdPreSettleController.settle()}" />
 
                             <p:commandButton ajax="false" value="Back To Search"
-                                            action="opd_search_pre_batch_bill"/>
+                                             action="opd_search_pre_batch_bill"/>
                             <p:defaultCommand target="settle"/>
                         </h:panelGrid>
 
@@ -106,66 +106,68 @@
 
                                 </p:panel>
                             </p:panelGrid>
-                            <p:panel header="Bill Item Detail">
+                            <p:panel header="Bill Details">
                                 <p:dataTable value="#{opdPreSettleController.billedBill.forwardReferenceBills}" var="rb">
-                                    <p:column  >                                                               
+                                    <p:column  headerText="Bill No" >                                                               
                                         <h:outputLabel  value="#{rb.deptId}"/>                                   
                                     </p:column>
-                                    <p:column >
+                                    <p:column  headerText="Bill Raised At">
                                         <h:outputLabel value="#{rb.createdAt}" >
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
-                                        <br/>
+                                    </p:column>
+
+                                    <p:column headerText="User" >                               
+                                        <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>                                
+                                    </p:column>  
+
+                                    <p:column headerText="Total">
+                                        <h:outputLabel value="#{rb.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column headerText="Discount" >
+                                        <h:outputLabel value="#{rb.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column headerText="Net Total" >
+                                        <h:outputLabel value="#{rb.total - rb.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column headerText="Paid" >
+                                        <h:outputLabel value="#{rb.cashPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column  headerText="Comments">
                                         <h:panelGroup rendered="#{rb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                            value="#{rb.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column> 
-                                    <p:column >                               
-                                        <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                                
-                                        <br/>
-                                        <h:panelGroup rendered="#{rb.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled by " />
+                                            <h:outputLabel style="color: red;" value=" by " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                            value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup> 
-                                    </p:column>  
-                                    <p:column >
-                                        <h:outputLabel value="#{rb.cashPaid}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                  
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{rb.total}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                  
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{rb.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                  
-                                    </p:column>
-                                    
+                                        <h:panelGroup rendered="#{rb.refunded}" >
+                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" rendered="#{rb.refunded}"
+                                                           value="#{rb.referenceBill.createdAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
+                                    </p:column> 
                                 </p:dataTable>
                             </p:panel>
                         </p:panel>
                     </p:panel>
 
 
-<!--                    <p:panel rendered="#{opdPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview" >
-                            <ph:saleBill bill="#{opdPreSettleController.bill}"/>
-                        </h:panelGroup>
-                    </p:panel>-->
 
                 </h:form>
             </ui:define>

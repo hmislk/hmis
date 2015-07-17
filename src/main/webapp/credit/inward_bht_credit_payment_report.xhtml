@@ -57,7 +57,7 @@
                                 <p:column headerText="Patient ">
                                     #{rm.patientEncounter.patient.person.name}
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{rm.netValue}"></h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController1.billItemNetValue}"></h:outputLabel>

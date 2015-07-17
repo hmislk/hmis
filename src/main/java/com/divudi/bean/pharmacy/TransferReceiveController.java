@@ -191,8 +191,8 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().getBillItems().add(i);
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(),  BillType.PharmacyTransferReceive,BillClassType.BilledBill, BillNumberSuffix.PHTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(),  BillType.PharmacyTransferReceive,BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -219,9 +219,18 @@ public class TransferReceiveController implements Serializable {
     private double calTotal() {
         double value = 0;
         int serialNo = 0;
-        for (BillItem b : getBillItems()) {
-            value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
-            b.setSearialNo(serialNo++);
+        System.out.println("preference"+sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate());
+
+        if (sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate()) {
+            for (BillItem b : getBillItems()) {
+                value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
+                b.setSearialNo(serialNo++);
+            }
+        } else {
+            for (BillItem b : getBillItems()) {
+                value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
+                b.setSearialNo(serialNo++);
+            }
         }
 
         return value;

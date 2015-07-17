@@ -100,6 +100,7 @@ public enum Privileges {
     LabEditPatient,
     LabInvestigationFee,
     LabAddInwardServices,
+    LabSearchBillLoggedInstitution,
     IncomeReport,
     LabReport,
     DuesAndAccess,
@@ -191,6 +192,7 @@ public enum Privileges {
     ClinicalVisitSummery,
     ClinicalHistory,
     ClinicalAdministration,
+    ClinicalPatientDelete,
     ChannelAdd,
     ChannelCancel,
     ChannelRefund,
@@ -208,6 +210,7 @@ public enum Privileges {
     AdminStaff,
     AdminItems,
     AdminPrices,
+    AdminFilterWithoutDepartment,
     ChangeProfessionalFee,
     ChangeCollectingCentre,
     StoreIssue,
@@ -247,6 +250,7 @@ public enum Privileges {
     CashTransactionCashOut,
     CashTransactionListToCashRecieve,
     ChannellingChannelBooking,
+    ChannellingFutureChannelBooking,
     ChannellingPastBooking,
     ChannellingBookedList,
     ChannellingDoctorLeave,
@@ -279,6 +283,7 @@ public enum Privileges {
     
     //Administration
     SearchAll,
+    ChannelBookingChange,
     
     
    

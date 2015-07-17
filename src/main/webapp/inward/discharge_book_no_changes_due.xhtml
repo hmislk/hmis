@@ -143,7 +143,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Final Bill Total" style="text-align: right;">
+                                <p:column headerText="Final Bill Total" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill Total"/>
                                     </f:facet>                                    
@@ -157,7 +157,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Paid BY PATIENT" style="text-align: right;">
+                                <p:column headerText="Paid BY PATIENT" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid BY PATIENT"/>
                                     </f:facet>                                    
@@ -171,7 +171,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Credit Paid Amount" style="text-align: right;">
+                                <p:column headerText="Credit Paid Amount" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Paid Amount"/>
                                     </f:facet>                                    
@@ -185,7 +185,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Due Amount" style="text-align: right;">
+                                <p:column headerText="Due Amount" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>                                    
@@ -197,10 +197,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>
-                     
-
-                               
+                                </p:column>  
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

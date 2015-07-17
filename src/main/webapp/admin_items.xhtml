@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
 
@@ -58,7 +58,10 @@
                                 <h:panelGrid columns="1" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Investigations" action="lab_investigation_list_to_remove" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Investigations" action="/common/investigation_bulk_un_delete" onclick="onSubmitButton();"/>
+                                    
                                 </h:panelGrid>
                             </p:panel>
 

@@ -20,7 +20,7 @@
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
                                         itemValue="#{dept}" forceSelection="true" 
-                                        value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                                        value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
                         </p:autoComplete>
                         <h:outputLabel value="From" ></h:outputLabel>
                         <p:calendar  id="frmDate"  value="#{reportsTransfer.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
@@ -53,20 +53,20 @@
                         <p:column headerText="Batch No">
                             #{i.itemBatch.batchNo}
                         </p:column>
-                        <p:column headerText="Purchase Rate" style="text-align: right;">
+                        <p:column headerText="Purchase Rate" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.itemBatch.purcahseRate}">
                                  <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Retail Rate" style="text-align: right;">
+                        <p:column headerText="Retail Rate" styleClass="averageNumericColumn">
                              <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
                                  <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Count" style="text-align: right;">
+                        <p:column headerText="Count" styleClass="averageNumericColumn">
                             #{i.count}
                         </p:column>   
-                        <p:column headerText="Gross Value" style="text-align: right;">
+                        <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.gross}">
                                 <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>  
@@ -76,7 +76,7 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Margin Value" style="text-align: right;">
+                        <p:column headerText="Margin Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.margin}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel> 
@@ -86,7 +86,7 @@
                                 </h:outputLabel> 
                             </f:facet>
                         </p:column>
-                          <p:column headerText="Discount Value" style="text-align: right;">
+                          <p:column headerText="Discount Value" styleClass="averageNumericColumn">
                               <h:outputLabel value="#{i.discount}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel> 
@@ -96,7 +96,7 @@
                                 </h:outputLabel> 
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Net Value" style="text-align: right;">
+                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
                             <h:outputLabel value="#{i.net}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>   

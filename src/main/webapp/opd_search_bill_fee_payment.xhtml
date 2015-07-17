@@ -42,7 +42,7 @@
                                 <h:outputLabel   value="#{bfp.billFee.bill.deptId}"/>
                             </p:column>    
                             <p:column headerText="Batch Bill No">                                
-                                <h:outputLabel   value="#{bfp.billFee.bill.backwardReferenceBill}"/>
+                                <h:outputLabel   value="#{bfp.billFee.bill.backwardReferenceBill.deptId}"/>
                             </p:column> 
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bfp.createdAt}" >
@@ -64,6 +64,22 @@
                             </p:column>
                             <p:column headerText="payment Amount" >
                                 <h:outputLabel value="#{bfp.payment.paidValue}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="dep" >
+                                <h:outputLabel value="#{bfp.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="dep payment" >
+                                <h:outputLabel value="#{bfp.payment.department.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="institution" >
+                                <h:outputLabel value="#{bfp.institution.name}" >                                      
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="institution payment" >
+                                <h:outputLabel value="#{bfp.payment.institution.name}" >                                      
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Billed by" >

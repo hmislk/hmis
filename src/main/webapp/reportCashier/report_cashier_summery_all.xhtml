@@ -41,7 +41,7 @@
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel value="#{cashierReportController.fromDate}">
+                        <h:outputLabel value="#{cashierReportController.toDate}">
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel><br/>
 
@@ -89,31 +89,31 @@
                                 <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.cash}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.credit}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.card}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.cheque}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                
                             </p:column>
 
-                            <p:column style="text-align: right;" >
+                            <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.slip}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                

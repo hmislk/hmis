@@ -66,8 +66,41 @@
                             <p:column headerText="Speciality" >
                                 <h:outputLabel value="#{bf.staff.speciality.name}" ></h:outputLabel>
                             </p:column>
+                            
+                            <p:column headerText="Bill Fee pe id" >
+                                <h:outputLabel value="#{bf.patienEncounter}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Bill pe id" >
+                                <h:outputLabel value="#{bf.bill.patientEncounter}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Speciality Id" >
+                                <h:outputLabel value="#{bf.staff.speciality.id}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Speciality Retired" >
+                                <h:outputLabel value="#{bf.staff.speciality.retired}" ></h:outputLabel>
+                            </p:column>
+                            
                             <p:column headerText="Staff" >
                                 <h:outputLabel value="#{bf.staff.person.name}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Staff person Retired" >
+                                <h:outputLabel value="#{bf.staff.person.retired}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Staff Retired" >
+                                <h:outputLabel value="#{bf.staff.retired}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="discharge at" >
+                                <h:outputLabel value="#{bf.bill.patientEncounter.dateOfDischarge}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Fee at" >
+                                <h:outputLabel value="#{bf.createdAt}" ></h:outputLabel>
                             </p:column>
 
 

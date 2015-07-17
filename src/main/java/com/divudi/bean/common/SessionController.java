@@ -69,20 +69,22 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Privileges> privilegeses;
     @Inject
     SecurityController securityController;
+    @Inject
+    SessionController sessionController;
     Department department;
     Institution institution;
     @EJB
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
     WebUser webUser;
-    
-    
+
     String billNo;
     String phoneNo;
 
     public void updateUserPreferences() {
         if (institutionPreference != null) {
             if (institutionPreference.getId() == null || institutionPreference.getId() == 0) {
+                userPreference.setInstitution(sessionController.getInstitution());
                 userPreferenceFacade.create(institutionPreference);
                 JsfUtil.addSuccessMessage("Preferences Saved");
             } else {
@@ -226,6 +228,22 @@ public class SessionController implements Serializable, HttpSessionListener {
             UtilityController.addErrorMessage("Please enter a username");
             return false;
         }
+
+        if (false) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(2015, 05, 17, 23, 59, 59);//2015/june/17/23:00:00
+            calendar.set(Calendar.MILLISECOND, 999);
+
+            Date expired = calendar.getTime();
+            System.out.println("expired = " + expired);
+            Date nowDate = new Date();
+            System.out.println("nowDate = " + nowDate);
+
+            if (nowDate.after(expired)) {
+                UtilityController.addErrorMessage("Your Application has Expired");
+                return false;
+            }
+        }
         // password
         if (isFirstVisit()) {
             prepareFirstVisit();
@@ -366,7 +384,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
     }
-    
+
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
@@ -701,8 +719,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
     }
-    
-    
 
     public void setPrivilegeses(List<Privileges> privilegeses) {
         this.privilegeses = privilegeses;

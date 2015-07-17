@@ -28,7 +28,7 @@
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                                 var="dept" itemLabel="#{dept.name}" 
                                                 itemValue="#{dept}" forceSelection="true" 
-                                                value="#{reportsTransfer.department}" converter="dep" >
+                                                value="#{reportsTransfer.department}" converter="departmentConverter" >
                                 </p:autoComplete>
                                 <h:outputLabel value="From" ></h:outputLabel>
                                 <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
