@@ -6,6 +6,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Item;
+import java.util.Date;
 
 /**
  *
@@ -32,6 +33,38 @@ public class ItemTransactionSummeryRow {
     Double transferInVal;
     Double purchaseVal;
     Double totalInVal;
+    
+    Double value;
+    Date date;
+    Double quantity;
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+    
+    
+
+    public Double getValue() {
+        return value;
+    }
+
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+    
+    
 
     public Double getIssueQty() {
         return issueQty;
