@@ -74,6 +74,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     int progressValue = 0;
     boolean progressStarted = false;
     boolean stopProgress;
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController

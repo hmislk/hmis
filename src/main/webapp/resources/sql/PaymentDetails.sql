@@ -1,4 +1,4 @@
-select p.`ID`,pe.`NAME`,b.`INSID`,b.`DEPTID`,p.`PAIDVALUE`,p.`PAYMENTMETHOD`,p.`CREATEDAT`,d.`NAME`,i.`NAME`
+select p.`ID`,pe.`NAME`,b.`INSID`,b.`DEPTID`,p.`PAIDVALUE`,b.`BILLTYPE`,p.`PAYMENTMETHOD`,p.`CREATEDAT`,d.`NAME`,i.`NAME`
 from payment p join department d on p.`DEPARTMENT_ID`=d.`ID`
 join institution i on p.`INSTITUTION_ID`=i.`ID`
 join webuser w on p.`CREATER_ID`=w.`ID`
