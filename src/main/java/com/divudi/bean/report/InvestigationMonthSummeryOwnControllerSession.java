@@ -1045,5 +1045,34 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
 
     }
+    
+    boolean paginator = true;
+    int rows = 20;
+
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+    
+    public void prepareForPrint(){
+        paginator=false;
+        rows=getItems().size();
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
+    }
 
 }
