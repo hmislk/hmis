@@ -263,6 +263,7 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeInvest(String query) {
         System.out.println("master" + listMasterItemsOnly);
+        System.out.println("master login Lab" );
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }
@@ -287,8 +288,8 @@ public class InvestigationController implements Serializable {
 
         if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
             System.out.println("inside intitution null and logged institution only");
-            sql += " and c.institution is null "
-                    + " and c.institution=:ins ";
+            sql += " and (c.institution is null "
+                    + " or c.institution=:ins) ";
             m.put("ins", sessionController.getInstitution());
         }
 
