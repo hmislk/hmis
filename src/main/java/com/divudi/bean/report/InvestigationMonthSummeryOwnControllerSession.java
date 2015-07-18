@@ -9,16 +9,17 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -27,15 +28,12 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -60,6 +58,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private InvestigationFacade investigationFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    BillEjb billEjb;
     private Date fromDate;
     private Date toDate;
     private Institution creditCompany;
@@ -70,6 +70,12 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
     List<InvestigationSummeryData> itemsLab;
+    Long totalCount;
+    int progressValue = 0;
+    boolean progressStarted = false;
+    boolean stopProgress;
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController
@@ -91,14 +97,62 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
-        for (Item w : getInvestigations()) {
-            InvestigationSummeryData temp = new InvestigationSummeryData();
-            temp.setInvestigation(w);
-            setCountTotal(temp, w);
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
             if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
                 items.add(temp);
             }
         }
+        progressStarted = false;
+    }
+
+    public void createInvestigationTurnoverTime() {
+        progressStarted = true;
+        progressValue = 0;
+        double averateMins = 0;
+        double totalMins = 0;
+        double averageCount = 0;
+        List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
+                fromDate,
+                toDate,
+                new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
+                new Class[]{Bill.class},
+                true,
+                null,
+                true,
+                null,
+                true,
+                null,
+                true,
+                null);
+        double singleItem = 0;
+        if (pis.size() != 0) {
+            singleItem = 100 / pis.size();
+        }
+
+        for (PatientInvestigation pi : pis) {
+            System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
+            progressValue += (int) singleItem;
+            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+            totalMins += averateMins;
+            averageCount++;
+        }
+        totalCount = (long) (totalMins / averageCount);
+        progressStarted = false;
     }
 
     public void setItem(Item item) {
@@ -135,7 +189,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfMonth();
         }
         return fromDate;
     }
@@ -146,7 +200,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance().getTime());
+            toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
     }
@@ -484,7 +538,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private long getCount(Bill bill, Item item) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select count(bi) FROM BillItem bi where (bi.bill.billType=:bType1 or bi.bill.billType=:bType2) and bi.item =:itm"
+        sql = "select count(bi) FROM BillItem bi "
+                + " where (bi.bill.billType=:bType1 or bi.bill.billType=:bType2) and bi.item =:itm"
                 + " and type(bi.bill)=:billClass and (bi.bill.toInstitution=:ins or bi.item.department.institution=:ins ) "
                 + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.name";
         temMap.put("toDate", getToDate());
@@ -574,7 +629,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
     }
 
     private double getTotal2(Item item) {
@@ -608,11 +662,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     private void setCountTotal(InvestigationSummeryData is, Item w) {
-
         long billed = getCount(new BilledBill(), w);
         long cancelled = getCount(new CancelledBill(), w);
         long refunded = getCount(new RefundBill(), w);
-
         long net = billed - (cancelled + refunded);
         is.setCount(net);
 
@@ -621,6 +673,21 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             is.setTurnOverValue(setTurnOverValue(net));
         }
 
+    }
+
+    private InvestigationSummeryData setIxSummeryCount(Item w) {
+        InvestigationSummeryData is = new InvestigationSummeryData();
+        is.setInvestigation(w);
+        long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, true, null);
+        System.out.println("billed = " + billed);
+        long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{CancelledBill.class}, true, null, true, null, true, null, true, null);
+        System.out.println("cancelled = " + cancelled);
+        long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, true, null);
+        System.out.println("refunded = " + refunded);
+        long net = billed - (cancelled + refunded);
+        System.out.println("net = " + net);
+        is.setCount(net);
+        return is;
     }
 
     private double setTurnOverValue(long count) {
@@ -900,6 +967,46 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.creditCompany = creditCompany;
     }
 
+    public Long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Long totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public int getProgressValue() {
+        return progressValue;
+    }
+
+    public void setProgressValue(int progressValue) {
+        this.progressValue = progressValue;
+    }
+
+    public boolean isProgressStarted() {
+        return progressStarted;
+    }
+
+    public void setProgressStarted(boolean progressStarted) {
+        this.progressStarted = progressStarted;
+    }
+
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -955,6 +1062,16 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             this.count = count;
         }
 
+    }
+    
+    public void prepareForPrint(){
+        paginator=false;
+        rows=getItems().size();
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
     }
 
 }

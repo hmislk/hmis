@@ -21,6 +21,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -34,6 +35,7 @@ import com.divudi.entity.ItemFee;
 import com.divudi.entity.PackageFee;
 import com.divudi.entity.Packege;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
@@ -49,6 +51,7 @@ import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.CategoryFacade;
@@ -111,7 +114,8 @@ public class BillBeanController implements Serializable {
     PackageFeeFacade packageFeeFacade;
     @EJB
     ServiceSessionBean serviceSessionBean;
-
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     CategoryFacade categoryFacade;
     @EJB
@@ -582,7 +586,8 @@ public class BillBeanController implements Serializable {
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
                 + " and b.referenceBill.billType=:refType "
-                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.bill.institution=:ins "
                 + " group by b.referenceBill.toDepartment "
                 + " order by b.referenceBill.toDepartment.name ";
         HashMap hm = new HashMap();
@@ -590,6 +595,28 @@ public class BillBeanController implements Serializable {
         hm.put("refType", refBillType);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", sessionController.getInstitution());
+
+        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public List<Object[]> fetchDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
+        String sql = "Select b.referenceBill.toDepartment,sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.bill.institution=:ins "
+                + " group by b.referenceBill.toDepartment "
+                + " order by b.referenceBill.toDepartment.name ";
+        HashMap hm = new HashMap();
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType", refBillType);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("ins", i);
 
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
@@ -754,6 +781,25 @@ public class BillBeanController implements Serializable {
         hm.put("refType", refBillType);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+
+        return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double calDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
+        String sql = "Select sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.bill.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+        HashMap hm = new HashMap();
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType", refBillType);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("ins", i);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
@@ -2373,6 +2419,21 @@ public class BillBeanController implements Serializable {
 
         return e.getBillItem();
     }
+    
+    public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu,Payment p) {
+        e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        e.getBillItem().setCreater(wu);
+        e.getBillItem().setBill(b);
+
+        if (e.getBillItem().getId() == null) {
+            getBillItemFacade().create(e.getBillItem());
+        }
+
+        saveBillComponent(e, b, wu);
+        saveBillFee(e, b, wu, p);
+
+        return e.getBillItem();
+    }
 
     @Inject
     BillController billController;
@@ -2414,27 +2475,27 @@ public class BillBeanController implements Serializable {
             //System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {
-                    //System.out.println("1.1.cashRemain" + billController.getCashRemain());
+                    System.out.println("1.1.cashRemain" + billController.getCashRemain());
                     bill.setBalance(tot - billController.getCashRemain());
                     bill.setTotal(tot);
-                    bill.setNetTotal(tot - billController.getCashRemain());
+                    bill.setNetTotal(billController.getCashRemain());
                     bill.setDiscount(dis);
                     bill.setCashPaid(billController.getCashRemain());
                     billController.setCashRemain(0.0);
-                    //System.out.println("1.2.cashRemain" + billController.getCashRemain());
+                    System.out.println("1.2.cashRemain" + billController.getCashRemain());
                 } else {
-                    //System.out.println("2.1.cashRemain" + billController.getCashRemain());
+                    System.out.println("2.1.cashRemain" + billController.getCashRemain());
                     bill.setBalance(0.0);
                     bill.setTotal(tot);
                     bill.setNetTotal(net);
                     bill.setDiscount(dis);
                     bill.setCashPaid(tot);
                     billController.setCashRemain(billController.getCashRemain() - tot);
-                    //System.out.println("2.2.cashRemain" + billController.getCashRemain());
+                    System.out.println("2.2.cashRemain" + billController.getCashRemain());
                 }
 
             } else {
-                //System.out.println("3.cashRemain" + billController.getCashRemain());
+                System.out.println("3.cashRemain" + billController.getCashRemain());
                 bill.setBalance(tot);
                 bill.setTotal(tot);
                 bill.setNetTotal(0.0);
@@ -2448,7 +2509,7 @@ public class BillBeanController implements Serializable {
             bill.setNetTotal(net);
             bill.setDiscount(dis);
         }
-
+        System.err.println("bill.getNetTotal() = "+bill.getNetTotal());
         getBillFacade().edit(bill);
     }
 
@@ -2573,6 +2634,27 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
+            list.add(bf);
+        }
+
+        return list;
+    }
+    
+    public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu,Payment p) {
+        List<BillFee> list = new ArrayList<>();
+        for (BillFee bf : e.getLstBillFees()) {
+            bf.setCreatedAt(Calendar.getInstance().getTime());
+            bf.setCreater(wu);
+            bf.setBillItem(e.getBillItem());
+            bf.setPatienEncounter(b.getPatientEncounter());
+            bf.setPatient(b.getPatient());
+
+            bf.setBill(b);
+
+            if (bf.getId() == null) {
+                getBillFeeFacade().create(bf);
+            }
+            createBillFeePaymentAndPayment(bf, p);
             list.add(bf);
         }
 
@@ -2942,6 +3024,18 @@ public class BillBeanController implements Serializable {
         }
         return bf;
     }
+    
+    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(bf.getSettleValue());
+        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setCreater(sessionController.getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        getBillFeePaymentFacade().create(bfp);
+    }
 
     public ItemFacade getItemFacade() {
         return itemFacade;
@@ -3125,6 +3219,14 @@ public class BillBeanController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public BillFeePaymentFacade getBillFeePaymentFacade() {
+        return billFeePaymentFacade;
+    }
+
+    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
+        this.billFeePaymentFacade = billFeePaymentFacade;
     }
 
 }

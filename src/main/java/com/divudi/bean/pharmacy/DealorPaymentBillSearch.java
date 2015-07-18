@@ -23,6 +23,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -93,6 +94,7 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
+        System.out.println("in approve");
         if (getBill().getReferenceBill() != null) {
             UtilityController.addErrorMessage("Already Approved");
             return;
@@ -111,7 +113,12 @@ public class DealorPaymentBillSearch implements Serializable {
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);
 
-        for (BillItem bi : getBill().getBillItems()) {
+        System.out.println("getBill().getBillItems() = " + getBill().getBillItems());
+        System.out.println("getBill().getBillItems() = " + getBill().getBillItems().size());
+        System.out.println("getBillItems() = " + getBillItems().size());
+
+        for (BillItem bi : getBillItems()) {
+            System.err.println("in");
             BillItem newBi = new BillItem();
             newBi.copy(bi);
             newBi.setBill(newBill);
@@ -119,10 +126,13 @@ public class DealorPaymentBillSearch implements Serializable {
             newBi.setCreater(sessionController.getLoggedUser());
             newBi.setReferanceBillItem(bi);
             billItemFacede.create(newBi);
-
+            System.out.println("newBi = " + newBi);
             bi.setReferanceBillItem(newBi);
             billItemFacede.edit(bi);
-
+            System.out.println("bi = " + bi);
+            System.out.println("newBi.getBill = " + newBi.getBill());
+            System.out.println("newBi.getBill.getReferenceBill = " + newBi.getBill().getReferenceBill());
+            System.err.println("out");
         }
 
         UtilityController.addSuccessMessage("Succesfully Approved");
@@ -256,6 +266,10 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setInstitution(getSessionController().getInstitution());
         cb.setInstitution(getSessionController().getLoggedUser().getInstitution());
         cb.setComments(comment);
+        
+        if (cb.getId()==null) {
+            getBillFacade().create(cb);
+        }
 
         return cb;
     }
@@ -329,6 +343,9 @@ public class DealorPaymentBillSearch implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Inject
+    PharmacyDealorBill pharmacyDealorBill;
+
     public void cancelBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
@@ -336,14 +353,15 @@ public class DealorPaymentBillSearch implements Serializable {
             }
 
             CancelledBill cb = createCancelBill();
+            Payment p = pharmacyDealorBill.createPayment(cb, getBill().getPaymentMethod());
 
             //Copy & paste
             //  if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
-                if (cb.getId() == null) {
-                    getCancelledBillFacade().create(cb);
-                }
-                cancelBillItems(cb);
+//                if (cb.getId() == null) {
+//                    getCancelledBillFacade().create(cb);
+//                }
+                cancelBillItems(cb, p);
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
@@ -428,6 +446,25 @@ public class DealorPaymentBillSearch implements Serializable {
                 getBillItemFacede().create(b);
             }
 
+            updateReferenceBill(b);
+        }
+    }
+
+    private void cancelBillItems(Bill can, Payment p) {
+        for (BillItem nB : getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(can);
+            b.copy(nB);
+            b.invertValue(nB);
+            b.setReferenceBill(nB.getReferenceBill());
+
+            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            if (b.getId() == null) {
+                getBillItemFacede().create(b);
+            }
+            pharmacyDealorBill.saveBillFee(b, p);
             updateReferenceBill(b);
         }
     }
@@ -565,14 +602,15 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        if (getBill() != null) {
+        if (getBill() != null && billItems == null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
             billItems = getBillItemFacede().findBySQL(sql);
-            ////System.out.println("sql for bill item search is " + sql);
-            ////System.out.println("results for bill item search is " + billItems);
-            if (billItems == null) {
-                billItems = new ArrayList<BillItem>();
-            }
+//            System.out.println("sql for bill item search is " + sql);
+            System.out.println("results for bill item search is " + billItems.size());
+
+        }
+        if (billItems == null) {
+            billItems = new ArrayList<BillItem>();
         }
 
         return billItems;

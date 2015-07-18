@@ -818,6 +818,9 @@ public class HumanResourceBean {
                 + " and (ss.considerForLateIn=true "
                 + " or ss.considerForEarlyOut=true) "
                 + " order by ss.shiftDate ";
+        
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
@@ -825,7 +828,6 @@ public class HumanResourceBean {
     public LeaveType getLeaveType(Staff staff, Date date) {
         StaffLeaveEntitle staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, date);
 
-        System.out.println("staffLeaveEntitle.getCount() = " + staffLeaveEntitle.getCount());
 
         if (staffLeaveEntitle != null
                 && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Annual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
@@ -2658,7 +2660,7 @@ public class HumanResourceBean {
                     //12 hour shifts adding hours for leave (6 hours(leaveHourFull not shift duration))
                     if (ss.getLeaveType() != LeaveType.No_Pay && ss.getLeaveType() != LeaveType.No_Pay_Half) {
                         //no pay and no pay half can't add duraiion minits
-                        System.err.println("ss.getLeaveType()"+ss.getLeaveType());
+                        System.err.println("ss.getLeaveType()" + ss.getLeaveType());
                         dbl += (ss.getShift().getLeaveHourFull() * 60 * 60);
                         System.out.println("ss.getShift().getLeaveHourFull() * 60* 60= " + ss.getShift().getLeaveHourFull() * 60 * 60);
                         System.out.println("3. dbl = " + dbl);
@@ -2701,30 +2703,30 @@ public class HumanResourceBean {
                         dbl += (ss.getShift().getDurationMin() * 60);
                         System.out.println("ss.getShift().getDurationMin() * 60 = " + ss.getShift().getDurationMin() * 60);
                         System.out.println("4. dbl = " + dbl);
-                    } 
+                    }
 
                     if (ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf || ss.getLeaveType() == LeaveType.LieuHalf
                             || ss.getLeaveType() == LeaveType.DutyLeaveHalf) {
                         if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0) {
-                            double d=ss.getWorkedWithinTimeFrameVarified()+(ss.getShift().getLeaveHourHalf() * 60 * 60);
+                            double d = ss.getWorkedWithinTimeFrameVarified() + (ss.getShift().getLeaveHourHalf() * 60 * 60);
                             System.out.println("d = " + d);
                             System.out.println("ss.getShift().getDurationMin() = " + ss.getShift().getDurationMin());
-                            if ((ss.getShift().getDurationMin()*60)<d) {
-                                dbl+=ss.getShift().getDurationMin()*60;
+                            if ((ss.getShift().getDurationMin() * 60) < d) {
+                                dbl += ss.getShift().getDurationMin() * 60;
                                 System.out.println("4.b dbl(else) = " + dbl);
-                            }else{
-                                dbl+=d;
+                            } else {
+                                dbl += d;
                                 System.out.println("4.b dbl(else) = " + dbl);
                             }
                             System.out.println("4.b dbl = " + dbl);
                         }
                     }
                 }
-                
-                if (ss.getShift() != null ) {
+
+                if (ss.getShift() != null) {
                     if (ss.getShift().isHalfShift() && (!ss.isConsiderForEarlyOut() && !ss.isConsiderForLateIn())) {
                         //NOT or, but AND , now check ok
-                        dbl += (ss.getShift().getLeaveHourHalf() * 60) ;
+                        dbl += (ss.getShift().getLeaveHourHalf() * 60);
                         System.out.println("(ss.getShift().getDurationMin() * 60) * 0.5 = " + (ss.getShift().getDurationMin() * 60));
                         System.out.println("5. dbl = " + dbl);
                     }
@@ -2764,6 +2766,8 @@ public class HumanResourceBean {
         String sql = " Select ss "
                 + " from StaffShift ss "
                 + " where ss.retired=false"
+                //+ " and ss.additionalForm.retired=false "  add for additonal form retiered 210 in 2015 april 5(calculate value)
+                + " and ss.additionalForm.retired=false "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf"
                 + " and ss.dayType=:dtp ";
@@ -2858,9 +2862,17 @@ public class HumanResourceBean {
     }
 
     public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
-        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))"
-                + " from StaffShift ss "
-                + " where ss.retired=false"
+        String sql;
+        if (dayType == DayType.Extra) {
+            sql = "Select sum(ss.extraTimeCompleteRecordVarified)";
+        } else {
+            sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))";
+        }
+
+        sql += " from StaffShift ss "
+                + " where ss.retired=false "
+                //+ " and ss.additionalForm.retired=false "  add for additonal form retiered 210 in 2015 april 5
+                + " and ss.additionalForm.retired=false "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf"
                 + " and ss.dayType=:dtp ";
@@ -2869,6 +2881,9 @@ public class HumanResourceBean {
         hm.put("td", toDate);
         hm.put("stf", staff);
         hm.put("dtp", dayType);
+        
+        
+        System.out.println("sql(calculateExtraWorkMinute)  = " + sql);
 
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
         if (timeSecond != null) {

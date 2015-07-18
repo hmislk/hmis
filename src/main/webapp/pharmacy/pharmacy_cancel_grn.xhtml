@@ -65,7 +65,7 @@
 <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
                         
                         <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
-                                <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >

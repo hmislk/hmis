@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://java.sun.com/jsf/html">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">            
@@ -13,9 +12,10 @@
                     <p:panel header="Lab Summeries">                        
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <h:panelGrid columns="1" >
-                                <p:panel header="Lab Investigation" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="Monthly Summeries" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End summery" action="report_lab_investigation_month_end_summery"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Counts" action="investigation_counts"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time" action="turn_over_time"/> 
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre" action="report_lab_collection_centre.xhtml"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor" action="report_lab_by_refering_doctor.xhtml"/>
@@ -56,7 +56,7 @@
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time" action="report_lab_investigation_month_end_summery_count_turnover"/> 
+                                        
 
                                     </p:panelGrid>
                                 </p:panel>

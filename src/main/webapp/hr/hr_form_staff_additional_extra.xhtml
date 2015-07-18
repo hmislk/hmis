@@ -123,6 +123,9 @@
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"></p:commandButton>
                             </p:column>
+                            <p:column headerText="Id">
+                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
+                            </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>

@@ -65,7 +65,7 @@
                                 <pa:slip paymentMethodData="#{opdPreBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton  value="Settle" action="#{opdPreBillController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
+                            <p:commandButton  value="Create Bill" action="#{opdPreBillController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
                             </p:commandButton>
@@ -81,162 +81,164 @@
 
                             <h:panelGrid columns="1" >
 
-                                <h:panelGroup id="panelPatient" >
+                                <p:panel  style="background-color: grey;" >
+                                    <h:panelGroup id="panelPatient" >
 
-                                    <p:tabView id="tvPt" activeIndex="#{opdPreBillController.patientSearchTab}"  >
-                                        <p:ajax event="tabChange"   process="@this"  
-                                                update=":#{p:component('cmbPs')} :#{p:component('tblBillItem')} :#{p:component('pBillDetails')} "
-                                                listener="#{opdPreBillController.onTabChange}" />
+                                        <p:tabView id="tvPt" activeIndex="#{opdPreBillController.patientSearchTab}"  >
+                                            <p:ajax event="tabChange"   process="@this"  
+                                                    update=":#{p:component('cmbPs')} :#{p:component('tblBillItem')} :#{p:component('pBillDetails')} "
+                                                    listener="#{opdPreBillController.onTabChange}" />
 
-                                        <p:tab id="tabNewPt" title="New Patient"   >
+                                            <p:tab id="tabNewPt" title="New Patient"   >
 
 
-                                            <table >
-                                                <tr >
-                                                    <td >
-                                                        <p:outputLabel value="Title &amp; Name" ></p:outputLabel>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td >
-                                                        <p:selectOneMenu  id="cmbTitle"  
-                                                                          value="#{opdPreBillController.newPatient.person.title}"  >
-                                                            <f:selectItem itemLabel="Select Title" />
-                                                            <f:selectItems value="#{opdPreBillController.title}"/>
-                                                        </p:selectOneMenu>
+                                                <table >
+                                                    <tr >
+                                                        <td >
+                                                            <p:outputLabel value="Title &amp; Name" ></p:outputLabel>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td >
+                                                            <p:selectOneMenu  id="cmbTitle"  
+                                                                              value="#{opdPreBillController.newPatient.person.title}"  >
+                                                                <f:selectItem itemLabel="Select Title" />
+                                                                <f:selectItems value="#{opdPreBillController.title}"/>
+                                                            </p:selectOneMenu>
 
-                                                    </td>
-                                                    <td  >
-                                                        <p:inputText autocomplete="off"  id="txtNewPtName" 
-                                                                     value="#{opdPreBillController.newPatient.person.name}" 
-                                                                     style="width: 350px;text-transform:uppercase;">
-                                                        </p:inputText>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <p:outputLabel value="Sex &amp; Age" ></p:outputLabel>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td>
-                                                        <p:selectOneMenu id="txtNewSex"  value="#{opdPreBillController.newPatient.person.sex}" >
-                                                            <f:selectItem itemLabel="Select Sex"/>
-                                                            <f:selectItems value="#{opdPreBillController.sex}"/>
-                                                        </p:selectOneMenu>
-                                                    </td>
-                                                    <td>
-                                                        <h:panelGrid columns="4">
-                                                            <p:inputText autocomplete="off"  id="year"  
-                                                                         value="#{opdPreBillController.yearMonthDay.year}" 
-                                                                         style="width: 50px; ">
-                                                                <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
-
-                                                                        listener="#{opdPreBillController.dateChangeListen()}"  />
+                                                        </td>
+                                                        <td  >
+                                                            <p:inputText autocomplete="off"  id="txtNewPtName" 
+                                                                         value="#{opdPreBillController.newPatient.person.name}" 
+                                                                         style="width: 350px;text-transform:uppercase;">
                                                             </p:inputText>
-                                                            <p:inputText autocomplete="off" id="month"
-                                                                         style="width: 50px; " value="#{opdPreBillController.yearMonthDay.month}">
-                                                                <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}"  />
-                                                            </p:inputText>
-                                                            <p:inputText autocomplete="off" id="day" 
-                                                                         style="width: 50px;" value="#{opdPreBillController.yearMonthDay.day}">
-                                                                <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}" />
-                                                            </p:inputText>
-                                                            <p:calendar  value="#{opdPreBillController.newPatient.person.dob}" 
-                                                                         id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
-                                                                         style="width: 100px!important;"
-                                                                         styleClass="shortinput">
-                                                                <f:ajax event="dateSelect" />
-                                                            </p:calendar>
-                                                        </h:panelGrid>
-                                                    </td>
-                                                </tr>
+                                                        </td>
+                                                    </tr>
 
-                                                <tr>
-                                                    <td >
-                                                        <h:outputLabel value="Phone,Area &amp; Nic"/>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td >
-                                                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
-                                                                     autocomplete="off" maxlength="11" 
-                                                                     value="#{opdPreBillController.newPatient.person.phone}"
-                                                                     style="width: 100px;">
-                                                        </p:inputMask>
-                                                    </td>
-                                                    <td  >
-                                                        <p:autoComplete id="acNewPtArea" converter="areaCon" 
-                                                                        completeMethod="#{areaController.completeArea}" 
-                                                                        var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
-                                                                        itemValue="#{pta}" forceSelection="true" 
-                                                                        value="#{opdPreBillController.newPatient.person.area}" ></p:autoComplete>
-                                                        <p:inputMask mask="999999999V" value="#{opdPreBillController.newPatient.person.nic}" />
-                                                    </td>
+                                                    <tr>
+                                                        <td>
+                                                            <p:outputLabel value="Sex &amp; Age" ></p:outputLabel>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td>
+                                                            <p:selectOneMenu id="txtNewSex"  value="#{opdPreBillController.newPatient.person.sex}" >
+                                                                <f:selectItem itemLabel="Select Sex"/>
+                                                                <f:selectItems value="#{opdPreBillController.sex}"/>
+                                                            </p:selectOneMenu>
+                                                        </td>
+                                                        <td>
+                                                            <h:panelGrid columns="4">
+                                                                <p:inputText autocomplete="off"  id="year"  
+                                                                             value="#{opdPreBillController.yearMonthDay.year}" 
+                                                                             style="width: 50px; ">
+                                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
 
-                                                </tr>
-                                            </table>
+                                                                            listener="#{opdPreBillController.dateChangeListen()}"  />
+                                                                </p:inputText>
+                                                                <p:inputText autocomplete="off" id="month"
+                                                                             style="width: 50px; " value="#{opdPreBillController.yearMonthDay.month}">
+                                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}"  />
+                                                                </p:inputText>
+                                                                <p:inputText autocomplete="off" id="day" 
+                                                                             style="width: 50px;" value="#{opdPreBillController.yearMonthDay.day}">
+                                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}" />
+                                                                </p:inputText>
+                                                                <p:calendar  value="#{opdPreBillController.newPatient.person.dob}" 
+                                                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                             style="width: 100px!important;"
+                                                                             styleClass="shortinput">
+                                                                    <f:ajax event="dateSelect" />
+                                                                </p:calendar>
+                                                            </h:panelGrid>
+                                                        </td>
+                                                    </tr>
 
-                                            <p:watermark value="YEAR" for="year" />
-                                            <p:watermark value="MONTH" for="month" />
-                                            <p:watermark value="DAYS" for="day" />
-                                            <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
+                                                    <tr>
+                                                        <td >
+                                                            <h:outputLabel value="Phone,Area &amp; Nic"/>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td >
+                                                            <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                                         autocomplete="off" maxlength="11" 
+                                                                         value="#{opdPreBillController.newPatient.person.phone}"
+                                                                         style="width: 100px;">
+                                                            </p:inputMask>
+                                                        </td>
+                                                        <td  >
+                                                            <p:autoComplete id="acNewPtArea" converter="areaCon" 
+                                                                            completeMethod="#{areaController.completeArea}" 
+                                                                            var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
+                                                                            itemValue="#{pta}" forceSelection="true" 
+                                                                            value="#{opdPreBillController.newPatient.person.area}" ></p:autoComplete>
+                                                            <p:inputMask mask="999999999V" value="#{opdPreBillController.newPatient.person.nic}" />
+                                                        </td>
 
-                                        </p:tab>
+                                                    </tr>
+                                                </table>
 
-                                        <p:tab id="tabSearchPt" title="Search Patient">
+                                                <p:watermark value="YEAR" for="year" />
+                                                <p:watermark value="MONTH" for="month" />
+                                                <p:watermark value="DAYS" for="day" />
+                                                <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
 
-                                            <h:panelGrid columns="1" >
+                                            </p:tab>
 
-                                                <p:autoComplete styleClass="mediuminput"
-                                                                disabled="#{opdPreBillController.fromOpdEncounter}"
-                                                                widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                                value="#{opdPreBillController.searchedPatient}" 
-                                                                completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                                var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
+                                            <p:tab id="tabSearchPt" title="Search Patient">
 
+                                                <h:panelGrid columns="1" >
 
-                                                    <p:column headerText="Name">
-                                                        <h:outputLabel value="#{apt.person.nameWithTitle}" />
-                                                    </p:column>
-
-                                                    <p:column headerText="Age">
-                                                        <h:outputLabel value="#{apt.age}" />
-                                                    </p:column>
-                                                    <p:column headerText="Code">
-                                                        <h:outputLabel value="#{apt.code}" />
-                                                    </p:column>
-                                                    <p:column headerText="Sex">
-                                                        <h:outputLabel value="#{apt.person.sex}" />
-                                                    </p:column>
-                                                    <p:column headerText="Address">
-                                                        <h:outputLabel value="#{apt.person.address}" />
-                                                    </p:column>
-                                                    <p:column headerText="Date of Birth">
-                                                        <h:outputLabel value="#{apt.person.dob}" >
-                                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
-                                                            render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
-                                                            listener="#{opdPreBillController.calTotals()}" />
-                                                </p:autoComplete>   
-
-                                                <h:panelGroup id="panSearch">
-                                                    <pat:searchPatientDetail patient="#{opdPreBillController.searchedPatient}"  />
-                                                </h:panelGroup>
-
-                                                <div style="padding: 2px; margin: 2px; border: 1px solid;">
-                                                    <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
-                                                </div>
-
-                                            </h:panelGrid>
+                                                    <p:autoComplete styleClass="mediuminput"
+                                                                    disabled="#{opdPreBillController.fromOpdEncounter}"
+                                                                    widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                                    value="#{opdPreBillController.searchedPatient}" 
+                                                                    completeMethod="#{patientController.completePatientByNameOrCode}" 
+                                                                    var="apt" itemLabel="#{apt.person.name}" 
+                                                                    itemValue="#{apt}" size="30"  style="width: 400px;" >
 
 
-                                        </p:tab>
+                                                        <p:column headerText="Name">
+                                                            <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                                        </p:column>
 
-                                    </p:tabView>
+                                                        <p:column headerText="Age">
+                                                            <h:outputLabel value="#{apt.age}" />
+                                                        </p:column>
+                                                        <p:column headerText="Code">
+                                                            <h:outputLabel value="#{apt.code}" />
+                                                        </p:column>
+                                                        <p:column headerText="Sex">
+                                                            <h:outputLabel value="#{apt.person.sex}" />
+                                                        </p:column>
+                                                        <p:column headerText="Address">
+                                                            <h:outputLabel value="#{apt.person.address}" />
+                                                        </p:column>
+                                                        <p:column headerText="Date of Birth">
+                                                            <h:outputLabel value="#{apt.person.dob}" >
+                                                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
+                                                                render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
+                                                                listener="#{opdPreBillController.calTotals()}" />
+                                                    </p:autoComplete>   
 
-                                </h:panelGroup>
+                                                    <h:panelGroup id="panSearch">
+                                                        <pat:searchPatientDetail patient="#{opdPreBillController.searchedPatient}"  />
+                                                    </h:panelGroup>
+
+                                                    <div style="padding: 2px; margin: 2px; border: 1px solid;">
+                                                        <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
+                                                    </div>
+
+                                                </h:panelGrid>
+
+
+                                            </p:tab>
+
+                                        </p:tabView>
+
+                                    </h:panelGroup>
+                                </p:panel>
 
                                 <h:panelGroup id="panelIx" >
 
