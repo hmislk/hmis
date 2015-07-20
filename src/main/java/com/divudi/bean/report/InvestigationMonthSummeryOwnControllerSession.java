@@ -74,6 +74,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     int progressValue = 0;
     boolean progressStarted = false;
     boolean stopProgress;
+    private boolean paginator = true;
+    private int rows = 20;
 
     /**
      * Creates a new instance of CashierReportController
@@ -989,6 +991,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.progressStarted = progressStarted;
     }
 
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -1044,6 +1062,16 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             this.count = count;
         }
 
+    }
+    
+    public void prepareForPrint(){
+        paginator=false;
+        rows=getItems().size();
+    }
+    
+    public void prepareForView(){
+        paginator=true;
+        rows=20;
     }
 
 }

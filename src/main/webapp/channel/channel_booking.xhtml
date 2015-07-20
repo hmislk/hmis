@@ -27,7 +27,8 @@
                                     <p:selectOneListbox converter="specilityCon" 
                                                         id="acSpeciality" 
                                                         value="#{bookingController.speciality}" 
-                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;" >
+                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;" 
+                                                        scrollHeight="300">
                                         <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                                         <p:ajax  event="change" process="@this" update="scStaff" /> 
                                         <p:ajax  event="click" process="@this" update="scStaff" /> 
@@ -136,7 +137,7 @@
                                 <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
                                              value="#{bookingController.billSessions}" var='bs'
                                              selectionMode="single" rowKey="#{bs.id}"
-                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="260">
+                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="560">
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                             listener="#{channelBillController.createBillfees}" />  
 

@@ -6,9 +6,16 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentListMethod;
+import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfAllInstitutions;
+import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfLoggedInstitution;
+import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfAllInstitutions;
+import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
+import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfAllInstitutions;
+import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfLoggedInstitution;
+import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.ItemReorders;
-import com.divudi.data.dataStructure.ItemTransactionSummeryRowReorder;
+import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
@@ -44,9 +51,9 @@ import org.primefaces.event.RowEditEvent;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import org.jfree.chart.axis.DateAxis;
+import org.primefaces.model.chart.CartesianChartModel;
 //import org.primefaces.model.chart.AxisType;
-//import org.primefaces.model.chart.LineChartModel;
-//import org.primefaces.model.chart.DateAxis;
 //import org.primefaces.model.chart.LegendPlacement;
 import org.primefaces.model.chart.LineChartSeries;
 
@@ -108,71 +115,73 @@ public class ReorderController implements Serializable {
     Item item;
     Department historyDept;
 
-//    private LineChartModel dateModel;
-//
-//    public LineChartModel getDateModel() {
-//        return dateModel;
-//    }
+    private CartesianChartModel dateModel;
 
-//    public void createDailyItemSummery() {
-//        createDailyItemSummery(item, historyDept, fromDate, toDate);
-//    }
-//
-//    public void createDailyItemSummery(Item item, Department dept) {
-//        this.item = item;
-//        this.historyDept = dept;
-//        createDailyItemSummery(item, dept, fromDate, toDate);
-//    }
+    public CartesianChartModel getDateModel() {
+        return dateModel;
+    }
 
-//    public void createDailyItemSummery(Item item, Department dept, Date fromDate, Date toDate) {
-//        dateModel = new LineChartModel();
-//        List<ItemTransactionSummeryRowReorder> rows;
-//
-//        LineChartSeries series1 = new LineChartSeries();
-//        series1.setLabel("Stock Average");
-//        rows = findDailyStockAverage(item, dept, fromDate, toDate);
-//        for (ItemTransactionSummeryRowReorder r : rows) {
-//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//            series1.set(df.format(r.getDate()), r.getQuantity());
-//        }
-//        dateModel.addSeries(series1);
-//
-//        LineChartSeries series2 = new LineChartSeries();
-//        series2.setLabel("Sales");
-//        rows = findDailySale(item, dept, fromDate, toDate);
-//        for (ItemTransactionSummeryRowReorder r : rows) {
-//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//            series2.set(df.format(r.getDate()), r.getQuantity());
-//        }
-//        dateModel.addSeries(series2);
-//
-//        LineChartSeries series3 = new LineChartSeries();
-//        series3.setLabel("Purchase/Good Receive");
-//        rows = findDailyPurchase(item, dept, fromDate, toDate);
-//        for (ItemTransactionSummeryRowReorder r : rows) {
-//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//            series3.set(df.format(r.getDate()), r.getQuantity());
-//        }
-//        dateModel.addSeries(series3);
-//
-//        LineChartSeries series4 = new LineChartSeries();
-//        series4.setLabel("Transfer Issue");
-//        rows = findDailyTransferOut(item, dept, fromDate, toDate);
-//        for (ItemTransactionSummeryRowReorder r : rows) {
-//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//            series4.set(df.format(r.getDate()), r.getQuantity());
-//        }
-//        dateModel.addSeries(series4);
-//
-//        LineChartSeries series5 = new LineChartSeries();
-//        series5.setLabel("Transfer Receive");
-//        rows = findDailyTransferIn(item, dept, fromDate, toDate);
-//        for (ItemTransactionSummeryRowReorder r : rows) {
-//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//            series5.set(df.format(r.getDate()), r.getQuantity());
-//        }
-//        dateModel.addSeries(series5);
-//
+    public void createDailyItemSummery() {
+        createDailyItemSummery(item, historyDept, fromDate, toDate);
+    }
+
+    public void createDailyItemSummery(Item item, Department dept) {
+        this.item = item;
+        this.historyDept = dept;
+        createDailyItemSummery(item, dept, fromDate, toDate);
+    }
+
+    public void createDailyItemSummery(Item item, Department dept, Date fromDate, Date toDate) {
+        dateModel = new CartesianChartModel();
+        List<ItemTransactionSummeryRow> rows;
+
+        LineChartSeries series1 = new LineChartSeries();
+        series1.setLabel("Stock Average");
+        rows = findDailyStockAverage(item, dept, fromDate, toDate);
+        for (ItemTransactionSummeryRow r : rows) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            series1.set(df.format(r.getDate()), r.getQuantity());
+        }
+        dateModel.addSeries(series1);
+
+        LineChartSeries series2 = new LineChartSeries();
+        series2.setLabel("Sales");
+        rows = findDailySale(item, dept, fromDate, toDate);
+        for (ItemTransactionSummeryRow r : rows) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            series2.set(df.format(r.getDate()), r.getQuantity());
+        }
+        dateModel.addSeries(series2);
+
+        LineChartSeries series3 = new LineChartSeries();
+        series3.setLabel("Purchase/Good Receive");
+        rows = findDailyPurchase(item, dept, fromDate, toDate);
+        for (ItemTransactionSummeryRow r : rows) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            series3.set(df.format(r.getDate()), r.getQuantity());
+        }
+        dateModel.addSeries(series3);
+
+        LineChartSeries series4 = new LineChartSeries();
+        series4.setLabel("Transfer Issue");
+        rows = findDailyTransferOut(item, dept, fromDate, toDate);
+        for (ItemTransactionSummeryRow r : rows) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            series4.set(df.format(r.getDate()), r.getQuantity());
+        }
+        dateModel.addSeries(series4);
+
+        LineChartSeries series5 = new LineChartSeries();
+        series5.setLabel("Transfer Receive");
+        rows = findDailyTransferIn(item, dept, fromDate, toDate);
+        for (ItemTransactionSummeryRow r : rows) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            series5.set(df.format(r.getDate()), r.getQuantity());
+        }
+        dateModel.addSeries(series5);
+        
+        
+        
 //        dateModel.setTitle("Item Transactions");
 //        dateModel.setZoom(true);
 //        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
@@ -182,13 +191,13 @@ public class ReorderController implements Serializable {
 //        axis.setTickAngle(-50);
 ////        axis.setMax("2014-02-01");
 //        axis.setTickFormat("%b %#d, %y");
-//
+
 //        dateModel.getAxes().put(AxisType.X, axis);
-//    }
+    }
 
     public DepartmentListMethod getDepartmentListMethod() {
         if (departmentListMethod == null) {
-            departmentListMethod = DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
+            departmentListMethod = AllDepartmentsOfLoggedInstitution;
         }
         return departmentListMethod;
     }
@@ -271,10 +280,10 @@ public class ReorderController implements Serializable {
         findDailyStockAverage(item, dept, fromDate, toDate);
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailyStockAverage(Item item, Department dept, Date fd, Date td) {
+    public List<ItemTransactionSummeryRow> findDailyStockAverage(Item item, Department dept, Date fd, Date td) {
         String jpql;
-        List<ItemTransactionSummeryRowReorder> rows;
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRowReorder(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
+        List<ItemTransactionSummeryRow> rows;
+        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
                 + " FROM StockHistory s "
                 + " WHERE s.createdAt between :fd and :td "
                 + " and s.item=:item ";
@@ -304,46 +313,46 @@ public class ReorderController implements Serializable {
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
-            ItemTransactionSummeryRowReorder dsr = (ItemTransactionSummeryRowReorder) b;
+            ItemTransactionSummeryRow dsr = (ItemTransactionSummeryRow) b;
             rows.add(dsr);
         }
         return rows;
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailySale(Item item, Department dept, Date fd, Date td) {
+    public List<ItemTransactionSummeryRow> findDailySale(Item item, Department dept, Date fd, Date td) {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacySale);
         return findDailyTransactions(item, dept, fd, td, bts);
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailyPurchase(Item item, Department dept, Date fd, Date td) {
+    public List<ItemTransactionSummeryRow> findDailyPurchase(Item item, Department dept, Date fd, Date td) {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyPurchaseBill);
         bts.add(BillType.PharmacyGrnBill);
         return findDailyTransactions(item, dept, fd, td, bts);
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailyTransferIn(Item item, Department dept, Date fd, Date td) {
+    public List<ItemTransactionSummeryRow> findDailyTransferIn(Item item, Department dept, Date fd, Date td) {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyTransferReceive);
         return findDailyTransactions(item, dept, fd, td, bts);
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailyTransferOut(Item item, Department dept, Date fd, Date td) {
+    public List<ItemTransactionSummeryRow> findDailyTransferOut(Item item, Department dept, Date fd, Date td) {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyTransferIssue);
         return findDailyTransactions(item, dept, fd, td, bts);
     }
 
-    public List<ItemTransactionSummeryRowReorder> findDailyTransactions(Item item, Department dept, Date fd, Date td, List<BillType> billTypes) {
+    public List<ItemTransactionSummeryRow> findDailyTransactions(Item item, Department dept, Date fd, Date td, List<BillType> billTypes) {
         String jpql;
-        List<ItemTransactionSummeryRowReorder> rows;
+        List<ItemTransactionSummeryRow> rows;
         if (false) {
             BillItem bi = new BillItem();
             bi.getQty();
             bi.getItem();
         }
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRowReorder(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
+        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
                 + " FROM BillItem s "
                 + " WHERE s.bill.createdAt between :fd and :td "
                 + " and s.item=:item ";
@@ -375,7 +384,7 @@ public class ReorderController implements Serializable {
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
-            ItemTransactionSummeryRowReorder dsr = (ItemTransactionSummeryRowReorder) b;
+            ItemTransactionSummeryRow dsr = (ItemTransactionSummeryRow) b;
             dsr.setQuantity(Math.abs(dsr.getQuantity()));
             rows.add(dsr);
         }
@@ -593,10 +602,10 @@ public class ReorderController implements Serializable {
     }
 
     enum AutoOrderMethod {
-
         ByDistributor,
         ByRol,
         ByAll,
+        ByGeneric,
     }
 
     public String autoOrderByDistributor() {
@@ -612,6 +621,11 @@ public class ReorderController implements Serializable {
     public String autoOrderByAllItems() {
         autoOrderMethod = AutoOrderMethod.ByAll;
         return "/pharmacy/auto_ordering_by_all_items";
+    }
+    
+    public String autoOrderByGenerics() {
+        autoOrderMethod = AutoOrderMethod.ByGeneric;
+        return "/pharmacy/auto_ordering_by_items_by_generic";
     }
 
     List<Item> listedItems;
@@ -815,7 +829,7 @@ public class ReorderController implements Serializable {
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();
-        return "/pharmacy/pharmacy_purhcase_order_request";
+        return "/pharmacy_purhcase_order_request";
     }
 
     public String createPharmacyTransferRequest() {
@@ -835,7 +849,7 @@ public class ReorderController implements Serializable {
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyTransferRequestBillComponents();
-        return "/pharmacy/pharmacy_transfer_request";
+        return "/pharmacy_transfer_request";
     }
 
     private void generatePharmacyTransferRequestBillComponents() {
