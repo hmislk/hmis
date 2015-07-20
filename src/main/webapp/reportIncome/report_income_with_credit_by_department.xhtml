@@ -37,7 +37,8 @@
                                </h:panelGrid>
                              <h:panelGrid columns="5">
                                  <p:spacer width="70" height="1"/>
-                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" >
+                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" 
+                                                 action="#{labReportSearchByDepartmentController.createWithCreditbyDepartment()}">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnRefresh"/>
 
@@ -52,7 +53,7 @@
                                 </p:commandButton>
                             </h:panelGrid>
                         </f:facet>
-                        <p:dataTable id="tbl" value="#{labReportSearchByDepartmentController.labBillsOwn}" var="b" sortBy="#{b.billClass}" >
+                        <p:dataTable id="tbl" value="#{labReportSearchByDepartmentController.labBills}" var="b" sortBy="#{b.billClass}" >
 
                             <f:facet name="header">
                                 <h:outputLabel value="Income Report With Credit By Department :"/>

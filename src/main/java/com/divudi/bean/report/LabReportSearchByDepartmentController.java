@@ -19,6 +19,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -180,46 +181,52 @@ public class LabReportSearchByDepartmentController implements Serializable {
         labHandoverR = 0;
     }
 
-    private double calHospitalFee(Bill bill,Department dep) {
+    private double calHospitalFee(Bill bill, Department dep) {
         String sql;
         Map tm;
+        BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> billTypes = Arrays.asList(billType);
 
         sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and "
-                + " type(f) = :billClass and f.billType = :billType and "
+                + " type(f) = :billClass and f.billType in :billType and "
                 + " f.createdAt between :fromDate and :toDate and f.toDepartment=:dep ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
-        tm.put("billType", BillType.OpdBill);
+        tm.put("billType", billTypes);
         tm.put("billClass", bill.getClass());
         tm.put("dep", dep);
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
-    private double calProfessionalFee(Bill bill,Department dep) {
+    private double calProfessionalFee(Bill bill, Department dep) {
         String sql;
         Map tm;
+        BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> billTypes = Arrays.asList(billType);
         sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass "
-                + " and f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toDepartment=:dep ";
+                + " and f.billType in :billType and f.createdAt between :fromDate and :toDate and f.toDepartment=:dep ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
-        tm.put("billType", BillType.OpdBill);
+        tm.put("billType", billTypes);
         tm.put("billClass", bill.getClass());
         tm.put("dep", dep);
 
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
-    private double calDiscountFee(Bill bill,Department dep) {
+    private double calDiscountFee(Bill bill, Department dep) {
         String sql;
         Map tm;
+        BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> billTypes = Arrays.asList(billType);
         sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass "
-                + " and f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toDepartment=:dep";
+                + " and f.billType in :billType and f.createdAt between :fromDate and :toDate and f.toDepartment=:dep";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
-        tm.put("billType", BillType.OpdBill);
+        tm.put("billType", billTypes);
         tm.put("billClass", bill.getClass());
         tm.put("dep", dep);
 
@@ -227,7 +234,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     }
 
-    private double calHospitalFeeWithout(Bill bill,Department dep) {
+    private double calHospitalFeeWithout(Bill bill, Department dep) {
         String sql;
         Map tm;
 
@@ -248,7 +255,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
-    private double calProfessionalFeeWithout(Bill bill,Department dep) {
+    private double calProfessionalFeeWithout(Bill bill, Department dep) {
         String sql;
         Map tm;
         sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass  "
@@ -259,7 +266,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         tm.put("toDate", toDate);
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", bill.getClass());
-        tm.put("dep",dep);
+        tm.put("dep", dep);
         tm.put("pm1", PaymentMethod.Cash);
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
@@ -267,7 +274,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
-    private double calDiscountFeeWithout(Bill bill,Department dep) {
+    private double calDiscountFeeWithout(Bill bill, Department dep) {
         String sql;
         Map tm;
         sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass "
@@ -289,20 +296,20 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     public void calTotals() {
         clearTotals();
-        hosTotB = calHospitalFee(new BilledBill(),getDepartment());
-        hosTotC = calHospitalFee(new CancelledBill(),getDepartment());
-        hosTotR = calHospitalFee(new RefundBill(),getDepartment());
+        hosTotB = calHospitalFee(new BilledBill(), getDepartment());
+        hosTotC = calHospitalFee(new CancelledBill(), getDepartment());
+        hosTotR = calHospitalFee(new RefundBill(), getDepartment());
 
         hosTot = hosTotB + hosTotC + hosTotR;
 
-        profTotB = calProfessionalFee(new BilledBill(),getDepartment());
-        profTotC = calProfessionalFee(new CancelledBill(),getDepartment());
-        profTotR = calProfessionalFee(new RefundBill(),getDepartment());
+        profTotB = calProfessionalFee(new BilledBill(), getDepartment());
+        profTotC = calProfessionalFee(new CancelledBill(), getDepartment());
+        profTotR = calProfessionalFee(new RefundBill(), getDepartment());
         profTot = profTotB + profTotC + profTotR;
 
-        disTotB = calDiscountFee(new BilledBill(),getDepartment());
-        disTotC = calDiscountFee(new CancelledBill(),getDepartment());
-        disTotR = calDiscountFee(new RefundBill(),getDepartment());
+        disTotB = calDiscountFee(new BilledBill(), getDepartment());
+        disTotC = calDiscountFee(new CancelledBill(), getDepartment());
+        disTotR = calDiscountFee(new RefundBill(), getDepartment());
         disTot = disTotB + disTotC + disTotR;
 
 //        hosTot = 0;
@@ -318,20 +325,20 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     public void calTotalsWithout() {
         clearTotals();
-        hosTotB = calHospitalFeeWithout(new BilledBill(),getDepartment());
-        hosTotC = calHospitalFeeWithout(new CancelledBill(),getDepartment());
-        hosTotR = calHospitalFeeWithout(new RefundBill(),getDepartment());
+        hosTotB = calHospitalFeeWithout(new BilledBill(), getDepartment());
+        hosTotC = calHospitalFeeWithout(new CancelledBill(), getDepartment());
+        hosTotR = calHospitalFeeWithout(new RefundBill(), getDepartment());
 
         hosTot = hosTotB + hosTotC + hosTotR;
 
-        profTotB = calProfessionalFeeWithout(new BilledBill(),getDepartment());
-        profTotC = calProfessionalFeeWithout(new CancelledBill(),getDepartment());
-        profTotR = calProfessionalFeeWithout(new RefundBill(),getDepartment());
+        profTotB = calProfessionalFeeWithout(new BilledBill(), getDepartment());
+        profTotC = calProfessionalFeeWithout(new CancelledBill(), getDepartment());
+        profTotR = calProfessionalFeeWithout(new RefundBill(), getDepartment());
         profTot = profTotB + profTotC + profTotR;
 
-        disTotB = calDiscountFeeWithout(new BilledBill(),getDepartment());
-        disTotC = calDiscountFeeWithout(new CancelledBill(),getDepartment());
-        disTotR = calDiscountFeeWithout(new RefundBill(),getDepartment());
+        disTotB = calDiscountFeeWithout(new BilledBill(), getDepartment());
+        disTotC = calDiscountFeeWithout(new CancelledBill(), getDepartment());
+        disTotR = calDiscountFeeWithout(new RefundBill(), getDepartment());
         disTot = disTotB + disTotC + disTotR;
 
 //        hosTot = 0;
@@ -345,7 +352,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     }
 
-  
     List<Bill> labBillsB;
     List<Bill> labBillsC;
     List<Bill> labBillsR;
@@ -534,25 +540,37 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
+    
+    public void createWithCreditbyDepartment(){
+        getLabBillsOwn();
+    }
 
     public List<Bill> getLabBillsOwn() {
+        System.out.println("inside = ");
         if (labBills == null) {
             if (department == null) {
                 return new ArrayList<>();
             }
+            BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+            List<BillType> billTypes = Arrays.asList(billType);
+
             String sql = "select f from Bill f"
                     + " where f.retired=false "
-                    + " and f.billType = :billType "
+                    + " and f.billType in :billType "
                     + " and f.createdAt between :fromDate and :toDate "
                     + " and f.toDepartment=:dep "
                     + " order by type(f), f.insId";
             Map tm = new HashMap();
             tm.put("fromDate", fromDate);
             tm.put("toDate", toDate);
-            tm.put("billType", BillType.OpdBill);
+            tm.put("billType", billTypes);
             // tm.put("ins", getSessionController().getInstitution());
             tm.put("dep", getDepartment());
+            System.out.println("tm = " + tm);
+            System.out.println("sql = " + sql);
+            System.out.println("labBills = " + labBills);
             labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            System.out.println("labBills = " + labBills);
             calTotals();
         }
         return labBills;
@@ -634,7 +652,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
 //        }
 //        return labBills;
 //    }
-
     public List<Bill> getLabBillsIns() {
         if (labBills == null) {
             String sql;
