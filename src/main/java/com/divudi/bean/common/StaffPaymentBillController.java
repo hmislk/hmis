@@ -11,16 +11,20 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CancelledBillFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
@@ -72,6 +76,10 @@ public class StaffPaymentBillController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    BillFeePaymentFacade BillFeePaymentFacade;
     List<Bill> selectedItems;
     private Bill current;
     private List<Bill> items = null;
@@ -414,7 +422,8 @@ public class StaffPaymentBillController implements Serializable {
         Bill b = createPaymentBill();
         current = b;
         getBillFacade().create(b);
-        saveBillCompo(b);
+        Payment p = createPayment(b, paymentMethod);
+        saveBillCompo(b, p);
         printPreview = true;
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
@@ -423,12 +432,14 @@ public class StaffPaymentBillController implements Serializable {
         ////System.out.println("Paid");
     }
 
-    private void saveBillCompo(Bill b) {
+    private void saveBillCompo(Bill b, Payment p) {
         for (BillFee bf : getPayingBillFees()) {
             saveBillItemForPaymentBill(b, bf);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
+            bf.setSettleValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
+            createBillFeePaymentAndPayment(bf, p);
             ////System.out.println("marking as paid");
         }
     }
@@ -510,6 +521,47 @@ public class StaffPaymentBillController implements Serializable {
         getCurrent();
     }
 
+    //for bill fee payments
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
+        System.out.println("bill.getBalance() = " + bill.getBalance());
+        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
+
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+
+    }
+
+    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(0 - bf.getSettleValue());
+        bfp.setInstitution(getSessionController().getInstitution());
+        bfp.setDepartment(getSessionController().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        getBillFeePaymentFacade().create(bfp);
+    }
+
+    //for bill fee payments
     private BillFacade getFacade() {
         return billFacade;
     }
@@ -693,6 +745,22 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setTblBillFees(List<BillFee> tblBillFees) {
         this.tblBillFees = tblBillFees;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public BillFeePaymentFacade getBillFeePaymentFacade() {
+        return BillFeePaymentFacade;
+    }
+
+    public void setBillFeePaymentFacade(BillFeePaymentFacade BillFeePaymentFacade) {
+        this.BillFeePaymentFacade = BillFeePaymentFacade;
     }
 
     /**
