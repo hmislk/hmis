@@ -615,13 +615,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
 
         FingerPrintRecord fpr = null;
-
+        System.out.println("ss.getStartRecord() = " + ss.getStartRecord());
+        System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
+        System.out.println("ss.getNextStaffShift() = " + ss.getNextStaffShift());
         if (ss.getStartRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
             list.add(fpr);
             ss.setStartRecord(fpr);
 
 //                        staffShiftFacade.edit(ss);
+            System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
             if (ss.getPreviousStaffShift() != null) {
                 System.err.println("PREV************************");
                 ss.getStartRecord().setComments("(NEW PREV)");
@@ -630,13 +633,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
         }
-
+        System.out.println("ss.getEndRecord() = " + ss.getEndRecord());
         if (ss.getEndRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
             list.add(fpr);
             ss.setEndRecord(fpr);
 //                        staffShiftFacade.edit(ss);
-
+            System.out.println("ss.getNextStaffShift() = " + ss.getNextStaffShift());
             if (ss.getNextStaffShift() != null) {
                 System.err.println("NEXT*****************");
                 ss.getEndRecord().setComments("(NEW NEXT)");
@@ -939,10 +942,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 nowDate = c.getTime();
                 continue;
             }
-
+            
             for (StaffShift ss : staffShifts) {
                 ss.setStartRecord(null);
                 ss.setEndRecord(null);
+                System.out.println("ss.getShift() = " + ss.getShift().getName());
+//                System.out.println("ss.getShift().getPreviousShift() = " + ss.getShift().getPreviousShift().getName());
+//                System.out.println("ss.getShift().getNextShift() = " + ss.getShift().getNextShift().getName());
                 setShiftTableData(ss);
                 netT.getStaffShift().add(ss);
 
