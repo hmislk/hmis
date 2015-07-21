@@ -105,8 +105,7 @@ public class OpdPreBillReportController implements Serializable {
     
     //Doc Pay
     BillsTotals userBilledBillsDocPay;
-//    BillsTotals userCancellededBillsPharmacyGRNPayment;
-//    BillsTotals userRefundedBillsPharmacyGRNPayment;
+    BillsTotals userCancellededBillsDocPay;
     
     //For show totals
     List<BillsTotals>totalRow = new ArrayList<>();
@@ -203,6 +202,8 @@ public class OpdPreBillReportController implements Serializable {
         
         userBilledBillsDocPay = createBillsTotalsPayment(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
         billsTotalses.add(userBilledBillsDocPay);
+        userCancellededBillsDocPay = createBillsTotalsPayment(new CancelledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsDocPay);
 
         calTotals(billsTotalses);
 
@@ -1026,5 +1027,13 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setUserBilledBillsDocPay(BillsTotals userBilledBillsDocPay) {
         this.userBilledBillsDocPay = userBilledBillsDocPay;
+    }
+
+    public BillsTotals getUserCancellededBillsDocPay() {
+        return userCancellededBillsDocPay;
+    }
+
+    public void setUserCancellededBillsDocPay(BillsTotals userCancellededBillsDocPay) {
+        this.userCancellededBillsDocPay = userCancellededBillsDocPay;
     }
 }
