@@ -1240,7 +1240,9 @@ public class BillSearch implements Serializable {
             //Copy & paste
 
             getBillFacade().create(cb);
-            cancelBillItems(cb);
+            Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
+//            cancelBillItems(cb);
+            cancelBillItems(cb,p);
             cancelPaymentItems(bill);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
@@ -1403,7 +1405,7 @@ public class BillSearch implements Serializable {
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
 ////////////////////////
-
+            System.out.println("tmp = " + tmp.size());
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel

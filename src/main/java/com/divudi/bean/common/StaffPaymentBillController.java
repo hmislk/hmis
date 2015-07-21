@@ -434,12 +434,12 @@ public class StaffPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill b, Payment p) {
         for (BillFee bf : getPayingBillFees()) {
-            saveBillItemForPaymentBill(b, bf);
+//            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
+            saveBillItemForPaymentBill(b, bf, p);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
             bf.setSettleValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            createBillFeePaymentAndPayment(bf, p);
             ////System.out.println("marking as paid");
         }
     }
@@ -461,6 +461,27 @@ public class StaffPaymentBillController implements Serializable {
         i.setQty(1.0);
         i.setRate(bf.getFeeValue());
         getBillItemFacade().create(i);
+        b.getBillItems().add(i);
+    }
+    
+    private void saveBillItemForPaymentBill(Bill b, BillFee bf,Payment p) {
+        BillItem i = new BillItem();
+        i.setReferanceBillItem(bf.getBillItem());
+        i.setReferenceBill(bf.getBill());
+        i.setPaidForBillFee(bf);
+        i.setBill(b);
+        i.setCreatedAt(Calendar.getInstance().getTime());
+        i.setCreater(getSessionController().getLoggedUser());
+        i.setDiscount(0.0);
+        i.setGrossValue(bf.getFeeValue());
+//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+//            i.setItem(bf.getBillItem().getItem());
+//        }
+        i.setNetValue(bf.getFeeValue());
+        i.setQty(1.0);
+        i.setRate(bf.getFeeValue());
+        getBillItemFacade().create(i);
+        saveBillFee(i, p);
         b.getBillItems().add(i);
     }
 
@@ -552,13 +573,34 @@ public class StaffPaymentBillController implements Serializable {
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
-        bfp.setAmount(0 - bf.getSettleValue());
+        bfp.setAmount(bf.getSettleValue());
         bfp.setInstitution(getSessionController().getInstitution());
         bfp.setDepartment(getSessionController().getDepartment());
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
+    }
+    
+    public void saveBillFee(BillItem bi, Payment p) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(Calendar.getInstance().getTime());
+        bf.setCreater(getSessionController().getLoggedUser());
+        bf.setBillItem(bi);
+        bf.setPatienEncounter(bi.getBill().getPatientEncounter());
+        bf.setPatient(bi.getBill().getPatient());
+        bf.setFeeValue(0-bi.getNetValue());
+        bf.setFeeGrossValue(0-bi.getGrossValue());
+        bf.setSettleValue(0-bi.getNetValue());
+        bf.setCreatedAt(new Date());
+        bf.setDepartment(getSessionController().getDepartment());
+        bf.setInstitution(getSessionController().getInstitution());
+        bf.setBill(bi.getBill());
+
+        if (bf.getId() == null) {
+            getBillFeeFacade().create(bf);
+        }
+        createBillFeePaymentAndPayment(bf, p);
     }
 
     //for bill fee payments
