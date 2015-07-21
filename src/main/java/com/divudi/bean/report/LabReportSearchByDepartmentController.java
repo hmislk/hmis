@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.persistence.TemporalType;
 
 /**
@@ -49,6 +48,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
     @EJB
     CommonFunctions commonFunctions;
     List<Bill> labBills;
+    List<Bill> billsList;
     Department department;
     private Institution institution;
     @EJB
@@ -107,6 +107,19 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setLabBillsR(List<Bill> labBillsR) {
         this.labBillsR = labBillsR;
     }
+
+    public List<Bill> getBillsList() {
+        if(billsList==null){
+            billsList=new ArrayList<>();
+        }
+        return billsList;
+    }
+
+    public void setBillsList(List<Bill> billsList) {
+        this.billsList = billsList;
+    }
+
+    
 
     public void searchAll() {
         String sql;
@@ -540,39 +553,41 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
-    public void createWithCreditbyDepartment(){
-        getLabBillsOwn();
+
+    public void createWithCreditbyDepartment() {
+        if (department == null) {
+            return;
+        }
+        billsList = getLabBillsOwn();
+        calTotals();
     }
 
     public List<Bill> getLabBillsOwn() {
         System.out.println("inside = ");
-        if (labBills == null) {
-            if (department == null) {
-                return new ArrayList<>();
-            }
-            BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
-            List<BillType> billTypes = Arrays.asList(billType);
+        labBills = new ArrayList<>();
 
-            String sql = "select f from Bill f"
-                    + " where f.retired=false "
-                    + " and f.billType in :billType "
-                    + " and f.createdAt between :fromDate and :toDate "
-                    + " and f.toDepartment=:dep "
-                    + " order by type(f), f.insId";
-            Map tm = new HashMap();
-            tm.put("fromDate", fromDate);
-            tm.put("toDate", toDate);
-            tm.put("billType", billTypes);
-            // tm.put("ins", getSessionController().getInstitution());
-            tm.put("dep", getDepartment());
-            System.out.println("tm = " + tm);
-            System.out.println("sql = " + sql);
-            System.out.println("labBills = " + labBills);
-            labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
-            System.out.println("labBills = " + labBills);
-            calTotals();
-        }
+        BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> billTypes = Arrays.asList(billType);
+
+        String sql = "select f from Bill f"
+                + " where f.retired=false "
+                + " and f.billType in :billType "
+                + " and f.createdAt between :fromDate and :toDate "
+                + " and f.toDepartment=:dep ";
+
+        Map tm = new HashMap();
+        tm.put("fromDate", fromDate);
+        tm.put("toDate", toDate);
+        tm.put("billType", billTypes);
+        // tm.put("ins", getSessionController().getInstitution());
+        tm.put("dep", getDepartment());
+        System.out.println("tm = " + tm);
+        System.out.println("sql = " + sql);
+        System.out.println("labBills = " + labBills);
+        labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        System.out.println("labBills = " + labBills);
+//        calTotals();
+
         return labBills;
     }
 
