@@ -540,39 +540,46 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
-    public void createWithCreditbyDepartment(){
+
+    public void createWithCreditbyDepartment() {
+        if (department == null) {
+            return;
+        }
         getLabBillsOwn();
     }
 
     public List<Bill> getLabBillsOwn() {
         System.out.println("inside = ");
-        if (labBills == null) {
-            if (department == null) {
-                return new ArrayList<>();
-            }
-            BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
-            List<BillType> billTypes = Arrays.asList(billType);
+        labBills=new ArrayList<>();
 
-            String sql = "select f from Bill f"
-                    + " where f.retired=false "
-                    + " and f.billType in :billType "
-                    + " and f.createdAt between :fromDate and :toDate "
-                    + " and f.toDepartment=:dep "
-                    + " order by type(f), f.insId";
-            Map tm = new HashMap();
-            tm.put("fromDate", fromDate);
-            tm.put("toDate", toDate);
-            tm.put("billType", billTypes);
-            // tm.put("ins", getSessionController().getInstitution());
-            tm.put("dep", getDepartment());
-            System.out.println("tm = " + tm);
-            System.out.println("sql = " + sql);
-            System.out.println("labBills = " + labBills);
-            labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
-            System.out.println("labBills = " + labBills);
-            calTotals();
-        }
+        BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> billTypes = Arrays.asList(billType);
+
+        String sql = "select f from Bill f"
+                + " where f.retired=false "
+                + " and f.billType in :billType "
+                + " and f.createdAt between :fromDate and :toDate "
+                + " and f.toDepartment=:dep ";
+
+//            sql = "select sum(f.staffFee) from Bill f "
+//                    + "where f.retired=false "
+//                    + "and type(f) = :billClass "
+//                + " and f.billType in :billType "
+//                    + "and f.createdAt between :fromDate and :toDate "
+//                    + "and f.toDepartment=:dep ";
+        Map tm = new HashMap();
+        tm.put("fromDate", fromDate);
+        tm.put("toDate", toDate);
+        tm.put("billType", billTypes);
+        // tm.put("ins", getSessionController().getInstitution());
+        tm.put("dep", getDepartment());
+        System.out.println("tm = " + tm);
+        System.out.println("sql = " + sql);
+        System.out.println("labBills = " + labBills);
+        labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        System.out.println("labBills = " + labBills);
+        calTotals();
+
         return labBills;
     }
 
