@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.persistence.TemporalType;
 
 /**
@@ -49,6 +48,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
     @EJB
     CommonFunctions commonFunctions;
     List<Bill> labBills;
+    List<Bill> billsList;
     Department department;
     private Institution institution;
     @EJB
@@ -107,6 +107,19 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setLabBillsR(List<Bill> labBillsR) {
         this.labBillsR = labBillsR;
     }
+
+    public List<Bill> getBillsList() {
+        if(billsList==null){
+            billsList=new ArrayList<>();
+        }
+        return billsList;
+    }
+
+    public void setBillsList(List<Bill> billsList) {
+        this.billsList = billsList;
+    }
+
+    
 
     public void searchAll() {
         String sql;
@@ -545,12 +558,13 @@ public class LabReportSearchByDepartmentController implements Serializable {
         if (department == null) {
             return;
         }
-        getLabBillsOwn();
+        billsList = getLabBillsOwn();
+        calTotals();
     }
 
     public List<Bill> getLabBillsOwn() {
         System.out.println("inside = ");
-        labBills=new ArrayList<>();
+        labBills = new ArrayList<>();
 
         BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> billTypes = Arrays.asList(billType);
@@ -561,12 +575,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
                 + " and f.createdAt between :fromDate and :toDate "
                 + " and f.toDepartment=:dep ";
 
-//            sql = "select sum(f.staffFee) from Bill f "
-//                    + "where f.retired=false "
-//                    + "and type(f) = :billClass "
-//                + " and f.billType in :billType "
-//                    + "and f.createdAt between :fromDate and :toDate "
-//                    + "and f.toDepartment=:dep ";
         Map tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
@@ -578,7 +586,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         System.out.println("labBills = " + labBills);
         labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
         System.out.println("labBills = " + labBills);
-        calTotals();
+//        calTotals();
 
         return labBills;
     }
