@@ -147,6 +147,10 @@ public class TransferReceiveController implements Serializable {
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
+            
+            if(errorCheck(i)){
+                continue;
+            }
 
             i.setBill(getReceivedBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -190,6 +194,11 @@ public class TransferReceiveController implements Serializable {
 
             getReceivedBill().getBillItems().add(i);
         }
+        
+        if(getReceivedBill().getBillItems().size()==0 || getReceivedBill().getBillItems() == null){
+            UtilityController.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
+        }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -219,7 +228,7 @@ public class TransferReceiveController implements Serializable {
     private double calTotal() {
         double value = 0;
         int serialNo = 0;
-        System.out.println("preference"+sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate());
+        System.out.println("preference" + sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate());
 
         if (sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getBillItems()) {
@@ -257,6 +266,15 @@ public class TransferReceiveController implements Serializable {
         }
 
         //   getPharmacyController().setPharmacyItem(tmp.getItem());
+    }
+
+    public boolean errorCheck(BillItem billItem) {
+
+        if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
+            return true;
+        }
+
+        return false;
     }
 
     public void saveBill() {
