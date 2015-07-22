@@ -53,7 +53,6 @@
                                 <h:panelGrid columns="1">
                                     <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                         <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                                        <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
                                         <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
                                                  listener="#{bookingController.generateSessions}"/>
                                     </p:selectOneListbox>
@@ -294,7 +293,7 @@
                     </h:panelGrid>
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
-                              modal="true" height="400" width="600">
+                              modal="true" height="400" width="600" closable="false">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
 
@@ -495,14 +494,8 @@
 
                                 <h:panelGroup id="gpSettlePrint" >
 
-
-                                    <p:dialog id="test" widgetVar="test" >
-                                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-
-                                    </p:dialog>
-
                                     <p:dialog id="dialogChannelSettle" header="Booked" widgetVar="dlgSettle" 
-                                              modal="true" height="400" width="600">
+                                              modal="true" height="400" width="600" closable="false">
                                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
 
                                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
