@@ -59,6 +59,7 @@ public class UserPreference implements Serializable {
     boolean inwardAddServiceBillTimeCheck;
     boolean inwardMoChargeCalculateInitialTime;
     boolean inwardChangeAdmissionFee;
+    boolean pharmacyBillWithOutItem;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -358,6 +359,16 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
         this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
+
+    public boolean isPharmacyBillWithOutItem() {
+        return pharmacyBillWithOutItem;
+    }
+
+    public void setPharmacyBillWithOutItem(boolean pharmacyBillWithOutItem) {
+        this.pharmacyBillWithOutItem = pharmacyBillWithOutItem;
+    }
+    
+    
     
     @Override
     public int hashCode() {

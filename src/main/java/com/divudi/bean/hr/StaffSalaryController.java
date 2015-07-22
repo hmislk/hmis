@@ -984,30 +984,50 @@ public class StaffSalaryController implements Serializable {
             //Set Extra Duty Value
             double extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Normal);
             System.out.println("extraTimeMinute(DayType.Normal) = " + extraTimeMinute);
-            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);
-            System.out.println("extraTimeMinute(DayType.Normal+DayType.Extra) = " + extraTimeMinute);
+            
+            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);            
+            System.out.println("extraTimeMinute(DayType.Normal+DayType.Extra) = " + extraTimeMinute);            
             getCurrent().setExtraDutyNormalMinute(extraTimeMinute);
-            extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);
+            
+            
+            extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);            
+            System.out.println("extraTimeMinute(DayType.MurchantileHoliday) = " + extraTimeMinute);
             getCurrent().setExtraDutyMerchantileMinute(extraTimeMinute);
+            
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyPoya, DayType.Poya);
+            System.out.println("extraTimeMinute(DayType.Poya) = " + extraTimeMinute);            
             getCurrent().setExtraDutyPoyaMinute(extraTimeMinute);
+            
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyDayOff, DayType.DayOff);
+            System.out.println("extraTimeMinute(DayType.DayOff) = " + extraTimeMinute);
             getCurrent().setExtraDutyDayOffMinute(extraTimeMinute);
+            
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutySleepingDay, DayType.SleepingDay);
+            System.out.println("extraTimeMinute(DayType.SleepingDay) = " + extraTimeMinute);
             getCurrent().setExtraDutySleepingDayMinute(extraTimeMinute);
 
             //Set Holiday Allowance
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
+            System.out.println("extraTimeMinute(DayType.MurchantileHoliday) = " + count);
             getCurrent().setMerchantileCount(count);
+            
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
+            System.out.println("count(DayType.Poya) = " + count);
             getCurrent().setPoyaCount(count);
+            
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
+            System.out.println("count(DayType.DayOff) = " + count);
             getCurrent().setDayOffCount(count);
+            
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
+            System.out.println("count(DayType.SleepingDay) = " + count);
             getCurrent().setSleepingDayCount(count);
 
             double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+            System.out.println("noPayCount(LeaveType.No_Pay) = " + noPayCount);
             double basicValue = setNoPay_Basic(noPayCount);
+            
+            
             setNoPay_Allowance();
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
