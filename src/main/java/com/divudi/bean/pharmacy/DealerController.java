@@ -63,7 +63,7 @@ public class DealerController implements Serializable {
         ////System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
-        institutionList = getEjbFacade().findBySQL(sql, m, 10);
+        institutionList = getEjbFacade().findBySQL(sql, m);
         ////System.out.println("suggestions = " + suggestions);
 
         return institutionList;
