@@ -818,7 +818,7 @@ public class HumanResourceBean {
                 + " and (ss.considerForLateIn=true "
                 + " or ss.considerForEarlyOut=true) "
                 + " order by ss.shiftDate ";
-        
+
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
 
@@ -827,7 +827,6 @@ public class HumanResourceBean {
 
     public LeaveType getLeaveType(Staff staff, Date date) {
         StaffLeaveEntitle staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, date);
-
 
         if (staffLeaveEntitle != null
                 && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Annual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
@@ -1010,7 +1009,7 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchPrevStaffShift(StaffShift tmp) {
-//        System.err.println("Fetch Prev StaffShift");
+        System.err.println("Fetch Prev StaffShift");
         if (tmp.getShift() == null) {
             return null;
         }
@@ -1026,7 +1025,15 @@ public class HumanResourceBean {
         hm.put("preSh", tmp.getShift().getPreviousShift());
 
         StaffShift stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
-
+        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
+        System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
+        System.out.println("tmp.getShift()= " + tmp.getShift().getName());
+        if (tmp.getShift().getPreviousShift() != null) {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift().getName());
+        } else {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift());
+        }
+        System.out.println("stf = " + stf);
         if (stf != null) {
             return stf;
         }
@@ -1046,7 +1053,14 @@ public class HumanResourceBean {
         hm.put("st", tmp.getStaff());
         hm.put("date", beforDate);
         hm.put("preSh", tmp.getShift().getPreviousShift());
-
+        System.out.println("beforDate = " + beforDate);
+        if (tmp.getShift().getPreviousShift() != null) {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift().getName());
+        } else {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift());
+        }
+        System.out.println("getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE); = " + getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE));
+        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
         return getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -1214,7 +1228,7 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchFrwStaffShift(StaffShift tmp) {
-        //   System.err.println("Fetch Forward Staff Shift");
+        System.err.println("Fetch Forward Staff Shift");
         if (tmp == null) {
             return null;
         }
@@ -1233,6 +1247,16 @@ public class HumanResourceBean {
         hm.put("date", tmp.getShiftDate());
         hm.put("frwSh", tmp.getShift().getNextShift());
         StaffShift stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
+        System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
+        System.out.println("tmp.getShift()= " + tmp.getShift().getName());
+        if (tmp.getShift().getNextShift() != null) {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift().getName());
+        } else {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift());
+        }
+        System.out.println("stf = " + stf);
 
         if (stf != null) {
             return stf;
@@ -1254,6 +1278,15 @@ public class HumanResourceBean {
         hm.put("date", afterDate);
         hm.put("frwSh", tmp.getShift().getNextShift());
         stf = getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        System.out.println("afterDate = " + afterDate);
+        if (tmp.getShift().getNextShift() != null) {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift().getName());
+        } else {
+            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift());
+        }
+        System.out.println("stf = " + stf);
+        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
 
         return stf;
     }
@@ -2881,8 +2914,7 @@ public class HumanResourceBean {
         hm.put("td", toDate);
         hm.put("stf", staff);
         hm.put("dtp", dayType);
-        
-        
+
         System.out.println("sql(calculateExtraWorkMinute)  = " + sql);
 
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);

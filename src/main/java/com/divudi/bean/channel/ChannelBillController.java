@@ -463,7 +463,7 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelCashFlowBill() {
-        if(errorCheckCancelling()){
+        if (errorCheckCancelling()) {
             return;
         }
 
@@ -1223,6 +1223,20 @@ public class ChannelBillController implements Serializable {
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setInstitution(sessionController.getInstitution());
+        if (getbookingController() != null) {
+            System.out.println("getbookingController()" + getbookingController());
+            
+            if (getbookingController().getSelectedServiceSession() != null) {                
+                System.out.println("getbookingController().getSelectedServiceSession()" + getbookingController().getSelectedServiceSession());
+                
+                if (getbookingController().getSelectedServiceSession().getDepartment() != null) {
+                    System.out.println("getbookingController().getSelectedServiceSession().getDepartment()" + getbookingController().getSelectedServiceSession().getDepartment());
+                }
+            }
+        }
+        
+        bill.setToDepartment(getbookingController().getSelectedServiceSession().getDepartment());
+        bill.setToInstitution(getbookingController().getSelectedServiceSession().getInstitution());
         getBillFacade().create(bill);
 
         return bill;

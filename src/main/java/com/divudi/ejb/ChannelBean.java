@@ -267,10 +267,14 @@ public class ChannelBean {
                         newSs.setHospitalFee(ss.getHospitalFee());
                         newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
+                        newSs.setDepartment(ss.getDepartment());
+                        newSs.setInstitution(ss.getInstitution());
                         newSs.setSessionAt(nowDate);
                         newSs.setSessionDate(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
+                        System.out.println("newSs.getDepartment() = " + newSs.getDepartment());
+                        System.out.println("newSs.getInstitution() = " + newSs.getInstitution());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         //////System.out.println("Specific Count : " + sessionDayCount);
@@ -306,6 +310,10 @@ public class ChannelBean {
                         newSs.setHospitalFee(ss.getHospitalFee());
                         newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
+                        newSs.setDepartment(ss.getDepartment());
+                        newSs.setInstitution(ss.getInstitution());
+                        System.out.println("newSs.getDepartment() 2= " + newSs.getDepartment());
+                        System.out.println("newSs.getInstitution() 2= " + newSs.getInstitution());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
