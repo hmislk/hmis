@@ -2829,14 +2829,22 @@ public class HumanResourceBean {
             //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
             //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
 
-            if (dayType == DayType.Extra) {
+            if (dayType == DayType.Extra || dayType==DayType.Poya || dayType==DayType.MurchantileHoliday || dayType==DayType.DayOff) {
                 dbl += roundOff(ss.getExtraTimeCompleteRecordVarified() * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
-                //System.out.println("if inside");
+                
+                System.out.println("getExtraTimeCompleteRecordVarified"+ ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("getMultiplyingFactorOverTime"+ ss.getMultiplyingFactorOverTime());
+                System.out.println("getOverTimeValuePerSecond"+ ss.getOverTimeValuePerSecond());
+                
                 //System.out.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
                 //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getExtraTimeCompleteRecordVarified());
                 //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getExtraTimeCompleteRecordVarified());
 
             }
+            
+//            if( dayType==DayType.DayOff){
+//                dbl += roundOff(ss.getExtraTimeCompleteRecordVarified() * ((ss.getMultiplyingFactorOverTime())*2.5) * ss.getOverTimeValuePerSecond());
+//            }
         }
 
 //        System.err.println(">>>>>>>>>>> " + dbl);
@@ -2896,7 +2904,7 @@ public class HumanResourceBean {
 
     public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql;
-        if (dayType == DayType.Extra) {
+        if (dayType == DayType.Extra || dayType==DayType.Poya || dayType==DayType.DayOff || dayType==DayType.MurchantileHoliday) {
             sql = "Select sum(ss.extraTimeCompleteRecordVarified)";
         } else {
             sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))";
