@@ -152,7 +152,7 @@
                         </p:column>
                         
                          <p:column headerText="Total PH/Off/Poya/Basic Adjustments">
-                            <h:outputLabel value="#{i.basicValue}">
+                             <h:outputLabel value="#{i.poyaAllowanceValue+i.dayOffAllowance}">
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>
