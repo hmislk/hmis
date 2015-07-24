@@ -15,6 +15,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
@@ -62,8 +63,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     BillEjb billEjb;
     private Date fromDate;
     private Date toDate;
+    Institution  reportedInstitution;
+    Department reportedDepartment;
     private Institution creditCompany;
     Institution institution;
+    Department department;
     Institution collectingCentre;
     Item item;
     private List<InvestigationSummeryData> items;
@@ -119,7 +123,107 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
+    
+    public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null , true, null, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
 
+    public void createInvestigationMonthEndSummeryCountsFilteredByBilledDepartment() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department , true, null, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+    
+    public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+    
+    public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+    
     public void createInvestigationTurnoverTime() {
         progressStarted = true;
         progressValue = 0;
@@ -225,6 +329,31 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.commonFunctions = commonFunctions;
     }
 
+    public Institution getReportedInstitution() {
+        return reportedInstitution;
+    }
+
+    public void setReportedInstitution(Institution reportedInstitution) {
+        this.reportedInstitution = reportedInstitution;
+    }
+
+    public Department getReportedDepartment() {
+        return reportedDepartment;
+    }
+
+    public void setReportedDepartment(Department reportedDepartment) {
+        this.reportedDepartment = reportedDepartment;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
