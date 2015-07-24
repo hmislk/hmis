@@ -95,6 +95,25 @@
                     </h:panelGrid>
                     <p:panel  id="staffleaveentitie">
                         <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add" id="tb4">
+
+                            <p:column headerText="From Date">
+                                <f:facet name="header">
+                                    <h:outputLabel value="From Date"  />
+                                </f:facet>
+                                <h:outputLabel value="#{add.fromDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="To Date">
+                                <f:facet name="header">
+                                    <h:outputLabel value="To Date"  />
+                                </f:facet>
+                                <h:outputLabel value="#{add.toDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Staff">
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff"  />
