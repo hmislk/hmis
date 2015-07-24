@@ -106,7 +106,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{pharmacySaleController.addBillItemNew()}" 
+                                                          action="#{pharmacySaleController.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
@@ -334,16 +334,16 @@
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                        action="#{pharmacySaleController.settleBillWithPay}" >
+                                                         action="#{pharmacySaleController.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                                       ajax="false" action="pharmacy_bill_retail_sale"
+                                                         ajax="false" action="pharmacy_bill_retail_sale"
                                                          onclick="onSubmitButton();"
-                                                        actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+                                                         actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -511,7 +511,7 @@
 
 
                         <p:commandButton id="nullButton3" value="No Action"
-                                        action="#" style="display: none;" ></p:commandButton>
+                                         action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -519,9 +519,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                           ajax="false" action="pharmacy_bill_retail_sale" 
+                                             ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
-                                            actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                                             actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
@@ -530,7 +530,6 @@
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" >
-                            <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillPaperType}"/>
 
                             <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <div>
@@ -539,7 +538,7 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false and sessionController.institutionPreference.pharmacyBillWithOutItem eq true}" > 
