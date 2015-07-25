@@ -39,6 +39,8 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"/>
+                        
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
                         </p:commandButton>
