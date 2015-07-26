@@ -243,6 +243,7 @@ public class PharmacySaleReport implements Serializable {
     ItemsDistributorsFacade itemsDistributorsFacade;
     
     List<DistributerWithDestributorItem>distributerWithDestributorItems;
+    List<ItemsWithDistributer>itemsWithDistributers;
 
     PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
@@ -4932,6 +4933,24 @@ public class PharmacySaleReport implements Serializable {
         //System.out.println("items = " + items.size());
 
     }
+    
+    public void createItemWithMultipleDistributor(){
+        createItemListOneItemHasGreterThanOneDistributorOther();
+        System.out.println("items.size() = " + items.size());
+        itemsWithDistributers=new ArrayList<>();
+        for (Item i : items) {
+            ItemsWithDistributer iwd=new ItemsWithDistributer();
+            List<Institution>is=getItemDealors(i);
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("is.size() = " + is.size());
+            if (is.size()>0) {
+                iwd.setItem(i);
+                iwd.setInstitutions(is);
+                itemsWithDistributers.add(iwd);
+            }
+            
+        }
+    }
 
     public List<Amp> getAllPharmacyItems() {
         String sql;
@@ -4953,6 +4972,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql = "SELECT distinct(i.item) FROM ItemsDistributors i "
                 + " where i.retired=false "
+                + " and i.institution.retired=false "
                 + " and i.item.retired=false "
                 + " order by i.item.name ";
 
@@ -5005,6 +5025,20 @@ public class PharmacySaleReport implements Serializable {
         m.put("ins", ins);
 
         return itemsDistributorsFacade.findBySQL(sql, m);
+    }
+    
+    public List<Institution> getItemDealors(Item i) {
+        String sql;
+        Map m=new HashMap();
+
+        sql = "SELECT i.institution FROM ItemsDistributors i "
+                + " where i.retired=false "
+                + " and i.item=:item "
+                + " order by i.institution.name ";
+        
+        m.put("item", i);
+
+        return institutionFacade.findBySQL(sql,m);
     }
 
     /**
@@ -6327,6 +6361,27 @@ public class PharmacySaleReport implements Serializable {
         }
 
     }
+    
+    public class ItemsWithDistributer{
+        Item item;
+        List<Institution>institutions;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public List<Institution> getInstitutions() {
+            return institutions;
+        }
+
+        public void setInstitutions(List<Institution> institutions) {
+            this.institutions = institutions;
+        }
+    }
 
     public Department getDepartmentMoving() {
         return departmentMoving;
@@ -6364,6 +6419,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setDistributerWithDestributorItems(List<DistributerWithDestributorItem> distributerWithDestributorItems) {
         this.distributerWithDestributorItems = distributerWithDestributorItems;
+    }
+
+    public List<ItemsWithDistributer> getItemsWithDistributers() {
+        return itemsWithDistributers;
+    }
+
+    public void setItemsWithDistributers(List<ItemsWithDistributer> itemsWithDistributers) {
+        this.itemsWithDistributers = itemsWithDistributers;
     }
 
 }

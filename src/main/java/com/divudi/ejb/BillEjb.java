@@ -233,6 +233,8 @@ public class BillEjb implements Serializable {
             sql += " and type(bi.item) in :ics ";
             temMap.put("ics", ics);
         }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
         return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 

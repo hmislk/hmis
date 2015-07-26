@@ -263,6 +263,7 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeInvest(String query) {
         System.out.println("master" + listMasterItemsOnly);
+        System.out.println("master login Lab" );
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }

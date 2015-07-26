@@ -92,13 +92,17 @@
                                     <h:panelGrid columns="6" >
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                            <style>.ui-autocomplete-input {width:300px!important;}</style>
+                                            
+                                            <style>
+                                                .ui-autocomplete-input {width:350px!important;display: block;}
+                                                .ui-autocomplete{display: block!important;}
+                                            </style>
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{pharmacySaleBhtController.stock}" 
                                                             converter="stockCon" 
                                                             completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
-                                                            style="width: 50px!important;">
+                                                            >
                                                 <p:column headerText="Item">
                                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                                 </p:column>
@@ -122,6 +126,7 @@
                                             </p:autoComplete>
 
                                         </h:panelGrid>
+                                       
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;"   >

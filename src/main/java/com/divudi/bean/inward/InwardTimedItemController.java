@@ -32,6 +32,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

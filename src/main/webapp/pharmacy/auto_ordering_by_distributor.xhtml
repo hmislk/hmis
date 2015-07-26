@@ -63,15 +63,19 @@
                                                     pattern="dd MMM yyyy" ></p:calendar>
 
                                         <h:outputLabel value="Bill types" ></h:outputLabel>
-                                        <p:selectManyMenu style="width: 300px;height: 150px;"
-                                                          value="#{reorderController.billTypes}" >
-                                            <f:selectItems value="#{enumController.pharmacyBillTypes}" ></f:selectItems>
-                                        </p:selectManyMenu>
+                                        <p:selectCheckboxMenu value="#{reorderController.billTypes}" 
+                                                              label="Select Bill Types"  >
+                                            <f:selectItems value="#{enumController.pharmacyBillTypes}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
+                                        </p:selectCheckboxMenu>
+                                       
 
                                         <h:outputLabel value="Department List Method" ></h:outputLabel>
-                                        <p:selectOneMenu style="width: 300px;   "
+                                        <p:selectOneMenu label="Select Department List Method"
                                                          value="#{reorderController.departmentListMethod}" >
-                                            <f:selectItems value="#{enumController.departmentListMethods}" ></f:selectItems>
+                                            <f:selectItems value="#{enumController.departmentListMethods}"
+                                                           var="dlm"
+                                                           itemValue="#{dlm}"
+                                                           itemLabel="#{dlm}"></f:selectItems>
                                         </p:selectOneMenu>
 
 
@@ -200,7 +204,7 @@
                                                    actionListener="#{reorderController.createDailyItemSummery(ir.item,r.department)}"
                                                    action="/pharmacy/item_stock_history">
                                     </p:commandLink>
-                                    
+
                                 </p:column>
 
                                 <p:column style="text-align: right; width:80px!important;">

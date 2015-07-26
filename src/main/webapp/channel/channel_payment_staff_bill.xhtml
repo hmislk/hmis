@@ -43,9 +43,11 @@
                                                             itemLabel="#{ses.name}" ></f:selectItems>
                                         </p:selectOneMenu>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" id="fDate" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" id="tDate" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
                                         <p:watermark value="Staff" for="scStaff"/>
+                                        <p:watermark value="Select From Date" for="fDate"/>
+                                        <p:watermark value="Select To Date" for="tDate"/>
 
                                         <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>

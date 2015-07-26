@@ -22,7 +22,14 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Billed Id"/>
                 </f:facet> 
-                <h:outputLabel value="#{b.insId}" >
+                <h:outputLabel value="#{b.deptId}" >
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Ref. Bill Id" style=" text-align: right">
+                <f:facet name="header">  
+                    <h:outputLabel value="Ref. Bill Id"/>
+                </f:facet> 
+                <h:outputLabel value="#{b.referenceBill.deptId}" >
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Time"   style=" text-align: right">
@@ -98,7 +105,7 @@
 
             <p:columnGroup type="footer">  
                 <p:row>                                 
-                    <p:column colspan="4"/>
+                    <p:column colspan="5"/>
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">

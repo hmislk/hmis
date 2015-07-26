@@ -14,7 +14,7 @@
                     <p:panel header="Channel Reports">
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">  
                             <h:panelGrid columns="1">
-                                <p:panel header="Income Reports" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="Income Reports" style="width: 400px;margin: auto;"  toggleable="true">
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" value="Income With Agent Bookings" action="/channel/income_with_agent_bookings" ajax="false"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
@@ -22,7 +22,7 @@
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1">
-                                <p:panel header="Bill Reports" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="Bill Reports" style="width: 400px;margin: auto;"  toggleable="true">
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Session" action="/channel/channel_report_bill_session_1"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Fees" action="/channel/channel_report_by_fee"/>
@@ -34,14 +34,14 @@
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1">
-                                <p:panel header="Cashier Reports" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">  
+                                <p:panel header="Cashier Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
             <!--                            <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Detail Summary" action="/channel/channel_report_cashier_all_summery"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Summary" action="/channel/channel_report_cashier_summery"/>-->
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Detail Summary" action="/channel/report_cashier_detailed_by_user"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Summary" action="/channel/report_cashier_summery_by_user"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  All Cashier Summary Details" action="/channel/report_cashier_summery_all"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  All Cashier Summary" action="/channel/report_cashier_summery_all_total_only"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bills by Single Cashier" action="/channel/report_cashier_detailed_by_user"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Single Cashier Summary" action="/channel/report_cashier_summery_by_user"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bills by All Cashiers" action="/channel/report_cashier_summery_all"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary" action="/channel/report_cashier_summery_all_total_only"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
