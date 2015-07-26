@@ -70,7 +70,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     FingerPrintRecordFacade fingerPrintRecordFacade;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
-
+    @EJB
+    FormFacade formFacade;
+    
     /**
      *
      * Managed Beans
@@ -78,48 +80,43 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    
-    
-    
-    
+
     /**
      *
      * Properties
      *
      */
+    DayType dayType;
     Date fromDate;
     Date toDate;
     Roster roster;
     boolean flag;
     boolean backButtonIsActive;
     String backButtonPage;
-    
+
     List<ShiftTable> shiftTables;
     private List<String> errorMessage = null;
 
-    
-    
     /**
-     * 
-     * 
+     *
+     *
      * Methods
-     * 
-     *  
+     *
+     *
      */
     
     /**
-     * 
-     * @return 
-     * 
+     *
+     * @return
+     *
      */
-    public String back(){
-        backButtonIsActive=false;
+    public String back() {
+        backButtonIsActive = false;
         String t = backButtonPage;
         backButtonPage = "";
         return t;
     }
-    
-    
+
     public boolean isFlag() {
         return flag;
     }
@@ -261,14 +258,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getFromDate() == null || getToDate() == null) {
-            return true;
-        }
-        return false;
+        return getFromDate() == null || getToDate() == null;
     }
-    DayType dayType;
-    @EJB
-    FormFacade formFacade;
 
 //    private AdditionalForm fetchAdditionalForm(StaffShift staffShift) {
 //        String sql = "Select a from AdditionalForm a "
@@ -1426,9 +1417,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     }
 
-    
-    
-    
     public boolean isBackButtonIsActive() {
         return backButtonIsActive;
     }
@@ -1442,9 +1430,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     /**
-     * 
+     *
      * Getters and Setters
-     * 
+     *
      */
     public void setBackButtonPage(String backButtonPage) {
         this.backButtonPage = backButtonPage;

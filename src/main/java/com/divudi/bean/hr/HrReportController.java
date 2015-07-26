@@ -2170,7 +2170,7 @@ public class HrReportController implements Serializable {
         shiftFingerPrintAnalysisController.createShiftTableByStaff();
         shiftFingerPrintAnalysisController.setBackButtonIsActive(true);
         shiftFingerPrintAnalysisController.setBackButtonPage("/hr/hr_report_month_end_work_time_miniuts");
-        return "hr_shift_table_finger_print_by_staff.xhtml";
+        return "/hr/hr_shift_table_finger_print_by_staff";
     }
     
     public void createMonthEndWorkTimeReport() {

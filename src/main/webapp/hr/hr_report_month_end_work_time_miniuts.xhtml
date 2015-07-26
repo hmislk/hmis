@@ -75,8 +75,6 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Staff" />
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.staff.person.name}" />
-                                    
                                     <p:commandLink value="#{ss.staff.person.name}" 
                                                    action="#{hrReportController.fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(ss.staff)}" ajax="false" ></p:commandLink>
                                 </p:column>
