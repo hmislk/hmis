@@ -317,15 +317,15 @@ public class ChannelBillController implements Serializable {
         }
 
         if (getBillSession().getBill().getBillFees() != null) {
-            
+
             System.out.println("getBillSession().getBill().getBillFees() = " + getBillSession().getBill().getBillFees().size());
 
             for (BillFee bf : getBillSession().getBill().getBillFees()) {
-                
-                if(bf.getTmpChangedValue()==null){
+
+                if (bf.getTmpChangedValue() == null) {
                     continue;
                 }
-                
+
                 System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
 
                 switch (bf.getFee().getFeeType()) {
@@ -367,7 +367,6 @@ public class ChannelBillController implements Serializable {
 
         refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
-        
 
     }
 
@@ -428,23 +427,43 @@ public class ChannelBillController implements Serializable {
         this.billItems = billItems;
     }
 
-    private boolean errorCheckCancelling() {
+    private boolean checkPaid() {
+        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();
+        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
 
+        for (BillFee f : tempFe) {
+            if (f.getPaidValue() != 0.0) {
+                return true;
+            }
+
+        }
         return false;
     }
 
-    public void cancelCashFlowBill() {
+    private boolean errorCheckCancelling() {
         if (getBillSession() == null) {
-            return;
+            return true;
         }
 
         if (getBillSession().getBill().isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled");
-            return;
+            return true;
         }
 
         if (getBillSession().getBill().isRefunded()) {
             UtilityController.addErrorMessage("Already Refunded");
+            return true;
+        }
+
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return true;
+        }
+        return false;
+    }
+
+    public void cancelCashFlowBill() {
+        if (errorCheckCancelling()) {
             return;
         }
 
@@ -881,7 +900,7 @@ public class ChannelBillController implements Serializable {
 //                UtilityController.addErrorMessage("Select Area");
 //                return true;
 //            }
-//        }
+        //     }
         if (patientTabId.equals("tabSearchPt")) {
             if (getSearchPatient() == null) {
                 UtilityController.addErrorMessage("Please select Patient");
@@ -972,6 +991,8 @@ public class ChannelBillController implements Serializable {
         bookingController.fillBillSessions();
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
+
+        bookingController.generateSessions();
 
     }
 
@@ -1202,6 +1223,20 @@ public class ChannelBillController implements Serializable {
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setInstitution(sessionController.getInstitution());
+        if (getbookingController() != null) {
+            System.out.println("getbookingController()" + getbookingController());
+            
+            if (getbookingController().getSelectedServiceSession() != null) {                
+                System.out.println("getbookingController().getSelectedServiceSession()" + getbookingController().getSelectedServiceSession());
+                
+                if (getbookingController().getSelectedServiceSession().getDepartment() != null) {
+                    System.out.println("getbookingController().getSelectedServiceSession().getDepartment()" + getbookingController().getSelectedServiceSession().getDepartment());
+                }
+            }
+        }
+        
+        bill.setToDepartment(getbookingController().getSelectedServiceSession().getDepartment());
+        bill.setToInstitution(getbookingController().getSelectedServiceSession().getInstitution());
         getBillFacade().create(bill);
 
         return bill;

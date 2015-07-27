@@ -49,12 +49,12 @@ public class RevinewReportController implements Serializable {
     BillsTotals userCancellededBillsPharmacy;
     BillsTotals userRefundedBillsPharmacy;
 
-    //Opd summery List
+    //Opd summery Renew List
     List<BillsTotals> userBilledBillsList;
     List<BillsTotals> userCancellededBillsList;
     List<BillsTotals> userRefundedBillsList;
 
-    //Pharmacy summery List
+    //Pharmacy summery Renew List
     List<BillsTotals> userBilledBillsPharmacyList;
     List<BillsTotals> userCancellededBillsPharmacyList;
     List<BillsTotals> userRefundedBillsPharmacyList;

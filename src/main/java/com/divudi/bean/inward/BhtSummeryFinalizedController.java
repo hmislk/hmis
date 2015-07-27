@@ -102,6 +102,8 @@ public class BhtSummeryFinalizedController implements Serializable {
     double billFeeNetValue;
     double paidbyPatientTotalValue;
     double creditCompanyPaymentTotal;
+    
+    boolean activeBackButton=false;
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -578,6 +580,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNull() {
         patientEncounter = null;
+        activeBackButton=false;
         makeNullList();
     }
 
@@ -1048,6 +1051,13 @@ public class BhtSummeryFinalizedController implements Serializable {
         }
 
     }
+    
+    public String createBhtBillFinalized(){
+        activeBackButton=true;
+        createTablesFinalized();
+        
+        return "/inward/inward_bill_intrim_finalized";
+    }
 
     public double getBillItemGrossPharmacy() {
         return billItemGrossPharmacy;
@@ -1173,5 +1183,13 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
+    }
+
+    public boolean isActiveBackButton() {
+        return activeBackButton;
+    }
+
+    public void setActiveBackButton(boolean activeBackButton) {
+        this.activeBackButton = activeBackButton;
     }
 }

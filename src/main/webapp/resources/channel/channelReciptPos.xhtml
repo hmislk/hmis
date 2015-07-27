@@ -24,9 +24,9 @@
             <h:panelGroup id="panelAddedBillPrint">
 
 
-                <div class="posbill" style="margin-left: 50px; page-break-after: always;">
+                <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="position: absolute; padding-left: 165px;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
                     </div>
                     <div>
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
@@ -73,7 +73,7 @@
                             <td>
                                 <b>
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size: 20px; font-weight: bold; margin: 5px;padding: 5px;border: 1px solid black;" ></h:outputLabel>
+                                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important;  font-weight: bold; margin: 5px;padding: 5px;border: 1px solid black; color: red;" ></h:outputLabel>
                                     </ui:repeat>
                                 </b>
                             </td>
@@ -312,16 +312,54 @@
                                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></h:outputLabel>
                             </td>
                         </tr>
-
-
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
                     </table>
 
                 </div>
 
 
-                <div class="posbill" style="margin-left: 50px; page-break-after: always;">
+                <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="position: absolute; padding-left: 165px;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
                     </div>
                     <div>
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>

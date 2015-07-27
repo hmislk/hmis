@@ -100,6 +100,7 @@ public enum Privileges {
     LabEditPatient,
     LabInvestigationFee,
     LabAddInwardServices,
+    LabSearchBillLoggedInstitution,
     IncomeReport,
     LabReport,
     DuesAndAccess,
@@ -282,6 +283,7 @@ public enum Privileges {
     
     //Administration
     SearchAll,
+    ChannelBookingChange,
     
     
    

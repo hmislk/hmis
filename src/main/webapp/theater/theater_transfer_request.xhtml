@@ -26,7 +26,7 @@
                         <f:facet name="header">
                             Select Department To Request For
                         </f:facet>
-                        <p:autoComplete converter="dep" value="#{transferRequestController.bill.toDepartment}" 
+                        <p:autoComplete converter="departmentConverter" value="#{transferRequestController.bill.toDepartment}" 
                                         forceSelection="true"
                                         completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />                    
                     </p:panelGrid>

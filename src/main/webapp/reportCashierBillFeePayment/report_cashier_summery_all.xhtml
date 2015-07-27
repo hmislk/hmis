@@ -83,7 +83,7 @@
                                 <h:outputLabel value=" #{csh.webUser.code}-#{csh.webUser.webUserPerson.name}"/>
                             </f:facet>
                             <p:column>
-                                <h:commandLink action="#{opdPreBillReportController.createCashierTableByUserPaymentForDetail()}" >
+                                <h:commandLink action="#{opdPreBillReportController.createCashierTableByUserPaymentForDetail()}" target="_blank" >
                                     <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                                     <f:setPropertyActionListener value="#{csh.webUser}" target="#{opdPreBillReportController.webUser}" />
                                 </h:commandLink>

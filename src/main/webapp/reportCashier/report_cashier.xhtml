@@ -36,7 +36,7 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="2)Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="7) Cashier Reports(Bill Fee Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed}">
+                                <p:panel header="7) Cashier Reports(Bill Fee Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed or webUserController.hasPrivilege('OpdPreBilling')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}" />
                                         <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}" />
@@ -65,7 +65,7 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="1) Summary By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="8) Cashier Reports(Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed}">
+                                <p:panel header="8) Cashier Reports(Payment)" style="width: 400px; height: auto" collapsed="true" toggleable="true" rendered="#{sessionController.institutionPreference.partialPaymentOfOpdPreBillsAllowed or webUserController.hasPrivilege('OpdPreBilling')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml" actionListener="#{opdPreBillReportController.makeNull}" />
                                         <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml" actionListener="#{opdPreBillReportController.makeNull}" />

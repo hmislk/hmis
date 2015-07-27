@@ -16,30 +16,14 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Summary Detail Report">
+                <p:panel header="Casheir Summary Detail Report">
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="#{commonReport.webUser.institution.name}"/> <br/>
 
                             <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
-
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                             style="float: right;" actionListener="#{commonReport.createLabCashierSummeryReport()}" />
-                            <p:defaultCommand target="btnRefresh"/>
-
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
-
-                            <p:commandButton actionListener="#{commonReport.createLabCashierSummeryReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton> 
-
-
                         </f:facet>
-
-
-                        <h:panelGrid columns="8" styleClass="noPrintButton" >
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -56,11 +40,26 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{commonReport.department}" converter="dep" >
+                                            value="#{commonReport.department}" converter="departmentConverter" >
                             </p:autoComplete>
 
-                        </h:panelGrid>
+                        </h:panelGrid> 
+                        <h:panelGrid columns="8" styleClass="noPrintButton" >
+                            <p:spacer width="90" height="1"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
+                                             style="float: right;" actionListener="#{commonReport.createLabCashierSummeryReport()}" />
+                            <p:defaultCommand target="btnRefresh"/>
 
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+
+                            <p:commandButton actionListener="#{commonReport.createLabCashierSummeryReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Summary Detail Report">
                         <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
 
                             <h:panelGroup >

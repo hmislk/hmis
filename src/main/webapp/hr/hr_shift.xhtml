@@ -86,15 +86,26 @@
 
                             <p:outputLabel value="First Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.firstShift}" />
-                             <p:outputLabel value="Last Shift"/>
+                            <p:outputLabel value="Last Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.lastShift}" />
                             <p:outputLabel value="Half Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.halfShift}" />                           
                             <p:outputLabel value="Hide Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
 
+
+                            <p:outputLabel value="This Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.id}"/>
+
+                            <p:outputLabel value="Previous Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
+
+                            <p:outputLabel value="Next Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
+
+
                             <p:commandButton ajax="false" value="Save"  
-                                            action="#{shiftController.saveSelected}"  
+                                             action="#{shiftController.saveSelected}"  
                                              onclick="onSubmitButton();"/>
                         </h:panelGrid>
                     </p:panel>

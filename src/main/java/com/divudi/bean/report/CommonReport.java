@@ -3293,6 +3293,9 @@ public class CommonReport implements Serializable {
         list2.add(paymentCancelBills);
         list2.add(pettyPayments);
         list2.add(pettyPaymentsCancel);
+        list2.add(GrnPaymentBill);
+        list2.add(GrnPaymentCancell);
+        list2.add(GrnPaymentReturn);
         list2.add(agentRecieves);
         list2.add(agentCancelBill);
         list2.add(inwardPayments);

@@ -38,14 +38,14 @@ public class Reorder implements Serializable {
     Person person;
     double rol;
     double roq;
-    
+
     /**
      *
      * Demand the amount of items consumed by customers, on average, per unit
      * time.
      *
      */
-    double demandInUnitsPerDay;
+        double demandInUnitsPerDay;
 
     /**
      *
@@ -75,7 +75,7 @@ public class Reorder implements Serializable {
     
     int monthsConsideredForShortTermAnalysis;
     int yearsConsideredForLognTermAnalysis;
-    
+
     @ManyToOne
     Institution supplier;
     
@@ -83,40 +83,24 @@ public class Reorder implements Serializable {
     Double transientStock;
     @Transient
     Double transientOrderingQty;
+    boolean genericOrdering;
 
-
-    public Item getItem() {
-        return item;
+    public Double getTransientOrderingQty() {
+        return transientOrderingQty;
     }
 
-    public void setItem(Item item) {
-        this.item = item;
+    public void setTransientOrderingQty(Double transientOrderingQty) {
+        this.transientOrderingQty = transientOrderingQty;
+    }
+    
+    public Double getTransientStock() {
+        return transientStock;
     }
 
-    public Department getDepartment() {
-        return department;
+    public void setTransientStock(Double transientStock) {
+        this.transientStock = transientStock;
     }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
-
-    public Institution getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-    }
-
+    
     public int getMonthsConsideredForShortTermAnalysis() {
         return monthsConsideredForShortTermAnalysis;
     }
@@ -133,32 +117,6 @@ public class Reorder implements Serializable {
         this.yearsConsideredForLognTermAnalysis = yearsConsideredForLognTermAnalysis;
     }
     
-    
-
-    public double getRol() {
-        return rol;
-    }
-
-    public void setRol(double rol) {
-        this.rol = rol;
-    }
-
-    public double getRoq() {
-        return roq;
-    }
-
-    public void setRoq(double roq) {
-        this.roq = roq;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public double getDemandInUnitsPerDay() {
         return demandInUnitsPerDay;
     }
@@ -206,23 +164,71 @@ public class Reorder implements Serializable {
     public void setSupplier(Institution supplier) {
         this.supplier = supplier;
     }
-
-    public Double getTransientStock() {
-        return transientStock;
+    
+    public Item getItem() {
+        return item;
     }
 
-    public void setTransientStock(Double transientStock) {
-        this.transientStock = transientStock;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
-    public Double getTransientOrderingQty() {
-        return transientOrderingQty;
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setTransientOrderingQty(Double transientOrderingQty) {
-        this.transientOrderingQty = transientOrderingQty;
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public double getRol() {
+        return rol;
+    }
+
+    public void setRol(double rol) {
+        this.rol = rol;
+    }
+
+    public double getRoq() {
+        return roq;
+    }
+
+    public void setRoq(double roq) {
+        this.roq = roq;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public boolean isGenericOrdering() {
+        return genericOrdering;
+    }
+
+    public void setGenericOrdering(boolean genericOrdering) {
+        this.genericOrdering = genericOrdering;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -230,7 +236,6 @@ public class Reorder implements Serializable {
         return hash;
     }
 
-    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

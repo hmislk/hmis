@@ -1572,6 +1572,37 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
+    public void createTablesWithEstimatedProfessionalFees() {
+        makeNull();
+
+        if (patientEncounter == null) {
+            return;
+        }
+
+        createPatientRooms();
+        createPatientItems();
+        pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre);
+        storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre);
+        departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null);
+        additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter());
+        getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter());
+        profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
+        doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
+        paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter());
+
+        updateRoomChargeList();
+        createChargeItemTotals();
+
+        updateTotal();
+
+        if (patientEncounter != null && patientEncounter.getDateOfDischarge() != null) {
+            date = patientEncounter.getDateOfDischarge();
+        } else {
+            date = null;
+        }
+    }
+
+    
     private List<PatientItem> createPatientItems() {
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter());
 

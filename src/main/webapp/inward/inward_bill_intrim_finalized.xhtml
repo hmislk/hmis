@@ -19,7 +19,8 @@
             <h:form  >
                 <p:panel  >
                     <f:facet name="header">
-                        <p:outputLabel value="Inward Payment Bill"/>                                      
+                        <p:outputLabel value="Inward Payment Bill"/>                        
+                        <p:commandButton ajax="false"  value="Back" action="/credit/inward_due_age_credit_company_detail" rendered="#{bhtSummeryFinalizedController.activeBackButton}" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}" onclick="onSubmitButton();" />                                                                        
                     </f:facet>
                     <h:panelGrid columns="3" style="min-width: 100%;">
@@ -85,7 +86,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel value="Due : " style="min-width: 100px;font-weight: bold;"/>
                                 <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.finalBill.netTotal
-                                                        -(bhtSummeryFinalizedController.patientEncounter.creditUsedAmount
+                                                        -(bhtSummeryFinalizedController.patientEncounter.creditPaidAmount
                                                         +bhtSummeryFinalizedController.patientEncounter.finalBill.paidAmount)}" >         
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>

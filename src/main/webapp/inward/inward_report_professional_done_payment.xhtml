@@ -54,6 +54,17 @@
 
                         </p:panelGrid>
                         <p:panel id="gpBillPreview">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Inward Doctor Payment Done Report - " ></h:outputLabel>
+                                <h:outputLabel value=" From : " ></h:outputLabel>
+                                <h:outputLabel value="#{inwardReportController.fromDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To : " ></h:outputLabel>
+                                <h:outputLabel value="#{inwardReportController.toDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </f:facet>
                             <p:dataTable value="#{inwardReportController.billedBill}" var="billedBill" id="tb1">
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Bill"></h:outputLabel>
@@ -229,17 +240,17 @@
                                 <h:outputLabel value="#{inwardReportController.totalBilledBill}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                
+
                                 <h:outputLabel value="Cancelled Bill Total"></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.totalCancelledBill}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                
+
                                 <h:outputLabel value="Refund Bill Total"></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.totalRefundBill}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                
+
                                 <h:outputLabel value="Net Total"></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.totalBilledBill + inwardReportController.totalCancelledBill + inwardReportController.totalRefundBill}">
                                     <f:convertNumber pattern="#,##0.00"/>

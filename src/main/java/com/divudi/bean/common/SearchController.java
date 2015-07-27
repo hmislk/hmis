@@ -372,8 +372,8 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
         if (maxNum == true) {
             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
-        }else{
-             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         }
 
     }
@@ -781,7 +781,11 @@ public class SearchController implements Serializable {
     }
 
     public void listPharmacyReturns() {
-        listPharmacyReturnedBills(BillType.PharmacyIssue);
+        listPharmacyStoreReturnedBills(BillType.PharmacyIssue);
+    }
+
+    public void listStoreReturns() {
+        listPharmacyStoreReturnedBills(BillType.StoreIssue);
     }
 
     public void listPharmacyBilledBills(BillType bt) {
@@ -796,8 +800,8 @@ public class SearchController implements Serializable {
         listPharmacyBills(bt, CancelledBill.class);
     }
 
-    public void listPharmacyReturnedBills(BillType bt) {
-        listPharmacyBills(bt, RefundBill.class);
+    public void listPharmacyStoreReturnedBills(BillType bt) {
+        listReturnBills(bt, RefundBill.class);
     }
 
     public ServiceSession getSelectedServiceSession() {
@@ -832,6 +836,56 @@ public class SearchController implements Serializable {
                 + " and b.institution=:ins "
                 + " and type(b)=:class "
                 + " and b.billedBill is null ";
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            sql += " and  (upper(b.invoiceNumber) like :requestNo )";
+            m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  (upper(b.department.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.total) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        //     ////System.out.println("sql = " + sql);
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+
+    }
+    
+    public void listReturnBills(BillType bt, Class bc) {
+
+        Map m = new HashMap();
+        m.put("bt", bt);
+        m.put("class", bc);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        m.put("dept", getSessionController().getDepartment());
+        String sql;
+
+        sql = "Select b from Bill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt "
+                + " and b.institution=:ins "
+                + " and b.department=:dept "
+                + " and type(b)=:class ";
 
         if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  (upper(b.invoiceNumber) like :requestNo )";
@@ -3082,6 +3136,60 @@ public class SearchController implements Serializable {
 //                + " pi.billItem.bill.createdAt between :fromDate and :toDate  ";
         Map temMap = new HashMap();
 
+//        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+//            System.out.println("inside ins");
+//            sql+="and b.institution =:ins ";
+//            temMap.put("ins", getSessionController().getInstitution());
+//        }
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(p.name) like :patientName )";
+//            sql += " and  (upper(pi.billItem.bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(p.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by pi.id desc  ";
+//    
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createPatientInvestigationsTableByLoggedInstitution() {
+
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + " and b.institution =:ins ";
+
+//        String sql = "select pi from PatientInvestigation pi where "
+//                + " pi.billItem.bill.createdAt between :fromDate and :toDate  ";
+        Map temMap = new HashMap();
+        temMap.put("ins", getSessionController().getInstitution());
+
+//        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+//            System.out.println("inside ins");
+//            sql+="and b.institution =:ins ";
+//            temMap.put("ins", getSessionController().getInstitution());
+//        }
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(p.name) like :patientName )";
 //            sql += " and  (upper(pi.billItem.bill.patient.person.name) like :patientName )";
@@ -3164,6 +3272,57 @@ public class SearchController implements Serializable {
 
         Map temMap = new HashMap();
 
+//        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+//            System.out.println("inside ins");
+//            sql+="and b.institution =:ins ";
+//            temMap.put("ins", getSessionController().getInstitution());
+//        }
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(p.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(p.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by pi.id desc  ";
+//    
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createPatientInvestigationsTableAllByLoggedInstitution() {
+
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + " and b.institution =:ins ";
+
+        Map temMap = new HashMap();
+        temMap.put("ins", getSessionController().getInstitution());
+
+//        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
+//            System.out.println("inside ins");
+//            sql+="and b.institution =:ins ";
+//            temMap.put("ins", getSessionController().getInstitution());
+//        }
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(p.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -3211,7 +3370,9 @@ public class SearchController implements Serializable {
         sql = "select b from PreBill b where b.billType = :billType and "
                 + " b.institution=:ins and (b.billedBill is null) and "
                 + " b.referenceBill.billType=:refBillType "
-                + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
+                + " and b.createdAt between :fromDate and :toDate and b.retired=false "
+                // for remove cancel bills
+                + " and b.referenceBill.cancelled=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.deptId) like :billNo )";
@@ -5513,6 +5674,5 @@ public class SearchController implements Serializable {
     public void setAceptPaymentBills(List<Bill> aceptPaymentBills) {
         this.aceptPaymentBills = aceptPaymentBills;
     }
-
 
 }

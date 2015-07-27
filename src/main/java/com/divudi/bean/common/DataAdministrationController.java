@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -13,6 +14,7 @@ import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.ItemBatch;
@@ -44,6 +46,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -84,6 +87,9 @@ public class DataAdministrationController {
     CategoryFacade categoryFacade;
     @EJB
     ItemBatchFacade itemBatchFacade;
+    
+    List<Bill> bills;
+    List<Bill> selectedBills;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -134,7 +140,21 @@ public class DataAdministrationController {
             categoryFacade.edit(c);
         }
     }
+    
+    @Inject
+    InvestigationController investigationController;
 
+    public void addInstitutionToInvestigationsWithoutInstitution(){
+        List<Investigation> lst = investigationController.getItems();
+        for(Investigation ix:lst){
+            if(ix.getInstitution()==null){
+                ix.setInstitution(ix.getDepartment().getInstitution());
+                System.out.println("ix = " + ix);
+                itemFacade.edit(ix);
+            }
+        }
+    }
+    
     public void detectWholeSaleBills() {
         String sql;
         Map m = new HashMap();
@@ -288,6 +308,36 @@ public class DataAdministrationController {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, m);
 
     }
+    
+    public void createInwardServiceBillWithPaymentmethord() {
+        bills=new ArrayList<>();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and b.retired=false "
+                + " and b.paymentMethod is not null "
+                + " order by b.createdAt ";
+        temMap.put("billType", BillType.InwardBill);
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("bills.size() = " + bills.size());
+    }
+    
+    public void updateInwardServiceBillWithPaymentmethord() {
+        if (selectedBills.isEmpty()||selectedBills==null) {
+            JsfUtil.addErrorMessage("Nothing To Update");
+            return;
+        }
+        System.out.println("bills.size() = " + selectedBills.size());
+        for (Bill b : selectedBills) {
+            System.out.println("b.getPaymentMethod() = " + b.getPaymentMethod());
+            b.setPaymentMethod(null);
+            getBillFacade().edit(b);
+            System.err.println("canged");
+        }
+        createInwardServiceBillWithPaymentmethord();
+    }
 
     /**
      * Creates a new instance of DataAdministrationController
@@ -381,6 +431,22 @@ public class DataAdministrationController {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public List<Bill> getSelectedBills() {
+        return selectedBills;
+    }
+
+    public void setSelectedBills(List<Bill> selectedBills) {
+        this.selectedBills = selectedBills;
     }
 
 }

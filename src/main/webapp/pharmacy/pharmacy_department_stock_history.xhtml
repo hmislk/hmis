@@ -33,7 +33,7 @@
                                                 var="d" itemLabel="#{d.name}"
                                                 itemValue="#{d}"
                                                 value="#{stockHistoryController.department}"
-                                                converter="dep" >
+                                                converter="departmentConverter" >
                                     <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
                                 </p:autoComplete>
 

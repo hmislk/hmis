@@ -900,7 +900,7 @@ public class OpdPreBillController implements Serializable {
     private boolean errorCheck() {
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
 
@@ -951,7 +951,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Scheme");
+            UtilityController.addErrorMessage("Select Payment Method.");
             return true;
         }
 
@@ -981,18 +981,7 @@ public class OpdPreBillController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-
-            if (cashPaid == 0.0) {
-                UtilityController.addErrorMessage("Please enter the paid amount");
-                return true;
-            }
-
-        }
-
-//        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
-//            return true;
-//        }
+        
         return false;
     }
 
@@ -1888,86 +1877,86 @@ public class OpdPreBillController implements Serializable {
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
 
-    /**
-     *
-     */
-    @FacesConverter("bill")
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter(forClass = Bill.class)
-    public static class BillConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-            }
-        }
-    }
+//    /**
+//     *
+//     */
+//    @FacesConverter("bill")
+//    public static class BillControllerConverter implements Converter {
+//
+//        @Override
+//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+//            if (value == null || value.length() == 0) {
+//                return null;
+//            }
+//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
+//                    getValue(facesContext.getELContext(), null, "billController");
+//            return controller.getBillFacade().find(getKey(value));
+//        }
+//
+//        java.lang.Long getKey(String value) {
+//            java.lang.Long key;
+//            key = Long.valueOf(value);
+//            return key;
+//        }
+//
+//        String getStringKey(java.lang.Long value) {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(value);
+//            return sb.toString();
+//        }
+//
+//        @Override
+//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+//            if (object == null) {
+//                return null;
+//            }
+//            if (object instanceof Bill) {
+//                Bill o = (Bill) object;
+//                return getStringKey(o.getId());
+//            } else {
+//                throw new IllegalArgumentException("object " + object + " is of type "
+//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
+//            }
+//        }
+//    }
+//
+//    @FacesConverter(forClass = Bill.class)
+//    public static class BillConverter implements Converter {
+//
+//        @Override
+//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+//            if (value == null || value.length() == 0) {
+//                return null;
+//            }
+//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
+//                    getValue(facesContext.getELContext(), null, "billController");
+//            return controller.getBillFacade().find(getKey(value));
+//        }
+//
+//        java.lang.Long getKey(String value) {
+//            java.lang.Long key;
+//            key = Long.valueOf(value);
+//            return key;
+//        }
+//
+//        String getStringKey(java.lang.Long value) {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(value);
+//            return sb.toString();
+//        }
+//
+//        @Override
+//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+//            if (object == null) {
+//                return null;
+//            }
+//            if (object instanceof Bill) {
+//                Bill o = (Bill) object;
+//                return getStringKey(o.getId());
+//            } else {
+//                throw new IllegalArgumentException("object " + object + " is of type "
+//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
+//            }
+//        }
+//    }
 }

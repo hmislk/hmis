@@ -167,6 +167,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node222 = new PrivilageNode("Lab Bill Cancell Special(after collecting sample can cancell)", node2, Privileges.LabBillCancelSpecial);
         TreeNode node223 = new PrivilageNode("Lab Bill Refund Special(after collecting sample can Refund)", node2, Privileges.LabBillRefundSpecial);
         TreeNode node224 = new PrivilageNode("Add Inward Services", node2, Privileges.LabAddInwardServices);
+        TreeNode node225 = new PrivilageNode("Search By Logged Institution", node2, Privileges.LabSearchBillLoggedInstitution);
 
         TreeNode node3 = new PrivilageNode("Pharmacy", tmproot);
         TreeNode node300 = new PrivilageNode("Pharmacy Menu", node3, Privileges.Pharmacy);
@@ -341,11 +342,13 @@ public class UserPrivilageController implements Serializable {
         TreeNode node2304 = new PrivilageNode("Doctor Leave", node23, Privileges.ChannellingDoctorLeave);
         TreeNode node2305 = new PrivilageNode("Channel Sheduling", node23, Privileges.ChannellingChannelSheduling);
         TreeNode node2306 = new PrivilageNode("Channel Agent Fee", node23, Privileges.ChannellingChannelAgentFee);
+        TreeNode node2309 = new PrivilageNode("Channel Booking Change", node23, Privileges.ChannelBookingChange);
         TreeNode node2307 = new PrivilageNode("Payment", node23);
         TreeNode node23070 = new PrivilageNode("Payment Menu", node2307, Privileges.ChannellingPayment);
         TreeNode node23071 = new PrivilageNode("Pay Doctor", node2307, Privileges.ChannellingPaymentPayDoctor);
         TreeNode node23072 = new PrivilageNode("Payment Due Search", node2307, Privileges.ChannellingPaymentDueSearch);
         TreeNode node23073 = new PrivilageNode("Payment Done Search", node2307, Privileges.ChannellingPaymentDoneSearch);
+        
 
         return tmproot;
     }

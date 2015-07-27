@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="data" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="billed"  value="#{cc.attrs.data}" var="dt" rendered="#{cc.attrs.data.size()>0}">
+            <f:facet name="header">  
+                <h:outputLabel value="Final Totals"/>
+            </f:facet>     
+
+            <p:column>
+                <h:outputLabel value="#{dt.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
+            </p:column>
+
+            <p:column style="text-align: right;">
+                <f:facet name="header" >
+                    <p:outputLabel value="Cash" />
+                </f:facet>
+                <h:outputLabel value="#{dt.cash}" style="#{dt.bold?'font-weight: bold':''}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+
+            <p:column style="text-align: right;">
+                <f:facet name="header" >
+                    <p:outputLabel value="Credit" />
+                </f:facet>
+                <h:outputLabel value="#{dt.credit}" style="#{dt.bold?'font-weight: bold':''}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+
+            <p:column style="text-align: right;">
+                <f:facet name="header" >
+                    <p:outputLabel value="Card" />
+                </f:facet>
+                <h:outputLabel value="#{dt.card}" style="#{dt.bold?'font-weight: bold':''}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>                                
+            </p:column>
+
+            <p:column style="text-align: right;">
+                <f:facet name="header" >
+                    <p:outputLabel value="Cheque" />
+                </f:facet>
+                <h:outputLabel value="#{dt.cheque}" style="#{dt.bold?'font-weight: bold':''}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>                                
+            </p:column>
+
+            <p:column style="text-align: right;" >
+                <f:facet name="header" >
+                    <p:outputLabel value="Slip" />
+                </f:facet>
+                <h:outputLabel value="#{dt.slip}" style="#{dt.bold?'font-weight: bold':''}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>                                
+            </p:column>  
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

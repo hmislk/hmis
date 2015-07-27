@@ -504,6 +504,16 @@ a:hover {
     font-size: 13pt;
 }
 
+.noPaddingMargin{
+    padding: 0px!important;
+    margin: 0px!important;
+}
+
+.noPaddingMargin.ui-panel-content{
+    padding: 0px!important;
+    margin: 0px!important;
+}
+
 .alignTop {
     vertical-align: top;
 }
@@ -896,8 +906,19 @@ table.standardTable td {
     padding-right: 5px;
 }
 
+.shortNumericColumn{
+    text-align: right;
+    width: 50px;
+    max-width: 50px;
+    padding-right: 2px;
+}
+
+
 .averateNumericText{
     text-align: right;
     width: 70px;
 }
 
+.tinyText{
+    font-size: 8px!important;
+}

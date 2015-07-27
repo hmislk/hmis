@@ -11,7 +11,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Generate Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
             </p:panel>
@@ -152,7 +152,7 @@
                         </p:column>
                         
                          <p:column headerText="Total PH/Off/Poya/Basic Adjustments">
-                            <h:outputLabel value="#{i.basicValue}">
+                             <h:outputLabel value="#{i.poyaAllowanceValue+i.dayOffAllowance}">
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>

@@ -11,41 +11,109 @@
         <h:form>
             <p:panel header="Entered Shift Report">
 
-                    <h:panelGrid columns="3">
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{shiftController.createShiftListReport()}"/>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
-                            <p:printer target="datatable"  />
-                        </p:commandButton>
+                <h:panelGrid columns="3">
+                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{shiftController.createShiftListReport()}"/>
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                        <p:printer target="datatable"  />
+                    </p:commandButton>
 
-                        <p:commandButton actionListener="#{shiftController.createShiftListReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_Transfer_Issued_List_Report"  />
-                        </p:commandButton>
-                    </h:panelGrid>
-              
+                    <p:commandButton actionListener="#{shiftController.createShiftListReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                        <pe:exporter type="xlsx" target="tbl1" fileName="Shift_entered_report"  />
+                    </p:commandButton>
+                </h:panelGrid>
+
                 <p:panel id="datatable" header="Entered Shift">
                     <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">                       
 
-                        <p:column headerText="Roster Name">
+                        <p:column headerText="Roster Name" filterBy="#{p.roster.name}" sortBy="#{p.roster.name}">
                             <h:outputLabel value="#{p.roster.name}"></h:outputLabel>
-                               <f:facet name="header">
-                                    <h:outputLabel value="Roster Name"  />
-                                </f:facet>
+                            <f:facet name="header">
+                                <h:outputLabel value="Roster Name"  />
+                            </f:facet>
                         </p:column>
 
-                        <p:column headerText="Shift Name">
+                        <p:column headerText="Shift Name." filterBy="#{p.name}" sortBy="#{p.name}">
                             <h:outputLabel value="#{p.name}"></h:outputLabel>
-                               <f:facet name="header">
-                                    <h:outputLabel value="Shift Name"  />
-                                </f:facet>
+                            <f:facet name="header">
+                                <h:outputLabel value="Shift Name."  />
+                            </f:facet>
                         </p:column>
 
-<!--                        <p:column headerText="Created Date">
-                            <h:outputLabel value="#{p.createdAt}"></h:outputLabel>
+                        <p:column headerText="Day Type">
+                            <h:outputLabel value="#{p.dayType}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Day Type"  />
+                            </f:facet>
                         </p:column>
 
-                        <p:column headerText="Ceated By">
-                            <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"></h:outputLabel>
-                        </p:column>-->
+                        <p:column headerText="Starting Time">
+                            <h:outputLabel value="#{p.startingTime}">
+                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                            </h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Starting Time"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="End Time">
+                            <h:outputLabel value="#{p.endingTime}">
+                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                            </h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="End Time"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Leave HourFull">
+                            <h:outputLabel value="#{p.leaveHourFull}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Leave HourFull"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Leave HourHalf">
+                            <h:outputLabel value="#{p.leaveHourHalf}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Leave HourHalf"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Duration Hour">
+                            <h:outputLabel value="#{p.durationHour}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Duration Hour"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Previous Shift">
+                            <h:outputLabel value="#{p.previousShift.name}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Previous Shift"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Next Shift">
+                            <h:outputLabel value="#{p.nextShift.name}"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Next Shift"  />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="First/Last">
+                            <h:outputLabel rendered="#{p.firstShift}" value="First Shift"></h:outputLabel>
+                            <h:outputLabel rendered="#{p.lastShift}" value="Last Shift"></h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputLabel value="First/Last"  />
+                            </f:facet>
+                        </p:column>
+
+                        <!--                        <p:column headerText="Created Date">
+                                                    <h:outputLabel value="#{p.createdAt}"></h:outputLabel>
+                                                </p:column>
+                        
+                                                <p:column headerText="Ceated By">
+                                                    <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"></h:outputLabel>
+                                                </p:column>-->
 
                     </p:dataTable>
                 </p:panel>

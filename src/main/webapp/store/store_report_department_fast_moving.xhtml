@@ -17,7 +17,7 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsTransfer.department}" converter="dep" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsTransfer.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="" ></h:outputLabel>
                             <h:outputLabel value="" ></h:outputLabel>
