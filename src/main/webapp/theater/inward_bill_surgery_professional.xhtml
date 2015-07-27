@@ -27,7 +27,6 @@
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{inwardProfessionalBillController.batchBill}" 
                                                 completeMethod="#{billController.completeSurgeryBills}"
-                                                converter="bill"
                                                 var="apt2" itemLabel="#{amp2.bhtNo}"
                                                 itemValue="#{apt2}" size="30"  style="width: 400px;">
                                     <p:ajax event="itemSelect" process="@this" update="@all"
