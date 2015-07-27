@@ -829,7 +829,7 @@ public class ReorderController implements Serializable {
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();
-        return "/pharmacy/pharmacy_purhcase_order_request";
+        return "/pharmacy_purhcase_order_request";
     }
 
     public String createPharmacyTransferRequest() {

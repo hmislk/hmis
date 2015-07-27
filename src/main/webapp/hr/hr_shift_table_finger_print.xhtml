@@ -76,7 +76,10 @@
                         </h:outputLabel>
                     </f:facet>
                     <p:column headerText="Shift Name" styleClass="singleLine">
-                        <h:outputLabel value="#{sts.shift.name}" />
+                        <h:outputLabel id="lblShift"  value="#{sts.shift.name}" />
+                        <p:tooltip for="lblShift" >
+                            <h:outputLabel value="#{sts.shift.id}" />
+                        </p:tooltip>
                     </p:column>
                     
                     <p:column>
@@ -131,6 +134,10 @@
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
 
+                    <p:column headerText="E">
+                        <h:outputLabel value="#{sts.previousStaffShift}" ></h:outputLabel>
+                    </p:column>
+                    
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup >                           
