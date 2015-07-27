@@ -105,7 +105,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         progressStarted = true;
         progressValue = 0;
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
-        double singleItem = 100 / ixs.size();
+//        double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
@@ -114,7 +114,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             if (stopProgress == true) {
                 break;
             }
-            progressValue += (int) singleItem;
+//            progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCount(w);
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
