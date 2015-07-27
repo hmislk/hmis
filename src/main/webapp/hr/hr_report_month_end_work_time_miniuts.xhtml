@@ -39,7 +39,7 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="4" >
-                            <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"/>
+                            <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
                             </p:commandButton>
@@ -47,8 +47,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandLink ajax="false" value="Old Method" 
-                                           action="#{hrReportController.createMonthEndWorkTimeReport()}"
+                            <p:commandLink ajax="false" value="New Method" 
+                                           action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"
                                            styleClass="tinyText" style="float: right;"/>
 
                         </h:panelGrid>
