@@ -79,11 +79,10 @@ import org.primefaces.model.UploadedFile;
 public class HrReportController implements Serializable {
 
     /**
-     * 
-     *  JBS
-     * 
+     *
+     * JBS
+     *
      */
-    
     @EJB
     CommonFunctions commonFunctions;
     @EJB
@@ -98,23 +97,21 @@ public class HrReportController implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     FormFacade formFacade;
-    
-    
+
     /**
-     * 
-     *  Managed Beans
-     * 
+     *
+     * Managed Beans
+     *
      */
     @Inject
     SessionController sessionController;
     @Inject
     ShiftFingerPrintAnalysisController shiftFingerPrintAnalysisController;
-    
-    
+
     /**
-     * 
-     *  Properties
-     * 
+     *
+     * Properties
+     *
      */
     ReportKeyWord reportKeyWord;
     Date fromDate;
@@ -122,7 +119,7 @@ public class HrReportController implements Serializable {
     Institution institution;
     double totalWorkedTime;
     DayType[] dayTypesSelected;
-    
+
     List<StaffShift> staffShifts;
     List<StaffShift> staffShiftsHoliday;
     List<Staff> staffs;
@@ -131,6 +128,21 @@ public class HrReportController implements Serializable {
     List<WeekDayWork> weekDayWorks;
     List<Department> selectDepartments;
     List<FingerPrintRecord> selectedFingerPrintRecords;
+
+    String backButtonPage;
+
+    public String fromStaffFingerprintAnalysisToStaffLeave(Date date, Staff staff) {
+        fromDate = CommonFunctions.getStartOfDay(date);
+        toDate = CommonFunctions.getEndOfDay(date);
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        reportKeyWord.resetKeyWord();
+        reportKeyWord.setStaff(staff);
+        createStaffLeaveDetail();
+        backButtonPage = "/hr/hr_report_leave_summery_by_staff";
+        return "/hr/hr_report_leave_summery_by_staff";
+    }
 
     public void onEditBlockedUpdate(StaffSalary staffSalary) {
         if (staffSalary == null) {
@@ -2162,7 +2174,7 @@ public class HrReportController implements Serializable {
         }
     }
 
-    public String fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(Staff staff){
+    public String fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(Staff staff) {
         shiftFingerPrintAnalysisController.setFromDate(fromDate);
         shiftFingerPrintAnalysisController.setToDate(toDate);
         shiftFingerPrintAnalysisController.setStaff(staff);
@@ -2172,7 +2184,7 @@ public class HrReportController implements Serializable {
         shiftFingerPrintAnalysisController.setBackButtonPage("/hr/hr_report_month_end_work_time_miniuts");
         return "/hr/hr_shift_table_finger_print_by_staff";
     }
-    
+
     public void createMonthEndWorkTimeReport() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         if (dateCount > 8) {
@@ -2291,10 +2303,9 @@ public class HrReportController implements Serializable {
         weekDayWorks = new ArrayList<>();
 
         for (Staff stf : staffList) {
-            System.out.println("Staff Member = " + stf.getPerson().getName() + "(" +  stf.getCode() +")");
+            System.out.println("Staff Member = " + stf.getPerson().getName() + "(" + stf.getCode() + ")");
             WeekDayWork weekDayWork = new WeekDayWork();
             weekDayWork.setStaff(stf);
-
 
             Date fd = this.getFromDate();
             Calendar frmCal = Calendar.getInstance();
@@ -2313,7 +2324,7 @@ public class HrReportController implements Serializable {
             int numberOfDays = (int) ((toDate.getTime() - fromDate.getTime())
                     / (1000 * 60 * 60 * 24));
 //        
-            for (int i = 0; i < numberOfDays+1; i++) {
+            for (int i = 0; i < numberOfDays + 1; i++) {
 
                 Double value;
                 Double valueExtra = 0.0;
@@ -2324,11 +2335,7 @@ public class HrReportController implements Serializable {
 
                 System.err.println("From " + frmCal.getTime() + " to " + toCal.getTime() + " workedtime varified is " + workedWithinTimeFrameVarified / (60 * 60));
 
-                
-
-                
-
-                Integer dayOfWeek = frmCal.get(Calendar.DAY_OF_WEEK)+1;
+                Integer dayOfWeek = frmCal.get(Calendar.DAY_OF_WEEK) + 1;
 
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
@@ -3806,6 +3813,20 @@ public class HrReportController implements Serializable {
 
     public void setHold(boolean hold) {
         this.hold = hold;
+    }
+
+    public String getBackButtonPage() {
+        return backButtonPage;
+    }
+
+    public void setBackButtonPage(String backButtonPage) {
+        this.backButtonPage = backButtonPage;
+    }
+
+    public String back() {
+        String s = backButtonPage;
+        backButtonPage = null;
+        return s;
     }
 
 }

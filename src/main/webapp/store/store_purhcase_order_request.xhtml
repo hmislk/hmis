@@ -17,9 +17,9 @@
 
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton ajax="false" value="Request" 
-                                     action="#{storePurchaseOrderRequestController.request}"/>
+                                    action="#{storePurchaseOrderRequestController.request}"/>
                     <p:commandButton ajax="false"  value="New Order" 
-                                     action="#{storePurchaseOrderRequestController.recreate}"/>
+                                    action="#{storePurchaseOrderRequestController.recreate}"/>
                 </f:facet>
 
                 <p:tabView>
@@ -58,15 +58,14 @@
                     <p:tab title="Add Extra Item ">
                         <p:autoComplete id="exItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
-
                                         completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <p:column headerText="Item"  >
+                            <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
                             <p:column headerText="Code" >
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Pack Size"  >
+                            <p:column headerText="Pack Size" >
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
@@ -99,49 +98,44 @@
                              id="itemList" >  
 
                     <f:facet name="header">  
-                        <h:outputLabel  value="Store Bill Item" />
-                        <p:commandButton ajax="false" value="Remove All" action="#{storePurchaseOrderRequestController.removeSelected()}" style="height: 40%" />
+                        <h:outputLabel  value="Store Bill Item"/>
+                        <p:commandButton ajax="false" value="Remove All" action="#{storePurchaseOrderRequestController.removeSelected()}"/>
                     </f:facet>  
 
-                    <p:column selectionMode="multiple" style="width: 30px;"></p:column>
+                    <p:column selectionMode="multiple" style="width: 10px;"></p:column>
 
 
-                    <p:column headerText="No" style="width: 50px;" >
-                        <p:outputLabel value="#{bi.searialNo+1}">
-                        </p:outputLabel>
+                    <p:column headerText="No" style="width: 25px;">
+                        #{bi.searialNo+1}
                     </p:column>
 
-                    <p:column headerText="Item Name" >  
-                        <p:outputLabel value=" #{bi.item.name} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                        </p:outputLabel>
+                    <p:column headerText="Item Name"  style="width:30%">  
+                        #{bi.item.name} 
                     </p:column>  
-                    <p:column headerText="Qty" styleClass="averageNumericColumn" style="text-align: right;" > 
-                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}"  label="Qty" style="width: 80px; text-align: right;">                       
+                    #{a}
+                    <p:column headerText="Qty" style="width:20%"> 
+                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
                             <f:ajax event="blur" render="@this total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </p:inputText>
+                            </p:inputText>
                     </p:column>  
-                    <p:column headerText="Purchase Price" styleClass="averageNumericColumn" >  
+                    <p:column headerText="Purchase Price" style="width:20%">  
                         <h:panelGroup id="price">
-                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="width: 80px; text-align: right;">                                
+                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">                                
                                 <f:ajax event="keyup" render="total :#{p:component('tot')}"  execute="@this qty" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                 <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:inputText>
                         </h:panelGroup>
                     </p:column>  
 
-                    <p:column headerText="Total" styleClass="averageNumericColumn" >  
+                    <p:column headerText="Total" style="width:20%">  
                         <h:panelGroup id="total">
                             <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >                                
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                         </h:panelGroup>
                     </p:column>  
 
-                    <p:column styleClass="averageNumericColumn" >
+                    <p:column style="width:10%">
                         <p:commandButton value="Remove" ajax="false" action="#{storePurchaseOrderRequestController.removeItem(bi)}"/>
                     </p:column>
 

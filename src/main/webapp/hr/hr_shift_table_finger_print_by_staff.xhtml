@@ -18,16 +18,16 @@
                 </ui:repeat>               
             </h:panelGroup>
             <h:panelGrid columns="2">
-                <h:outputLabel value="From Date"/>
+                <h:outputLabel value="From"/>
                 <p:calendar id="frmDate" 
                             value="#{shiftFingerPrintAnalysisController.fromDate}"
                             pattern="dd MMMM yyyy" />
-                <h:outputLabel value="To Date"/>
+                <h:outputLabel value="To"/>
                 <p:calendar id="toDate" 
                             value="#{shiftFingerPrintAnalysisController.toDate}" 
                             pattern="dd MMMM yyyy" />
 
-                <h:outputLabel value="Staff : "/>
+                <h:outputLabel value="Staff "/>
                 <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
                 <h:panelGroup>
                     <p:commandButton value="Fill"
@@ -67,6 +67,8 @@
                              action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
                              onclick="onSubmitButton();" 
                              style="float: right;"/> 
+            
+            <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" action="#{hrReportController.back()}" ></p:commandButton>
 
             <p:dataGrid  id="lst" columns="1" var="data"
                          value="#{shiftFingerPrintAnalysisController.shiftTables}" >
@@ -78,13 +80,13 @@
                             <f:convertDateTime pattern="dd MM yyyy E"/>
                         </h:outputLabel>
                     </f:facet>
-                    <p:column headerText="Shift" styleClass="singleLine">
+                    <p:column headerText="Shift" styleClass="singleLine" style="width: 60px!important;overflow: hidden;">
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >
                             <p:outputLabel value="#{sts.id}" ></p:outputLabel>
                         </p:tooltip>
                     </p:column>
-                    <p:column headerText="Roster">
+                    <p:column headerText="Roster" style="width: 60px!important;overflow: hidden;">
                         <p:outputLabel value="#{sts.roster.name}" ></p:outputLabel>
                     </p:column>
 
@@ -133,13 +135,15 @@
 
                  
 
-                    <p:column headerText="Comments" styleClass="singleLine">                       
-                        <h:outputLabel value="#{sts.leaveType} "  />
+                    <p:column headerText="Comments" styleClass="singleLine">        
+                        <h:outputLabel value="#{sts.leaveType}"  />
+                        <p:commandLink value="#{sts.leaveType}" action="#{hrReportController.fromStaffFingerprintAnalysisToStaffLeave(sts.shiftDate, sts.staff)}" ></p:commandLink>
                         <h:outputLabel value="Half Shift " rendered="#{sts.shift.halfShift}"  />
+                        
                     </p:column>
 
 
-                    <p:column>
+<!--                    <p:column>
                         <f:facet name="header">
                             <h:outputLabel value="Name"/>
                         </f:facet>
@@ -162,7 +166,7 @@
 
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
-                    </p:column>
+                    </p:column>-->
 
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">

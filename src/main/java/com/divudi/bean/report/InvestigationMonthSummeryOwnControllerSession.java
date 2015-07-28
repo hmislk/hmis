@@ -63,7 +63,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     BillEjb billEjb;
     private Date fromDate;
     private Date toDate;
-    Institution  reportedInstitution;
+    Institution reportedInstitution;
     Department reportedDepartment;
     private Institution creditCompany;
     Institution institution;
@@ -101,20 +101,12 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
-        totalCount = null;
-        progressStarted = true;
-        progressValue = 0;
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
-        double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
-            if (stopProgress == true) {
-                break;
-            }
-            progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCount(w);
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
@@ -123,13 +115,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null , true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
@@ -154,7 +146,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department , true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
@@ -173,13 +165,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
@@ -198,13 +190,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
@@ -223,10 +215,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationTurnoverTime() {
-        progressStarted = true;
-        progressValue = 0;
+        System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
         double totalMins = 0;
         double averageCount = 0;
@@ -234,7 +225,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 fromDate,
                 toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
-                new Class[]{Bill.class},
+                new Class[]{BilledBill.class},
                 true,
                 null,
                 true,
@@ -243,18 +234,21 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 null,
                 true,
                 null);
-        double singleItem = 0;
-        if (pis.size() != 0) {
-            singleItem = 100 / pis.size();
-        }
-
+        System.out.println("pis.size() = " + pis.size());
         for (PatientInvestigation pi : pis) {
+
             System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
-            progressValue += (int) singleItem;
-            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
-            totalMins += averateMins;
-            averageCount++;
+            if (pi.getPrintingAt() != null && pi.getBillItem().getBill().getCreatedAt() != null) {
+                System.out.println("pi.getPrintingAt().getTime() = " + pi.getPrintingAt().getTime());
+                System.out.println("pi.getBillItem().getBill().getCreatedAt().getTime() = " + pi.getBillItem().getBill().getCreatedAt().getTime());
+                averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+                System.out.println("averateMins = " + averateMins);
+                totalMins += averateMins;
+                averageCount++;
+            }
         }
+        System.out.println("totalMins = " + totalMins);
+        System.out.println("averageCount = " + averageCount);
         totalCount = (long) (totalMins / averageCount);
         progressStarted = false;
     }
@@ -353,7 +347,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.department = department;
     }
 
-    
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
@@ -1192,15 +1185,15 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
 
     }
-    
-    public void prepareForPrint(){
-        paginator=false;
-        rows=getItems().size();
+
+    public void prepareForPrint() {
+        paginator = false;
+        rows = getItems().size();
     }
-    
-    public void prepareForView(){
-        paginator=true;
-        rows=20;
+
+    public void prepareForView() {
+        paginator = true;
+        rows = 20;
     }
 
 }
