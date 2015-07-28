@@ -2856,7 +2856,7 @@ public class HumanResourceBean {
 
         double dbl = 0;
         for (StaffShift ss : list) {
-            dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
+            dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()+ss.getExtraTimeCompleteRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
             //System.out.println("if outside");
             //System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
             //System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
@@ -2940,7 +2940,7 @@ public class HumanResourceBean {
         if (dayType == DayType.Extra) {
             sql = "Select sum(ss.extraTimeCompleteRecordVarified)";
         } else {
-            sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))";
+            sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified))";
         }
 
         sql += " from StaffShift ss "

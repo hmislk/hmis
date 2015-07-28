@@ -185,7 +185,7 @@
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh:mm a"  >                           
+                                    pattern="dd MM yy hh:mm:ss a"  >                           
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
@@ -205,7 +205,7 @@
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
                                 <p:calendar                                    
                                     value="#{sts.endRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh:mm a" >          
+                                    pattern="dd MM yy hh:mm:ss a" >          
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                                 </p:calendar>                             
