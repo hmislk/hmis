@@ -249,8 +249,36 @@ public class ReportKeyWord {
     public void setDayTypes(DayType[] dayTypes) {
         this.dayTypes = dayTypes;
     }
+
+    public void resetKeyWord(){
+        dayTypes = null;
+        staff = null;
+        times = null;
+        replacingStaff = null;
+        department = null;
+        staffCategory = null;
+        designation = null;
+        roster = null;
+        paysheetComponent = null;
+        salaryCycle = null;
+        shift = null;
+        speciality = null;
+        patient = null;
+        institution = null;
+        bank = null;
+        paymentMethod = null;
+        item = null;
+        staffShift = null;
+        leaveType = null;
+        from = null;
+        to = null;
+        sex = null;
+        employeeStatus = null;
+    }
     
     
 
+    
+    
     
 }
