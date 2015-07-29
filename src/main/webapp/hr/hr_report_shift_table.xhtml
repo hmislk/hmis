@@ -47,6 +47,8 @@
                     <h:outputLabel value="#{shiftTableController.toDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
+                    <br/>
+                    <h:outputLabel value="* This report consider only analized Times Only for Time" style="color: red;"/>
                 </f:facet>
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
                              var="data" value="#{shiftTableController.shiftTables}" >
