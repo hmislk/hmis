@@ -11,7 +11,7 @@
         <h:form>
             <p:panel header="Entered Shift Report">
 
-                <h:panelGrid columns="3">
+                <h:panelGrid columns="5">
                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{shiftController.createShiftListReport()}"/>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                         <p:printer target="datatable"  />
@@ -20,9 +20,11 @@
                     <p:commandButton actionListener="#{shiftController.createShiftListReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                         <pe:exporter type="xlsx" target="tbl1" fileName="Shift_entered_report"  />
                     </p:commandButton>
-                    
-                    <p:selectBooleanCheckbox value="#{shiftController.checked}"/>
+
                 </h:panelGrid>
+
+                <h:outputLabel value="Show Only without Hide-Shift"/>
+                <p:selectBooleanCheckbox value="#{shiftController.checked}"/>
 
                 <p:panel id="datatable" header="Entered Shift">
                     <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">                       

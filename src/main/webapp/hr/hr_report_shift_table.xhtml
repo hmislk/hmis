@@ -37,7 +37,7 @@
 
             </h:panelGrid>
 
-            <p:panel id="print2">
+            <p:panel id="print2" styleClass="summeryBorder noBorder">
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
@@ -53,7 +53,12 @@
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
                              var="data" value="#{shiftTableController.shiftTables}" >
                     <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine," >
-                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
+                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}" style="text-align: left; 
+                                  white-space: nowrap!important; 
+                                  width: 10em!important; 
+                                  overflow: hidden!important;
+                                  text-overflow: clip!important; 
+                                  " >                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
                         </p:column>
                         <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
@@ -74,7 +79,9 @@
                             <f:facet name="header">                            
                                 <h:outputLabel value="Time" />
                             </f:facet>
-                            <h:outputLabel value="#{sts.transWorkTime/60}" class="numberCol" />
+                            <h:outputLabel value="#{sts.transWorkTime/60}">
+                                <f:convertNumber pattern="#0.00"/>
+                            </h:outputLabel>
                         </p:column>
 
 
