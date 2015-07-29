@@ -87,6 +87,7 @@ public class Shift implements Serializable {
     boolean halfShift;
     boolean firstShift;
     boolean lastShift;
+    private boolean hideShift;
 
     public boolean isFirstShift() {
         return firstShift;
@@ -135,8 +136,6 @@ public class Shift implements Serializable {
     public void setShiftDuration(double shiftDuration) {
         this.shiftDuration = shiftDuration;
     }
-
-    private boolean hideShift;
 
     public Shift getPreviousShift() {
         return previousShift;
