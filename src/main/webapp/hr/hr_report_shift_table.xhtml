@@ -61,11 +61,12 @@
                                   " >                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
                         </p:column>
-                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
+                        
+                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}" style="text-align: right;">                        
                             <h:outputLabel value="#{sts.staff.code}"/>                           
                         </p:column>
 
-                        <p:column rendered="#{data.date ne null}">
+                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
                             <f:facet name="header">                            
                                 <h:outputLabel value="#{data.date}" >
                                     <f:convertDateTime pattern="dd/MM/yy  E"/>
@@ -75,7 +76,8 @@
                             <h:outputLabel value="#{sts.shift.name}" rendered="#{sts.shift.durationMin eq 0.0}"/>
                             <h:outputLabel value="---" rendered="#{sts.shift.durationMin eq null and sts.shift eq null}"/>
                         </p:column>
-                        <p:column rendered="#{data.date ne null}">
+                        
+                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
                             <f:facet name="header">                            
                                 <h:outputLabel value="Time" />
                             </f:facet>
