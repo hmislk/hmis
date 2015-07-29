@@ -84,6 +84,8 @@
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >
                             <p:outputLabel value="#{sts.id}" ></p:outputLabel>
+                            <br/>
+                            <p:outputLabel value="#{sts.shift.durationMin}"/>
                         </p:tooltip>
                     </p:column>
                     <p:column headerText="Roster" style="width: 60px!important;overflow: hidden;">
@@ -149,7 +151,7 @@
                         </f:facet>
                         <h:outputLabel value="#{sts.staff.person.name}"/>
                         <h:outputLabel value=" (#{sts.staff.code})"/>
-                    </p:column>     
+                    </p:column>-->     
 
                     <p:column headerText="Starting Record Frm Attendence"> 
 
@@ -166,7 +168,7 @@
 
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
-                    </p:column>-->
+                    </p:column>
 
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
