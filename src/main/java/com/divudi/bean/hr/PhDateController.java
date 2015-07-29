@@ -91,7 +91,8 @@ public class PhDateController implements Serializable {
 
         sql = "Select d From PhDate d "
                 + " Where d.retired=false "
-                + " and d.phDate between :fd and :td ";
+                + " and d.phDate between :fd and :td "
+                + " order by d.phDate ";
         
         m.put("fd", frDate);
         m.put("td", toDate);
