@@ -42,9 +42,18 @@ body {
         position: relative; 
         font-size: 150%;
     }
+    
+    .printOnly{
+        display: none;
+    }
 }
 
 @media print {
+    
+    .printOnly{
+        display:block;
+    }
+    
     .myDivToPrint {
         background-color: red;
         height: 100%;
@@ -906,8 +915,35 @@ table.standardTable td {
     padding-right: 5px;
 }
 
+.shortNumericColumn{
+    text-align: right;
+    width: 50px;
+    max-width: 50px;
+    padding-right: 2px;
+}
+
+
 .averateNumericText{
     text-align: right;
     width: 70px;
 }
 
+.tinyText{
+    font-size: 8px!important;
+}
+
+
+.averageText{
+    width: 260px;
+    padding-right: 5px;
+}
+
+.longText{
+    width: 400px;
+    padding-right: 5px;
+}
+
+.shortText{
+    width: 80px;
+    padding-right: 5px;
+}

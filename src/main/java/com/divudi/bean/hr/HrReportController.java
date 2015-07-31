@@ -15,7 +15,6 @@ import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.hr.SalaryStatus;
 import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
@@ -30,7 +29,6 @@ import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
@@ -49,7 +47,6 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -71,7 +68,6 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.apache.tools.ant.types.DataType;
 import org.primefaces.model.UploadedFile;
 
 /**
@@ -82,48 +78,76 @@ import org.primefaces.model.UploadedFile;
 @SessionScoped
 public class HrReportController implements Serializable {
 
-    ReportKeyWord reportKeyWord;
-    Date fromDate;
-    Date toDate;
+    /**
+     *
+     * JBS
+     *
+     */
     @EJB
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;
-    List<StaffShift> staffShifts;
-    List<StaffShift> staffShiftsHoliday;
-    List<Staff> staffs;
-    List<Shift> shiftLists;
-    List<FingerPrintRecord> fingerPrintRecords;
     @EJB
     StaffShiftFacade staffShiftFacade;
     @EJB
     ShiftFacade shiftFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
-    List<WeekDayWork> weekDayWorks;
-    Institution institution;
-    List<Department> selectDepartments;
     @EJB
     DepartmentFacade departmentFacade;
-    @Inject
-    SessionController sessionController;
     @EJB
     FormFacade formFacade;
-    List<FingerPrintRecord> selectedFingerPrintRecords;
+
+    /**
+     *
+     * Managed Beans
+     *
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    ShiftFingerPrintAnalysisController shiftFingerPrintAnalysisController;
+
+    /**
+     *
+     * Properties
+     *
+     */
+    ReportKeyWord reportKeyWord;
+    Date fromDate;
+    Date toDate;
+    Institution institution;
     double totalWorkedTime;
     DayType[] dayTypesSelected;
 
-    public void onEditBlockedUpdate(StaffSalary staffSalary) {
-//        current = staffSalary;
+    List<StaffShift> staffShifts;
+    List<StaffShift> staffShiftsHoliday;
+    List<Staff> staffs;
+    List<Shift> shiftLists;
+    List<FingerPrintRecord> fingerPrintRecords;
+    List<WeekDayWork> weekDayWorks;
+    List<Department> selectDepartments;
+    List<FingerPrintRecord> selectedFingerPrintRecords;
 
+    String backButtonPage;
+
+    public String fromStaffFingerprintAnalysisToStaffLeave(Date date, Staff staff) {
+        fromDate = CommonFunctions.getStartOfDay(date);
+        toDate = CommonFunctions.getEndOfDay(date);
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        reportKeyWord.resetKeyWord();
+        reportKeyWord.setStaff(staff);
+        createStaffLeaveDetail();
+        backButtonPage = "/hr/hr_report_leave_summery_by_staff";
+        return "/hr/hr_report_leave_summery_by_staff";
+    }
+
+    public void onEditBlockedUpdate(StaffSalary staffSalary) {
         if (staffSalary == null) {
             return;
         }
-
-//        if (current.isBlocked()) {
-//            current.setBlockedUser(sessionController.getLoggedUser());
-//            current.setBlockedDate(new Date());
-//        }
         staffSalaryFacade.edit(staffSalary);
     }
 
@@ -2150,6 +2174,17 @@ public class HrReportController implements Serializable {
         }
     }
 
+    public String fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(Staff staff) {
+        shiftFingerPrintAnalysisController.setFromDate(fromDate);
+        shiftFingerPrintAnalysisController.setToDate(toDate);
+        shiftFingerPrintAnalysisController.setStaff(staff);
+        shiftFingerPrintAnalysisController.makeTableNull();
+        shiftFingerPrintAnalysisController.createShiftTableByStaff();
+        shiftFingerPrintAnalysisController.setBackButtonIsActive(true);
+        shiftFingerPrintAnalysisController.setBackButtonPage("/hr/hr_report_month_end_work_time_miniuts");
+        return "/hr/hr_shift_table_finger_print_by_staff";
+    }
+
     public void createMonthEndWorkTimeReport() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         if (dateCount > 8) {
@@ -2184,16 +2219,16 @@ public class HrReportController implements Serializable {
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
                 StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
                 Double leavedTimeValue = (Double) obj[5] != null ? (Double) obj[5] : 0;
-                
+
                 System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
-                if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue>0) {
+                if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
                     System.out.println("value = " + value);
                     System.out.println("leavedTimeValue = " + leavedTimeValue);
-                    System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin()*60);
+                    System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin() * 60);
                     if ((ss.getShift().getDurationMin() * 60) < value) {
-                        value= ss.getShift().getDurationMin() * 60;
+                        value = ss.getShift().getDurationMin() * 60;
                         System.out.println("4.b dbl(else) = " + value);
-                    } 
+                    }
                 }
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
@@ -2240,6 +2275,108 @@ public class HrReportController implements Serializable {
 //                    weekDayWork.setOverTime(overTime);
 //                }
 //            }
+            weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), 1, weekDayWork.getTotal()));
+
+            //Fetch Basic
+            double value = humanResourceBean.getOverTimeValue(stf, getToDate());
+
+            if (value != 0) {
+                weekDayWork.setBasicPerSecond(value / (200 * 60 * 60));
+            }
+
+            weekDayWorks.add(weekDayWork);
+        }
+    }
+
+    public void createMonthEndWorkTimeReportBySalaryGenerationMethod() {
+        System.err.println("Create Month End Work Time Report By Salary Generation Method");
+        Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
+        System.out.println("From Date() = " + getFromDate());
+        System.out.println("To Date() = " + getToDate());
+        if (dateCount > 8) {
+            UtilityController.addErrorMessage("Check Date Range .Date range should be within 8 days");
+            return;
+        }
+        System.err.println("Date Count is " + dateCount);
+
+        List<Staff> staffList = fetchStaff();
+        weekDayWorks = new ArrayList<>();
+
+        for (Staff stf : staffList) {
+            System.out.println("Staff Member = " + stf.getPerson().getName() + "(" + stf.getCode() + ")");
+            WeekDayWork weekDayWork = new WeekDayWork();
+            weekDayWork.setStaff(stf);
+
+            Date fd = this.getFromDate();
+            Calendar frmCal = Calendar.getInstance();
+            frmCal.setTime(fd);
+            frmCal.setTime(fd);
+            frmCal.set(Calendar.HOUR, 0);
+            frmCal.set(Calendar.MINUTE, 0);
+            frmCal.set(Calendar.SECOND, 0);
+            frmCal.set(Calendar.MILLISECOND, 1);
+
+            Calendar toCal = Calendar.getInstance();
+            toCal.setTime(fromDate);
+            toCal.add(Calendar.DATE, 1);
+            toCal.add(Calendar.MILLISECOND, -1);
+
+            int numberOfDays = (int) ((toDate.getTime() - fromDate.getTime())
+                    / (1000 * 60 * 60 * 24));
+//        
+            for (int i = 0; i < numberOfDays + 1; i++) {
+
+                Double value;
+                Double valueExtra = 0.0;
+                Double totalExtraDuty = 0.0;
+
+                double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTimeByDate(frmCal.getTime(), toCal.getTime(), stf);
+                value = workedWithinTimeFrameVarified;
+
+                System.err.println("From " + frmCal.getTime() + " to " + toCal.getTime() + " workedtime varified is " + workedWithinTimeFrameVarified / (60 * 60));
+
+                Integer dayOfWeek = frmCal.get(Calendar.DAY_OF_WEEK) + 1;
+
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        weekDayWork.setSunDayExtra(valueExtra);
+                        System.out.println("sunday = ");
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        weekDayWork.setMonDayExtra(valueExtra);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        weekDayWork.setTuesDayExtra(valueExtra);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        weekDayWork.setWednesDayExtra(valueExtra);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        weekDayWork.setThursDayExtra(valueExtra);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        weekDayWork.setFriDayExtra(valueExtra);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        weekDayWork.setSaturDayExtra(valueExtra);
+                        break;
+                }
+
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+                weekDayWork.setExtraDutyValue(weekDayWork.getExtraDutyValue() + totalExtraDuty);
+                weekDayWork.setExtraDuty(weekDayWork.getExtraDuty() + valueExtra);
+
+                frmCal.add(Calendar.DATE, 1);
+                toCal.add(Calendar.DATE, 1);
+            }
+
             weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), 1, weekDayWork.getTotal()));
 
             //Fetch Basic
@@ -3676,6 +3813,20 @@ public class HrReportController implements Serializable {
 
     public void setHold(boolean hold) {
         this.hold = hold;
+    }
+
+    public String getBackButtonPage() {
+        return backButtonPage;
+    }
+
+    public void setBackButtonPage(String backButtonPage) {
+        this.backButtonPage = backButtonPage;
+    }
+
+    public String back() {
+        String s = backButtonPage;
+        backButtonPage = null;
+        return s;
     }
 
 }

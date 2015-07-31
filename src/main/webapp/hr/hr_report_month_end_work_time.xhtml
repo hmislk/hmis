@@ -39,6 +39,8 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"/>
+
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
                         </p:commandButton>
@@ -48,6 +50,37 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                                        <h:outputLabel value="Employee #{hrReportController.reportKeyWord.staff.person.name}" rendered="#{hrReportController.reportKeyWord.staff ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.department.name} Department" rendered="#{hrReportController.reportKeyWord.department ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
+                                        <h:outputLabel value="Staff Category #{hrReportController.reportKeyWord.staffCategory.name}" rendered="#{hrReportController.reportKeyWord.staffCategory ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
+                                        <h:outputLabel value="Staff Designation #{hrReportController.reportKeyWord.designation.name}" rendered="#{hrReportController.reportKeyWord.designation ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+                                    
                                     <h:outputLabel value="Month End Employee Working Time + Over Time Report-By Minute" />
                                     <br/>
                                     <h:outputLabel value="#{hrReportController.fromDate} - #{hrReportController.toDate}"/>
