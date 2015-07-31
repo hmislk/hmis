@@ -1,16 +1,6 @@
-/*
- * MSc(Biomedical Informatics) Project
- *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
-import com.divudi.entity.Department;
 import java.util.TimeZone;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.entity.Institution;
@@ -21,7 +11,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -41,18 +30,28 @@ import javax.faces.convert.FacesConverter;
 public class InstitutionController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Managed Beans
+     */
     @Inject
     SessionController sessionController;
+    /**
+     * EJBs
+     */
     @EJB
     private InstitutionFacade ejbFacade;
+    /**
+     * Properties
+     */
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
-    //   private String insCode;
+    private List<Institution> itemsToRemove = null;
+    List<Institution> institution;
+    private InstitutionType[] institutionTypes;
     String selectText = "";
     private Boolean codeDisabled = false;
-    private InstitutionType[] institutionTypes;
-    List<Institution> institution;
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -64,21 +63,17 @@ public class InstitutionController implements Serializable {
         return selectedItems;
     }
 
-//    public List<Institution> getBranch(){
-//        String sql="Select i From Institution i where i.retired=false and"
-//                + " i.institution=:ins";
-//    }
     public List<Institution> completeIns(String qry) {
         String sql;
-        HashMap hm=new HashMap();
+        HashMap hm = new HashMap();
         sql = "select c "
                 + " from Institution c "
                 + " where c.retired=false "
                 + " and (upper(c.name) like :q "
                 + " or upper(c.institutionCode) like :q ) "
                 + " order by c.name";
-        hm.put("q", "%"+ qry.toUpperCase()+"%");
-        return getFacade().findBySQL(sql,hm);
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        return getFacade().findBySQL(sql, hm);
     }
 
     public List<Institution> completeCompany(String qry) {
@@ -93,7 +88,7 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-    
+
     public List<Institution> completeAgency(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -107,8 +102,7 @@ public class InstitutionController implements Serializable {
         return getFacade().findBySQL(sql, hm);
     }
 
-    
-     public List<Institution> completeBank(String qry) {
+    public List<Institution> completeBank(String qry) {
         String sql;
         HashMap hm = new HashMap();
         hm.put("type", InstitutionType.Bank);
@@ -120,7 +114,8 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-       public List<Institution> completeBankBranch(String qry) {
+
+    public List<Institution> completeBankBranch(String qry) {
         String sql;
         HashMap hm = new HashMap();
         hm.put("type", InstitutionType.branch);
@@ -132,9 +127,7 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-     
-    
-    
+
     public List<Institution> CompleteCompanyBydepartment(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -194,14 +187,6 @@ public class InstitutionController implements Serializable {
         return getFacade().findBySQL(sql, hm, 20);
     }
 
-//     public List<Institution> completeSupplier(String qry) {
-//        String sql;
-//        HashMap hm=new HashMap();
-//        hm.put("type", InstitutionType.Dealer);
-//        sql = "select c from Institution c where c.retired=false and c.institutionType=:type and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-//        
-//        return getFacade().findBySQL(sql,hm);
-//    }
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
         String sql;
@@ -261,7 +246,7 @@ public class InstitutionController implements Serializable {
                 getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             if (getCurrent().getInstitutionCode() != null) {
                 if (!checkCodeExist()) {
@@ -274,7 +259,7 @@ public class InstitutionController implements Serializable {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -322,9 +307,9 @@ public class InstitutionController implements Serializable {
             getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -341,17 +326,6 @@ public class InstitutionController implements Serializable {
         return items;
     }
 
-//    public List<Institution> getCompanies() {
-//        String sql = "select c from Institution c where c.retired=false and c.institutionType=:tp  order by c.name";
-//        HashMap hm = new HashMap();
-//        hm.put("tp", InstitutionType.Company);
-//        items = getFacade().findBySQL(sql, hm);
-//        if (items == null) {
-//            items = new ArrayList<>();
-//        }
-//
-//        return items;
-//    }
     public List<Institution> getInsuranceCompany() {
         String sql = "select c from Institution c where c.retired=false and c.institutionType=:tp  order by c.name";
         HashMap hm = new HashMap();
@@ -390,6 +364,33 @@ public class InstitutionController implements Serializable {
 
     public void setInstitutionTypes(InstitutionType[] institutionTypes) {
         this.institutionTypes = institutionTypes;
+    }
+
+    public List<Institution> getItemsToRemove() {
+        return itemsToRemove;
+    }
+
+    public void setItemsToRemove(List<Institution> itemsToRemove) {
+        this.itemsToRemove = itemsToRemove;
+    }
+
+    public List<Institution> getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(List<Institution> institution) {
+        this.institution = institution;
+    }
+
+    public void removeSelectedItems() {
+        for (Institution s : itemsToRemove) {
+            s.setRetired(true);
+            s.setRetireComments("Bulk Remove");
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+        itemsToRemove = null;
+        items = null;
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {

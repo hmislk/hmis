@@ -197,9 +197,9 @@ public class ItemFeeController implements Serializable {
             currentIx.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;
