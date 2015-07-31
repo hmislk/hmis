@@ -25,7 +25,7 @@
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </p:inputText>
 
-                                    <p:selectOneListbox converter="ixcon"   id="lstSelect"   value="#{investigationController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox converter="ixcon"   id="lstSelect"   value="#{investigationController.current}" style="min-width: 223px; height: 300px;" scrollHeight="300">
                                         <f:selectItems  value="#{investigationController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                         </p:ajax>

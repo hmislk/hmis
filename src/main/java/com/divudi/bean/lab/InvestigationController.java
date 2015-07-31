@@ -263,6 +263,7 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeInvest(String query) {
         System.out.println("master" + listMasterItemsOnly);
+        System.out.println("master login Lab" );
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }
@@ -287,8 +288,8 @@ public class InvestigationController implements Serializable {
 
         if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
             System.out.println("inside intitution null and logged institution only");
-            sql += " and c.institution is null "
-                    + " and c.institution=:ins ";
+            sql += " and (c.institution is null "
+                    + " or c.institution=:ins) ";
             m.put("ins", sessionController.getInstitution());
         }
 
@@ -526,7 +527,7 @@ public class InvestigationController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             ////System.out.println("4");
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -541,7 +542,7 @@ public class InvestigationController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -600,9 +601,9 @@ public class InvestigationController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

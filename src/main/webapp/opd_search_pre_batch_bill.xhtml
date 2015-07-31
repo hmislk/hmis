@@ -14,7 +14,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="OPD BILL SEARCH TO PAY "/>
 
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="7" >
                                 <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
@@ -22,19 +22,22 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdBathcBillPreTable}"/>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search Paid Only" action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
                                 <p:commandButton id="btnSearch3" ajax="false" value="Search Not Paid Only" action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel />
+                                <p:commandButton  ajax="false" value="Pharmacy Payment" action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
+                                
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>                               
                                 <h:outputLabel value="Total"/>
                                 <h:outputLabel value="Net Total"/>   
-                                <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                             </h:panelGrid>
 
@@ -59,6 +62,9 @@
                             <p:column headerText="Bill No" >
                                 <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                             </p:column>   
+                             <p:column headerText="Name" >
+                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
+                            </p:column>   
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
@@ -82,18 +88,19 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>  
-                            <p:column headerText="Net Value" >
+                            <p:column headerText="Net Value" style="text-align: right; padding-right: 10px;" >
 
-                                <h:outputLabel value="#{bill.netTotal}" >
+                                <h:outputLabel value="#{bill.total - bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
                             </p:column>
 
                             <p:column headerText="Accept">
+                                #{bill.referenceBill.balance}
                                 <p:commandButton ajax="false"  value="Accept Payment" 
                                                  action="#{opdPreSettleController.toSettleBatch(bill)}" 
-                                                 disabled="#{(bill.referenceBill.balance eq 0.0)or bill.cancelled}" >
+                                                 disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
                                 </p:commandButton>
                             </p:column>
                             
@@ -101,7 +108,7 @@
                                 <p:commandButton ajax="false"  
                                                  value="Reprint" 
                                                  action="bill_print" 
-                                                 disabled="#{bill.referenceBill.balance ne 0.0}" >
+                                                 disabled="#{bill.referenceBill.balance ge 0.0}" >
                                     <f:setPropertyActionListener value="#{bill.referenceBill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
                                 </p:commandButton>
                             </p:column>

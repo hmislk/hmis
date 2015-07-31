@@ -17,7 +17,7 @@
                         <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
                             <p:ajax event="change" process="@this" update="acPt" />
                         </p:selectBooleanCheckbox>
-                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
                                         value="#{investigationItemController.currentInvestigation}" 
                                         completeMethod="#{investigationController.completeInvest}" 
                                         var="apt" itemLabel="#{apt.name}" 
@@ -33,6 +33,9 @@
                             </p:column>
                             <p:column>
                                 #{apt.department.name}
+                            </p:column>
+                            <p:column>
+                                #{apt.institution.name}
                             </p:column>
                             <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
                         </p:autoComplete> 

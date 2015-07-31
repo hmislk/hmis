@@ -123,11 +123,18 @@
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"></p:commandButton>
                             </p:column>
+                            <p:column headerText="Id">
+                                <p:outputLabel value="#{add.id}" ></p:outputLabel>
+                            </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Shift End">
+                                <p:outputLabel value="#{add.staffShift.dayType}" >
+                                </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="From">

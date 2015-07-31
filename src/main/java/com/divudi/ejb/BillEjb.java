@@ -5,12 +5,19 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.entity.RefundBill;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -40,6 +45,10 @@ public class BillEjb implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    ItemFacade itemFacade;
+    @EJB
+    PatientInvestigationFacade piFacade;
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billClasses,
@@ -47,6 +56,188 @@ public class BillEjb implements Serializable {
             Institution institution,
             PaymentMethod[] paymentMethods) {
         return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null);
+    }
+
+    /**
+     *
+     * @param item
+     * @param fromDate
+     * @param toDate
+     * @param billTypes
+     * @param classes
+     * @param allBilledInstitutions
+     * @param billedInstitution
+     * @param allBilledDepartments
+     * @param billedDepartment
+     * @param allItemInstitutions
+     * @param itemInstitution
+     * @param allItemDepartments
+     * @param itemDepartment
+     * @return
+     */
+    public long getBillItemCount(Item item, Date fromDate,
+            Date toDate,
+            BillType[] billTypes,
+            Class[] classes,
+            boolean allBilledInstitutions,
+            Institution billedInstitution,
+            boolean allBilledDepartments,
+            Department billedDepartment,
+            boolean allItemInstitutions,
+            Institution itemInstitution,
+            boolean allItemDepartments,
+            Department itemDepartment
+    ) {
+        List<Class> arrayClasses = Arrays.asList(classes);
+        List<BillType> arrayBillTypes = Arrays.asList(billTypes);
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi "
+                + " where bi.bill.billType in :bts "
+                + " and bi.item =:itm"
+                + " and type(bi.bill) in :bcs "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("itm", item);
+        temMap.put("bcs", arrayClasses);
+        temMap.put("bts", arrayBillTypes);
+
+        if (!allBilledInstitutions) {
+            sql += " and (bi.bill.institution=:bins or bi.bill.department.institution=:bins ) ";
+            temMap.put("bins", billedInstitution);
+        }
+
+        if (!allItemInstitutions) {
+            sql += " and (bi.item.institution=:iins or bi.item.department.institution=:iins ) ";
+            temMap.put("iins", itemInstitution);
+        }
+
+        if (!allBilledDepartments) {
+            sql += " and (bi.bill.department=:bdep ) ";
+            temMap.put("bdep", billedDepartment);
+        }
+
+        if (!allItemDepartments) {
+            sql += " and (bi.item.department=:idep ) ";
+            temMap.put("idep", itemDepartment);
+        }
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    
+    public List<PatientInvestigation> getPatientInvestigations(Item item, Date fromDate,
+            Date toDate,
+            BillType[] billTypes,
+            Class[] classes,
+            boolean allBilledInstitutions,
+            Institution billedInstitution,
+            boolean allBilledDepartments,
+            Department billedDepartment,
+            boolean allItemInstitutions,
+            Institution itemInstitution,
+            boolean allItemDepartments,
+            Department itemDepartment
+    ) {
+        List<Class> arrayClasses = Arrays.asList(classes);
+        List<BillType> arrayBillTypes = Arrays.asList(billTypes);
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select pi FROM PatientInvestigation pi join pi.billItem bi "
+                + " where bi.bill.billType in :bts "
+                + " and bi.item =:itm"
+                + " and type(bi.bill) in :bcs "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("itm", item);
+        temMap.put("bcs", arrayClasses);
+        temMap.put("bts", arrayBillTypes);
+
+        if (!allBilledInstitutions) {
+            sql += " and (bi.bill.institution=:bins or bi.bill.department.institution=:bins ) ";
+            temMap.put("bins", billedInstitution);
+        }
+
+        if (!allItemInstitutions) {
+            sql += " and (bi.item.institution=:iins or bi.item.department.institution=:iins ) ";
+            temMap.put("iins", itemInstitution);
+        }
+
+        if (!allBilledDepartments) {
+            sql += " and (bi.bill.department=:bdep ) ";
+            temMap.put("bdep", billedDepartment);
+        }
+
+        if (!allItemDepartments) {
+            sql += " and (bi.item.department=:idep ) ";
+            temMap.put("idep", itemDepartment);
+        }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    
+    public List<Item> getItemsInBills(Date fromDate,
+            Date toDate,
+            BillType[] billTypes,
+            boolean allBilledInstitutions,
+            Institution billedInstitution,
+            boolean allBilledDepartments,
+            Department billedDepartment,
+            boolean allItemInstitutions,
+            Institution itemInstitution,
+            boolean allItemDepartments,
+            Department itemDepartment,
+            boolean allItemClasses,
+            Class[] itemClasses
+    ) {
+        Class[] classes = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
+        List<Class> arrayClasses = Arrays.asList(classes);
+        List<BillType> arrayBillTypes = Arrays.asList(billTypes);
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.bill.billType in :bts "
+                + " and type(bi.bill) in :bcs "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bcs", arrayClasses);
+        temMap.put("bts", arrayBillTypes);
+
+        if (!allBilledInstitutions) {
+            sql += " and (bi.bill.institution=:bins or bi.bill.department.institution=:bins ) ";
+            temMap.put("bins", billedInstitution);
+        }
+
+        if (!allItemInstitutions) {
+            sql += " and (bi.item.institution=:iins or bi.item.department.institution=:iins ) ";
+            temMap.put("iins", itemInstitution);
+        }
+
+        if (!allBilledDepartments) {
+            sql += " and (bi.bill.department=:bdep ) ";
+            temMap.put("bdep", billedDepartment);
+        }
+
+        if (!allItemDepartments) {
+            sql += " and (bi.item.department=:idep ) ";
+            temMap.put("idep", itemDepartment);
+        }
+        
+        if(!allItemClasses){
+            List<Class> ics = Arrays.asList(itemClasses);
+            sql += " and type(bi.item) in :ics ";
+            temMap.put("ics", ics);
+        }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,

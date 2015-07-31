@@ -6,7 +6,6 @@ package com.divudi.data.dataStructure;
 
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
-import com.divudi.entity.lab.Investigation;
 import java.util.List;
 
 /**

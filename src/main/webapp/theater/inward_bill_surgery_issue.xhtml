@@ -64,7 +64,7 @@
                                                         value="#{pharmacySaleBhtController.batchBill}" 
                                                         completeMethod="#{billController.completeSurgeryBills}"
                                                         var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                        itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                                        itemValue="#{apt2}" size="30"  style="width: 400px;" >
                                             <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
                                                     listener="#{pharmacySaleBhtController.selectSurgeryBillListener()}"/>
                                             <p:column headerText="Surgery Name">
@@ -108,7 +108,7 @@
                                                                 converter="stockCon" 
                                                                 completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
-                                                                style="width: 50px!important;">
+                                                                >
                                                     <p:column headerText="Item">
                                                         <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                                     </p:column>

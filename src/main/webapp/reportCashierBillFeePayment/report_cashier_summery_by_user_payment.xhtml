@@ -67,6 +67,14 @@
                         <ca:opdBilledSummery data="#{opdPreBillReportController.userBilledBills}"/>
                         
                         <p:spacer height="30"/>
+                        
+                        <ca:opdBilledSummery_2 data="#{opdPreBillReportController.userBilledBillsPatcial}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:opdBilledSummery_1 data="#{opdPreBillReportController.userBilledBillsForCashier}"/>
+                        
+                        <p:spacer height="30"/>
 
                         <ca:opdCancelledSummery data="#{opdPreBillReportController.userCancellededBills}"/>
 
@@ -85,6 +93,38 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacy}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:pharmacyPurchaseBilledSummery data="#{opdPreBillReportController.userBilledBillsPharmacyPurchase}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyPurchaseCancelledSummery data="#{opdPreBillReportController.userCancellededBillsPharmacyPurchase}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyPurchaseRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacyPurchase}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyPurchaseRefundedCancelSummery data="#{opdPreBillReportController.userRefundedBillsPharmacyPurchaseCancel}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnBilledSummery data="#{opdPreBillReportController.userBilledBillsPharmacyGRN}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyGrnCancelledSummery data="#{opdPreBillReportController.userCancellededBillsPharmacyGRN}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyGrnRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacyGRN}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyGrnRefundedCancelSummery data="#{opdPreBillReportController.userRefundedBillsPharmacyGRNCancel}"/>
                         
                     </p:panel>
 

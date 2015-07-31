@@ -67,6 +67,10 @@
                                                          action="hr_shift_report" 
                                                          actionListener="#{hrReportController.makeNull()}" 
                                                          styleClass="linkButton" ajax="false" />
+                                        <p:commandButton value="(4) Roster Table and verify Time" 
+                                                         action="hr_report_shift_table" 
+                                                         actionListener="#{shiftTableController.makeTableNull()}"
+                                                         styleClass="linkButton" ajax="false" />
 
                                     </h:panelGrid>
                                 </p:panel>

@@ -1,0 +1,197 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Bills" >
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="fromDate" value="#{inwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            </p:calendar>                                
+                            <h:outputLabel value="BHT No"/>
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardReportController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >                                
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                            </p:autoComplete>                            
+                        </h:panelGrid>
+
+
+                        <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+
+
+
+                        <p:defaultCommand target="btnSearch2" />
+
+
+
+                        <p:dataTable  id="tblBills" value="#{inwardReportController.patientInvestigations}" var="pi"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Inward Investigation Search"/>
+                            </f:facet>
+
+                            <p:column  headerText="Bill" styleClass="alignTop" >
+                                <h:outputLabel id="lblBillNo" 
+                                               value="#{pi.billItem.bill.insId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                <p:tooltip for="lblBillNo"  >
+                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Sampled : " />
+                                    <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Received : " />
+                                    <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled : " />
+                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                        <h:outputLabel style="color: red;" value="Refunded : " />
+                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column  headerText="Dep ID" styleClass="alignTop" >
+                                <h:outputLabel id="lblInvNo" 
+                                               value="#{pi.billItem.bill.deptId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                <p:tooltip for="lblBillNo"  >
+                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Sampled : " />
+                                    <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Received : " />
+                                    <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled : " />
+                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pi.billItem.refunded eq true}" >
+                                        <h:outputLabel style="color: red;" value="Refunded : " />
+                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded eq true}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column  headerText="Patient" styleClass="alignTop" >
+                                <h:commandLink id="colPtDetail" 
+                                               value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
+                                               action="patient" 
+                                               style="text-decoration:underline;"
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
+                                               >
+                                    <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                </h:commandLink>
+                                <p:tooltip for="colPtDetail"  >
+                                    <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.nameWithTitle}" >
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Age : #{pi.billItem.bill.patient.age},&nbsp;#{pi.billItem.bill.patient.person.sex}," >
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="Phone : #{pi.billItem.bill.patient.person.phone}" >
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel value="BHT No : #{pi.encounter.bhtNo}" >
+                                    </h:outputLabel>
+                                </p:tooltip>
+                            </p:column>
+                            
+                            <p:column headerText="BHT Number"  styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.encounter.bhtNo}" >
+                                </h:outputLabel>
+
+                            </p:column>
+
+                            <p:column headerText="Investigation"  styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.billItem.item.name}" >
+                                </h:outputLabel>
+
+                            </p:column>
+
+                            <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
+
+                                <h:dataTable 
+                                    value="#{pi.patientReports}" 
+                                    var="dpr" rendered="#{pi.patientReports.size() ne 0}"  
+                                    styleClass="noBorderGrid"
+                                    >
+                                    <h:column >
+                                        <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/lab_patient_report_print">
+                                            <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>                                                
+                                        </p:commandLink>
+
+                                        <p:tooltip for="cmdOldReportPrint" >
+                                            <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                            </h:outputLabel>
+                                        </p:tooltip>
+
+                                    </h:column>
+
+                                </h:dataTable>
+
+
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

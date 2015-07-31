@@ -566,8 +566,8 @@ public class PharmacyPreSettleController implements Serializable {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
         bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
+        bfp.setInstitution(p.getBill().getFromInstitution());
+        bfp.setDepartment(p.getBill().getFromDepartment());
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);

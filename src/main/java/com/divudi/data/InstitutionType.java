@@ -9,7 +9,6 @@ package com.divudi.data;
  * @author Buddhika
  */
 public enum InstitutionType {
-
     Agency,
     CollectingCentre,
     CreditCompany,
@@ -21,6 +20,18 @@ public enum InstitutionType {
     Importer,
     Manufacturer,
     Company,
-    branch,
- //   supplier;
+    branch;
+    
+    public String getLabel(){
+        switch (this){
+            case CollectingCentre: return "Collecting Centre";
+            case CreditCompany: return "Credit Company";
+            case StoreDealor: return "Store Dealor";
+        }
+        return this.toString();
+    }
+
+    
+    
+    
 }

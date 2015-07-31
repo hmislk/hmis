@@ -57,7 +57,7 @@
                         </h:panelGrid>
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
-                                        action="#{staffController.createActiveStaffTable()}"
+                                         action="#{staffController.createActiveStaffTable()}"
                                          onclick="onSubmitButton();"/>
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
@@ -146,9 +146,9 @@
                     </h:panelGrid>
                     <p:panel id="perallpanel">
                         <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" id="tb3"
-                                      var="i" scrollHeight="350"  editable="true"
+                                      var="i"  editable="true"
                                       rowStyleClass="#{i.exist eq true ? 'exist':null}"
-                                      scrollable="true"  selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
+                                        selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
                                       rowKey="#{i.id}"  >
 
                             <p:column  selectionMode="multiple" >                            
@@ -190,6 +190,12 @@
                             </p:column>
                             <p:column headerText="Department">
                                 <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                            </p:column>
+                            <p:column headerText="componentType">
+                                <f:facet name="header">
+                                    <h:outputLabel value="componentType"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.paysheetComponent.componentType}"/>
                             </p:column>
                             <p:column headerText="Roster">
                                 <h:outputLabel value="#{i.staff.roster.name}"/>

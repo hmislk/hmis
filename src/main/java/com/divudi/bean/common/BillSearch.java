@@ -71,6 +71,7 @@ public class BillSearch implements Serializable {
     private double refundAmount;
     String txtSearch;
     Bill bill;
+    Bill printingBill;
     PaymentMethod paymentMethod;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
@@ -368,6 +369,16 @@ public class BillSearch implements Serializable {
         this.ejbApplication = ejbApplication;
     }
 
+    public Bill getPrintingBill() {
+        return printingBill;
+    }
+
+    public void setPrintingBill(Bill printingBill) {
+        this.printingBill = printingBill;
+    }
+    
+    
+
     private double refundTotal = 0;
     private double refundDiscount = 0;
     private double refundMargin = 0;
@@ -654,6 +665,8 @@ public class BillSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
+            
+            printingBill=getBillFacade().find(rb.getId());
 
             printPreview = true;
             //UtilityController.addSuccessMessage("Refunded");
@@ -830,6 +843,7 @@ public class BillSearch implements Serializable {
 
     public void refundBillItems(RefundBill rb, Payment p) {
         for (BillItem bi : refundingItems) {
+            System.out.println("refundingItems = " + refundingItems);
             //set Bill Item as Refunded
 
             BillItem rbi = new BillItem();
@@ -858,6 +872,8 @@ public class BillSearch implements Serializable {
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
             getOpdPreSettleController().createOpdCancelRefundBillFeePayment(rb, tmpC, p);
             //
+            
+            rb.getBillItems().add(rbi);
 
         }
     }
@@ -1224,7 +1240,9 @@ public class BillSearch implements Serializable {
             //Copy & paste
 
             getBillFacade().create(cb);
-            cancelBillItems(cb);
+            Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
+//            cancelBillItems(cb);
+            cancelBillItems(cb,p);
             cancelPaymentItems(bill);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
@@ -1387,7 +1405,7 @@ public class BillSearch implements Serializable {
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
 ////////////////////////
-
+            System.out.println("tmp = " + tmp.size());
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
