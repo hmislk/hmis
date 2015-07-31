@@ -691,8 +691,7 @@ public class StaffShift implements Serializable {
 
             if (dayType == DayType.DayOff
                     || dayType == DayType.SleepingDay
-                    || dayType == DayType.Extra
-                    || dayType == DayType.Poya) {
+                    || dayType == DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
                 Calendar toCalendar = Calendar.getInstance();

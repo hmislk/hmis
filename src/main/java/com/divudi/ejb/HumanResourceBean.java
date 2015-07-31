@@ -2829,7 +2829,7 @@ public class HumanResourceBean {
             //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
             //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
 
-            if (dayType == DayType.Extra || dayType==DayType.Poya || dayType==DayType.MurchantileHoliday || dayType==DayType.DayOff) {
+            if (dayType == DayType.Extra) {
                 dbl += roundOff(ss.getExtraTimeCompleteRecordVarified() * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
                 
                 System.out.println("getExtraTimeCompleteRecordVarified"+ ss.getExtraTimeCompleteRecordVarified());
@@ -2904,7 +2904,7 @@ public class HumanResourceBean {
 
     public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql;
-        if (dayType == DayType.Extra || dayType==DayType.Poya || dayType==DayType.DayOff || dayType==DayType.MurchantileHoliday) {
+        if (dayType == DayType.Extra) {
             sql = "Select sum(ss.extraTimeCompleteRecordVarified)";
         } else {
             sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))";
