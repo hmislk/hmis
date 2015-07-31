@@ -72,7 +72,8 @@
         <dependency>
             <groupId>org.primefaces</groupId>  
             <artifactId>primefaces</artifactId>  
-            <version>4.0</version>  
+            <version>5.1</version>
+            <type>jar</type>
         </dependency>  
         <dependency>
             <groupId>com.lowagie</groupId>
