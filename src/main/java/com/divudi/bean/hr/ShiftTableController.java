@@ -407,6 +407,10 @@ public class ShiftTableController implements Serializable {
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
 
+        ShiftTable summeryTable = new ShiftTable();
+        summeryTable.setFlag(false);
+        boolean b = false;
+        int a = 0;
         while (tmpToDate.after(nowDate)) {
             netT = new ShiftTable();
             netT.setDate(nowDate);
@@ -429,10 +433,15 @@ public class ShiftTableController implements Serializable {
 //                netT.getStaffShift().add(ss);
 //            }
             List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
-
+            if (b) {
+                a = 0;
+            }
             for (Staff staff : staffs) {
+                System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
+                System.out.println("ss.size() = " + ss.size());
                 if (ss == null) {
+                    System.out.println("ss null = ");
                     for (int i = 0; i < roster.getShiftPerDay(); i++) {
                         StaffShift newStaffShift = new StaffShift();
                         newStaffShift.setStaff(staff);
@@ -440,27 +449,102 @@ public class ShiftTableController implements Serializable {
                         newStaffShift.setCreatedAt(new Date());
                         newStaffShift.setCreater(sessionController.getLoggedUser());
                         newStaffShift.setTransWorkTime(0.0);
+                        if (b) {
+                            System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+                            System.out.println("summeryTable.getStaffShift().get(a).getTransWorkTime() = " + summeryTable.getStaffShift().get(a).getTransWorkTime());
+                            System.out.println("summeryTable.getStaffShift().get(a).getTransShiftTime() = " + summeryTable.getStaffShift().get(a).getTransShiftTime());
+                            System.out.println("a = " + a);
+                            summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
+                            summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
+                            a++;
+                            System.out.println("a = " + a);
+                        } else {
+                            StaffShift sss = new StaffShift();
+                            sss.setTransShiftTime(0);
+                            sss.setTransWorkTime(0);
+                            summeryTable.getStaffShift().add(sss);
+                        }
                         netT.getStaffShift().add(newStaffShift);
                     }
                 } else {
                     for (StaffShift s : ss) {
+                        System.out.println("s.getShift().getName() = " + s.getShift().getName());
                         System.out.println("s.getShift().getDurationMin() = " + s.getShift().getDurationMin());
-                        if (s.getShift().getDurationMin()>0) {
+                        if (s.getShift().getDurationMin() > 0) {
+                            System.out.println("s.getTransWorkTime() = " + s.getTransWorkTime());
                             s.setTransWorkTime(fetchWorkTime(staff, nowDate));
+                            if (b) {
+                                System.out.println("b = " + b);
+                                System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+                                System.out.println("summeryTable.getStaffShift().get(a).getTransWorkTime() = " + summeryTable.getStaffShift().get(a).getTransWorkTime());
+                                System.out.println("summeryTable.getStaffShift().get(a).getTransShiftTime() = " + summeryTable.getStaffShift().get(a).getTransShiftTime());
+                                System.out.println("a = " + a);
+                                summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
+                                summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
+                                a++;
+                                System.out.println("a = " + a);
+                            } else {
+                                System.out.println("b = " + b);
+                                StaffShift sss = new StaffShift();
+                                sss.setTransShiftTime(s.getShift().getDurationMin());
+                                sss.setTransWorkTime(s.getTransWorkTime());
+                                summeryTable.getStaffShift().add(sss);
+                            }
                             System.out.println("fetchWorkTime(staff, nowDate) = " + fetchWorkTime(staff, nowDate));
+                        } else {
+                            System.out.println("else");
+                            if (b) {
+                                System.out.println("b = " + b);
+                                System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+                                System.out.println("summeryTable.getStaffShift().get(a).getTransWorkTime() = " + summeryTable.getStaffShift().get(a).getTransWorkTime());
+                                System.out.println("summeryTable.getStaffShift().get(a).getTransShiftTime() = " + summeryTable.getStaffShift().get(a).getTransShiftTime());
+                                System.out.println("a = " + a);
+                                summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
+                                summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
+                                a++;
+                                System.out.println("a = " + a);
+                            } else {
+                                System.out.println("b = " + b);
+                                StaffShift sss = new StaffShift();
+                                sss.setTransShiftTime(s.getShift().getDurationMin());
+                                sss.setTransWorkTime(s.getTransWorkTime());
+                                summeryTable.getStaffShift().add(sss);
+                            }
                         }
                     }
                     netT.getStaffShift().addAll(ss);
+                    System.out.println("roster.getShiftPerDay() = " + roster.getShiftPerDay());
+                    System.out.println("ss.size() = " + ss.size());
                     int ballance = roster.getShiftPerDay() - ss.size();
-                    if (ballance < 0) {
+                    System.out.println("ballance = " + ballance);
+                    if (ballance <= 0) {
+                        System.err.println("Continue");
                         continue;
                     }
                     for (int i = 0; i < ballance; i++) {
+                        System.out.println("add new");
                         StaffShift newStaffShift = new StaffShift();
                         newStaffShift.setStaff(staff);
                         newStaffShift.setShiftDate(nowDate);
                         newStaffShift.setCreatedAt(new Date());
                         newStaffShift.setCreater(sessionController.getLoggedUser());
+                        if (b) {
+                            System.out.println("b = " + b);
+                            System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+                            System.out.println("summeryTable.getStaffShift().get(a).getTransWorkTime() = " + summeryTable.getStaffShift().get(a).getTransWorkTime());
+                            System.out.println("summeryTable.getStaffShift().get(a).getTransShiftTime() = " + summeryTable.getStaffShift().get(a).getTransShiftTime());
+                            System.out.println("a = " + a);
+                            summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
+                            summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
+                            a++;
+                            System.out.println("a = " + a);
+                        } else {
+                            System.out.println("b = " + b);
+                            StaffShift sss = new StaffShift();
+                            sss.setTransShiftTime(0);
+                            sss.setTransWorkTime(0);
+                            summeryTable.getStaffShift().add(sss);
+                        }
                         netT.getStaffShift().add(newStaffShift);
                     }
 
@@ -473,16 +557,52 @@ public class ShiftTableController implements Serializable {
             c.setTime(nowDate);
             c.add(Calendar.DATE, 1);
             nowDate = c.getTime();
-
+            b = true;
         }
+
+        //
+//        List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
+//
+//        for (Staff staff : staffs) {
+//            System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+//
+//            double timeRoster = 0.0;
+//            double timeWork = 0.0;
+//            System.out.println("shiftTables = " + shiftTables);
+//            for (ShiftTable st : shiftTables) {
+//                System.out.println("st.getStaffShift() = " + st.getStaffShift());
+//                List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(st.getDate(), staff);
+//                System.out.println("ss.size() = " + ss.size());
+//                for (StaffShift s : ss) {
+//                    if (s.getStaff() == staff) {
+//                        System.out.println("s.getStaff() = " + s.getStaff().getPerson().getName());
+//                        System.out.println("staff = " + staff.getPerson().getName());
+//                        System.out.println("timeRoster = " + timeRoster);
+//                        System.out.println("timeWork = " + timeWork);
+//                        timeRoster += s.getShift().getDurationHour();
+//                        timeWork += s.getTransWorkTime();
+//                        System.out.println("timeRoster = " + timeRoster);
+//                        System.out.println("timeWork = " + timeWork);
+//                    }
+//                }
+//            }
+//            System.out.println("Total timeRoster = " + timeRoster);
+//            System.out.println("Total timeWork = " + timeWork);
+//            StaffShift nss = new StaffShift();
+//            nss.setTransWorkTime(timeWork);
+//            nss.setTransShiftTime(timeRoster);
+//            summeryTable.getStaffShift().add(nss);
+//        }
+        shiftTables.add(summeryTable);
+        //
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
     }
 
-    public double fetchWorkTime(Staff staff,Date date) {
+    public double fetchWorkTime(Staff staff, Date date) {
 
-        Object[] obj = fetchWorkedTimeByDateOnly(staff,date);
+        Object[] obj = fetchWorkedTimeByDateOnly(staff, date);
 
         System.err.println("list = " + obj);
 
@@ -504,12 +624,12 @@ public class ShiftTableController implements Serializable {
         }
 
         System.err.println("Staff " + staff.getCodeInterger() + " : Value : " + value);
-        
+
         return value;
 
     }
 
-    private Object[] fetchWorkedTimeByDateOnly(Staff staff,Date date) {
+    private Object[] fetchWorkedTimeByDateOnly(Staff staff, Date date) {
         String sql = "";
 
         HashMap hm = new HashMap();
