@@ -50,13 +50,14 @@
 
                         <p:column headerText="Created By" 
                                   style="font-weight:normal ;color: black;text-align: left;"
-                                  filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains">
+                                  filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains"
+                                  sortBy="#{sv.creater.webUserPerson.name}" >
                             <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
                         </p:column>
                         
                         <p:column headerText="Created At" 
                                   style="font-weight:normal ;color: black;text-align: left;"
-                                  filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains">
+                                  sortBy="#{sv.createdAt}" >
                             <h:outputLabel value="#{sv.createdAt}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
