@@ -98,7 +98,7 @@ public class ReportMemberShip {
 
     public void createCreditInstitutionInwardPriceAdjustments() {
         ipaCreditInstitutions = new ArrayList<>();
-        for (Institution ins : getInstitutionController().getCreditCompany()) {
+        for (Institution ins : getInstitutionController().getCreditCompanies()) {
             IpaCreditInstitution subTable1 = new IpaCreditInstitution();
             subTable1.setInstitution(ins);
             for (PaymentMethod pm : getEnumController().getPaymentMethods()) {
@@ -119,7 +119,7 @@ public class ReportMemberShip {
 
     public void createMemberShipCreditInstitution() {
         ipaMemberShipCreditInstitution = new ArrayList<>();
-        for (Institution ins : getInstitutionController().getCreditCompany()) {
+        for (Institution ins : getInstitutionController().getCreditCompanies()) {
             IpaMemberShipCreditInstitution subTable1 = new IpaMemberShipCreditInstitution();
             subTable1.setInstitution(ins);
             for (MembershipScheme mem : getMembershipSchemeController().getItems()) {
