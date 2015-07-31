@@ -49,104 +49,57 @@ public class InstitutionController implements Serializable {
     private List<Institution> items = null;
     private List<Institution> itemsToRemove = null;
     List<Institution> institution;
-    private InstitutionType[] institutionTypes;
     String selectText = "";
     private Boolean codeDisabled = false;
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false order by c.name");
+            selectedItems = completeInstitution(null, null);
         } else {
-            selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = completeInstitution(selectText, null);
         }
-
         return selectedItems;
     }
 
     public List<Institution> completeIns(String qry) {
+        return completeInstitution(qry, null);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType type) {
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c "
-                + " from Institution c "
-                + " where c.retired=false "
-                + " and (upper(c.name) like :q "
-                + " or upper(c.institutionCode) like :q ) "
-                + " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
+        sql = "select c from Institution c "
+                + " where c.retired=false ";
+        if (qry != null) {
+            sql += " and upper(c.name) like :qry ";
+            hm.put("qry", "%" + qry.toUpperCase() + "%");
+        }
+        if (type != null) {
+            hm.put("type", type);
+            sql += "  and c.institutionType=:type";
+        }
+        sql += " order by c.name";
         return getFacade().findBySQL(sql, hm);
     }
 
     public List<Institution> completeCompany(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Company);
-        sql = "select c from Institution c"
-                + "  where c.retired=false"
-                + "  and c.institutionType=:type"
-                + " and upper(c.name) like '%" + qry.toUpperCase() + "%' "
-                + " order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
+        return completeInstitution(qry, InstitutionType.Company);
     }
 
     public List<Institution> completeAgency(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Agency);
-        sql = "select c from Institution c"
-                + "  where c.retired=false"
-                + "  and c.institutionType=:type"
-                + " and upper(c.name) like '%" + qry.toUpperCase() + "%' "
-                + " order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
+        return completeInstitution(qry, InstitutionType.Agency);
     }
 
     public List<Institution> completeBank(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Bank);
-        sql = "select c from Institution c"
-                + "  where c.retired=false"
-                + "  and c.institutionType=:type"
-                + " and upper(c.name) like '%" + qry.toUpperCase() + "%' "
-                + " order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
+        return completeInstitution(qry, InstitutionType.Bank);
     }
 
     public List<Institution> completeBankBranch(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.branch);
-        sql = "select c from Institution c"
-                + "  where c.retired=false"
-                + "  and c.institutionType=:type"
-                + " and upper(c.name) like '%" + qry.toUpperCase() + "%' "
-                + " order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
-    }
-
-    public List<Institution> CompleteCompanyBydepartment(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Company);
-        sql = "select c from Institution c where c.retired=false and c.institutionType=:type and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
+        return completeInstitution(qry, InstitutionType.branch);
     }
 
     public List<Institution> completeCreditCompany(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.CreditCompany);
-        sql = "select c from Institution c where c.retired=false and "
-                + "c.institutionType=:type and upper(c.name) "
-                + "like '%" + qry.toUpperCase() + "%' order by c.name";
-
-        institution = getFacade().findBySQL(sql, hm);
-        return institution;
+        return completeInstitution(qry, InstitutionType.CreditCompany);
     }
 
     public List<Institution> getCreditCompany() {
@@ -360,10 +313,6 @@ public class InstitutionController implements Serializable {
 
     public InstitutionType[] getInstitutionTypes() {
         return InstitutionType.values();
-    }
-
-    public void setInstitutionTypes(InstitutionType[] institutionTypes) {
-        this.institutionTypes = institutionTypes;
     }
 
     public List<Institution> getItemsToRemove() {
