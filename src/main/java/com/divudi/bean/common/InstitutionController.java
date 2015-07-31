@@ -48,24 +48,28 @@ public class InstitutionController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     private List<Institution> itemsToRemove = null;
+    private List<Institution> companies = null;
+    private List<Institution> creditCompanies = null;
+    private List<Institution> banks = null;
+    private List<Institution> suppliers = null;
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = completeInstitution(null, null);
+            selectedItems = completeInstitution(null, InstitutionType.values());
         } else {
-            selectedItems = completeInstitution(selectText, null);
+            selectedItems = completeInstitution(selectText, InstitutionType.values());
         }
         return selectedItems;
     }
 
     public List<Institution> completeIns(String qry) {
-        return completeInstitution(qry, null);
+        return completeInstitution(qry, InstitutionType.values());
     }
 
-    public List<Institution> completeInstitution(String qry, InstitutionType type) {
+    public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
@@ -74,12 +78,18 @@ public class InstitutionController implements Serializable {
             sql += " and upper(c.name) like :qry ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
-        if (type != null) {
-            hm.put("type", type);
-            sql += "  and c.institutionType=:type";
+        if (types != null) {
+            List<InstitutionType> lstTypes = Arrays.asList(types);
+            hm.put("type", lstTypes);
+            sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
         return getFacade().findBySQL(sql, hm);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType type) {
+        InstitutionType[] types = new InstitutionType[]{type};
+        return completeInstitution(qry, types);
     }
 
     public List<Institution> completeCompany(String qry) {
@@ -102,55 +112,67 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, InstitutionType.CreditCompany);
     }
 
-    public List<Institution> getCreditCompany() {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.CreditCompany);
-        sql = "select c from Institution c "
-                + " where c.retired=false "
-                + " and c.institutionType=:type"
-                + "  order by c.name";
-        return getFacade().findBySQL(sql, hm);
+    public List<Institution> completeSuppliers(String qry) {
+        return completeInstitution(qry, new InstitutionType[]{InstitutionType.Dealer, InstitutionType.StoreDealor});
+    }
+
+    public List<Institution> getCreditCompanies() {
+        if (creditCompanies == null) {
+            creditCompanies = completeInstitution(null, InstitutionType.CreditCompany);
+        }
+        return creditCompanies;
     }
 
     public List<Institution> getCompanies() {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Company);
-        sql = "select c from Institution c where c.retired=false and"
-                + " c.institutionType=:type order by c.name";
-
-        return getFacade().findBySQL(sql, hm);
-    }
-
-    public List<Institution> completeSupplier(String qry) {
-        String sql;
-        HashMap hm = new HashMap();
-        InstitutionType[] insType = {InstitutionType.Dealer, InstitutionType.StoreDealor};
-        List<InstitutionType> institutionTypesList = Arrays.asList(insType);
-
-        hm.put("ins", institutionTypesList);
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        sql = "select c from Institution c "
-                + " where c.retired=false "
-                + " and c.institutionType in :ins"
-                + " and (upper(c.name) like :q "
-                + " or upper(c.institutionCode) like :q )"
-                + " order by c.name";
-        return getFacade().findBySQL(sql, hm, 20);
-    }
-
-    public List<Institution> completeCredit(String query) {
-        List<Institution> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            ////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+        if (companies == null) {
+            companies = completeInstitution(null, InstitutionType.Company);
         }
-        return suggestions;
+        return companies;
+    }
+
+    public List<Institution> getBanks() {
+        if (banks == null) {
+            banks = completeInstitution(null, InstitutionType.Bank);
+        }
+        return banks;
+    }
+
+    public Institution getInstitutionByName(String name, InstitutionType type) {
+        String sql;
+        Map m = new HashMap();
+        m.put("n", name.toUpperCase());
+        m.put("t", type);
+        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
+        Institution i = getFacade().findFirstBySQL(sql, m);
+        if (i == null) {
+            i = new Institution();
+            i.setName(name);
+            i.setInstitutionType(type);
+            i.setCreatedAt(Calendar.getInstance().getTime());
+            i.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
+    
+        private Boolean checkCodeExist() {
+        String sql = "SELECT i FROM Institution i where i.retired=false ";
+        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        if (ins != null) {
+            for (Institution i : ins) {
+                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                    continue;
+                }
+                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getCurrent().getInstitutionCode())) {
+                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void prepareAdd() {
@@ -170,22 +192,7 @@ public class InstitutionController implements Serializable {
         items = null;
     }
 
-    private Boolean checkCodeExist() {
-        String sql = "SELECT i FROM Institution i where i.retired=false ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
-        if (ins != null) {
-            for (Institution i : ins) {
-                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
-                    continue;
-                }
-                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getCurrent().getInstitutionCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
@@ -226,16 +233,8 @@ public class InstitutionController implements Serializable {
         return ejbFacade;
     }
 
-    public void setEjbFacade(InstitutionFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public InstitutionController() {
@@ -275,31 +274,9 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
-
-    public List<Institution> getInsuranceCompany() {
-        String sql = "select c from Institution c where c.retired=false and c.institutionType=:tp  order by c.name";
-        HashMap hm = new HashMap();
-        hm.put("tp", InstitutionType.CreditCompany);
-        items = getFacade().findBySQL(sql, hm);
         if (items == null) {
-            items = new ArrayList<>();
+            items = getFacade().findAll("name", true);
         }
-
-        return items;
-    }
-
-    public List<Institution> getBanks() {
-        String sql = "select c from Institution c where c.retired=false and c.institutionType=:tp  order by c.name";
-        HashMap hm = new HashMap();
-        hm.put("tp", InstitutionType.Bank);
-        items = getFacade().findBySQL(sql, hm);
-        if (items == null) {
-            items = new ArrayList<>();
-        }
-
         return items;
     }
 
@@ -340,27 +317,6 @@ public class InstitutionController implements Serializable {
         }
         itemsToRemove = null;
         items = null;
-    }
-
-    public Institution getInstitutionByName(String name, InstitutionType type) {
-        String sql;
-        Map m = new HashMap();
-        m.put("n", name.toUpperCase());
-        m.put("t", type);
-        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
-        Institution i = getFacade().findFirstBySQL(sql, m);
-        if (i == null) {
-            i = new Institution();
-            i.setName(name);
-            i.setInstitutionType(type);
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(i);
-        } else {
-            i.setRetired(false);
-            getFacade().edit(i);
-        }
-        return i;
     }
 
     @FacesConverter("institutionConverter")

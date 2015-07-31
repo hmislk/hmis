@@ -52,7 +52,7 @@
                                         <p:outputLabel value="Insurance Company "/>                                        
                                         <p:selectOneMenu value="#{medicalPackageNameController.current.forInstitution}">
                                             <f:selectItem itemLabel="Select Insurance Company"/>
-                                            <f:selectItems value="#{institutionController.insuranceCompany}" var="i"
+                                            <f:selectItems value="#{institutionController.creditCompanies}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}" />
                                         </p:selectOneMenu>
                                     </h:panelGrid>
