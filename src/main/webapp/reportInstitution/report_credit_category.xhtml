@@ -42,7 +42,7 @@
 
                         <h:outputLabel value="Select Credit Company"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCredit}" 
+                        <p:autoComplete completeMethod="#{institutionController.completeCreditCompany}" 
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.creditCompany}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />

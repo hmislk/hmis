@@ -16,5 +16,9 @@ public enum DepartmentType {
     Kitchen,
     Opd,
     Inventry,
-    Inward,
+    Inward;
+    
+    public String getLabel(){
+        return this.toString();
+    }
 }
