@@ -565,6 +565,7 @@
                     <h1>#{sessionController.institutionPreference.printLabelForOPdBill}</h1>
                     
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" 
@@ -587,6 +588,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
+                        
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">
