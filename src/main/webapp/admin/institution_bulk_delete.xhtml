@@ -26,7 +26,7 @@
                                  rows="10"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15"
+                                 rowsPerPageTemplate="10,50,100,500"
                                  >
                         <p:column id="colSelect"  selectionMode="multiple" >
                         </p:column>
@@ -36,15 +36,11 @@
                             <h:outputLabel value="#{sv.institutionType.label}" />
                         </p:column>
                         <p:column headerText="Instiution" filterBy="#{sv.name}" filterMatchMode="contains" sortBy="#{sv.name}"
-                                  style="font-weight:normal ;color: black;text-align: left;">
+                                  style="font-weight:normal ;color: black;text-align: left; width: 400px;overflow: hidden;">
                             <h:outputLabel value="#{sv.name}" />
                         </p:column>
-                        <p:column headerText="Code" filterBy="#{sv.institutionCode}" filterMatchMode="contains" sortBy="#{sv.institutionCode}"
-                                  style="font-weight:normal ;color: black;text-align: left;">
-                            <h:outputLabel value="#{sv.institutionCode}" />
-                        </p:column>
                         <p:column headerText="Address" filterBy="#{sv.address}" filterMatchMode="contains" sortBy="#{sv.address}"
-                                  style="font-weight:normal ;color: black;text-align: left;">
+                                  style="font-weight:normal ;color: black;text-align: left;overflow: hidden;">
                             <h:outputLabel value="#{sv.address}" />
                         </p:column>
 
@@ -56,7 +52,7 @@
                         </p:column>
                         
                         <p:column headerText="Created At" 
-                                  style="font-weight:normal ;color: black;text-align: left;"
+                                  style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
                             <h:outputLabel value="#{sv.createdAt}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>

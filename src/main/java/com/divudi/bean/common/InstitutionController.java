@@ -80,7 +80,7 @@ public class InstitutionController implements Serializable {
         }
         if (types != null) {
             List<InstitutionType> lstTypes = Arrays.asList(types);
-            hm.put("type", lstTypes);
+            hm.put("types", lstTypes);
             sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
