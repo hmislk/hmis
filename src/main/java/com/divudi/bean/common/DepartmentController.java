@@ -51,8 +51,22 @@ public class DepartmentController implements Serializable {
     private Boolean codeDisabled = false;
     private Institution institution;
 
+    List<Department> itemsToRemove;
+    
     public List<Department> getSearchItems() {
         return searchItems;
+    }
+    
+    
+    public void removeSelectedItems() {
+        for (Department s : itemsToRemove) {
+            s.setRetired(true);
+            s.setRetireComments("Bulk Remove");
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+        itemsToRemove = null;
+        items = null;
     }
 
     public void fillSearchItems() {
@@ -333,6 +347,34 @@ public class DepartmentController implements Serializable {
         getCurrent();
     }
 
+    public List<Department> getItemsToRemove() {
+        return itemsToRemove;
+    }
+
+    public void setItemsToRemove(List<Department> itemsToRemove) {
+        this.itemsToRemove = itemsToRemove;
+    }
+
+    public List<Department> getDepartmentList() {
+        return departmentList;
+    }
+
+    public void setDepartmentList(List<Department> departmentList) {
+        this.departmentList = departmentList;
+    }
+    
+    /**
+     * Getters & Setters
+     */
+    
+    
+    /**
+     * 
+     * @return 
+     */
+    
+    
+
     private DepartmentFacade getFacade() {
         return ejbFacade;
     }
@@ -358,6 +400,11 @@ public class DepartmentController implements Serializable {
         this.institution = institution;
     }
 
+    /**
+     * Converters
+     */
+    
+    
     /**
      *
      */

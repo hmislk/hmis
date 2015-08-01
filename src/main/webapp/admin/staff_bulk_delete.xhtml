@@ -15,14 +15,14 @@
                 <p:growl autoUpdate="true" />
                 <p:panel id="panalItem"  >
                     <f:facet name="header" >
-                        <h:outputLabel value="Institution Delete"></h:outputLabel>
+                        <h:outputLabel value="Staff Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{institutionController.removeSelectedItems()}">
+                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{staffController.removeSelectedItems()}">
                     </p:commandButton>
 
-                    <p:dataTable id="dtF" value="#{institutionController.items}" var="sv" 
-                                 rowKey="#{sv.id}" selection="#{institutionController.itemsToRemove}" 
+                    <p:dataTable id="dtF" value="#{staffController.items}" var="sv" 
+                                 rowKey="#{sv.id}" selection="#{staffController.itemsToRemove}" 
                                  rows="10"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -31,17 +31,17 @@
                         <p:column id="colSelect"  selectionMode="multiple" >
                         </p:column>
 
-                        <p:column headerText="Type" sortBy="#{sv.institutionType.label}" filterBy="#{sv.institutionType.label}" filterMatchMode="contains"
+                        <p:column headerText="Type" sortBy="#{sv.class}" filterBy="#{sv.class}" filterMatchMode="contains"
                                   style="font-weight:normal ;color: black;text-align: left;" >
-                            <h:outputLabel value="#{sv.institutionType.label}" />
+                            <h:outputLabel value="#{sv.class}" />
                         </p:column>
-                        <p:column headerText="Instiution" filterBy="#{sv.name}" filterMatchMode="contains" sortBy="#{sv.name}"
+                        <p:column headerText="Name" filterBy="#{sv.person.name}" filterMatchMode="contains" sortBy="#{sv.person.name}"
                                   style="font-weight:normal ;color: black;text-align: left; width: 400px;overflow: hidden;">
-                            <h:outputLabel value="#{sv.name}" />
+                            <h:outputLabel value="#{sv.person.name}" />
                         </p:column>
-                        <p:column headerText="Address" filterBy="#{sv.address}" filterMatchMode="contains" sortBy="#{sv.address}"
+                        <p:column headerText="Speciality" filterBy="#{sv.designation.name}" filterMatchMode="contains" sortBy="#{sv.designation.name}"
                                   style="font-weight:normal ;color: black;text-align: left;overflow: hidden;">
-                            <h:outputLabel value="#{sv.address}" />
+                            <h:outputLabel value="#{sv.designation.name}" />
                         </p:column>
 
                         <p:column headerText="Created By" 
