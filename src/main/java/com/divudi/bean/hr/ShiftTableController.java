@@ -17,6 +17,7 @@ import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.entity.hr.StaffShiftHistory;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import java.io.Serializable;
@@ -661,6 +662,56 @@ public class ShiftTableController implements Serializable {
 
         sql += " order by ss.dayOfWeek,ss.staff.codeInterger ";
         return staffShiftFacade.findAggregate(sql, hm, TemporalType.TIMESTAMP);
+    }
+    
+    @EJB
+    StaffFacade staffFacade;
+    
+    public void fetchStaffShiftMoreThan() {
+        String sql = "Select distinct(ss.staff) from StaffShift ss "
+                + " where ss.retired=false "
+                + " order by ss.staff.codeInterger ";
+
+        List<Staff> staffs = staffFacade.findBySQL(sql);
+        System.out.println("staffs = " + staffs.size());
+
+        sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.shiftDate is not null";
+
+        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql);
+
+        Calendar nc = Calendar.getInstance();
+        nc.setTime(staffShift.getShiftDate());
+        Date nowDate = nc.getTime();
+
+        nc.setTime(new Date());
+        nc.add(Calendar.DATE, 1);
+        Date tmpToDate = nc.getTime();
+
+        System.out.println("nowDate = " + nowDate);
+        System.out.println("tmpToDate = " + tmpToDate);
+
+        while (tmpToDate.after(nowDate)) {
+
+            for (Staff s : staffs) {
+                List<StaffShift> ss =humanResourceBean.fetchStaffShift(nowDate, s);
+                if(ss.size()>2){
+                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    System.err.println("ss.size() = " + ss.size());
+                    System.err.println("nowDate = " + nowDate);
+                    for (StaffShift sss : ss) {
+                        System.out.println("sss.getShift().getName() = " + sss.getShift().getName());
+                    }
+                }
+            }
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(nowDate);
+            c.add(Calendar.DATE, 1);
+            nowDate = c.getTime();
+        }
+
     }
 
     public void makeTableNull() {
