@@ -18,7 +18,9 @@
                         <h:outputLabel value="Department Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{departmentController.removeSelectedItems()}">
+                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{departmentController.removeSelectedItems()}"
+                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                     >
                     </p:commandButton>
 
                     <p:dataTable id="dtF" value="#{departmentController.items}" var="sv" 
