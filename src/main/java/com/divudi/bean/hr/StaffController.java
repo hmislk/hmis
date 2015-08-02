@@ -102,6 +102,18 @@ public class StaffController implements Serializable {
     FormItemValueFacade fivFacade;
     Category formCategory;
     private List<CommonReportItem> formItems = null;
+    List<Staff> itemsToRemove;
+
+    public void removeSelectedItems() {
+        for (Staff s : itemsToRemove) {
+            s.setRetired(true);
+            s.setRetireComments("Bulk Remove");
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+        itemsToRemove = null;
+        items = null;
+    }
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
@@ -326,7 +338,7 @@ public class StaffController implements Serializable {
         //System.out.println(sql);
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
-        selectedStaffes=staffWithCode;
+        selectedStaffes = staffWithCode;
     }
 
     public void createActiveStaffTable() {
@@ -835,7 +847,6 @@ public class StaffController implements Serializable {
 
         //System.out.println("current.getId() = " + current.getId());
         //System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
-
 //        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
 //            getPersonFacade().create(current.getPerson());
 //        } else {
@@ -1054,10 +1065,23 @@ public class StaffController implements Serializable {
         staffes = getFacade().findBySQL(temSql);
     }
 
+    
+    
+    
+    public List<Staff> getItemsToRemove() {
+        return itemsToRemove;
+    }
+
+    public void setItemsToRemove(List<Staff> itemsToRemove) {
+        this.itemsToRemove = itemsToRemove;
+    }
+
     public List<Staff> getItems() {
-        String temSql;
-        temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
-        items = getFacade().findBySQL(temSql);
+        if (items == null) {
+            String temSql;
+            temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+            items = getFacade().findBySQL(temSql);
+        }
         return items;
     }
 
@@ -1109,6 +1133,9 @@ public class StaffController implements Serializable {
         this.selectedList = selectedList;
     }
 
+    /**
+     * Converters
+     */
     /**
      *
      */

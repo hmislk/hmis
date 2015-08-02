@@ -35,6 +35,8 @@
                                 <h:outputLabel value="Total Fee" />
                                 <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" ></h:outputLabel>
 
+                                <p:dialog header="New Fee" widgetVar="dlg2" modal="true" height="200">
+                                
                                 <p:panel header="New Fee Details" id="gpDetail" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="New Fee Details"></h:outputLabel>
@@ -114,6 +116,8 @@
 
                                 </p:panel>
 
+                                </p:dialog>
+                                
                                 <p:panel header="Current Fees" id="gpFees" >
 
 
