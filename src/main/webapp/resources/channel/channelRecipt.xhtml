@@ -22,9 +22,11 @@
             <h:panelGroup id="panelAddedBillPrint">
                 <div class="fiveinchbill">
 
-                    <div class="institutionName">
-                        <h:graphicImage library="image" name="#{sessionController.institutionPreference.logoName}" rendered="#{sessionController.institutionPreference.logoName ne null}" style="width: 7cm; margin: auto; "></h:graphicImage>                        
-                    </div>
+                    <p:panel rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                        <div class="institutionName">
+                            <h:graphicImage library="image" name="#{sessionController.institutionPreference.logoName}"  style="width: 7cm; margin: auto; "></h:graphicImage>                        
+                        </div>
+                    </p:panel>
 
                     <div class="institutionContact">
                         <div>
@@ -290,10 +292,19 @@
                                         <td>
                                             <h:outputLabel value="........................................................."></h:outputLabel>
                                         </td>
-
                                     </tr>
-
-
+                                    <tr>
+                                        <td>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
+                                        </td>
+                                    </tr>
 
                                 </table>
                             </td>
