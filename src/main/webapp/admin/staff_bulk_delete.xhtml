@@ -18,12 +18,16 @@
                         <h:outputLabel value="Staff Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{staffController.removeSelectedItems()}">
+                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{staffController.removeSelectedItems()}"
+                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                     >
                     </p:commandButton>
 
+
                     <p:dataTable id="dtF" value="#{staffController.items}" var="sv" 
-                                 rowKey="#{sv.id}" selection="#{staffController.itemsToRemove}" 
-                                 rows="10"
+                                 rowKey="#{sv.id}" 
+                                 selection="#{staffController.itemsToRemove}" 
+                                 rows="100"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,50,100,500"
@@ -50,7 +54,7 @@
                                   sortBy="#{sv.creater.webUserPerson.name}" >
                             <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
                         </p:column>
-                        
+
                         <p:column headerText="Created At" 
                                   style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
@@ -58,7 +62,7 @@
                                 <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
-                        
+
                     </p:dataTable>
 
 

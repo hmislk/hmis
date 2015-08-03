@@ -79,6 +79,22 @@ public class WebUserController implements Serializable {
     List<WebUserPrivilege> userPrivileges;
     WebUser removingUser;
     private List<WebUser> webUsers;
+    List<WebUser> itemsToRemove;
+
+    public void removeSelectedItems() {
+        for (WebUser s : itemsToRemove) {
+            s.setRetired(true);
+            s.setRetireComments("Bulk Remove");
+            s.setRetirer(getSessionController().getLoggedUser());
+            try {
+                getFacade().edit(s);
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+            }
+        }
+        itemsToRemove = null;
+        items = null;
+    }
 
     public void updateWebUser(WebUser webUser) {
         personFacade.edit(webUser.getWebUserPerson());
@@ -576,6 +592,14 @@ public class WebUserController implements Serializable {
 
     public void setWebUsers(List<WebUser> webUsers) {
         this.webUsers = webUsers;
+    }
+
+    public List<WebUser> getItemsToRemove() {
+        return itemsToRemove;
+    }
+
+    public void setItemsToRemove(List<WebUser> itemsToRemove) {
+        this.itemsToRemove = itemsToRemove;
     }
 
     @FacesConverter("webUs")
