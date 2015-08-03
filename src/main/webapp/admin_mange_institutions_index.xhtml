@@ -31,6 +31,10 @@
 
                         </h:panelGrid>
                     </p:panel>
+                    <p:panel >
+                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
+                          <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+                    </p:panel>
                 </h:form>
             </ui:define>
 

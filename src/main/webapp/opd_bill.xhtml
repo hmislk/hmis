@@ -193,7 +193,7 @@
                                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
                                                                 itemValue="#{apt}" size="30"  style="width: 400px;"
-                                                                minQueryLength="5">
+                                                                minQueryLength="4">
 
 
                                                     <p:column headerText="Name">
@@ -562,7 +562,10 @@
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
 
+                    <h1>#{sessionController.institutionPreference.printLabelForOPdBill}</h1>
+                    
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" 
@@ -585,6 +588,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
+                        
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">

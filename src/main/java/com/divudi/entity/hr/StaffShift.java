@@ -174,6 +174,8 @@ public class StaffShift implements Serializable {
 
     @Transient
     double transWorkTime;
+    @Transient
+    double transShiftTime;
 
     public DayType getDayType() {
         return dayType;
@@ -1353,6 +1355,14 @@ public class StaffShift implements Serializable {
 
     public void setTransWorkTime(double transWorkTime) {
         this.transWorkTime = transWorkTime;
+    }
+
+    public double getTransShiftTime() {
+        return transShiftTime;
+    }
+
+    public void setTransShiftTime(double transShiftTime) {
+        this.transShiftTime = transShiftTime;
     }
 
 }

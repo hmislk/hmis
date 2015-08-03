@@ -90,10 +90,10 @@ public class AgentsFeesController implements Serializable {
             getCurrent().setAgent(getAgent());
             if (getCurrent().getId() != null && getCurrent().getId() > 0) {
                 getEjbFacade().edit(current);
-                UtilityController.addSuccessMessage("savedOldSuccessfully");
+                UtilityController.addSuccessMessage("Updated Successfully.");
             } else {
                 getEjbFacade().create(current);
-                UtilityController.addSuccessMessage("savedNewSuccessfully");
+                UtilityController.addSuccessMessage("Saved Successfully");
             }
             current = null;
 
@@ -166,9 +166,9 @@ public class AgentsFeesController implements Serializable {
 
         if (current != null) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
