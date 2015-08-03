@@ -1,11 +1,3 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
@@ -62,17 +54,30 @@ import org.apache.commons.beanutils.BeanUtils;
 @SessionScoped
 public class ItemController implements Serializable {
 
+    /**
+     * EJBs
+     */
+    
     private static final long serialVersionUID = 1L;
     @EJB
     private ItemFacade ejbFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    /**
+     * Managed Beans
+     */
     @Inject
     SessionController sessionController;
     @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ItemForItemController itemForItemController;
+
+    /**
+     * Properties
+     */
     private Item current;
     private List<Item> items = null;
     List<Item> allItems;
@@ -91,9 +96,7 @@ public class ItemController implements Serializable {
         this.departments = departments;
     }
 
-    @Inject
-    ItemForItemController itemForItemController;
-
+    
     public void createNewItemsFromMasterItems() {
         //System.out.println("createNewItemsFromMasterItems");
         if (instituion == null) {

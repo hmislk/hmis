@@ -72,7 +72,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     StaffLeaveFacade staffLeaveFacade;
     @EJB
     FormFacade formFacade;
-    
+
     /**
      *
      * Managed Beans
@@ -80,7 +80,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-
+    @Inject
+    StaffLeaveApplicationFormController staffLeaveApplicationFormController;
+    @Inject
+    StaffAdditionalFormController staffAdditionalFormController;
+    @Inject
+    ShiftTableController shiftTableController;
     /**
      *
      * Properties
@@ -104,7 +109,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
      *
      *
      */
-    
     /**
      *
      * @return
@@ -125,6 +129,25 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         this.flag = flag;
     }
 
+    public void toStaffLeaveApplicationFormController() {
+        staffLeaveApplicationFormController.setStaff(staff);
+        staffLeaveApplicationFormController.setFromDate(fromDate);
+        staffLeaveApplicationFormController.setToDate(toDate);
+    }
+
+    public void toStaffAdditionalFormController() {
+        staffAdditionalFormController.setStaff(staff);
+        staffAdditionalFormController.setFromDate(fromDate);
+        staffAdditionalFormController.setToDate(toDate);
+    }
+
+    public void toShiftTableController(){
+        shiftTableController.setFromDate(fromDate);
+        shiftTableController.setToDate(toDate);
+        shiftTableController.setStaff(staff);
+        shiftTableController.setRoster(staff.getRoster());
+    }
+    
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
     }
