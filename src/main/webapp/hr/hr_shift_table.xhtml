@@ -74,13 +74,13 @@
                     <table>
                         <tr>
                             <td>
-                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:commandButton value="Print Blank Roster" ajax="false" action="#"  >
                                     <p:printer target="print" ></p:printer>
                                 </p:commandButton>
                             </td>
                             <td>
                                 <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
-                                    <p:printer target="print2" ></p:printer>
+                                    <p:printer target="print3" ></p:printer>
                                 </p:commandButton>
                             </td>
 
@@ -91,21 +91,9 @@
 
 
             </div>
-
-            <p:panel id="print2">
-                <f:facet name="header">
-                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
-                    <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="   To  "/>
-                    <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
-                    </h:outputLabel>
-                </f:facet>
-
-
-                <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
+            
+            <p:panel id="print3" styleClass="printOnly"  >
+                     <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
                     <tr >
                         <ui:repeat value="#{shiftTableController.shiftTables}" var="data" >
 
@@ -159,7 +147,7 @@
                                                 <td style="max-width: 250px; padding-left: 5px; border: 1px solid black; text-align:left;text-overflow: clip ;overflow: hidden; white-space: nowrap;">
                                                     <h:outputLabel value="#{sts.staff.person.name}" />
                                                 </td>
-                                                <td style="max-width: 80px; text-align: right; padding-right: 5px; border: 1px solid black; text-overflow: clip ;overflow: hidden; white-space: nowrap;">
+                                                <td style="max-width: 180px; text-align: right; padding-right: 5px; border: 1px solid black; text-overflow: clip ;overflow: hidden; white-space: nowrap;">
                                                     <h:outputLabel value="#{sts.staff.code}" />
                                                 </td>
                                             </h:panelGroup>
@@ -180,6 +168,22 @@
                         </ui:repeat>
                     </tr>
                 </table>
+            </p:panel>
+
+            <p:panel id="print2">
+                <f:facet name="header">
+                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value="#{shiftTableController.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="   To  "/>
+                    <h:outputLabel value="#{shiftTableController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+
+
+           
 
 
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
