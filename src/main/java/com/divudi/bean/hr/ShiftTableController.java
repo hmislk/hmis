@@ -95,6 +95,7 @@ public class ShiftTableController implements Serializable {
     }
 
     private void saveStaffShift() {
+        System.out.println("Save Shift 1");
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
 //                if (ss.getShift() == null) {
@@ -123,26 +124,33 @@ public class ShiftTableController implements Serializable {
             for (StaffShift ss : st.getStaffShift()) {
 
                 if (ss.getId() != null) {
+                    System.out.println("ss.getId() = " + ss.getId());
                     boolean flag = false;
                     StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
                     if (fetchStaffShift.getRoster() != null && ss.getRoster() != null) {
                         if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
+                            System.out.println("Roster true");
                             flag = true;
                         }
                     }
 
                     if (fetchStaffShift.getStaff() != null && ss.getStaff() != null) {
                         if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
+                            System.out.println("Staff True");
                             flag = true;
                         }
                     }
                     if (fetchStaffShift.getShift() != null && ss.getShift() != null) {
                         if (!fetchStaffShift.getShift().equals(ss.getShift())) {
+                            System.out.println("Shift true");
+                            System.out.println("fetchStaffShift.fetchStaffShift.getShift().getId() = " + fetchStaffShift.getShift().getId());
+                            System.out.println("ss.getShift().getId() = " + ss.getShift().getId());
                             flag = true;
                         }
                     }
 
                     if (flag) {
+                        System.out.println("Flag Inside Save Staff Shift History");
                         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
                         staffShiftHistory.setStaffShift(ss);
                         staffShiftHistory.setCreatedAt(new Date());

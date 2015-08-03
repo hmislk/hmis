@@ -1750,6 +1750,39 @@ public class HumanResourceBean {
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
+    public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate) {
+
+        String sql = "Select sum(s.qty) From StaffLeave s"
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                //                + " and s.leaveType in :ltp"
+                + " and s.leaveType =:ltp "
+                + " and s.leaveDate <=:frm ";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType);
+        hm.put("frm", frmDate);
+
+        return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calStaffLeave(Staff staff, LeaveType leaveType) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
+        String sql = "Select sum(s.qty) From StaffLeave s"
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                //                + " and s.leaveType in :ltp"
+                + " and s.leaveType in :ltp "
+                + " and (s.leaveDate between :frm and :to)";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType);
+
+        return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
     public double calStaffLeaveSystem(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
         List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select sum(s.qty) From StaffLeaveSystem s"
@@ -2856,7 +2889,7 @@ public class HumanResourceBean {
 
         double dbl = 0;
         for (StaffShift ss : list) {
-            dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified()+ss.getExtraTimeCompleteRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
+            dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified() + ss.getExtraTimeCompleteRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
             //System.out.println("if outside");
             //System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
             //System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
