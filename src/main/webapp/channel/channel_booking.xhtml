@@ -82,40 +82,34 @@
 
 
                                     <p:column headerText="Session" style="text-wrap: none;" >
-                                        <p:outputLabel id="lblSesName" value="#{ses.name}"></p:outputLabel>
+                                        <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                         <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                                     </p:column>
                                     <p:column headerText="Max" style="width: 20px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </p:outputLabel>
+                                        </h:outputText>
                                     </p:column>
-                                    
-                                    <p:column headerText="Max Table" style="width: 20px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.maxTableRows}" rendered="#{ses.maxNo ne 0}">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
-                                    
+
                                     <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.displayCount}">
+                                        <h:outputText value="#{ses.displayCount}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </p:outputLabel>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Date" style="width: 50px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.sessionAt}">
+                                        <h:outputText value="#{ses.sessionAt}">
                                             <f:convertDateTime pattern="dd MMM"/>
-                                        </p:outputLabel>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Time" style="width: 40px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.startingTime}">
+                                        <h:outputText value="#{ses.startingTime}">
                                             <f:convertDateTime pattern="hh:mm"/>
-                                        </p:outputLabel>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
-                                        <p:outputLabel value="#{ses.originatingSession.totalFee}">
+                                        <h:outputText value="#{ses.originatingSession.totalFee}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                        </p:outputLabel>                                                            
+                                        </h:outputText>                                                            
                                     </p:column>   
                                 </p:dataTable>
                             </td>
@@ -161,7 +155,7 @@
                     </table>
                 </h:panelGroup>
 
-                         
+
             </h:panelGrid>
 
 
