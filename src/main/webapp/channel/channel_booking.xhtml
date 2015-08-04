@@ -27,8 +27,7 @@
                                     <p:selectOneListbox converter="specilityCon" 
                                                         id="acSpeciality" 
                                                         value="#{bookingController.speciality}" 
-                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;" 
-                                                        scrollHeight="300">
+                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                                         <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                                         <p:ajax  event="change" process="@this" update="scStaff" /> 
                                         <p:ajax  event="click" process="@this" update="scStaff" /> 

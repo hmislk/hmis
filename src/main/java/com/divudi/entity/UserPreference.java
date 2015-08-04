@@ -60,6 +60,7 @@ public class UserPreference implements Serializable {
     boolean inwardMoChargeCalculateInitialTime;
     boolean inwardChangeAdmissionFee;
     boolean pharmacyBillWithOutItem;
+    boolean fiveFivePaperWithHeadings;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -366,6 +367,14 @@ public class UserPreference implements Serializable {
 
     public void setPharmacyBillWithOutItem(boolean pharmacyBillWithOutItem) {
         this.pharmacyBillWithOutItem = pharmacyBillWithOutItem;
+    }
+
+    public boolean isFiveFivePaperWithHeadings() {
+        return fiveFivePaperWithHeadings;
+    }
+
+    public void setFiveFivePaperWithHeadings(boolean fiveFivePaperWithHeadings) {
+        this.fiveFivePaperWithHeadings = fiveFivePaperWithHeadings;
     }
     
     
