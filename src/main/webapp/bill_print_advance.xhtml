@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Print" ></h:outputLabel>
+                        </f:facet>
+
+                    </p:panel>
+
+
+
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" 
+                                                 process="@this" 
+                                                 update="@all" 
+                                                 type="button"  
+                                                 ajax="false">
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="Back To Search" ajax="false" action="/opd_search_pre_batch_bill" >
+                                </p:commandButton>
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpBillPreview">
+                                <ui:repeat value="#{opdPreBillController.bills}" var="bill">
+                                    <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpBillPreviewCoop">
+                                <ui:repeat value="#{opdPreBillController.bills}" var="b">
+                                    <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBill" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="Back To Search" ajax="false" action="/opd_search_pre_batch_bill" >
+                                </p:commandButton>
+
+                            </div>
+                            <h:panelGroup id="gpPosBill">
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
+                                        <bi:posOpdBillAdvance bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                                <div></div>
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
+                                        <bi:posOpdBillAdvance bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+
+
+
+                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{opdPreBillController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpPosBillWithoutLogo">
+                                <div style="page-break-after: always;">
+                                    <ui:repeat value="#{opdPreBillController.bills}" var="b">
+                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>                                
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                    </h:panelGroup>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

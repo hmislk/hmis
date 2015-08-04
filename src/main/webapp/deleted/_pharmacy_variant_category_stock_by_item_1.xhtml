@@ -18,7 +18,7 @@
 
                         <h:panelGrid columns="6" >                           
                             <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
-                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStockVariant.department}" converter="dep"/>
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStockVariant.department}" converter="departmentConverter"/>
 
                             <p:autoComplete id="cat" completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStockVariant.category}" >

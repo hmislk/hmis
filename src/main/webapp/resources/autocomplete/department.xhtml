@@ -16,7 +16,7 @@
                         var="dept" itemLabel="#{dept.name}"
                         itemValue="#{dept}" forceSelection="true" 
                         value="#{cc.attrs.value}" 
-                        converter="dep" id="department">
+                        converter="departmentConverter" id="department">
             <p:column headerText="Department">
                 <h:outputLabel value="#{dept.name}"/>
             </p:column>

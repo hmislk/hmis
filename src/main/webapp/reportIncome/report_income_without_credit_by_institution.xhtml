@@ -67,12 +67,12 @@
                                     <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/><br/>
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:spacer width="30" height="1"/>
                                         <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{institutionLabSumeryController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                 </f:facet>
 
@@ -114,7 +114,7 @@
                                     <h:outputLabel value="#{b.paymentScheme.name}"    ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Hospital Fee" style="text-align: right;" >
+                                <p:column headerText="Hospital Fee" styleClass="averageNumericColumn" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Hospital Fee"/>
                                     </f:facet>
@@ -123,7 +123,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Dis." style="text-align: right;" >
+                                <p:column headerText="Dis." styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Dis."/>
                                     </f:facet>
@@ -132,7 +132,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Prof. Fee" style="text-align: right;"  >
+                                <p:column headerText="Prof. Fee" styleClass="averageNumericColumn"  >
                                     <f:facet name="header">
                                         <h:outputLabel value="Prof. Fee"/>
                                     </f:facet>
@@ -141,7 +141,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Net Total"  style="text-align: right;" >
+                                <p:column headerText="Net Total" styleClass="averageNumericColumn">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -229,7 +229,7 @@
                                 </p:column>
                             </p:dataTable>
                             <f:facet name="footer">
-                                        <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                                     </f:facet>
                         </p:panel>
                     </p:panel>

@@ -242,16 +242,18 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
+                + " and ss.paysheetComponent.componentType=:pct "
                 + " and ss.fromDate <=:fd"
                 + " and ss.toDate >=:fd ";
 
         HashMap hm = new HashMap();
         hm.put("fd", getFromDate());
+        hm.put("pct", PaysheetComponentType.PerformanceAllowance);
 
-        if (paysheetComponent != null) {
-            sql += " and ss.paysheetComponent=:tp ";
-            hm.put("tp", getPaysheetComponent());
-        }
+//        if (paysheetComponent != null) {
+//            sql += " and ss.paysheetComponent=:tp ";
+//            hm.put("tp", getPaysheetComponent());
+//        }
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";

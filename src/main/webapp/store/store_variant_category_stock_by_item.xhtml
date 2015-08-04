@@ -21,7 +21,7 @@
                                             completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true"
-                                            value="#{reportsStockVariant.department}" converter="dep"/>
+                                            value="#{reportsStockVariant.department}" converter="departmentConverter"/>
 
                             <p:autoComplete id="cat" 
                                             completeMethod="#{storeItemCategoryController.completeCategory}" 

@@ -151,10 +151,10 @@ public class StockController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -198,9 +198,9 @@ public class StockController implements Serializable {
 
         if (current != null) {
             getFacade().remove(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

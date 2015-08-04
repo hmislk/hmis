@@ -31,11 +31,23 @@
                                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         converter="stfcon"   >                                            
+                                            <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
+                                                    listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
+                                        <p:selectOneMenu  id="lstSelect" converter="sscon"  
+                                                          value="#{channelStaffPaymentBillController.selectedServiceSession}" style="min-width: 100%;" >
+                                            <f:selectItem itemLabel="Select"  ></f:selectItem>
+                                            <f:selectItems  value="#{channelStaffPaymentBillController.serviceSessionList}" var="ses" 
+                                                            itemValue="#{ses}" 
+                                                            itemLabel="#{ses.name}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" id="fDate" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" id="tDate" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
                                         <p:watermark value="Staff" for="scStaff"/>
+                                        <p:watermark value="Select From Date" for="fDate"/>
+                                        <p:watermark value="Select To Date" for="tDate"/>
 
                                         <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>
@@ -121,8 +133,6 @@
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-
-
                         <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>

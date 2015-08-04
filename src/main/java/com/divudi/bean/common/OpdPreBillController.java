@@ -29,6 +29,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -41,6 +42,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
@@ -50,6 +52,7 @@ import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -106,6 +109,8 @@ public class OpdPreBillController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
     @Inject
     private EnumController enumController;
     @EJB
@@ -155,6 +160,8 @@ public class OpdPreBillController implements Serializable {
     private List<BillFee> lstBillFeesPrint;
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
+    
+    List<BillFeePayment>billFeePayments;
 
     public double getCashRemain() {
         return cashRemain;
@@ -309,6 +316,23 @@ public class OpdPreBillController implements Serializable {
         opdBill = temp;
         printPreview = true;
 
+    }
+    
+    public void createBillFeePayments(){
+        billFeePayments=new ArrayList<>();
+        String sql;
+        Map m=new HashMap();
+        
+        sql=" select bfp from BillFeePayment bfp where "
+                + " bfp.retired=false "
+                + " and bfp.createdAt between :fd and :td "
+                + " order by bfp.billFee.bill.deptId ";
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        billFeePayments=getBillFeePaymentFacade().findBySQL(sql, m);
+        
     }
 
     public BillNumberGenerator getBillNumberGenerator() {
@@ -516,7 +540,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         for (Department d : billDepts) {
-            Bill myBill = new BilledBill();
+            PreBill myBill = new PreBill();
             myBill = saveBill(d, myBill);
 
             if (myBill == null) {
@@ -534,9 +558,9 @@ public class OpdPreBillController implements Serializable {
                 }
             }
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                myBill.setCashPaid(cashPaid);
-            }
+//            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//                myBill.setCashPaid(cashPaid);
+//            }
 
             getBillFacade().edit(myBill);
 
@@ -566,8 +590,8 @@ public class OpdPreBillController implements Serializable {
         savePatient();
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
-            BilledBill temp = new BilledBill();
-            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
+            PreBill temp = new PreBill();
+            PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
             if (b == null) {
                 return;
@@ -593,7 +617,7 @@ public class OpdPreBillController implements Serializable {
 //                    b.setNetTotal(b.getCashPaid());
 //                }
 //            }
-
+            b.setBalance(b.getNetTotal());
             getBillFacade().edit(b);
             getBills().add(b);
 
@@ -667,19 +691,35 @@ public class OpdPreBillController implements Serializable {
     private BatchBillFacade batchBillFacade;
 
     private void saveBatchBill() {
-        Bill tmp = new BilledBill();
+        PreBill tmp = new PreBill();
         tmp.setBillType(BillType.OpdBathcBillPre);
+        tmp.setBillClassType(BillClassType.PreBill);
+        tmp.setPatient(tmpPatient);
+        tmp.setInstitution(getSessionController().getInstitution());
+        tmp.setDepartment(getSessionController().getDepartment());
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
+        //Institution ID (INS ID)
+        String insId = getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType(), BillNumberSuffix.NONE);
+        tmp.setInsId(insId);
+
+        //Department ID (DEPT ID)
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType());
+        tmp.setDeptId(deptId);
+
         getBillFacade().create(tmp);
 
         double dbl = 0;
+        double dblT = 0;
+        double dblD = 0;
         double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
+            dblT += b.getTotal();
+            dblD += b.getDiscount();
 
 //            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(reminingCashPaid);
@@ -700,6 +740,8 @@ public class OpdPreBillController implements Serializable {
         }
 
         tmp.setNetTotal(dbl);
+        tmp.setDiscount(dblD);
+        tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
@@ -737,7 +779,7 @@ public class OpdPreBillController implements Serializable {
 
     }
 
-    private Bill saveBill(Department bt, Bill temp) {
+    private PreBill saveBill(Department bt, PreBill temp) {
         temp.setBillType(BillType.OpdPreBill);
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
@@ -783,7 +825,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.PreBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
@@ -858,7 +900,7 @@ public class OpdPreBillController implements Serializable {
     private boolean errorCheck() {
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
 
@@ -909,7 +951,7 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Scheme");
+            UtilityController.addErrorMessage("Select Payment Method.");
             return true;
         }
 
@@ -939,18 +981,7 @@ public class OpdPreBillController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-
-            if (cashPaid == 0.0) {
-                UtilityController.addErrorMessage("Please enter the paid amount");
-                return true;
-            }
-
-        }
-
-//        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
-//            return true;
-//        }
+        
         return false;
     }
 
@@ -1196,26 +1227,26 @@ public class OpdPreBillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            //System.out.println("cashPaid = " + cashPaid);
-            //System.out.println("billNet = " + billNet);
-            if (cashPaid >= billNet) {
-                //System.out.println("fully paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(billNet);
-                setCashBalance(cashPaid - billNet - billDiscount);
-                //System.out.println("cashBalance = " + cashBalance);
-            } else {
-                //System.out.println("half paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(cashPaid);
-                setCashBalance(billNet - cashPaid - billDiscount);
-                //System.out.println("cashBalance = " + cashBalance);
-            }
-            cashRemain = cashPaid;
-        }
+//        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//            //System.out.println("cashPaid = " + cashPaid);
+//            //System.out.println("billNet = " + billNet);
+//            if (cashPaid >= billNet) {
+//                //System.out.println("fully paid = ");
+//                setDiscount(billDiscount);
+//                setTotal(billGross);
+//                setNetTotal(billNet);
+//                setCashBalance(cashPaid - billNet - billDiscount);
+//                //System.out.println("cashBalance = " + cashBalance);
+//            } else {
+//                //System.out.println("half paid = ");
+//                setDiscount(billDiscount);
+//                setTotal(billGross);
+//                setNetTotal(cashPaid);
+//                setCashBalance(billNet - cashPaid - billDiscount);
+//                //System.out.println("cashBalance = " + cashBalance);
+//            }
+//            cashRemain = cashPaid;
+//        }
 
         //      ////System.out.println("bill tot is " + billGross);
     }
@@ -1827,86 +1858,105 @@ public class OpdPreBillController implements Serializable {
         this.opdBill = opdBill;
     }
 
-    /**
-     *
-     */
-    @FacesConverter("bill")
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
+    public List<BillFeePayment> getBillFeePayments() {
+        if (billFeePayments==null) {
+            billFeePayments=new ArrayList<>();
         }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-            }
-        }
+        return billFeePayments;
     }
 
-    @FacesConverter(forClass = Bill.class)
-    public static class BillConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-            }
-        }
+    public void setBillFeePayments(List<BillFeePayment> billFeePayments) {
+        this.billFeePayments = billFeePayments;
     }
+
+    public BillFeePaymentFacade getBillFeePaymentFacade() {
+        return billFeePaymentFacade;
+    }
+
+    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
+        this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+//    /**
+//     *
+//     */
+//    @FacesConverter("bill")
+//    public static class BillControllerConverter implements Converter {
+//
+//        @Override
+//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+//            if (value == null || value.length() == 0) {
+//                return null;
+//            }
+//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
+//                    getValue(facesContext.getELContext(), null, "billController");
+//            return controller.getBillFacade().find(getKey(value));
+//        }
+//
+//        java.lang.Long getKey(String value) {
+//            java.lang.Long key;
+//            key = Long.valueOf(value);
+//            return key;
+//        }
+//
+//        String getStringKey(java.lang.Long value) {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(value);
+//            return sb.toString();
+//        }
+//
+//        @Override
+//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+//            if (object == null) {
+//                return null;
+//            }
+//            if (object instanceof Bill) {
+//                Bill o = (Bill) object;
+//                return getStringKey(o.getId());
+//            } else {
+//                throw new IllegalArgumentException("object " + object + " is of type "
+//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
+//            }
+//        }
+//    }
+//
+//    @FacesConverter(forClass = Bill.class)
+//    public static class BillConverter implements Converter {
+//
+//        @Override
+//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+//            if (value == null || value.length() == 0) {
+//                return null;
+//            }
+//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
+//                    getValue(facesContext.getELContext(), null, "billController");
+//            return controller.getBillFacade().find(getKey(value));
+//        }
+//
+//        java.lang.Long getKey(String value) {
+//            java.lang.Long key;
+//            key = Long.valueOf(value);
+//            return key;
+//        }
+//
+//        String getStringKey(java.lang.Long value) {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(value);
+//            return sb.toString();
+//        }
+//
+//        @Override
+//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+//            if (object == null) {
+//                return null;
+//            }
+//            if (object instanceof Bill) {
+//                Bill o = (Bill) object;
+//                return getStringKey(o.getId());
+//            } else {
+//                throw new IllegalArgumentException("object " + object + " is of type "
+//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
+//            }
+//        }
+//    }
 }

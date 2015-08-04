@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
@@ -19,6 +20,7 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import javax.inject.Named;
@@ -29,6 +31,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -73,6 +76,7 @@ public class ItemFeeController implements Serializable {
     }
 
     public List<Department> getInstitutionDepatrments() {
+        System.out.println("inside = ");
         List<Department> d;
         ////System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
@@ -154,7 +158,8 @@ public class ItemFeeController implements Serializable {
         itemFeeFacade.edit(itemFee);
 
         itemFee.getItem().setTotal(calTot());
-        ejbFacade.edit((Investigation) itemFee.getItem());
+//        ejbFacade.edit((Investigation) itemFee.getItem());
+        getEjbFacade().edit((Investigation) itemFee.getItem());
     }
 
     public void removeFee() {
@@ -192,9 +197,9 @@ public class ItemFeeController implements Serializable {
             currentIx.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;

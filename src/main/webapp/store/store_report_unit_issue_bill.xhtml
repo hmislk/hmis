@@ -20,12 +20,12 @@
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
+                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="Issue To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="dep" >
+                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
@@ -54,25 +54,25 @@
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
                                     <h:outputLabel value=" &emsp;&emsp;To "/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/>
-                                       
-                                        <h:outputLabel value="&emsp;&emsp;From : " style=" white-space:pre-line;"/>
-                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="&emsp;&emsp;To : "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a"  ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    
+
+                                    <h:outputLabel value="&emsp;&emsp;From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="&emsp;&emsp;To : "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"  ></f:convertDateTime>
+                                    </h:outputLabel>
+
                                 </f:facet>
-                                
+
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
                                 </p:column>
-                                
+
                                 <p:column headerText="Request No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Request No"/>
@@ -124,7 +124,7 @@
                                     </p:row>
                                 </p:columnGroup>
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>
                             </p:dataTable>
                         </h:panelGroup>

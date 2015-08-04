@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+        <h:panelGroup rendered="true" >
+            <h:form id="frm">
+
+
+                <p:panel header="Investigation Counts">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Investigation Counts" 
+                                       styleClass="noPrintButton"/>
+                    </f:facet> 
+
+                    <table >
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="3" styleClass="noPrintButton">
+                                    <h:outputLabel value="From"/>
+                                    <h:outputLabel value=" : "/>
+                                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy " >
+                                    </p:calendar>
+                                    <h:outputLabel value="To"/>
+                                    <h:outputLabel value=" : "/>
+                                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy " >
+                                    </p:calendar>
+                                </h:panelGrid>
+                            </td>
+                            <td rowspan="2" >
+                                <p:fieldset styleClass="noPrintButton" style="max-width: 70%; float: right; text-align: justify; height: 70px; overflow-y: scroll; overflow-x: auto; "  >
+                                    <p>
+                                        This report lists the counts of all the investigation performed using the application. It includes results from all institutions and their departments. This also includes OPD requests, inward requests and collecting centre requests. Investigations requested using any payment method is listed here.
+                                    </p>
+                                    <p>
+                                        You can search by Investigation Name. You can sort by Investigation Name and the Count.
+                                    </p>
+                                </p:fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="5" styleClass="noPrintButton">
+                                    <p:spacer height="1" width="30"/>
+                                    <p:commandButton ajax="false"  value="Process"  
+                                                     action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
+                                                     styleClass="noPrintButton" style="float: right;" />
+                                    <p:commandButton value="Print" actionListener="#{investigationMonthSummeryOwnControllerSession.prepareForPrint()}" 
+                                                     oncomplete="$('#frm\\:print').click()"
+                                                     update=":frm:tbl"/>
+                                    <p:commandButton id="print" value="Actual print" style="display: none">
+                                        <p:ajax event="click" listener="#{investigationMonthSummeryOwnControllerSession.prepareForView()}" update=":frm:tbl"/>
+                                        <p:printer target=":frm:tbl" />
+                                    </p:commandButton>
+
+
+                                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
+                                                     facetBackground="#008000" facetFontSize="15" 
+                                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                                     fontName="Courier New"  />
+                                    </p:commandButton> 
+
+                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="lab_summeries_index" >
+                                    </p:commandButton> 
+
+
+                                </h:panelGrid>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p:panel id="panelPrint" styleClass="noBorder">
+
+                        <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
+                                     rows="20"
+                                     paginator="true"
+                                     rowIndexVar="i"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100"
+                                     >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Investigation Counts"/>
+                            </f:facet>
+
+
+
+                            <p:column >
+                                <h:outputLabel value="#{i+1}"  />
+                                
+                            </p:column>
+
+                            <p:column headerText="Test Name" 
+                                      sortBy="#{c.investigation.name}" 
+                                      filterBy="#{c.investigation.name}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Test Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{c.investigation.name}"  />
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total">
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Count" style="text-align:right" 
+                                      sortBy="#{c.count}">
+                                <h:outputLabel value="#{c.count}" />
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>        
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

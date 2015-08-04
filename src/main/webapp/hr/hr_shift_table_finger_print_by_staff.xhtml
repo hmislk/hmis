@@ -17,48 +17,93 @@
                     <p:outputLabel value="#{mes}" /><br/>
                 </ui:repeat>               
             </h:panelGroup>
-            <h:panelGrid columns="2">
-                <h:outputLabel value="From Date"/>
-                <p:calendar id="frmDate" 
-                            value="#{shiftFingerPrintAnalysisController.fromDate}"
-                            pattern="dd MMMM yyyy" />
-                <h:outputLabel value="To Date"/>
-                <p:calendar id="toDate" 
-                            value="#{shiftFingerPrintAnalysisController.toDate}" 
-                            pattern="dd MMMM yyyy" />
-                
-                <h:outputLabel value="Staff : "/>
-                <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
-                <h:panelGroup>
-                    <p:commandButton value="Fill"
-                                     process="@this frmDate toDate roster"
-                                     update="lst"
-                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                    action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                     onclick="onSubmitButton();" /> 
 
-                    <p:commandButton value="Fill Additional Only"
+            <h:panelGrid columns="2" styleClass="alignTop" style="width: 100%;" >
+
+                <h:panelGroup >
+
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From"/>
+                        <p:calendar id="frmDate" 
+                                    value="#{shiftFingerPrintAnalysisController.fromDate}"
+                                    pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" 
+                                    value="#{shiftFingerPrintAnalysisController.toDate}" 
+                                    pattern="dd MMMM yyyy" />
+
+                        <h:outputLabel value="Staff "/>
+                        <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
+                        <h:panelGroup>
+                            <p:commandButton value="Fill"
+                                             process="@this frmDate toDate roster"
+                                             update="lst"
+                                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                             action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
+                                             onclick="onSubmitButton();" /> 
+
+                            <p:commandButton value="Fill Additional Only"
+                                             process="@this frmDate toDate roster"
+                                             update="lst"
+                                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                             action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
+                                             onclick="onSubmitButton();" /> 
+
+                        </h:panelGroup>
+
+                        <h:panelGroup >
+                            <p:commandButton value="SAVE"
+                                             process="lst"
+                                             update="lst"
+                                             action="#{shiftFingerPrintAnalysisController.save()}" 
+                                             onclick="onSubmitButton();"/>
+
+                            <p:commandButton value="Back" ajax="false" 
+                                             action="#{shiftFingerPrintAnalysisController.back()}" 
+                                             rendered="#{shiftFingerPrintAnalysisController.backButtonIsActive}"
+                                             style="float: right;"></p:commandButton>
+                        </h:panelGroup>
+                    </h:panelGrid>
+
+                    <p:commandButton value="Reset and Fill"
                                      process="@this frmDate toDate roster"
                                      update="lst"
-                                    actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                    action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                     onclick="onSubmitButton();" /> 
+                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
+                                     onclick="onSubmitButton();" 
+                                     style="float: right;"/> 
+
+                    <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" 
+                                     action="#{hrReportController.back()}" ></p:commandButton>
+
                 </h:panelGroup>
+                <p:panel header="Links" style="float: right;" >
+                    <p:panelGrid columns="2" styleClass="alignTop" >
+                        <p:commandLink ajax="false" value="Leave Forms" action="/hr/hr_form_staff_leave" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffLeaveApplicationFormController}"></p:commandLink>
+                        <p:commandLink ajax="false" value="Extra Time Forms" action="/hr/hr_form_staff_additional_extra" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
 
-                <p:commandButton value="SAVE"
-                                 process="lst"
-                                 update="lst"
-                                action="#{shiftFingerPrintAnalysisController.save()}" 
-                                 onclick="onSubmitButton();"/>
+                        <p:commandLink ajax="false" value="Extra Shift Forms" action="/hr/hr_form_staff_additional_shift" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
+
+                        <p:commandLink ajax="false" value="Holiday Forms" action="/hr/hr_form_staff_additional_shift_day_off" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
+
+                        <p:commandLink ajax="false" value="Roster Table" 
+                                       action="/hr/hr_shift_table" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"></p:commandLink>
+
+
+                        <p:commandLink ajax="false" value="Roster" 
+                                       action="/hr/hr_shift_table_by_staff" 
+                                       actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"></p:commandLink>
+
+                        
+
+                    </p:panelGrid>
+                </p:panel>
             </h:panelGrid>
-
-            <p:commandButton value="Reset and Fill"
-                             process="@this frmDate toDate roster"
-                             update="lst"
-                            actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                            action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
-                             onclick="onSubmitButton();" 
-                             style="float: right;"/> 
 
             <p:dataGrid  id="lst" columns="1" var="data"
                          value="#{shiftFingerPrintAnalysisController.shiftTables}" >
@@ -67,50 +112,81 @@
                                               or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                     <f:facet name="header">
                         <h:outputLabel value="#{data.date}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime pattern="dd MM yyyy - (EEEE)"/>
                         </h:outputLabel>
                     </f:facet>
-                    <p:column headerText="Shift Name" styleClass="singleLine">
-                        <h:outputLabel value="#{sts.shift.name}" />
+                    <p:column headerText="Shift" styleClass="fixedColumn75" >
+                        <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
+                        <p:tooltip for="lblShiftName" >
+                            <p:outputLabel value="#{sts.id}" ></p:outputLabel>
+                            <br/>
+                            <p:outputLabel value="#{sts.shift.durationMin}"/>
+                        </p:tooltip>
                     </p:column>
-                    <p:column headerText="ID">
-                        #{sts.id}
-                    </p:column>
-                     
-                    <p:column headerText="Shift Start">
-                        <h:outputLabel value="#{sts.shiftStartTime}" >
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column headerText="Shift End Time">
-                         <h:outputLabel value="#{sts.shiftEndTime}" >
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                        </h:outputLabel>
-                        
-                    </p:column>
-                    <p:column headerText="Leave/Replace" styleClass="singleLine">                       
-                        <h:outputLabel value="#{sts.leaveType}"  />                     
-                    </p:column>
-                    
-                     <p:column headerText="Halfday" styleClass="singleLine">                       
-                        <h:outputLabel value="#{sts.shift.halfShift}"  />                     
+                    <p:column headerText="Roster" styleClass="fixedColumn100">
+                        <p:outputLabel value="#{sts.roster.name}" ></p:outputLabel>
                     </p:column>
 
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputLabel value="Staff Name"/>
-                        </f:facet>
-                        <h:outputLabel value="#{sts.staff.person.name}"/>
+                    <p:column headerText="Time" styleClass="fixedColumn100">
+                        <h:panelGroup id="lblShiftDate" >
+                            <h:outputLabel value="#{sts.shiftStartTime}" >
+                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <h:outputLabel value=" - " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shiftEndTime}" >
+                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <p:tooltip for="lblShiftDate" >
+                            <h:outputLabel value="From : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shiftStartTime}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="To : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shiftEndTime}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Date : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shiftDate}" >
+                                <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
+                            </h:outputLabel> 
+                            <br/>
+                            <h:outputLabel value="Worked Time : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.workedWithinTimeFrameVarified div (60*60)}" ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Half Shift : " ></h:outputLabel>
+                            <h:outputLabel value="#{sts.shift.halfShift}" ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Leave Type : " ></h:outputLabel>
+                            <h:outputLabel value=" #{sts.leaveType} " ></h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Full Day Leave : " ></h:outputLabel>
+                            <h:outputLabel value=" #{sts.leaveType.fullDayLeave} " ></h:outputLabel>
 
-                    </p:column> 
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputLabel value="Staff Code"/>
-                        </f:facet>
-                        <h:outputLabel value="#{sts.staff.code}"/>
-                    </p:column>     
+                        </p:tooltip>
 
-                    <p:column headerText="Starting Record Frm Attendence"> 
+                    </p:column>
+
+
+
+
+                    <p:column headerText="Comments" >        
+                        <p:commandLink value="#{sts.leaveType}" action="#{hrReportController.fromStaffFingerprintAnalysisToStaffLeave(sts.shiftDate, sts.staff)}" ></p:commandLink>
+                        <h:outputLabel value="Half Shift " rendered="#{sts.shift.halfShift}"  />
+                    </p:column>
+
+
+                    <!--                    <p:column>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Name"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{sts.staff.person.name}"/>
+                                            <h:outputLabel value=" (#{sts.staff.code})"/>
+                                        </p:column>-->     
+
+                    <p:column headerText="Attendence Start" styleClass="fixedColumn200"> 
 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  >
@@ -127,7 +203,7 @@
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
 
-                    <p:column headerText="Ending Record Frm Attendence">
+                    <p:column headerText="Attendence End" styleClass="fixedColumn200">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
@@ -142,13 +218,13 @@
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                     </p:column>
 
-                    <p:column headerText="Starting Record Varified">
+                    <p:column headerText="Varified Start"  styleClass="fixedColumn200">
 
                         <h:panelGroup id="strRc"       >
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a"  >                           
+                                    pattern="dd/MM/yy hh:mm a"  >                           
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
@@ -161,14 +237,14 @@
 
                     </p:column>
 
-                    <p:column headerText="Ending Record  Varified">
+                    <p:column headerText="Verified End"  styleClass="fixedColumn200">
 
                         <h:panelGroup id="endRc">
 
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
                                 <p:calendar                                    
                                     value="#{sts.endRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a" >          
+                                    pattern="dd/MM/yy hh:mm a" >          
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                                 </p:calendar>                             

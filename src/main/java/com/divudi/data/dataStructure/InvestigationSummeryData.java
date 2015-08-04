@@ -6,7 +6,6 @@ package com.divudi.data.dataStructure;
 
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
-import com.divudi.entity.lab.Investigation;
 import java.util.List;
 
 /**
@@ -18,6 +17,7 @@ public class InvestigationSummeryData {
     private List<BillItem> billItems;
     private long count;
     private double total;
+    private double turnOverValue;
 
     public Item getInvestigation() {
         return investigation;
@@ -42,6 +42,8 @@ public class InvestigationSummeryData {
     public void setTotal(double total) {
         this.total = total;
     }
+    
+    
 
     public List<BillItem> getBillItems() {
         return billItems;
@@ -49,5 +51,13 @@ public class InvestigationSummeryData {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public double getTurnOverValue() {
+        return turnOverValue;
+    }
+
+    public void setTurnOverValue(double turnOverValue) {
+        this.turnOverValue = turnOverValue;
     }
 }

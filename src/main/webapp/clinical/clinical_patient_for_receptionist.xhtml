@@ -37,7 +37,8 @@
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
                                                          update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                        action="#{patientController.delete()}" onclick="onSubmitButton();" >
+                                                         action="#{patientController.delete()}" onclick="onSubmitButton();" 
+                                                         rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
                                         
                                         <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">

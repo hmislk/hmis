@@ -31,6 +31,7 @@ public enum BillType {
     InwardAppointmentBill,
     InwardBill,
     InwardProfessional,
+    InwardProfessionalEstimates,
     InwardIntrimBill,
     @Deprecated
     InwardAdditionalBill,
@@ -147,6 +148,8 @@ public enum BillType {
                 return "Pharmacy Adjustment";
             case GrnPayment:
                 return "Grn Payment";
+            case GrnPaymentPre:
+                return "Grn Payment";
             case PharmacyTransferRequest:
                 return "Pharmacy Transfer Request";
             case PharmacyTransferIssue:
@@ -195,6 +198,8 @@ public enum BillType {
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:
                 return "OPD Bills To Pay";
+            case OpdBathcBill:
+                return "OPD Accepet Payment";
 
         }
 

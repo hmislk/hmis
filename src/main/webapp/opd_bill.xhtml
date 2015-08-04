@@ -186,14 +186,14 @@
 
                                             <h:panelGrid columns="1" >
 
-                                                <p:autoComplete styleClass="mediuminput"
+                                                <p:autoComplete styleClass="mediuminput" converter="patientConverter"
                                                                 disabled="#{billController.fromOpdEncounter}"
                                                                 widgetVar="aPt" id="acPt" forceSelection="true" 
                                                                 value="#{billController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
                                                                 itemValue="#{apt}" size="30"  style="width: 400px;"
-                                                                minQueryLength="5">
+                                                                minQueryLength="4">
 
 
                                                     <p:column headerText="Name">
@@ -249,17 +249,17 @@
                                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
                                                         size="30"  style="width: 400px;" >
-                                            <p:column>
-                                                #{ix.name}
+                                            <p:column style="max-width: 200px;" headerText="Name">
+                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                    <p:outputLabel value=" (#{ix.fullName})" ></p:outputLabel>
+                                                </h:panelGroup>
                                             </p:column>
-                                            <p:column>
-                                                #{ix.fullName}
+                                            <p:column style="max-width: 200px;" headerText="Dept">
+                                                <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
                                             </p:column>
-                                            <p:column>
-                                                #{ix.department.name}
-                                            </p:column>
-                                            <p:column>
-                                                #{ix.total}
+                                            <p:column style="text-align: right; max-width: 80px;" headerText="Value">
+                                                <h:outputLabel value="#{ix.total}"></h:outputLabel>
                                             </p:column>
                                             <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                         </p:autoComplete>
@@ -562,8 +562,12 @@
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
 
+                    <h1>#{sessionController.institutionPreference.printLabelForOPdBill}</h1>
+                    
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                        
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false 
+                                                  and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" 
                                                  process="@this" 
@@ -585,6 +589,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
+                        
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">
@@ -605,6 +610,28 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
+                        
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.fiveFivePaperWithHeadings eq true}">
+
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="fiveFivePaperWithHeadings">
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        
 
                     </h:panelGroup>
 

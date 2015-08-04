@@ -6,6 +6,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Item;
+import java.util.Date;
 
 /**
  *
@@ -13,15 +14,76 @@ import com.divudi.entity.Item;
  */
 public class ItemTransactionSummeryRow {
     Item item;
-    Double retailSale;
-    Double wholeSale;
-    Double bhtSale;
-    Double transferIssue;
-    Double totalOut;
-    Double transferIn;
-    Double purchase;
-    Double totalIn;
+    Double retailSaleQty;
+    Double wholeSaleQty;
+    Double bhtSaleQty;
+    Double transferOutQty;
+    Double issueQty;
+    Double totalOutQty;
+    Double transferInQty;
+    Double purchaseQty;
+    Double totalInQty;
+    
+    Double retailSaleVal;
+    Double wholeSaleVal;
+    Double issueVal;
+    Double bhtSaleVal;
+    Double transferOutVal;
+    Double totalOutVal;
+    Double transferInVal;
+    Double purchaseVal;
+    Double totalInVal;
+    
+    Double value;
+    Date date;
+    Double quantity;
 
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+    
+    
+
+    public Double getValue() {
+        return value;
+    }
+
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+    
+    
+
+    public Double getIssueQty() {
+        return issueQty;
+    }
+
+    public void setIssueQty(Double issueQty) {
+        this.issueQty = issueQty;
+    }
+
+    public Double getIssueVal() {
+        return issueVal;
+    }
+
+    public void setIssueVal(Double issueVal) {
+        this.issueVal = issueVal;
+    }
+
+    
+    
     public Item getItem() {
         return item;
     }
@@ -30,68 +92,133 @@ public class ItemTransactionSummeryRow {
         this.item = item;
     }
 
-    public Double getRetailSale() {
-        return retailSale;
+    public Double getRetailSaleQty() {
+        return retailSaleQty;
     }
 
-    public void setRetailSale(Double retailSale) {
-        this.retailSale = retailSale;
+    public void setRetailSaleQty(Double retailSaleQty) {
+        this.retailSaleQty = retailSaleQty;
     }
 
-    public Double getWholeSale() {
-        return wholeSale;
+    public Double getWholeSaleQty() {
+        return wholeSaleQty;
     }
 
-    public void setWholeSale(Double wholeSale) {
-        this.wholeSale = wholeSale;
+    public void setWholeSaleQty(Double wholeSaleQty) {
+        this.wholeSaleQty = wholeSaleQty;
     }
 
-    public Double getBhtSale() {
-        return bhtSale;
+    public Double getBhtSaleQty() {
+        return bhtSaleQty;
     }
 
-    public void setBhtSale(Double bhtSale) {
-        this.bhtSale = bhtSale;
+    public void setBhtSaleQty(Double bhtSaleQty) {
+        this.bhtSaleQty = bhtSaleQty;
     }
 
-    public Double getTransferIssue() {
-        return transferIssue;
+    public Double getTransferOutQty() {
+        return transferOutQty;
     }
 
-    public void setTransferIssue(Double transferIssue) {
-        this.transferIssue = transferIssue;
+    public void setTransferOutQty(Double transferOutQty) {
+        this.transferOutQty = transferOutQty;
     }
 
-    public Double getTotalOut() {
-        return totalOut;
+    public Double getTotalOutQty() {
+        return totalOutQty;
     }
 
-    public void setTotalOut(Double totalOut) {
-        this.totalOut = totalOut;
+    public void setTotalOutQty(Double totalOutQty) {
+        this.totalOutQty = totalOutQty;
     }
 
-    public Double getTransferIn() {
-        return transferIn;
+    public Double getTransferInQty() {
+        return transferInQty;
     }
 
-    public void setTransferIn(Double transferIn) {
-        this.transferIn = transferIn;
+    public void setTransferInQty(Double transferInQty) {
+        this.transferInQty = transferInQty;
     }
 
-    public Double getPurchase() {
-        return purchase;
+    public Double getPurchaseQty() {
+        return purchaseQty;
     }
 
-    public void setPurchase(Double purchase) {
-        this.purchase = purchase;
+    public void setPurchaseQty(Double purchaseQty) {
+        this.purchaseQty = purchaseQty;
     }
 
-    public Double getTotalIn() {
-        return totalIn;
+    public Double getTotalInQty() {
+        return totalInQty;
     }
 
-    public void setTotalIn(Double totalIn) {
-        this.totalIn = totalIn;
+    public void setTotalInQty(Double totalInQty) {
+        this.totalInQty = totalInQty;
     }
+
+    public Double getRetailSaleVal() {
+        return retailSaleVal;
+    }
+
+    public void setRetailSaleVal(Double retailSaleVal) {
+        this.retailSaleVal = retailSaleVal;
+    }
+
+    public Double getWholeSaleVal() {
+        return wholeSaleVal;
+    }
+
+    public void setWholeSaleVal(Double wholeSaleVal) {
+        this.wholeSaleVal = wholeSaleVal;
+    }
+
+    public Double getBhtSaleVal() {
+        return bhtSaleVal;
+    }
+
+    public void setBhtSaleVal(Double bhtSaleVal) {
+        this.bhtSaleVal = bhtSaleVal;
+    }
+
+    public Double getTransferOutVal() {
+        return transferOutVal;
+    }
+
+    public void setTransferOutVal(Double transferOutVal) {
+        this.transferOutVal = transferOutVal;
+    }
+
+    public Double getTotalOutVal() {
+        return totalOutVal;
+    }
+
+    public void setTotalOutVal(Double totalOutVal) {
+        this.totalOutVal = totalOutVal;
+    }
+
+    public Double getTransferInVal() {
+        return transferInVal;
+    }
+
+    public void setTransferInVal(Double transferInVal) {
+        this.transferInVal = transferInVal;
+    }
+
+    public Double getPurchaseVal() {
+        return purchaseVal;
+    }
+
+    public void setPurchaseVal(Double purchaseVal) {
+        this.purchaseVal = purchaseVal;
+    }
+
+    public Double getTotalInVal() {
+        return totalInVal;
+    }
+
+    public void setTotalInVal(Double totalInVal) {
+        this.totalInVal = totalInVal;
+    }
+
     
 }

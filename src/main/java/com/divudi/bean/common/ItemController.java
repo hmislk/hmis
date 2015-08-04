@@ -1,57 +1,48 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 
-import com.divudi.entity.BillExpense;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.facade.ItemFacade;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
-
+import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
+import com.divudi.entity.ServiceCategory;
+import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.inward.InwardService;
+import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
-import java.util.TimeZone;
-
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.entity.Packege;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.inward.TheatreService;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.beanutils.BeanUtils;
 
 /**
@@ -63,17 +54,30 @@ import org.apache.commons.beanutils.BeanUtils;
 @SessionScoped
 public class ItemController implements Serializable {
 
+    /**
+     * EJBs
+     */
+    
     private static final long serialVersionUID = 1L;
     @EJB
     private ItemFacade ejbFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    /**
+     * Managed Beans
+     */
     @Inject
     SessionController sessionController;
     @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ItemForItemController itemForItemController;
+
+    /**
+     * Properties
+     */
     private Item current;
     private List<Item> items = null;
     List<Item> allItems;
@@ -81,6 +85,7 @@ public class ItemController implements Serializable {
     private Institution instituion;
     Department department;
     List<Department> departments;
+    
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -91,9 +96,7 @@ public class ItemController implements Serializable {
         this.departments = departments;
     }
 
-    @Inject
-    ItemForItemController itemForItemController;
-
+    
     public void createNewItemsFromMasterItems() {
         //System.out.println("createNewItemsFromMasterItems");
         if (instituion == null) {
@@ -712,10 +715,10 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
-        System.out.println(sql);
-        System.out.println("m = " + m);
+//        System.out.println(sql);
+//        System.out.println("m = " + m);
         mySuggestions = getFacade().findBySQL(sql, m, 20);
-        System.out.println("mySuggestions = " + mySuggestions);
+//        System.out.println("mySuggestions = " + mySuggestions);
         return mySuggestions;
     }
 
@@ -814,7 +817,7 @@ public class ItemController implements Serializable {
     public void updateSelectedOPDItemList() {
 
     }
-
+   
     /**
      *
      */
@@ -950,9 +953,9 @@ public class ItemController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -89,7 +89,7 @@
 
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
-                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleController.intQty}" style="width: 50px!important;"   >
                                                 <p:ajax event="keyup"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
@@ -103,7 +103,7 @@
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>
-                                            <p:outputLabel id="txtRate" value="#{pharmacySaleController.billItem.netRate}" >
+                                            <p:outputLabel id="txtRate" value="#{pharmacyWholeSaleController.billItem.netRate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGrid>

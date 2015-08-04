@@ -10,17 +10,13 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.inward.RoomFacility;
-import com.divudi.entity.Department;
 import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.RoomCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-import javax.inject.Inject;
 import javax.inject.Named; import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
@@ -73,12 +69,12 @@ public  class RoomCategoryController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -125,9 +121,9 @@ public  class RoomCategoryController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

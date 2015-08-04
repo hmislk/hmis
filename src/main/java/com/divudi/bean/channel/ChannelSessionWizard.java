@@ -90,9 +90,9 @@ public class ChannelSessionWizard implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getServiceSessionFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
 
         getItems();
@@ -112,12 +112,12 @@ public class ChannelSessionWizard implements Serializable {
         current.setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getServiceSessionFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getServiceSessionFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         prepareAdd();
         getItems();

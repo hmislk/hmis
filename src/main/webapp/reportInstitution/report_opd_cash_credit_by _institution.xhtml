@@ -42,14 +42,14 @@
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From : "/>
 
                                 <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
+                                <h:outputLabel value="&emsp; To :" />
                                 <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Bills" />
                             </f:facet>
@@ -145,14 +145,14 @@
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From  : "/>
 
                                 <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
+                                <h:outputLabel value="&emsp; To: " />
                                 <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Cancel Bills" />
                             </f:facet>
@@ -248,14 +248,14 @@
                                      style="min-width: 100%;"  
                                      >
                             <f:facet name="header">
-                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+                                <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From : "/>
 
                                 <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value=" - " />
+                                <h:outputLabel value=" &emsp;To : " />
                                 <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Refund Bills" />
                             </f:facet>

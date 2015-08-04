@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
 
@@ -36,7 +36,7 @@
                                 <f:facet name="header">
                                    
                                 <h:outputLabel value="#{channelReportController.institution.name}"/>
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="From : " />
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
                                         <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                     </h:outputLabel>                          

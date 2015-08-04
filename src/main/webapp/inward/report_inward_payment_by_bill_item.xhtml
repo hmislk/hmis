@@ -21,7 +21,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{mdInwardReportController.dept}" converter="dep" >
+                                            value="#{mdInwardReportController.dept}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy" ></p:calendar>

@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
+                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             </h:panelGrid>
                         <h:panelGrid columns="4" >
@@ -90,9 +90,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
 
                             </p:dataTable>
                         </h:panelGroup>

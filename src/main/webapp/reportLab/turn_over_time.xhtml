@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+
+
+                <p:panel id="panelPrint"  
+                         header="Turnover Time">
+
+                    <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
+                        <h:outputLabel value="Investigation"/>
+                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                        value="#{investigationMonthSummeryOwnControllerSession.item}" 
+                                        completeMethod="#{investigationController.completeInvest}" 
+                                        var="apt" itemLabel="#{apt.name}" 
+                                        itemValue="#{apt}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{apt.name}
+                            </p:column>
+                            <p:column>
+                                #{apt.fullName}
+                            </p:column>
+                            <p:column>
+                                #{apt.department.name}
+                            </p:column>
+                            
+                        </p:autoComplete> 
+
+
+                        <h:outputLabel value="From"/>
+                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                       <h:outputLabel value=""/>
+                        <p:commandButton ajax="false"  value="Process."  
+                                         action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTime}"
+                                         styleClass="noPrintButton" style="float: left;" />
+
+                    </h:panelGrid>
+
+                    <p:panel style="width: 500px; margin-top: 20px;">
+                        
+                        <h:outputLabel style="font-size: 15pt!important; color: red;" value="Average turn-over time for #{investigationMonthSummeryOwnControllerSession.item.name} is " ></h:outputLabel>
+                            <h:outputLabel style="font-size: 15pt!important; color: red;" value="#{investigationMonthSummeryOwnControllerSession.totalCount}" ></h:outputLabel>
+                            <h:outputLabel style="font-size: 15pt!important; color: red;" value=" minutes." ></h:outputLabel>
+                       
+                    </p:panel>
+
+
+
+                </p:panel>        
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

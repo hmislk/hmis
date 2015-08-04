@@ -246,6 +246,7 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public void fillSessions() {
+        System.out.println("inside = ");
         String sql;
         Map m = new HashMap();
         sql = "Select s From ServiceSession s "

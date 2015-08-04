@@ -388,9 +388,9 @@ public class AdmissionController implements Serializable {
             getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         makeNull();
 //        getItems();
@@ -667,7 +667,7 @@ public class AdmissionController implements Serializable {
         //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());

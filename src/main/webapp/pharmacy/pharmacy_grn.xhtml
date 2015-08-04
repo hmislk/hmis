@@ -106,7 +106,11 @@
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>                       
-                    </p:column>                  
+                    </p:column>  
+                    
+                    <p:column headerText="Wholesale Rate">
+                        
+                    </p:column>
 
                     <p:column headerText="Sale Price"  > 
                         <p:cellEditor>
@@ -190,12 +194,11 @@
                             </p:outputLabel>
                             <p:outputLabel value="Discount"/>
                             <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
-                                <p:ajax process="gro @this" update="net" event="blur"
-                                        listener="#{grnController.changeDiscountLitener}"/>
-                                <f:convertNumber pattern="#,##0.00" />
+                                <p:ajax process="@this" update="net" event="keyup"
+                                        listener="#{grnController.netDiscount()}"/>
                             </p:inputText>
                             <p:outputLabel value="Net Total"/>
-                            <p:outputLabel id="net"  value="#{0-grnController.grnBill.netTotal}" >
+                            <p:outputLabel id="net"  value="#{grnController.grnBill.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
                         </p:panelGrid>

@@ -118,7 +118,7 @@
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column style="text-align: right;" headerText="Charge">
+                            <p:column styleClass="averageNumericColumn" headerText="Charge">
                                 <h:commandLink action="payment_staff_bill" >
                                     <h:outputLabel value="#{bf.feeValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>

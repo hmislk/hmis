@@ -79,6 +79,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     private List<BillFee> billFees;
     private List<ServiceSession> serviceSessions;
+    private List<ServiceSession> serviceSessionList;
     /////////////////////    
     private Date fromDate;
     private Date toDate;
@@ -255,7 +256,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void calculateDueFees() {
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "
@@ -276,8 +277,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
 
         if (getSelectedServiceSession() != null) {
-            sql += " and b.serviceSession=:ss";
+            sql += " and b.bill.singleBillSession.serviceSession=:ss";
             hm.put("ss", getSelectedServiceSession());
+        }
+
+        if (true) {
+            sql += " and b.bill.singleBillSession.absent=false ";
         }
 
         hm.put("stf", getCurrentStaff());
@@ -288,7 +293,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void calculateDueFeesAgency() {
 
         String sql = " SELECT b FROM BillFee b "
@@ -312,13 +317,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.serviceSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
-        
+
         if (getInstitution() != null) {
             sql += " and b.institution=:ins";
             hm.put("ins", getInstitution());
         }
 
-        
         //hm.put("ins", sessionController.getInstitution());
         //hm.put("bt", bts);
         hm.put("ftp", FeeType.OtherInstitution);
@@ -409,7 +413,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
 
     }
@@ -420,6 +423,20 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSelectedItems(List<Bill> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+
+    public void fillSessions() {
+        System.out.println("Inside");
+        String sql;
+        Map m = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and s.staff=:doc "
+                + " order by s.sessionWeekday, s.sessionAt";
+        m.put("doc", currentStaff);
+        System.out.println("currentStaff = " + currentStaff);
+        serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
+        System.out.println("serviceSessionList = " + serviceSessionList);
     }
 
     private Bill createPaymentBill() {
@@ -446,7 +463,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
-    
+
     private Bill createPaymentBillAgent() {
         BilledBill tmp = new BilledBill();
         tmp.setBillDate(Calendar.getInstance().getTime());
@@ -467,7 +484,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setPaymentMethod(paymentMethod);
         tmp.setToInstitution(institution);
 //        tmp.setStaff(currentStaff);
-       //tmp.setToStaff(currentStaff);
+        //tmp.setToStaff(currentStaff);
         tmp.setTotal(0 - totalPaying);
 
         return tmp;
@@ -505,7 +522,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return false;
     }
-    
+
     private boolean errorCheckForAgency() {
 //        if (currentStaff == null) {
 //            UtilityController.addErrorMessage("Please select a Staff Memeber");
@@ -543,7 +560,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Paid");
         ////System.out.println("Paid");
     }
-    
+
     public void settleBillAgent() {
         if (errorCheckForAgency()) {
             return;
@@ -631,9 +648,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -703,8 +720,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
-    
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
@@ -777,6 +792,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setServiceSession(List<ServiceSession> serviceSession) {
         this.serviceSessions = serviceSession;
+    }
+
+    public List<ServiceSession> getServiceSessionList() {
+        return serviceSessionList;
+    }
+
+    public void setServiceSessionList(List<ServiceSession> serviceSessionList) {
+        this.serviceSessionList = serviceSessionList;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {

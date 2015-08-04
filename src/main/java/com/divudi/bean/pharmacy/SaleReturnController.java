@@ -17,18 +17,26 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -65,6 +73,13 @@ public class SaleReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    BillFeeFacade billFeeFacade;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+
     PaymentMethodData paymentMethodData;
 
     public PaymentMethodData getPaymentMethodData() {
@@ -266,6 +281,92 @@ public class SaleReturnController implements Serializable {
 
     }
 
+    private void saveSaleComponent(Bill bill, Payment p) {
+        for (BillItem i : getReturnBill().getBillItems()) {
+            BillItem b = new BillItem();
+            b.copy(i);
+            b.setBill(bill);
+            b.setCreatedAt(Calendar.getInstance().getTime());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            getBillItemFacade().create(b);
+
+            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+            ph.copy(i.getPharmaceuticalBillItem());
+            ph.setBillItem(b);
+            getPharmaceuticalBillItemFacade().create(ph);
+
+            b.setPharmaceuticalBillItem(ph);
+            getBillItemFacade().edit(b);
+            //save bill Fees for refund billItems
+            saveBillFee(b, p);
+
+            bill.getBillItems().add(b);
+        }
+
+        getBillFacade().edit(bill);
+
+    }
+
+    public void saveBillFee(BillItem bi, Payment p) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(Calendar.getInstance().getTime());
+        bf.setCreater(getSessionController().getLoggedUser());
+        bf.setBillItem(bi);
+        bf.setPatienEncounter(bi.getBill().getPatientEncounter());
+        bf.setPatient(bi.getBill().getPatient());
+        bf.setFeeValue(bi.getNetValue());
+        bf.setFeeGrossValue(bi.getGrossValue());
+        bf.setSettleValue(bi.getNetValue());
+        bf.setCreatedAt(new Date());
+        bf.setDepartment(getSessionController().getDepartment());
+        bf.setInstitution(getSessionController().getInstitution());
+        bf.setBill(bi.getBill());
+
+        if (bf.getId() == null) {
+            getBillFeeFacade().create(bf);
+        }
+        createBillFeePaymentAndPayment(bf, p);
+    }
+
+    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(bf.getSettleValue());
+        bfp.setInstitution(getSessionController().getInstitution());
+        bfp.setDepartment(getSessionController().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        getBillFeePaymentFacade().create(bfp);
+    }
+
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
+        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
+
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+
+    }
+
     private void updateReturnTotal() {
         double tot = 0;
         for (BillItem b : getReturnBill().getBillItems()) {
@@ -311,9 +412,12 @@ public class SaleReturnController implements Serializable {
         getBillFacade().edit(getBill());
 
         Bill b = saveSaleReturnBill();
-        saveSaleComponent(b);
+//        saveSaleComponent(b);
+        //saveSaleComponent and billfees and billFeePayment
+        Payment p = createPayment(b, b.getPaymentMethod());
+        saveSaleComponent(b, p);
 
-//        getReturnBill().getReturnCashBills().add(b);
+        getReturnBill().getReturnCashBills().add(b);
         getBillFacade().edit(getReturnBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getReturnBill(), getSessionController().getLoggedUser());
@@ -448,6 +552,30 @@ public class SaleReturnController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public BillFeeFacade getBillFeeFacade() {
+        return billFeeFacade;
+    }
+
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
+    public BillFeePaymentFacade getBillFeePaymentFacade() {
+        return billFeePaymentFacade;
+    }
+
+    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
+        this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
     }
 
 }

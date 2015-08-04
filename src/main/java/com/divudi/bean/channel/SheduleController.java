@@ -8,10 +8,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -300,9 +298,9 @@ public class SheduleController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
 
         getItems();
@@ -414,14 +412,14 @@ public class SheduleController implements Serializable {
             getFacade().edit(getCurrent());
             System.out.println("getCurrent().getId() = " + getCurrent().getId());
             System.err.println("edit Ses");
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             System.out.println("getCurrent().getId() = " + getCurrent().getId());
             System.err.println("cre Ses");
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         System.err.println("1 " + getItemFees().size());
 

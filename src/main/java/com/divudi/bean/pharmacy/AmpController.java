@@ -72,6 +72,8 @@ public class AmpController implements Serializable {
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
+    List<Amp> itemList;
+    
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -114,6 +116,15 @@ public class AmpController implements Serializable {
         this.stockFacade = stockFacade;
     }
 
+    public List<Amp> getItemList() {
+        return itemList;
+    }
+
+    public void setItemList(List<Amp> itemList) {
+        this.itemList = itemList;
+    }
+
+    
     public double fetchStockQty(Item item) {
 
         String sql;
@@ -167,7 +178,51 @@ public class AmpController implements Serializable {
         items = getFacade().findBySQL(sql, m);
     }
 
-   
+    public List<Amp> deleteOrNotItem(boolean b, DepartmentType dt) {
+        Map m = new HashMap();
+        String sql = " select c from Amp c where "
+                    + " (c.departmentType is null"
+                    + " or c.departmentType!=:dt )";
+        if (b) {
+            sql += " and c.retired=false ";
+        } else {
+            sql += " and c.retired=true ";
+        }
+        m.put("dt", dt);
+        return getFacade().findBySQL(sql, m);
+    }
+    
+    public List<Amp> deleteOrNotStoreItem(boolean b, DepartmentType dt) {
+        Map m = new HashMap();
+        String sql = " select c from Amp c where "
+                    + " c.departmentType=:dt ";
+        if (b) {
+            sql += " and c.retired=false ";
+        } else {
+            sql += " and c.retired=true ";
+        }
+        m.put("dt", dt);
+        return getFacade().findBySQL(sql, m);
+    }
+
+    public void pharmacyDeleteItem() {
+        itemList = deleteOrNotItem(false, DepartmentType.Store);
+    }
+
+    public void pharmacyNoDeleteItem() {
+        itemList = deleteOrNotItem(true, DepartmentType.Store);
+    }
+
+    public void storeDeleteItem() {
+        itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
+    }
+
+    public void storeNoDeleteItem() {
+        itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
+    }
+
+    
+    
     public void onTabChange(TabChangeEvent event) {
         setTabId(event.getTab().getId());
     }
@@ -180,7 +235,8 @@ public class AmpController implements Serializable {
         }
         return selectedItems;
     }
-
+    
+    
     public List<Amp> completeAmp(String qry) {
         List<Amp> a = null;
         Map m = new HashMap();
@@ -386,12 +442,12 @@ public class AmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         // getItems();
@@ -440,9 +496,9 @@ public class AmpController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -336,7 +336,8 @@ public class BillBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-
+        //for daily return credit card transaction
+        paymentMethod=null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
     }
 

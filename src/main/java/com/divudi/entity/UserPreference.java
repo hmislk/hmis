@@ -44,6 +44,7 @@ public class UserPreference implements Serializable {
     boolean institutionSpecificItems=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
+    boolean partialPaymentOfOpdPreBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
@@ -58,6 +59,8 @@ public class UserPreference implements Serializable {
     boolean inwardAddServiceBillTimeCheck;
     boolean inwardMoChargeCalculateInitialTime;
     boolean inwardChangeAdmissionFee;
+    boolean pharmacyBillWithOutItem;
+    boolean fiveFivePaperWithHeadings;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -349,6 +352,32 @@ public class UserPreference implements Serializable {
     public void setInwardChangeAdmissionFee(boolean inwardChangeAdmissionFee) {
         this.inwardChangeAdmissionFee = inwardChangeAdmissionFee;
     }
+
+    public boolean isPartialPaymentOfOpdPreBillsAllowed() {
+        return partialPaymentOfOpdPreBillsAllowed;
+    }
+
+    public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
+        this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
+    }
+
+    public boolean isPharmacyBillWithOutItem() {
+        return pharmacyBillWithOutItem;
+    }
+
+    public void setPharmacyBillWithOutItem(boolean pharmacyBillWithOutItem) {
+        this.pharmacyBillWithOutItem = pharmacyBillWithOutItem;
+    }
+
+    public boolean isFiveFivePaperWithHeadings() {
+        return fiveFivePaperWithHeadings;
+    }
+
+    public void setFiveFivePaperWithHeadings(boolean fiveFivePaperWithHeadings) {
+        this.fiveFivePaperWithHeadings = fiveFivePaperWithHeadings;
+    }
+    
+    
     
     @Override
     public int hashCode() {

@@ -42,6 +42,7 @@ public class ShiftController implements Serializable {
     private RosterFacade rosterFacade;
     @Inject
     private SessionController sessionController;
+    boolean checked = false;
 
     private boolean errorCheck() {
         if (getCurrent().getRoster() == null) {
@@ -134,12 +135,12 @@ public class ShiftController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
 
         //     recreateModel();
@@ -171,9 +172,9 @@ public class ShiftController implements Serializable {
 //            getFacade().remove(current);
 //            getCurrentRoster().getShiftList().remove(getCurrent());
             getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //   recreateModel();
 
@@ -227,6 +228,14 @@ public class ShiftController implements Serializable {
         this.rosterFacade = rosterFacade;
     }
 
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
     public void createShiftList() {
         String sql = "Select s From Shift s "
                 + " where s.retired=false "
@@ -238,12 +247,16 @@ public class ShiftController implements Serializable {
 
         shiftList = getFacade().findBySQL(sql, hm);
     }
-    
+
     public void createShiftListReport() {
         String sql = "Select s From Shift s "
-                + " where s.retired=false "
-                + " order by s.roster.name " ;
-                
+                + " where s.retired=false ";
+
+        if (checked) {
+            sql += " and s.hideShift=false ";
+        }
+
+        sql += " order by s.roster.name ";
 
         shiftList = getFacade().findBySQL(sql);
     }

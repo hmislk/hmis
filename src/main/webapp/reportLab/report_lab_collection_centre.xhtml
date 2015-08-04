@@ -13,10 +13,32 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
 
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Collecting Centre Sale Report">
+            <p:panel >
                 <f:facet name="header"  >
                     <p:outputLabel value="Collecting Centre Sale Report" styleClass="noPrintButton"/>
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+                </f:facet>
+                <h:panelGrid columns="2" styleClass="noPrintButton">
+                    <h:outputLabel value="From :"/>
+                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+
+                    <h:outputLabel value="To &emsp;:"/>
+                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    </p:calendar>
+                    <h:outputLabel/>
+                    <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:column>
+                            #{ix.name}
+                        </p:column>
+                        <p:column>
+                            #{ix.institutionCode}
+                        </p:column>
+                    </p:autoComplete>
+
+                </h:panelGrid> 
+                <h:panelGrid columns="4" styleClass="noPrintButton">
+                    <p:spacer width="40"/>
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;" />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -24,34 +46,17 @@
                     <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
                         <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report" />
                     </p:commandButton>  
+                </h:panelGrid>
 
-                    <p:panelGrid columns="5" style="min-width: 100%;" styleClass="noPrintButton">
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
+            </p:panel>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                            <p:column>
-                                #{ix.institutionCode}
-                            </p:column>
-                        </p:autoComplete>
-
-                    </p:panelGrid>
-                </f:facet>
-                <br/><br/>
                 <p:dataTable id="tbl" value="#{commonReport.billsByCollectingOwn}" var="d" 
-                            rows="20"
-                            paginator="true"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="20, 50, 100" 
-                            >
+                             rows="20"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100" 
+                             >
                     <f:facet name="header">
                         <h:outputLabel value="#{commonReport.collectingIns.name}"/>                    
                         <h:outputLabel value="#{commonReport.fromDate}" >
@@ -71,38 +76,38 @@
                         </p:commandButton>
                     </p:column>
                     <p:column headerText="Bill Code"
-                        sortBy="#{d.insId}" 
-                        filterBy="#{d.insId}"
-                        filterMatchMode="contains">
+                              sortBy="#{d.insId}" 
+                              filterBy="#{d.insId}"
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Bill Code"/>                        
                         </f:facet>
-                            <h:outputLabel value="#{d.insId}"/>
+                        <h:outputLabel value="#{d.insId}"/>
                     </p:column>
-<!--                    <p:column headerText="Bill Code"  exportable="false">
-                        <f:facet name="header">
-                            <h:outputLabel value="Bill Code"/>                        
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="#{d.insId}"/>
-                            <p:commandLink ajax="false" value="(Edit)" action="lab_bill_edit"  styleClass="nonPrintBlock" style="text-decoration: underline;">
-                                <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
-                            </p:commandLink>
-                        </h:panelGrid>
-                    </p:column>-->
+                    <!--                    <p:column headerText="Bill Code"  exportable="false">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Bill Code"/>                        
+                                            </f:facet>
+                                            <h:panelGrid columns="2" >
+                                                <h:outputLabel value="#{d.insId}"/>
+                                                <p:commandLink ajax="false" value="(Edit)" action="lab_bill_edit"  styleClass="nonPrintBlock" style="text-decoration: underline;">
+                                                    <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
+                                                </p:commandLink>
+                                            </h:panelGrid>
+                                        </p:column>-->
                     <p:column headerText="Patient Name"  
-                        sortBy="#{d.patient.person.nameWithTitle}" 
-                        filterBy="#{d.patient.person.nameWithTitle}"
-                        filterMatchMode="contains">
+                              sortBy="#{d.patient.person.nameWithTitle}" 
+                              filterBy="#{d.patient.person.nameWithTitle}"
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Patient Name"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.patient.person.nameWithTitle}"/>
                     </p:column>
                     <p:column headerText="Patient Name" rendered="#{commonReport.collectingIns eq null}"  
-                        sortBy="#{d.collectingCentre.name}" 
-                        filterBy="#{d.collectingCentre.name}"
-                        filterMatchMode="contains">
+                              sortBy="#{d.collectingCentre.name}" 
+                              filterBy="#{d.collectingCentre.name}"
+                              filterMatchMode="contains">
                         <f:facet name="header">
                             <h:outputLabel value="Collecting Centre"/>                        
                         </f:facet>
@@ -116,7 +121,7 @@
                         <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
                     </p:column>
 
-                    <p:column headerText="Discount" style="text-align: right;" >
+                    <p:column headerText="Discount" styleClass="averageNumericColumn" >
                         <f:facet name="header">
                             <h:outputLabel value="Discount"/>                        
                         </f:facet>
@@ -124,7 +129,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>                    
-                    <p:column headerText="Pro Total" style="text-align: right;">
+                    <p:column headerText="Pro Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Pro Total"/>                        
                         </f:facet>
@@ -132,17 +137,17 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
-                     <p:column headerText="Hos Total" style="text-align: right;">
+
+                    <p:column headerText="Hos Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Hos Total"/>                        
                         </f:facet>
-                         <h:outputLabel value="#{d.performInstitutionFee}">
+                        <h:outputLabel value="#{d.performInstitutionFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
-                    <p:column headerText="Net Total" style="text-align: right;">
+
+                    <p:column headerText="Net Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Net Total"/>                        
                         </f:facet>
@@ -150,7 +155,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:columnGroup type="footer">  
                         <p:row>                              
                             <p:column footerText="Total" colspan="4"/>

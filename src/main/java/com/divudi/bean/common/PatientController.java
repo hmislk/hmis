@@ -229,20 +229,17 @@ public class PatientController implements Serializable {
         if (query == null) {
             return null;
         }
-
         String sql;
         HashMap hm = new HashMap();
-
         sql = "select p from Patient p where p.retired=false "
                 + " and ( upper(p.person.name) like  :q "
                 + " or upper(p.code) like  :q )"
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        ////System.out.println(sql);
+        System.out.println(sql);
         patientList = getFacade().findBySQL(sql, hm, 20);
-
+        System.err.println("patientList.size() = " + patientList.size());
         return patientList;
-
     }
 
     public void saveAndUpdateQueue() {
@@ -277,6 +274,8 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
         } else {
+            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
         }
         if (getCurrent().getId() == null) {
@@ -285,6 +284,8 @@ public class PatientController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
+            getCurrent().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }

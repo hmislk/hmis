@@ -6,6 +6,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.table.String1Value3;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.inject.Inject;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -48,6 +50,9 @@ public class StoreReportsTransfer implements Serializable {
     /**
      * Bean Variables
      */
+    @Inject
+    SessionController sessionController;
+    
     Department fromDepartment;
     Department toDepartment;
     Department department;
@@ -287,7 +292,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
-    
+
     public void fillDepartmentUnitIssueByBillItemStore() {
         Map m = new HashMap();
         String sql;
@@ -361,7 +366,7 @@ public class StoreReportsTransfer implements Serializable {
     public void createDepartmentIssueStore() {
         listz = new ArrayList<>();
 
-        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getFromDepartment());
+        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(),getSessionController().getDepartment());
         if (list == null) {
             return;
         }
@@ -446,7 +451,6 @@ public class StoreReportsTransfer implements Serializable {
 
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
-
         transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
@@ -460,9 +464,7 @@ public class StoreReportsTransfer implements Serializable {
         ItemBillRow ibr = null;
 
         //System.out.println("transferItems = " + transferItems);
-
         //System.out.println("transferItems.size() = " + transferItems.size());
-
         for (BillItem ts : transferItems) {
             //System.out.println("ts = " + ts);
 
@@ -504,7 +506,6 @@ public class StoreReportsTransfer implements Serializable {
             } else {
 
                 //System.out.println("new dept");
-
                 dbr = new DepartmentBillRow();
                 cbr = new CategoryBillRow();
                 ibr = new ItemBillRow();
@@ -959,6 +960,14 @@ public class StoreReportsTransfer implements Serializable {
             this.bill = bill;
         }
 
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
     }
 
 }

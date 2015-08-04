@@ -18,14 +18,14 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="dep" >
+                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
@@ -44,8 +44,22 @@
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsStore}" />
 
-                        <p:panel header="aaaaaa">
+
                         <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="DEPARTMENT UNIT ISSUE BY ITEM(BATCH)"/>
+                                <h:outputLabel value="&emsp; From : #{reportsTransfer.fromDepartment.name}"  />
+                                <h:outputLabel value="&emsp; To : #{reportsTransfer.toDepartment.name}"  />
+                                <h:outputLabel value="From :  " style="white-space:  pre-line"/>
+                                <h:outputLabel value="#{reportsTransfer.fromDate}"  >
+                                    <p:spacer width="30" height="1"/>
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                </h:outputLabel>
+                                <h:outputLabel value="To : "/>
+                                <h:outputLabel value="#{reportsTransfer.toDate}"  >
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                </h:outputLabel>
+                            </f:facet>
                             <p:column headerText="Item">
                                 #{i.itemBatch.item.name}
                             </p:column>
@@ -95,10 +109,11 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
 
                         </p:dataTable>
-</p:panel>
-
                     </p:panel>
                 </h:form>
             </ui:define>

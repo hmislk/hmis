@@ -79,12 +79,12 @@ public  class StoreController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -102,7 +102,7 @@ public  class StoreController implements Serializable {
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d "
                 + " and i.itemBatch.item.departmentType=:dtp1"
-                + " and i.stock >= :stk "
+                + " and i.stock > :stk "
                 + " and (upper(i.itemBatch.item.name) like :n  or "
                 + " upper(i.itemBatch.item.code) like :n  or  "
                 + " upper(i.itemBatch.item.barcode) like :n ) ";
@@ -163,9 +163,9 @@ public  class StoreController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

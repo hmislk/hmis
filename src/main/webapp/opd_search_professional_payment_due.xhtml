@@ -104,7 +104,7 @@
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column headerText="Charge">
+                            <p:column headerText="Charge" styleClass="averageNumericColumn">
                                 <h:commandLink action="payment_staff_bill" >
                                     <h:outputLabel value="#{bf.feeValue}" />
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>

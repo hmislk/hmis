@@ -150,7 +150,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -179,7 +179,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -277,7 +277,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -307,7 +307,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -420,9 +420,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -479,9 +479,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 

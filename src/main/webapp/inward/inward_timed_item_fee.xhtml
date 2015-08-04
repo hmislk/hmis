@@ -15,8 +15,15 @@
                     <h:panelGrid columns="1" >
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Select Service" />
-                            <p:autoComplete converter="timedIt" forceSelection="true"  value="#{timedItemFeeController.currentIx}" completeMethod="#{timedItemController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="gpDetail" ></p:ajax>
+                            <p:autoComplete converter="timedIt" 
+                                            forceSelection="true"  
+                                            value="#{timedItemFeeController.currentIx}" 
+                                            completeMethod="#{timedItemController.completeInvest}" 
+                                            var="ix" itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            size="30"
+                                            style="width: 400px;">
+                                <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{timedItemFeeController.fillCharges()}"></p:ajax>
                             </p:autoComplete>
                         </h:panelGrid>
 
@@ -46,23 +53,28 @@
                                     <p:selectBooleanCheckbox value="#{timedItemFeeController.currentFee.booleanValue}"
                                                              itemLabel="Consider Each Unit"/>
                                     <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" action="#{timedItemFeeController.saveCharge}" styleClass="buttons">
+                                    <h:commandButton id="btnAddTo" value="Add" 
+                                                     action="#{timedItemFeeController.saveCharge}" styleClass="buttons">
 
                                     </h:commandButton>
                                 </h:panelGrid>
 
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{timedItemFeeController.charges}" var="bi" >
                                     <p:column headerText="Fee Name">
-                                        #{bi.name}
+                                        <p:inputText value="#{bi.name}" autocomplete="off" />
                                     </p:column>
                                     <p:column headerText="Fee">
-                                        #{bi.fee}
+                                        <p:inputText value="#{bi.fee}" autocomplete="off" />
                                     </p:column>
                                     <p:column headerText="Duration Hour">
-                                        #{bi.durationHours}
+                                        <p:inputText value="#{bi.durationHours}" autocomplete="off" />
                                     </p:column>
                                     <p:column headerText="Over Shoot">
-                                        #{bi.overShootHours}
+                                        <p:inputText value="#{bi.overShootHours}" autocomplete="off" />
+                                    </p:column>
+                                    <p:column headerText="Update">
+                                        <p:commandButton id="update" ajax="false" value="Update" action="#{timedItemFeeController.updateFee(bi)}" >
+                                        </p:commandButton>
                                     </p:column>
                                     <p:column headerText="Remove">
                                         <h:commandButton id="remove" value="Remove" action="#{timedItemFeeController.removeFee}" >

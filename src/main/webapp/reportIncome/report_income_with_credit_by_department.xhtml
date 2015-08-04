@@ -8,9 +8,7 @@
       xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form>
                     <h:outputStylesheet library="css" name="printing.css" />
@@ -21,37 +19,33 @@
 
                             <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
 
-                            <h:panelGrid columns="15">
+                            <h:panelGrid columns="2" styleClass="noPrintButton">
 
                                 <h:outputLabel value="From" />
-
                                 <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                 </p:calendar>
-
-                                <p:spacer width="20" height="0"/>
                                 <h:outputLabel value="To" />
                                 <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                 </p:calendar>
-
-                                <p:spacer width="20" height="0"/>
                                 <h:outputLabel  value="Department" />
-
                                 <p:autoComplete styleClass="noPrintButton"  value="#{labReportSearchByDepartmentController.department}" 
-                                                style="text-align: left; margin: 5px; padding: 5px;" 
+                                                style="text-align: left; margin: px; padding: 0px;" 
                                                 completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                                 itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                                 requiredMessage="You must select a department" >
                                 </p:autoComplete>
-                                
-                                <p:spacer width="85" height="0"/>
-                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" >
+                               </h:panelGrid>
+                             <h:panelGrid columns="5">
+                                 <p:spacer width="70" height="1"/>
+                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" 
+                                                 action="#{labReportSearchByDepartmentController.createWithCreditbyDepartment()}">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnRefresh"/>
 
                                 <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
                                     <p:printer target="panelReport" />
                                 </p:commandButton>
-                                <p:commandButton value="Excel" ajax="false">
+                                <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
                                     <pe:exporter type="xlsx" target="tbl" fileName="DepartmentIncome"
                                                  facetBackground="#008000" facetFontSize="15" 
                                                  facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
@@ -59,41 +53,18 @@
                                 </p:commandButton>
                             </h:panelGrid>
                         </f:facet>
-
-
-                        <p:panel styleClass="printBlock" >
-
-                            <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
-                            <br/>
-                            <h:outputLabel value="#{labReportSearchByDepartmentController.department.name}"  >
-                            </h:outputLabel>
-                            <h:outputLabel value=" - Handover Report" />
-                            &nbsp;&nbsp;&nbsp;&nbsp;
-                            <h:outputLabel value="From : " />
-                            <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
-                            </h:outputLabel>
-                            &nbsp;&nbsp;&nbsp;&nbsp;
-                            <h:outputLabel value="To : "  ></h:outputLabel>
-                            <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
-                            </h:outputLabel>
-
-                        </p:panel>
-
-                        <p:dataTable id="tbl" value="#{labReportSearchByDepartmentController.labBillsOwn}" var="b" sortBy="#{b.billClass}" >
+                        <p:dataTable id="tbl" value="#{labReportSearchByDepartmentController.billsList}" var="b" sortBy="#{b.billClass}" >
 
                             <f:facet name="header">
-                                <h:outputLabel value="Lab Handover Report"/>
-                                <h:outputLabel value="From : " />
+                                <h:outputLabel value="Income Report With Credit By Department :"/>
+                                <h:outputLabel value="#{labReportSearchByDepartmentController.department.name}"  />
+                                <h:outputLabel value="From : " style="white-space: pre-line"/>
                                 <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:outputLabel>
-
-                                &nbsp;&nbsp;&nbsp;&nbsp;
-                                <h:outputLabel value="To : "  ></h:outputLabel>
+                                <h:outputLabel value="&emsp; &emsp;To : "  />
                                 <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -260,6 +231,9 @@
                                     </h:outputLabel>
                                 </p:panelGrid>
                             </f:facet>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
                         </p:dataTable>
 
                     </p:panel>

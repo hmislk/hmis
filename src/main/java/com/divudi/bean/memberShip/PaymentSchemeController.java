@@ -184,12 +184,12 @@ public class PaymentSchemeController implements Serializable {
 //        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             paymentScheme.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             paymentScheme.setCreater(getSessionController().getLoggedUser());
             getFacade().create(paymentScheme);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
 
         paymentScheme = null;
@@ -205,12 +205,12 @@ public class PaymentSchemeController implements Serializable {
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrentAllowedPaymentMethod().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
             getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
 
         paymentSchemeAllowedPaymentMethod = null;
@@ -261,9 +261,9 @@ public class PaymentSchemeController implements Serializable {
             paymentScheme.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             paymentScheme.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -276,6 +276,7 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
+        items = null;
         if (items == null) {
             createPaymentSchemes();
         }

@@ -16,50 +16,44 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel  header="Casheir Session Report Detail">
-                    <p:panel>
-                        <f:facet name="header" >
-                            <h:outputLabel value="#{channelReportController.webUser.institution.name}"/> <br/>
+                <p:panel  header="Channelling Bills By Single Cashier">
 
-                            <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
-                        </f:facet>
-                        </p:panel>
                     <h:panelGrid columns="2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                            </p:calendar>
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
 
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                            </p:calendar>
-                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                            forceSelection="true"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{channelReportController.webUser}" ></p:autoComplete>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                        value="#{channelReportController.webUser}" ></p:autoComplete>
 
-                        </h:panelGrid>
+                    </h:panelGrid>
                     <p:panel id="reportPrint" >
                         <h:panelGrid columns="5" >
-                          <p:spacer width="50" height="1"/>
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
-                        <p:defaultCommand target="btnRefresh"/>
+                            <p:spacer width="50" height="1"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                            <p:defaultCommand target="btnRefresh"/>
 
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="reportPrint"  />
-                        </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
 
-                        <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
-                        </p:commandButton> 
+                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
                         </h:panelGrid>
-                    
+
                         <p:panel>
                             <p:dataTable id="tbl"  value="#{channelReportController.billedBillList.bills}" var="b">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Channel Bills &emsp; #{channelReportController.webUser.webUserPerson.name}"/>
-                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
                                         <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
@@ -68,14 +62,14 @@
                                     </h:outputLabel>
                                 </f:facet>     
 
-                                <p:column headerText="Billed Id" style=" text-align: right">
+                                <p:column headerText="Billed No."  >
                                     <f:facet name="header">  
-                                        <h:outputLabel value="Billed Id"/>
+                                        <h:outputLabel value="Billed No."/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.insId}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Time"   style=" text-align: right">
+                                <p:column headerText="Time"   >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
@@ -84,19 +78,19 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Total" style=" text-align: right">
+                                <p:column headerText="Total" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Discount" style=" text-align: right">
+                                <p:column headerText="Discount" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash" style=" text-align: right"  >
+                                <p:column headerText="Cash" styleClass="averageNumericColumn"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cash"/>
                                     </f:facet> 
@@ -105,7 +99,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </p:column>
-                                <p:column headerText="Credit" style=" text-align: right" >
+                                <p:column headerText="Credit" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Agent"/>
                                     </f:facet> 
@@ -116,7 +110,7 @@
 
                                 </p:column>
 
-                                <p:column headerText="C Card" style=" text-align: right" >
+                                <p:column headerText="C Card" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="C Card"/>
                                     </f:facet> 
@@ -126,7 +120,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Checque" style=" text-align: right" >
+                                <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Checque"/>
                                     </f:facet> 
@@ -136,7 +130,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Slip" style=" text-align: right" >
+                                <p:column headerText="Slip" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Slip"/>
                                     </f:facet> 
@@ -149,35 +143,35 @@
                                 <p:columnGroup type="footer">  
                                     <p:row>                                 
                                         <p:column colspan="4"/>
-                                        <p:column footerText="#{channelReportController.billedBillList.cash}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.billedBillList.cash}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.billedBillList.cash}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.billedBillList.agent}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.billedBillList.agent}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.billedBillList.agent}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.billedBillList.card}" style=" text-align: right">  
+                                        <p:column footerText="#{channelReportController.billedBillList.card}" styleClass="averageNumericColumn">  
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.billedBillList.card}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.billedBillList.cheque}" style=" text-align: right"> 
+                                        <p:column footerText="#{channelReportController.billedBillList.cheque}" styleClass="averageNumericColumn"> 
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.billedBillList.cheque}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.billedBillList.slip}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.billedBillList.slip}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.billedBillList.slip}">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -193,17 +187,17 @@
 
                             <p:dataTable id="tb2"  value="#{channelReportController.canceledBillList.bills}" var="b">
                                 <f:facet name="header">  
-                                    <h:outputLabel value="Channel Cancelled Bills "/>
+                                    <h:outputLabel value="Channel Bill Cancellations"/>
                                 </f:facet>     
 
-                                <p:column headerText="Billed Id" style=" text-align: right">
+                                <p:column headerText="Billed No." >
                                     <f:facet name="header">  
-                                        <h:outputLabel value="Billed Id"/>
+                                        <h:outputLabel value="Billed No."/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.insId}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Time"   style=" text-align: right">
+                                <p:column headerText="Time"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
@@ -212,19 +206,19 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Total" style=" text-align: right">
+                                <p:column headerText="Total" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Discount" style=" text-align: right">
+                                <p:column headerText="Discount" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash" style=" text-align: right"  >
+                                <p:column headerText="Cash" styleClass="averageNumericColumn"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cash"/>
                                     </f:facet> 
@@ -233,7 +227,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </p:column>
-                                <p:column headerText="Credit" style=" text-align: right" >
+                                <p:column headerText="Credit" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Agent"/>
                                     </f:facet> 
@@ -244,7 +238,7 @@
 
                                 </p:column>
 
-                                <p:column headerText="C Card" style=" text-align: right" >
+                                <p:column headerText="C Card" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="C Card"/>
                                     </f:facet> 
@@ -254,7 +248,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Checque" style=" text-align: right" >
+                                <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Checque"/>
                                     </f:facet> 
@@ -264,7 +258,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Slip" style=" text-align: right" >
+                                <p:column headerText="Slip" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Slip"/>
                                     </f:facet> 
@@ -277,35 +271,35 @@
                                 <p:columnGroup type="footer">  
                                     <p:row>                                 
                                         <p:column colspan="4"/>
-                                        <p:column footerText="#{channelReportController.canceledBillList.cash}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.canceledBillList.cash}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.canceledBillList.cash}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.canceledBillList.agent}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.canceledBillList.agent}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.canceledBillList.agent}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.canceledBillList.card}" style=" text-align: right">  
+                                        <p:column footerText="#{channelReportController.canceledBillList.card}" styleClass="averageNumericColumn">  
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.canceledBillList.card}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.canceledBillList.cheque}" style=" text-align: right"> 
+                                        <p:column footerText="#{channelReportController.canceledBillList.cheque}" styleClass="averageNumericColumn"> 
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.canceledBillList.cheque}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.canceledBillList.slip}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.canceledBillList.slip}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.canceledBillList.slip}">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -321,17 +315,17 @@
 
                             <p:dataTable id="tb3"  value="#{channelReportController.refundBillList.bills}" var="b">
                                 <f:facet name="header">  
-                                    <h:outputLabel value="Channel Refund Bills "/>
+                                    <h:outputLabel value="Channel Bill Refunds"/>
                                 </f:facet>     
 
-                                <p:column headerText="Billed Id" style=" text-align: right">
+                                <p:column headerText="Bill No." styleClass="averageNumericColumn">
                                     <f:facet name="header">  
-                                        <h:outputLabel value="Billed Id"/>
+                                        <h:outputLabel value="Bill No."/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.insId}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Time"   style=" text-align: right">
+                                <p:column headerText="Time"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
@@ -340,19 +334,19 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Total" style=" text-align: right">
+                                <p:column headerText="Total" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Discount" style=" text-align: right">
+                                <p:column headerText="Discount" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{b.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash" style=" text-align: right"  >
+                                <p:column headerText="Cash" styleClass="averageNumericColumn"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cash"/>
                                     </f:facet> 
@@ -361,7 +355,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </p:column>
-                                <p:column headerText="Credit" style=" text-align: right" >
+                                <p:column headerText="Credit" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Agent"/>
                                     </f:facet> 
@@ -372,7 +366,7 @@
 
                                 </p:column>
 
-                                <p:column headerText="C Card" style=" text-align: right" >
+                                <p:column headerText="C Card" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="C Card"/>
                                     </f:facet> 
@@ -382,7 +376,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Checque" style=" text-align: right" >
+                                <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Checque"/>
                                     </f:facet> 
@@ -392,7 +386,7 @@
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
                                 </p:column>
 
-                                <p:column headerText="Slip" style=" text-align: right" >
+                                <p:column headerText="Slip" styleClass="averageNumericColumn" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Slip"/>
                                     </f:facet> 
@@ -405,35 +399,35 @@
                                 <p:columnGroup type="footer">  
                                     <p:row>                                 
                                         <p:column colspan="4"/>
-                                        <p:column footerText="#{channelReportController.refundBillList.cash}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.refundBillList.cash}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.refundBillList.cash}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.refundBillList.agent}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.refundBillList.agent}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.refundBillList.agent}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.refundBillList.card}" style=" text-align: right">  
+                                        <p:column footerText="#{channelReportController.refundBillList.card}" styleClass="averageNumericColumn">  
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.refundBillList.card}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.refundBillList.cheque}" style=" text-align: right"> 
+                                        <p:column footerText="#{channelReportController.refundBillList.cheque}" styleClass="averageNumericColumn"> 
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.refundBillList.cheque}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{channelReportController.refundBillList.slip}" style=" text-align: right">
+                                        <p:column footerText="#{channelReportController.refundBillList.slip}" styleClass="averageNumericColumn">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{channelReportController.refundBillList.slip}">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -470,10 +464,11 @@
                             <br/>
                             <h:outputLabel value="............................"/>
                         </h:panelGrid>
-                         <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
                     </p:panel>
+
                 </p:panel>
             </h:form>
         </h:panelGroup>

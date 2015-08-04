@@ -63,7 +63,7 @@ public class DealerController implements Serializable {
         ////System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
-        institutionList = getEjbFacade().findBySQL(sql, m, 10);
+        institutionList = getEjbFacade().findBySQL(sql, m);
         ////System.out.println("suggestions = " + suggestions);
 
         return institutionList;
@@ -82,12 +82,12 @@ public class DealerController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
    //     getItems();
@@ -130,9 +130,9 @@ public class DealerController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
   //      getItems();

@@ -11,33 +11,49 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css" />
         <h:form id="form">  
-            <h:panelGrid columns="2">
-                <h:outputLabel value="From Date"/>
-                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
-                <h:outputLabel value="To Date"/>
-                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
-                <h:outputLabel value="Employee : "/>
-                <hr:completeStaff value="#{shiftTableController.staff}"/>
-            </h:panelGrid>
 
-            <h:panelGrid columns="6">                
-                <p:commandButton ajax="false" value="Fill Old Roster"
-                                actionListener="#{shiftTableController.makeTableNull()}"
-                                action="#{shiftTableController.fetchShiftTableByStaff()}"
-                                 onclick="onSubmitButton();" />   
-                <p:commandButton value="Print" ajax="false" action="#"  >
-                    <p:printer target="print" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
-                    <p:printer target="print2" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Go to Back" ajax="false" action="hr_shift_table" actionListener="#{shiftTableController.makeNull()}"  >
-                </p:commandButton>
+            <h:panelGrid columns="2" styleClass="alignTop" >
+
+                <h:panelGroup >
+
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{shiftTableController.staff}"/>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="6">                
+                        <p:commandButton ajax="false" value="Fill Old Roster"
+                                         actionListener="#{shiftTableController.makeTableNull()}"
+                                         action="#{shiftTableController.fetchShiftTableByStaff()}"
+                                         onclick="onSubmitButton();" />   
+                        <p:commandButton value="Print" ajax="false" action="#"  >
+                            <p:printer target="print" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
+                            <p:printer target="print2" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton value="Go to Back" ajax="false" action="hr_shift_table" actionListener="#{shiftTableController.makeNull()}"  >
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </h:panelGroup>
+
+                <p:panel header="Links" >
+                    <p:panelGrid columns="2" >
+                        <p:commandLink value="Finger Print Analysis" action="/hr/hr_shift_table_finger_print_by_staff" ajax="false" ></p:commandLink>
+                        
+                    </p:panelGrid>
+                </p:panel>
+
             </h:panelGrid>
 
             <p:panel id="print2">
                 <f:facet name="header">
-                    <h:outputLabel value="Roster Of #{shiftTableController.staff.person.name}"/><br/>
+                    <h:outputLabel value="Roster of #{shiftTableController.staff.person.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -108,7 +124,8 @@
                                 </p:column>
                             </p:autoComplete>
                             <h:outputLabel value="L"/>
-                            <p:selectBooleanCheckbox value="#{sts.lieuAllowed}" label="L"/>                           
+                            <p:selectBooleanCheckbox value="#{sts.lieuAllowed}" label="L"/>    
+                            <h:outputLabel value="#{mys.roster.name}"/>
                         </p:column>                   
 
 

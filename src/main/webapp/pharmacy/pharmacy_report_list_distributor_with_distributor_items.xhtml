@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Pharmaceutical Item With Distributor" >
+
+                <p:commandButton ajax="false" value="Refresh"
+                                 action="#{pharmacySaleReport.createItemsDistributersWithDistributer}"/>
+
+
+                <p:panel id="paItems">
+                    <p:dataTable value="#{pharmacySaleReport.distributerWithDestributorItems}" var="di" >
+                        <f:facet name="header">
+                            <p:outputLabel value="Pharmaceutical Item With Distributor" />
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Category" />
+                                <p:column headerText="Name" />
+                                <p:column headerText="Code" />
+                                <p:column headerText="Generic" />
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{di.itemsDistributors}" var="i"  >
+                            <f:facet name="header">
+                                <p:outputLabel value="Distributor Name : #{di.distributor.name}" />
+                            </f:facet>
+                            <p:column headerText="Category">
+                                <p:outputLabel value="#{i.item.category.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Category">
+                                <p:outputLabel value="#{i.institution.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Name">
+                                <p:outputLabel value="#{i.item.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Code" >
+                                <p:outputLabel value="#{i.item.code}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Generic">
+                                <p:outputLabel value="#{i.item.vmp.name}"></p:outputLabel>
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+                </p:panel>
+
+
+            </p:panel>
+        </h:form>
+
+
+    </ui:define>
+
+
+</ui:composition>

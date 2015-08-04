@@ -55,6 +55,12 @@
                                         <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_pre_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash" actionListener="#{searchController.makeListNull}"   value="Refund Cash" ></p:menuitem>                                        
                                     </p:submenu>
+                                    <p:submenu label="OPD" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                                        <p:menuitem ajax="false" action="/opd_search_pre_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment(OPD)" rendered="false" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/opd_search_pre_batch_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment(OPD Batch Bill)" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/opd_search_bill_fee_payment" value="Payment BillFees Fot test" ></p:menuitem>
+
+                                    </p:submenu>
                                     <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
                                     <p:submenu label="OPD Credit Bill" >
@@ -82,21 +88,25 @@
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_service" value="Add Services" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') or true}" ></p:menuitem>                                            
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_outside_charge" value="Add OutSide Charge" actionListener="#{inwardAdditionalChargeController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_professional" value="Add Professional Fee" actionListener="#{inwardProfessionalBillController.makeNull()}"  rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee') or true}" ></p:menuitem>                                                                                                                                                                
+                                        <p:menuitem  ajax="false"  action="/inward/inward_bill_professional_estimate" value="Add Estimated Professional Fee" actionListener="#{inwardProfessionalBillController.makeNull()}"  rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee') or true}" ></p:menuitem>                                                                                                                                                                
                                         <p:menuitem  ajax="false"  action="#{timedItemController.inwardTimedServiceConsumeInward() }" value="Add Timed Services" actionListener="#{inwardTimedItemController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddTimedServices') or true}" ></p:menuitem>                                                                                        
                                     </p:submenu>                                    
                                     <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('InwardBilling') or true}">
                                         <p:menuitem  ajax="false"  action="/inward/inward_bill_intrim" value="Intrim Bill" actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill') or true}" ></p:menuitem>        
+                                        <p:menuitem  ajax="false"  action="/inward/inward_bill_intrim_estimate" value="Intrim Bill - Estimated Professional Fees" actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill') or true}" ></p:menuitem>        
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_intrim" value="Intrim Bill Search" actionListener="#{searchController.makeNull()}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch') or true}" ></p:menuitem>        
                                     </p:submenu>
                                     <p:submenu label="Search " rendered="#{webUserController.hasPrivilege('InwardSearch') or true}">
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_service" value="Service Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill') or true}" ></p:menuitem>  
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional" value="Professional Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill') or true}" ></p:menuitem>  
+                                        <p:menuitem  ajax="false"  action="/inward/inward_search_professional_estimate" value="Estimated Professional Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill') or true}" ></p:menuitem>  
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_final" value="Final Bill Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill') or true}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_final_check" value="Final Bill Search by Discharge Date" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill') or true}" ></p:menuitem>
                                     </p:submenu>
+                                    <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht" value="Investigation Trace"></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/inward/inward_reports" value="Inward Reports" rendered="#{webUserController.hasPrivilege('InwardReport') or true}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/credit/index_inward_due_access" value="Credit Dues and Access"  ></p:menuitem>
-                                    <p:menuitem  ajax="false"  action="/inward/inward_administration" value="Inward Administration" rendered="#{webUserController.hasPrivilege('InwardAdministration') or true}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/inward/inward_administration" value="Inward Administration" rendered="#{webUserController.hasPrivilege('InwardAdministration')}" ></p:menuitem>
                                 </p:submenu>
 
                                 <p:submenu label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
@@ -117,8 +127,9 @@
                                     <p:menuitem ajax="false" action="/lab_sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{webUserController.hasPrivilege('LabSearchBillLoggedInstitution')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/reportLab/report_lab_matro" value="Summeries"  ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_administration" value="Administration"  ></p:menuitem>
                                 </p:submenu>
 
@@ -219,7 +230,9 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>  
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return" actionListener="#{searchController.makeListNull}" 
+                                                     value="Search Issue Return Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
                                                      value="Unit Issue Margin" />
                                     </p:submenu>
@@ -227,6 +240,8 @@
                                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_request"  
                                                      value="Purchase Orders" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="#{reorderController.autoOrderByDistributor()}"  value="By Distributor" 
+                                                         rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list_to_approve"  
                                                      value="PO Approval" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('Pharmacy')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase_order_list_for_recieve"  
@@ -254,13 +269,14 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_whole_sale_rate"  value="Wholesale Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_expiry_date"  value="Expiry Date" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item"  value="Search Adjustment Bills"  ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all"  value="Transfer All Stock" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}">
                                         <p:menuitem  ajax="false" action="/dealorPayment/dealor_due"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age" actionListener="#{dealerDueController.makeNull}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
                                         <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all" value="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre" value="GRN Payment Approve"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
                                     </p:submenu>
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacySearch')}" ></p:menuitem>                                  
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('PharmacyReports')}" ></p:menuitem>
@@ -380,7 +396,9 @@
                                         <p:menuitem  ajax="false" action="/store/store_search_issue_bill" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/store/store_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill_return" actionListener="#{searchController.makeListNull}" 
+                                                     value="Search Issue Return Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
                                                      value="Unit Issue Margin" />
                                     </p:submenu>
@@ -423,6 +441,7 @@
                                 <p:submenu label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
 
                                     <p:menuitem  ajax="false"  value="Channel Booking"  action="/channel/channel_booking" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingFutureChannelBooking')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Past Booking"  action="/channel/channel_booking_past" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingBookedList')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Leave"  action="/channel/channel_doctor_leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
@@ -616,12 +635,12 @@
                                     <p:submenu label="Payment Sheme">
                                         <p:menuitem action="/memberShip/payment_scheme"   value="Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
                                         <p:menuitem action="/memberShip/payment_scheme_payment_method_allowed"   value="Allowed Payment Method" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                        <p:submenu label="Scheme Discount" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDis')}">
-                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
-                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_category" value="By Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                            <p:menuitem  action="/memberShip/payment_scheme_discount_pharmacy_by_category" value="By Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_item" value="By Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                            <p:menuitem  action="/memberShip/report_opd" value="Opd Payment Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
+                                        <p:submenu label="Scheme Discount">
+                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false"/>
+                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_category" value="By Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false"/>
+                                            <p:menuitem  action="/memberShip/payment_scheme_discount_pharmacy_by_category" value="By Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
+                                            <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_item" value="By Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
+                                            <p:menuitem  action="/memberShip/report_opd" value="Opd Payment Report"  ajax="false" />
                                         </p:submenu>
                                     </p:submenu>
 
@@ -732,7 +751,7 @@
                                     <p:menuitem ajax="false" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/reportLab/report_lab_matro" value="Summeries"  ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab_administration" value="Administration"  ></p:menuitem>
                                 </p:submenu>
 
@@ -799,7 +818,9 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return" actionListener="#{searchController.makeListNull}" 
+                                                     value="Search Issue Return Bill" ></p:menuitem>            
                                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
                                                      value="Unit Issue Margin" />
                                     </p:submenu>
@@ -961,7 +982,9 @@
                                         <p:menuitem  ajax="false" action="/store/store_search_issue_bill" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/store/store_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill_return" actionListener="#{searchController.makeListNull}" 
+                                                     value="Search Issue Return Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
                                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
                                                      value="Unit Issue Margin" />
                                     </p:submenu>
@@ -1239,7 +1262,7 @@
                                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
                                                             forceSelection="true" rendered="true"
                                                             requiredMessage="You must select a department" 
-                                                            converter="dep">
+                                                            converter="departmentConverter">
                                                 <p:column headerText="Department">
                                                     <h:outputLabel value="#{dept.name}"/>
                                                 </p:column>

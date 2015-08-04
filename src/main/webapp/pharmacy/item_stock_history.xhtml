@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Item Stock History" >
+
+                        <h:panelGrid columns="2" >
+
+                            <h:outputLabel value="Item" ></h:outputLabel>
+                            <p:autoComplete id="acItem"   value="#{reorderController.item}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeAmpItem}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Item" >
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+
+
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reorderController.fromDate}"
+                                        pattern="dd MMM yyyy" ></p:calendar>
+
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reorderController.toDate}"
+                                        pattern="dd MMM yyyy" ></p:calendar>
+
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:selectOneMenu value="#{reorderController.historyDept}" >
+                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+                            <p:commandButton ajax="false" value="Fill Stock History"
+                                             actionListener="#{reorderController.createDailyItemSummery() }" ></p:commandButton>
+
+                        </h:panelGrid>
+
+                      
+
+                        <p:commandButton rendered="#{reorderController.dateModel ne null}" type="button" value="Reset" icon="ui-icon-cancel" onclick="PF('chart').resetZoom()"/>
+                        
+<!--                        <p:chart rendered="#-{reorderController.dateModel ne null}" widgetVar="chart"  type="line" 
+                                 model="#-{reorderController.dateModel}" 
+                                 style="height:400px;"
+                                 />
+                        -->
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

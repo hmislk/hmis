@@ -45,6 +45,10 @@ public class Patient implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -91,8 +95,6 @@ public class Patient implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
-    
 
     public String getCode() {
         return code;
@@ -123,14 +125,14 @@ public class Patient implements Serializable {
         ageMonths = period.getMonths();
         ageDays = period.getDays();
         if (ageYears > 12) {
-            age=period.getYears() + " years.";
+            age = period.getYears() + " years.";
         } else if (ageYears > 0) {
-            age=period.getYears() + " years and " + period.getMonths() + " months.";
+            age = period.getYears() + " years and " + period.getMonths() + " months.";
         } else {
-            age=period.getMonths() + " months and " + period.getDays() + " days." ;
+            age = period.getMonths() + " months and " + period.getDays() + " days.";
         }
         period = new Period(dob, date, PeriodType.days());
-        ageInDays = (long)period.getDays();
+        ageInDays = (long) period.getDays();
     }
 
     public static long getSerialVersionUID() {
@@ -162,8 +164,6 @@ public class Patient implements Serializable {
         return ageYears;
     }
 
-    
-    
     public Long getId() {
         return id;
     }
@@ -237,6 +237,22 @@ public class Patient implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public WebUser getEditer() {
+        return editer;
+    }
+
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
+
     public boolean isRetired() {
         return retired;
     }
@@ -300,8 +316,5 @@ public class Patient implements Serializable {
     public void setComments(String comments) {
         this.comments = comments;
     }
-    
-    
-    
-    
+
 }

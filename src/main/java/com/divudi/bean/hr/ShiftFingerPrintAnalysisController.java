@@ -25,7 +25,6 @@ import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.FingerPrintRecordFacade;
@@ -33,18 +32,14 @@ import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -60,24 +55,71 @@ import javax.inject.Named;
 @SessionScoped
 public class ShiftFingerPrintAnalysisController implements Serializable {
 
-    Date fromDate;
-    Date toDate;
-    Roster roster;
-    List<ShiftTable> shiftTables;
+    /**
+     *
+     * EJBs
+     *
+     */
     @EJB
     HumanResourceBean humanResourceBean;
     @EJB
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
-    @Inject
-    SessionController sessionController;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
-    private List<String> errorMessage = null;
+    @EJB
+    FormFacade formFacade;
+
+    /**
+     *
+     * Managed Beans
+     *
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    StaffLeaveApplicationFormController staffLeaveApplicationFormController;
+    @Inject
+    StaffAdditionalFormController staffAdditionalFormController;
+    @Inject
+    ShiftTableController shiftTableController;
+    /**
+     *
+     * Properties
+     *
+     */
+    DayType dayType;
+    Date fromDate;
+    Date toDate;
+    Roster roster;
     boolean flag;
+    boolean backButtonIsActive;
+    String backButtonPage;
+
+    List<ShiftTable> shiftTables;
+    private List<String> errorMessage = null;
+
+    /**
+     *
+     *
+     * Methods
+     *
+     *
+     */
+    /**
+     *
+     * @return
+     *
+     */
+    public String back() {
+        backButtonIsActive = false;
+        String t = backButtonPage;
+        backButtonPage = "";
+        return t;
+    }
 
     public boolean isFlag() {
         return flag;
@@ -87,6 +129,25 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         this.flag = flag;
     }
 
+    public void toStaffLeaveApplicationFormController() {
+        staffLeaveApplicationFormController.setStaff(staff);
+        staffLeaveApplicationFormController.setFromDate(fromDate);
+        staffLeaveApplicationFormController.setToDate(toDate);
+    }
+
+    public void toStaffAdditionalFormController() {
+        staffAdditionalFormController.setStaff(staff);
+        staffAdditionalFormController.setFromDate(fromDate);
+        staffAdditionalFormController.setToDate(toDate);
+    }
+
+    public void toShiftTableController(){
+        shiftTableController.setFromDate(fromDate);
+        shiftTableController.setToDate(toDate);
+        shiftTableController.setStaff(staff);
+        shiftTableController.setRoster(staff.getRoster());
+    }
+    
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
     }
@@ -151,7 +212,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Long daycount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
 
         //System.out.println("daycount = " + daycount);
-
         if (daycount > 2) {
             UtilityController.addErrorMessage("Date Must Be less Than 2 Days");
             return;
@@ -221,14 +281,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getFromDate() == null || getToDate() == null) {
-            return true;
-        }
-        return false;
+        return getFromDate() == null || getToDate() == null;
     }
-    DayType dayType;
-    @EJB
-    FormFacade formFacade;
 
 //    private AdditionalForm fetchAdditionalForm(StaffShift staffShift) {
 //        String sql = "Select a from AdditionalForm a "
@@ -615,13 +669,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
 
         FingerPrintRecord fpr = null;
-
+        System.out.println("ss.getStartRecord() = " + ss.getStartRecord());
+        System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
+        System.out.println("ss.getNextStaffShift() = " + ss.getNextStaffShift());
         if (ss.getStartRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
             list.add(fpr);
             ss.setStartRecord(fpr);
 
 //                        staffShiftFacade.edit(ss);
+            System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
             if (ss.getPreviousStaffShift() != null) {
                 System.err.println("PREV************************");
                 ss.getStartRecord().setComments("(NEW PREV)");
@@ -630,13 +687,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
         }
-
+        System.out.println("ss.getEndRecord() = " + ss.getEndRecord());
         if (ss.getEndRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
             list.add(fpr);
             ss.setEndRecord(fpr);
 //                        staffShiftFacade.edit(ss);
-
+            System.out.println("ss.getNextStaffShift() = " + ss.getNextStaffShift());
             if (ss.getNextStaffShift() != null) {
                 System.err.println("NEXT*****************");
                 ss.getEndRecord().setComments("(NEW NEXT)");
@@ -943,6 +1000,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             for (StaffShift ss : staffShifts) {
                 ss.setStartRecord(null);
                 ss.setEndRecord(null);
+                System.out.println("ss.getShift() = " + ss.getShift().getName());
+//                System.out.println("ss.getShift().getPreviousShift() = " + ss.getShift().getPreviousShift().getName());
+//                System.out.println("ss.getShift().getNextShift() = " + ss.getShift().getNextShift().getName());
                 setShiftTableData(ss);
                 netT.getStaffShift().add(ss);
 
@@ -1107,7 +1167,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //System.out.println("ss.getLeaveType() = " + ss.getLeaveType());
                 //System.out.println("ss.getShift().isHalfShift() = " + ss.getShift().isHalfShift());
-
 //                if ((ss.getLeaveType() == LeaveType.LieuHalf || ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf) && !ss.getShift().isHalfShift()) {
                 message = date
                         + " -> " + code
@@ -1381,15 +1440,27 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     }
 
-//    public List<StaffShift> fetchStaffShift(StaffShift staffShift) {
-//        String sql = "select s from StaffShift s "
-//                + " where s.retired=false "
-//                + " and ( s.considerForLateIn=false "
-//                + " or s.considerForEarlyOut=false )"
-//                + " and   ";
-//        return null;
-//    }
-    //GETTERS AND SETTERS
+    public boolean isBackButtonIsActive() {
+        return backButtonIsActive;
+    }
+
+    public void setBackButtonIsActive(boolean backButtonIsActive) {
+        this.backButtonIsActive = backButtonIsActive;
+    }
+
+    public String getBackButtonPage() {
+        return backButtonPage;
+    }
+
+    /**
+     *
+     * Getters and Setters
+     *
+     */
+    public void setBackButtonPage(String backButtonPage) {
+        this.backButtonPage = backButtonPage;
+    }
+
     public FingerPrintRecordFacade getFingerPrintRecordFacade() {
         return fingerPrintRecordFacade;
     }
