@@ -6,7 +6,8 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
 
@@ -29,8 +30,8 @@
                                                         value="#{bookingController.speciality}" 
                                                         style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                                         <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                        <p:ajax  event="change" process="@this" update="scStaff" /> 
-                                        <p:ajax  event="click" process="@this" update="scStaff" /> 
+                                        <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                        <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
                                     </p:selectOneListbox>
                                 </h:panelGrid>
                             </td>
@@ -183,7 +184,7 @@
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip" event="change" />
+                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip staff autoStaff" event="change" />
                             </p:selectOneMenu>
 
                             <h:outputLabel/>
@@ -205,7 +206,12 @@
                             <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
-                            <h:panelGroup id="creditCard" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                            <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
+                            <h:panelGroup id="autoStaff" style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">
+                                <au:completeStaffChannel value="#{channelBillController.toStaff}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup id="creditCard" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;" >
                                 <pa:creditCard paymentMethodData="#{channelBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
@@ -326,7 +332,7 @@
                                             <h:outputText value="NOT PAID YET" ></h:outputText>
                                         </span>
                                     </div>
-                                    
+
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -355,6 +361,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="User"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                         <p:outputLabel value="Booked At"/>
@@ -396,6 +404,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="User"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                         <p:outputLabel value="Billed At"/>
@@ -436,6 +446,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Booking User"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="Booked At"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
@@ -513,7 +525,8 @@
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                                         or channelBillController.billSession.bill.cancelled==true
+                                                         or channelBillController.billSession.bill.paidAmount eq 0}" 
                                              onclick="onSubmitButton();"/>
                         </p:tab>
 
@@ -553,7 +566,8 @@
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                                         or channelBillController.billSession.bill.cancelled==true
+                                                         or channelBillController.billSession.bill.paidAmount eq 0}"
                                              onclick="onSubmitButton();"/>
 
 

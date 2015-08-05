@@ -31,6 +31,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Staff;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
@@ -43,6 +44,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +84,7 @@ public class ChannelBillController implements Serializable {
     Institution institution;
     Institution settleInstitution;
     Bill printingBill;
+    Staff toStaff;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -882,6 +885,7 @@ public class ChannelBillController implements Serializable {
         paymentMethod = null;
         institution = null;
         refundableTotal = 0;
+        toStaff=null;
     }
 
     @Inject
@@ -925,6 +929,12 @@ public class ChannelBillController implements Serializable {
 //                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
 //                return true;
 //            }
+        }
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff==null) {
+                JsfUtil.addErrorMessage("Please Select Staff.");
+                return true;
+            }
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
@@ -1164,6 +1174,7 @@ public class ChannelBillController implements Serializable {
     private Bill createBill() {
         Bill bill = new BilledBill();
         bill.setStaff(getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff());
+        bill.setToStaff(toStaff);
         bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
@@ -1281,6 +1292,8 @@ public class ChannelBillController implements Serializable {
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
             savingBill.setBalance(0.0);
         } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
+            savingBill.setBalance(savingBill.getNetTotal());
+        }else if (savingBill.getBillType() == BillType.ChannelStaff) {
             savingBill.setBalance(savingBill.getNetTotal());
         }
 
@@ -1582,6 +1595,14 @@ public class ChannelBillController implements Serializable {
 
     public void setArea(Area area) {
         this.area = area;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
     }
 
 }
