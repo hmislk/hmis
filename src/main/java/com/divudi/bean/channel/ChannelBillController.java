@@ -206,7 +206,7 @@ public class ChannelBillController implements Serializable {
         temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        System.out.println("Creater paid"+getSessionController().getLoggedUser().getCreater().getWebUserPerson().getName());
+        System.out.println("Creater paid"+getSessionController().getLoggedUser().getWebUserPerson().getName());
         
         getBillFacade().create(temp);
 
@@ -1223,7 +1223,7 @@ public class ChannelBillController implements Serializable {
         bill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bill.setCreater(getSessionController().getLoggedUser());
-        System.out.println("Creater Bill"+getSessionController().getLoggedUser().getCreater().getWebUserPerson().getName());
+        System.out.println("Creater Bill"+getSessionController().getLoggedUser().getWebUserPerson().getName());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setInstitution(sessionController.getInstitution());
         if (getbookingController() != null) {
