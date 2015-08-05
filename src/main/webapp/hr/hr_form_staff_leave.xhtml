@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Leave Application Form">
-                <h:panelGrid columns="2" >
+                <h:panelGrid columns="3" styleClass="alignTop" >
                     <p:panel header="Leave Form Details">
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Form Number"/>
@@ -126,6 +126,7 @@
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                                 <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                                 <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
+                                <p:commandButton value="Go to Leave Entitle" ajax="false" action="hr_staff_leave_entitle" />
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
@@ -172,6 +173,11 @@
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
+                    </p:panel>
+                    <p:panel header="Links" >
+                        <h:panelGrid columns="2" >
+                            <p:commandLink ajax="false" value="Finger Print Analysis" action="/hr/hr_shift_table_finger_print_by_staff" ></p:commandLink>
+                        </h:panelGrid>
                     </p:panel>
                 </h:panelGrid>              
             </p:panel>

@@ -43,7 +43,7 @@ public class ItemFeeManager implements Serializable {
     Item item;
     ItemFee itemFee;
     ItemFee removingFee;
-    
+
     List<ItemFee> itemFees;
 
     @EJB
@@ -54,10 +54,10 @@ public class ItemFeeManager implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     StaffFacade staffFacade;
-    
+
     @Inject
     SessionController sessionController;
-    
+
     List<Department> departments;
     List<Staff> staffs;
 
@@ -69,8 +69,6 @@ public class ItemFeeManager implements Serializable {
         this.removingFee = removingFee;
     }
 
-    
-    
     public List<Department> getDepartments() {
         return departments;
     }
@@ -86,9 +84,9 @@ public class ItemFeeManager implements Serializable {
     public void setStaffs(List<Staff> staffs) {
         this.staffs = staffs;
     }
-    
-    public void removeFee(){
-        if(removingFee==null){
+
+    public void removeFee() {
+        if (removingFee == null) {
             JsfUtil.addErrorMessage("Select a fee");
             return;
         }
@@ -96,15 +94,13 @@ public class ItemFeeManager implements Serializable {
         removingFee.setRetiredAt(new Date());
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
+        itemFees = null;
         fillFees();
         updateTotal();
-        item=null;
-        itemFees=null;
         JsfUtil.addSuccessMessage("Removed");
-        
     }
-    
-    public void fillDepartments(){
+
+    public void fillDepartments() {
         //System.out.println("fill dept");
         String jpql;
         Map m = new HashMap();
@@ -114,8 +110,8 @@ public class ItemFeeManager implements Serializable {
         //System.out.println("jpql = " + jpql);
         departments = departmentFacade.findBySQL(jpql, m);
     }
-    
-    public void fillStaff(){
+
+    public void fillStaff() {
         //System.out.println("fill staff");
         String jpql;
         Map m = new HashMap();
@@ -125,19 +121,19 @@ public class ItemFeeManager implements Serializable {
         //System.out.println("jpql = " + jpql);
         staffs = staffFacade.findBySQL(jpql, m);
     }
-    
-    public List<Department> compelteDepartments(String qry){
-         String jpql;
-         if(qry==null){
-             return new ArrayList<>();
-         }
+
+    public List<Department> compelteDepartments(String qry) {
+        String jpql;
+        if (qry == null) {
+            return new ArrayList<>();
+        }
         Map m = new HashMap();
         m.put("ins", getItemFee().getInstitution());
-        m.put("name", "%" + qry.toUpperCase() + "%" );
+        m.put("name", "%" + qry.toUpperCase() + "%");
         jpql = "select d from Department d where d.retired=false and d.institution=:ins and d.name like :name order by d.name";
         return departmentFacade.findBySQL(jpql, m);
     }
-    
+
     public Item getItem() {
         return item;
     }
@@ -168,7 +164,7 @@ public class ItemFeeManager implements Serializable {
     public void fillFees() {
         itemFees = fillFees(item);
     }
-    
+
     public List<ItemFee> fillFees(Item i) {
         String jpql;
         Map m = new HashMap();
@@ -176,45 +172,38 @@ public class ItemFeeManager implements Serializable {
         m.put("i", i);
         return itemFeeFacade.findBySQL(jpql, m);
     }
-    
-    public void addNewFee(){
-        if(item == null){
+
+    public void addNewFee() {
+        if (item == null) {
             JsfUtil.addErrorMessage("Select Item ?");
             return;
         }
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         itemFeeFacade.create(itemFee);
-        
+
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
-        
-        JsfUtil.addSuccessMessage("New Fee Added");
-        
-        updateTotal();
-        fillFees();
-        
+
         itemFee = new ItemFee();
-        item = null;
-        itemFees=null;
-        
+        itemFees = null;
+        fillFees();
+        updateTotal();
+        JsfUtil.addSuccessMessage("New Fee Added");
     }
 
-    public void updateFee(ItemFee f){
-        //System.out.println("f = " + f);
-        //System.out.println("f.getFee() = " + f.getFee());
+    public void updateFee(ItemFee f) {
         itemFeeFacade.edit(f);
         updateTotal();
     }
-    
-    
-    public void updateTotal(){
-        if(item==null){
+
+    public void updateTotal() {
+        if (item == null) {
             return;
         }
         double t = 0.0;
-        for(ItemFee f:itemFees){
-            t+=f.getFee();
+        for (ItemFee f : itemFees) {
+            t += f.getFee();
         }
         getItem().setTotal(t);
         itemFacade.edit(item);
