@@ -61,6 +61,7 @@ public class UserPreference implements Serializable {
     boolean inwardChangeAdmissionFee;
     boolean pharmacyBillWithOutItem;
     boolean fiveFivePaperWithHeadings;
+    boolean showOnlyMarkedDoctors;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -376,8 +377,14 @@ public class UserPreference implements Serializable {
     public void setFiveFivePaperWithHeadings(boolean fiveFivePaperWithHeadings) {
         this.fiveFivePaperWithHeadings = fiveFivePaperWithHeadings;
     }
-    
-    
+
+    public boolean isShowOnlyMarkedDoctors() {
+        return showOnlyMarkedDoctors;
+    }
+
+    public void setShowOnlyMarkedDoctors(boolean showOnlyMarkedDoctors) {
+        this.showOnlyMarkedDoctors = showOnlyMarkedDoctors;
+    }
     
     @Override
     public int hashCode() {

@@ -293,7 +293,15 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
-            sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
+            if (getSessionController().getCurrentPreference().isShowOnlyMarkedDoctors()) {
+                sql = "select p from Staff p where p.retired=false "
+                        + " and p.speciality=:sp "
+                        + " and p.activeForChanneling=true "
+                        + " order by p.person.name ";
+            }else{
+                sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
+            }
+            
             consultants = getStaffFacade().findBySQL(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
