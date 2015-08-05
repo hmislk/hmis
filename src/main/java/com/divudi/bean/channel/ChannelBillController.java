@@ -165,21 +165,28 @@ public class ChannelBillController implements Serializable {
 
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
+        
         BillSession bs = savePaidBillSession(b, bi);
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
-        System.out.println("bs = " + bs);
-        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
+        getBillSessionFacade().edit(getBillSession());
 
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
         getBillSession().getBill().setPaidBill(b);
         getBillFacade().edit(getBillSession().getBill());
-
+        
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-
+        System.err.println("*** Channel Credit Bill Settled ***");
+        System.out.println("bs = " + bs);
+        System.out.println("getBillSession() = " + getBillSession().getName());
+        System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
+        System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
+        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getName());
+        System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
+        System.err.println("*** Channel Credit Bill Settled ***");
 //        editBillSession(b, bi);
         UtilityController.addSuccessMessage("Channel Booking Added");
 
@@ -478,11 +485,12 @@ public class ChannelBillController implements Serializable {
 
     public void cancelCreditPaidBill() {
         if (getBillSession() == null) {
+            UtilityController.addErrorMessage("No BillSession");
             return;
         }
 
         if (getBillSession().getBill() == null) {
-            UtilityController.addErrorMessage("No Paid BillSession");
+            UtilityController.addErrorMessage("No Bill To Cancel");
             return;
         }
 
