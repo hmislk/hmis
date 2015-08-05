@@ -317,41 +317,153 @@
                 <p:panel id="panelSelectedBookinDetails">
                     <p:tabView id="detail">
                         <p:tab title="Booking" id="booking">
-                            <h:panelGrid columns="2">
-                                <p:outputLabel value="Patient Name"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
-                                <p:outputLabel value="Booking Id"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
-                                <p:outputLabel value="Serial No"/>
-                                <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                    <p:outputLabel value="#{bis.billSession.serialNo}"/>
-                                </ui:repeat>
-                                <p:outputLabel value="Payment Method"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
-                                <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="Booking User"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-                                <p:outputLabel value="Booked At"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
-                                    <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                </p:outputLabel>
-                                <p:outputLabel value="Consultant"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                <p:outputLabel value="Appointment Date">
-                                </p:outputLabel>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
-                                    <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" >
-                                    </f:convertDateTime>
-                                </p:outputLabel>
-                                <p:outputLabel value="Appointment Time">
-                                </p:outputLabel>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
-                                    <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
-                                </p:outputLabel>
-                            </h:panelGrid>                            
+                            <h:panelGrid columns="2" >
+
+                                <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
+                                    <div class="ui-message-error ui-widget ui-corner-all">
+                                        <span class="ui-message-error-icon"/>
+                                        <span class="ui-message-error-detail">
+                                            <h:outputText value="NOT PAID YET" ></h:outputText>
+                                        </span>
+                                    </div>
+                                    
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Name"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Consultant"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Serial No"/>
+                                        <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                            <p:outputLabel value="#{bis.billSession.serialNo}"/>
+                                        </ui:repeat>
+                                        <p:outputLabel value="Appointment Date">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            </f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Appointment Time">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
+                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:separator ></p:separator>
+                                        <p:separator ></p:separator>
+                                        <p:outputLabel value="Payment Method"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="User"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Booked At"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </h:panelGrid>                            
+                                </p:panel>
+
+                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Name"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Consultant"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Serial No"/>
+                                        <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                            <p:outputLabel value="#{bis.billSession.serialNo}"/>
+                                        </ui:repeat>
+                                        <p:outputLabel value="Appointment Date">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            </f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Appointment Time">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
+                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:separator ></p:separator>
+                                        <p:separator ></p:separator>
+
+                                        <p:outputLabel value="Bill No"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
+                                        <p:outputLabel value="Payment"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="User"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Billed At"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </h:panelGrid>                            
+                                </p:panel>
+
+                                <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Name"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Consultant"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                        <p:outputLabel value="Serial No"/>
+                                        <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                            <p:outputLabel value="#{bis.billSession.serialNo}"/>
+                                        </ui:repeat>
+                                        <p:outputLabel value="Appointment Date">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            </f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Appointment Time">
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
+                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:separator ></p:separator>
+                                        <p:separator ></p:separator>
+                                        <p:outputLabel value="Payment"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Booking User"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Booked At"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </h:panelGrid>                            
+                                </p:panel>
+                                <p:panel header="Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Booking Id"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.bookingId}"/>
+                                        <p:outputLabel value="Payment Method"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.fromInstitution.name}" 
+                                                       rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.billItem.paidBill.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="User"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.creater.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Settled At"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </h:panelGrid>                            
+                                </p:panel>
+
+                            </h:panelGrid>
+
                         </p:tab>
 
 
