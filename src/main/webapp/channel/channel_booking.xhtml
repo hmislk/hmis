@@ -247,7 +247,7 @@
                                     <f:selectItems value="#{billController.sex}"/>
                                 </p:selectOneMenu> 
                                 <p:outputLabel value="Area"></p:outputLabel>
-                                <p:autoComplete widgetVar="np" id="acnp" forceSelection="true" 
+                                <p:autoComplete styleClass="mediuminput" widgetVar="np" id="acnp" forceSelection="true" 
                                                 value="#{channelBillController.area}" 
                                                 completeMethod="#{areaController.completeArea}" 
                                                 var="npt" itemLabel="#{npt.name}" 
@@ -260,7 +260,7 @@
                                             value="#{channelBillController.searchPatient}" 
                                             completeMethod="#{patientController.completePatient}" 
                                             var="apt" itemLabel="#{apt.person.name}" 
-                                            itemValue="#{apt}" size="30"  style="width: 400px;">
+                                            itemValue="#{apt}" size="30"  styleClass="mediuminput">
                                 <p:ajax event="itemSelect" process="@this" update="panSearch"/>
                             </p:autoComplete>   
 

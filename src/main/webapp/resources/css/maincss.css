@@ -864,6 +864,10 @@ a:hover {
     width: 300px!important;
 }
 
+.mediuminput .ui-autocomplete-input.ui-inputfield { 
+    width : 300px!important;
+}
+
 .shortinput .ui-autocomplete-input {
     width: 200px!important;
 }
@@ -872,7 +876,9 @@ a:hover {
     width: 100px!important;
 }
 
-
+.shortinput .ui-autocomplete-input.ui-inputfield { 
+    width : 100px!important;
+}
 
 .standardList{
     height: 300px;
