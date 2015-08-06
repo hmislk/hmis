@@ -81,33 +81,66 @@
                                             update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                             listener="#{bookingController.fillBillSessions}" />  
 
-
-                                    <p:column headerText="Session" style="text-wrap: none;" >
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <h:outputText value="#{ses.sessionAt}">
+                                            <f:convertDateTime pattern="E"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" />
+                                        <h:outputText value="#{ses.sessionAt}">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" />
+                                        <h:outputText value="#{ses.startingTime}">
+                                            <f:convertDateTime pattern="hh:mm a"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." />
+                                        <h:outputText value="#{ses.originatingSession.totalFee}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="(" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=") &nbsp;&nbsp;#" />
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;**" />
+                                        <h:outputText value="#{ses.transCreditBillCount}" >
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="**" />
+                                    </p:column>
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                         <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                                     </p:column>
-                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
+                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.displayCount}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.sessionAt}">
                                             <f:convertDateTime pattern="dd MMM"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;">
+                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.startingTime}">
                                             <f:convertDateTime pattern="hh:mm"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
+                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.originatingSession.totalFee}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>                                                            

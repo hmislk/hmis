@@ -274,7 +274,8 @@ public class SheduleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
-                + " and s.staff=:stf ";
+                + " and s.staff=:stf "
+                + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
         //hm.put("class", ServiceSessionLeave.class);
         items = getFacade().findBySQL(sql, hm);
