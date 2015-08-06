@@ -11,7 +11,7 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="frm">
             <p:panel 
-                header="Billed and Reported Department/Investigation">
+                header="Lab Reports Count by Billed Institution">
 
                 <h:panelGrid columns="2" >
 
@@ -35,7 +35,7 @@
                     
                 </h:panelGrid>
 
-                <h:panelGrid columns="3">
+                <h:panelGrid columns="4">
                     <p:commandButton ajax="false" value="Process" 
                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution()}"
                                      styleClass="noPrintButton" style="float: right;" >
@@ -65,7 +65,7 @@
                              rowsPerPageTemplate="20, 50, 100"
                              >
                     <f:facet name="header" >
-                        <h:outputLabel value="Investigation Counts"/>
+                        <h:outputLabel value="Investigation Counts by Billed Institution"/>
                     </f:facet>
 
 
