@@ -307,7 +307,7 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
-            if (getSessionController().getCurrentPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
                 sql = "select p from Staff p where p.retired=false "
                         + " and p.speciality=:sp "
                         + " and p.activeForChanneling=true "

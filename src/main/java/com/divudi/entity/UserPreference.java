@@ -61,7 +61,7 @@ public class UserPreference implements Serializable {
     boolean inwardChangeAdmissionFee;
     boolean pharmacyBillWithOutItem;
     boolean fiveFivePaperWithHeadings;
-    boolean showOnlyMarkedDoctors;
+    boolean showOnlyMarkedDoctors=false;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
