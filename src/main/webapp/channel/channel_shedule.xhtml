@@ -102,6 +102,11 @@
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
+                        
+                         <p:outputLabel value="End Time"/>                        
+                         <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                        </p:calendar>
+                        
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
 

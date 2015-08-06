@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -39,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -46,6 +48,10 @@ import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
+import org.primefaces.model.DefaultScheduleEvent;
+import org.primefaces.model.DefaultScheduleModel;
+import org.primefaces.model.ScheduleEvent;
+import org.primefaces.model.ScheduleModel;
 
 /**
  *
@@ -106,6 +112,14 @@ public class BookingController implements Serializable {
     int serealNo;
     Date date;
 
+    
+    
+    
+    private ScheduleModel eventModel;
+ 
+    private ChannelScheduleEvent event = new ChannelScheduleEvent();
+    
+    
     public String nurse() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
@@ -467,8 +481,29 @@ public class BookingController implements Serializable {
             calculateFee(tmp);
             System.err.println("Calling Start");
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
+            generateSessionEvents(serviceSessions);
             System.err.println("Calling End");
         }
+    }
+    
+    public void generateSessionEvents(List<ServiceSession> sss){
+        eventModel = new DefaultScheduleModel();
+        for(ServiceSession s:sss){
+            ChannelScheduleEvent e = new ChannelScheduleEvent();
+            e.setServiceSession(s);
+            e.setTitle(s.getName());
+            e.setStartDate(s.getTransStartTime());
+            e.setEndDate(s.getTransEndTime());
+            System.out.println("e = " + e);
+            eventModel.addEvent(e);
+        }
+        System.out.println("eventModel = " + eventModel);
+    }
+    
+    public void onEventSelect(SelectEvent selectEvent) {
+        event = (ChannelScheduleEvent) selectEvent.getObject();
+        selectedServiceSession = event.getServiceSession();
+        fillBillSessions();
     }
     
     public  void generateSessionsFutureBooking(SelectEvent event) {
@@ -771,4 +806,28 @@ public class BookingController implements Serializable {
         this.serealNo = serealNo;
     }
 
+    public ScheduleModel getEventModel() {
+        if(eventModel==null){
+            eventModel = new DefaultScheduleModel();
+        }
+        return eventModel;
+    }
+
+    public void setEventModel(ScheduleModel eventModel) {
+        this.eventModel = eventModel;
+    }
+
+    public ChannelScheduleEvent getEvent() {
+        if(event==null){
+            event = new ChannelScheduleEvent();
+        }
+        return event;
+    }
+
+    public void setEvent(ChannelScheduleEvent event) {
+        this.event = event;
+    }
+
+    
+    
 }
