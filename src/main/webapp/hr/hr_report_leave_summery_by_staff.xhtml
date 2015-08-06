@@ -35,8 +35,12 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                        
+                        <p:commandButton ajax="false" rendered="#{hrReportController.backButtonPage ne null}" value="Back" action="#{hrReportController.back()}"/>
 
-
+                        
+                        HHHH****#{hrReportController.backButtonPage}****HHHHH
+                        
                         <p:panel id="gpBillPreview">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeavesAnnual}" var="ss" emptyMessage="Not taken">
                                 <f:facet name="header" >
@@ -165,7 +169,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                              
+
                                 <p:column headerText="Leave Date" style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
@@ -212,7 +216,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                               
+
                                 <p:column headerText="Leave Date" style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
@@ -259,7 +263,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                               
+
                                 <p:column headerText="Leave Date" style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
@@ -306,7 +310,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"   rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                               
+
                                 <p:column headerText="Leave Date"  style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
@@ -353,7 +357,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                               
+
                                 <p:column headerText="Leave Date" style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>
@@ -400,7 +404,7 @@
                                 <p:column headerText="Staff Name" style="width: 200px!important;max-width: 200px;" styleClass="singleLine"  rendered="#{hrReportController.reportKeyWord.staff eq null}">
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                                                            
-                                
+
                                 <p:column headerText="Leave Date" style="width: 110px;">
                                     <p:outputLabel value="#{ss.leaveDate}">
                                         <f:convertDateTime pattern="dd MMM yy (E)" ></f:convertDateTime>

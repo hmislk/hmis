@@ -89,6 +89,9 @@
 
                     <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
+                    
+                    <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
 
                 </h:panelGrid>
 
@@ -119,6 +122,8 @@
 
                     <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
+                    <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
 
 
 

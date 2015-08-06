@@ -15,45 +15,69 @@
 
         <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
             <h:form  >
-                <h:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
-                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
-                </h:inputText>
-                <p:commandButton ajax="false" value="Process" action="#{webUserController.createTable()}"/>
-                
-                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u" >
+                <p:panelGrid columns="3" >
+                    <p:outputLabel value="Search Text" ></p:outputLabel>
+                    <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
+                        <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
+                    </p:inputText>
+                    <p:commandButton ajax="false" value="Process" action="#{webUserController.createTable()}"/>
+                    <p:watermark for="txtSearch" value="Select All or Enter a keyword" ></p:watermark>
+                    <p:outputLabel value="" ></p:outputLabel>
+                    <p:commandButton ajax="false" value="Remove Selected" 
+                                     action="#{webUserController.removeSelectedItems()}"
+                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                     />
+                </p:panelGrid>
+
+
+
+
+
+
+
+                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u"
+                             rowKey="#{u.id}"
+                             selection="#{webUserController.itemsToRemove}" 
+                             rows="100"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,50,100,500"
+                             >
                     <f:facet name="header" >
                         <h:outputLabel value="List of All Users" />
                     </f:facet>
+                    
+                    <p:column selectionMode="multiple" style="width: 25px;">
+                    </p:column>
+                    
                     <p:column headerText="Full Name">
                         <h:inputText value="#{u.webUserPerson.name}"/>
                     </p:column>
-                    
+
                     <p:column headerText="Department">
                         <h:outputLabel value="#{u.department.name}"/>
                     </p:column>
-                    
+
                     <p:column headerText="User Name">
                         <h:outputLabel value="#{u.name}"/>
                     </p:column>
-                    
+
                     <p:column headerText="Staff Code">
                         <h:inputText value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
                     </p:column>
-                    
+
                     <p:column headerText="Staff Name">
                         <h:outputLabel value="#{u.staff.person.name}"/>
                     </p:column>
-                    <p:column headerText="Remove User">
+                    <p:column headerText="Actions">
                         <p:commandButton ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;" action="#{webUserController.removeUser}">
+                                    return false;" action="#{webUserController.removeUser}">
                             <f:setPropertyActionListener value="#{u}" target="#{webUserController.removingUser}" />
                         </p:commandButton>
-                    </p:column>
-                    <p:column>
                         <p:commandButton value="Update" action="#{webUserController.updateWebUser(u)}" ajax="false" />
                     </p:column>
                 </p:dataTable>
-            
+
             </h:form>
 
         </h:panelGroup>

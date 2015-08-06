@@ -42,9 +42,18 @@ body {
         position: relative; 
         font-size: 150%;
     }
+    
+    .printOnly{
+        display: none;
+    }
 }
 
 @media print {
+    
+    .printOnly{
+        display:block;
+    }
+    
     .myDivToPrint {
         background-color: red;
         height: 100%;
@@ -59,44 +68,6 @@ body {
     }
 }
 
-h1, h2, h3 {
-    margin: 0px;
-    padding: 0px;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-    font-family: 'Arvo', serif;
-    font-weight: normal;
-    color: #107710;
-    color: red;
-
-}
-
-h1 {
-    font-size: 2em;
-}
-
-h2 {
-    font-size: 2.4em;
-}
-
-h3 {
-    font-size: 1.6em;
-}
-
-p, ul, ol {
-    margin-top: 0;
-    line-height: 180%;
-}
-
-ul, ol {
-}
-
-a {
-    color: #107710;
-}
-
-a:hover {
-}
 
 /* Header */
 
@@ -855,6 +826,10 @@ a:hover {
     width: 300px!important;
 }
 
+.mediuminput .ui-autocomplete-input.ui-inputfield { 
+    width : 300px!important;
+}
+
 .shortinput .ui-autocomplete-input {
     width: 200px!important;
 }
@@ -863,7 +838,9 @@ a:hover {
     width: 100px!important;
 }
 
-
+.shortinput .ui-autocomplete-input.ui-inputfield { 
+    width : 100px!important;
+}
 
 .standardList{
     height: 300px;
@@ -906,8 +883,89 @@ table.standardTable td {
     padding-right: 5px;
 }
 
+.shortNumericColumn{
+    text-align: right;
+    width: 50px;
+    max-width: 50px;
+    padding-right: 2px;
+}
+
+
 .averateNumericText{
     text-align: right;
     width: 70px;
 }
 
+.tinyText{
+    font-size: 8px!important;
+}
+
+
+.averageText{
+    width: 260px;
+    padding-right: 5px;
+}
+
+.longText{
+    width: 400px;
+    padding-right: 5px;
+}
+
+.shortText{
+    width: 80px;
+    padding-right: 5px;
+}
+
+.fixedColumn75{
+    width: 75px;
+    max-width: 75px;
+    min-width: 75px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}
+
+.fixedColumn100{
+    width: 100px;
+    max-width: 100px;
+    min-width: 100px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}
+
+.fixedColumn150{
+    width: 150px;
+    max-width: 150px;
+    min-width: 150px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}
+
+.fixedColumn200{
+    width: 200px;
+    max-width: 200px;
+    min-width: 200px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}
+
+.fixedColumn250{
+    width: 250px;
+    max-width: 250px;
+    min-width: 250px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}
+
+.fixedColumn300{
+    width: 300px;
+    max-width: 300px;
+    min-width: 300px;
+    white-space: nowrap;
+    text-wrap: avoid;
+    overflow: hidden;
+}

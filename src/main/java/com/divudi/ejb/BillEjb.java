@@ -175,6 +175,8 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
         return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 

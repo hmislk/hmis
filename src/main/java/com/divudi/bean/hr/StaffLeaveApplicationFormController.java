@@ -247,6 +247,44 @@ public class StaffLeaveApplicationFormController implements Serializable {
         //Need to Add toLogicTo Date  
     }
 
+    public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType, Date frm) {
+        System.out.println("frm = " + frm);
+
+        String sql = "select  ss "
+                + " from StaffLeaveEntitle ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:stf "
+                + " and ss.fromDate<=:frm  "
+                + " and ss.leaveType =:ltp ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType);
+        hm.put("frm", frm);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        System.out.println("stf = " + stf);
+
+        return stf;
+
+        //Need to Add toLogicTo Date  
+    }
+
+    public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
+
+        String sql = "select  ss "
+                + " from StaffLeaveEntitle ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:stf "
+                + " and ss.leaveType =:ltp ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+
+        return stf;
+
+        //Need to Add toLogicTo Date  
+    }
+
     public void calLeaveCount() {
         if (getCurrentLeaveForm().getStaff() == null) {
             UtilityController.addErrorMessage("Please Select Staff");
@@ -502,9 +540,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
     }
-    
-    
-   
 
     public void saveLeaveform() {
         if (currentLeaveForm.getId() != null) {

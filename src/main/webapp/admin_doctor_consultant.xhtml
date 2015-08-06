@@ -69,6 +69,8 @@
                                     <p:inputText autocomplete="off"  value="#{consultantController.current.qualification}" />
                                     <h:outputText  value="Refering Charge" />
                                     <p:inputText autocomplete="off"  value="#{consultantController.current.charge}"  />
+                                    <h:outputLabel value="Use In Channel" />
+                                    <p:selectBooleanCheckbox value="#{consultantController.current.activeForChanneling}"/>
                                     <h:outputText  value="Creater" />
                                     <h:outputText  value="#{consultantController.current.creater.webUserPerson.nameWithTitle}" />
                                     <h:outputText  value="Created At" />

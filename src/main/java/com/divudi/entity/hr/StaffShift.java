@@ -172,7 +172,10 @@ public class StaffShift implements Serializable {
     int dayOfWeek;
 //    int leaveDivident;
 
-  
+    @Transient
+    double transWorkTime;
+    @Transient
+    double transShiftTime;
 
     public DayType getDayType() {
         return dayType;
@@ -691,8 +694,7 @@ public class StaffShift implements Serializable {
 
             if (dayType == DayType.DayOff
                     || dayType == DayType.SleepingDay
-                    || dayType == DayType.Extra
-                    || dayType == DayType.Poya) {
+                    || dayType == DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
                 Calendar toCalendar = Calendar.getInstance();
@@ -1345,6 +1347,22 @@ public class StaffShift implements Serializable {
 
     public void setReferenceStaffShiftEarlyOuts(List<StaffShift> referenceStaffShiftEarlyOuts) {
         this.referenceStaffShiftEarlyOuts = referenceStaffShiftEarlyOuts;
+    }
+
+    public double getTransWorkTime() {
+        return transWorkTime;
+    }
+
+    public void setTransWorkTime(double transWorkTime) {
+        this.transWorkTime = transWorkTime;
+    }
+
+    public double getTransShiftTime() {
+        return transShiftTime;
+    }
+
+    public void setTransShiftTime(double transShiftTime) {
+        this.transShiftTime = transShiftTime;
     }
 
 }

@@ -279,6 +279,23 @@ root {
 
 }
 
+.institutionName{
+        text-align: center!important;
+        font-weight: bold!important;
+        font-size: 16px!important;
+        font-weight: bolder;
+        font-family: monospace;
+        text-transform: capitalize!important;
+
+    }
+
+    .institutionContact{
+        position: relative!important;
+        text-align: center!important;   
+        font-size: 12px!important;
+        font-family:monospace;
+    }
+
 .cashierGSPrinting{
     text-decoration: overline;
     position:absolute!important;

@@ -41,6 +41,15 @@
 
 
                     <p:panel id="gpDetail">
+                        <f:facet name="header">
+                            <h:outputLabel value="Shift Detail &nbsp;"/>
+                            <p:commandButton ajax="false" value="Save"  
+                                             action="#{shiftController.saveSelected}"  
+                                             onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Print" style="float: right;" >
+                                <p:printer target="panelPrint" ></p:printer>
+                            </p:commandButton>
+                        </f:facet>
                         <h:panelGrid id="gpDetailText" columns="2">
 
                             <h:outputText  value="Name" ></h:outputText>
@@ -86,21 +95,121 @@
 
                             <p:outputLabel value="First Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.firstShift}" />
-                             <p:outputLabel value="Last Shift"/>
+                            <p:outputLabel value="Last Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.lastShift}" />
                             <p:outputLabel value="Half Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.halfShift}" />                           
                             <p:outputLabel value="Hide Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
 
-                            <p:commandButton ajax="false" value="Save"  
-                                            action="#{shiftController.saveSelected}"  
-                                             onclick="onSubmitButton();"/>
+
+                            <p:outputLabel value="This Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.id}"/>
+
+                            <p:outputLabel value="Previous Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
+
+                            <p:outputLabel value="Next Shift Id"/>
+                            <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
+
                         </h:panelGrid>
                     </p:panel>
 
 
                 </h:panelGrid>
+                <p:panel id="panelPrint" styleClass="printOnly">
+                    <f:facet name="header">
+                        <h:outputLabel value="Shift Detail"/>                        
+                    </f:facet>
+                    <h:panelGrid id="gpDetailTextPrint" columns="3">
+
+                        <h:outputText  value="Name" ></h:outputText>
+                        <h:outputLabel value=":"/>
+                        <h:outputText value="#{shiftController.current.name}"/>
+
+                        <h:outputText  value="Day Type" ></h:outputText>
+                        <h:outputLabel value=":"/>
+                        <h:outputText  value="#{shiftController.current.dayType}"/>
+
+                        <h:outputLabel value="Shift Order" rendered="false"/>
+                        <h:outputLabel value=":" rendered="false"/>
+                        <h:outputLabel value="#{shiftController.current.shiftOrder}" rendered="false"/>
+
+                        <p:outputLabel value="Starting Time"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.startingTime}">
+                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                        </h:outputLabel>  
+
+                        <p:outputLabel value="End Time"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.endingTime}">
+                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                        </h:outputLabel>  
+
+                        <p:outputLabel value="Previous Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.previousShift}"/>
+
+                        <p:outputLabel value="Next Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.nextShift}"/>
+
+                        <h:outputLabel value="Leave Hour Full"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.leaveHourFull}"/>
+
+                        <h:outputLabel value="Leave Hour Half"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.leaveHourHalf}"/>
+
+                        <h:outputLabel value="Duration Minute"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.durationMin}"/>
+
+                        <p:outputLabel value="First Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.firstShift ? 'Yes':'No'}" />
+
+                        <p:outputLabel value="Last Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.lastShift ? 'Yes':'No'}" />
+
+                        <p:outputLabel value="Half Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.halfShift ? 'Yes':'No'}" />
+
+                        <p:outputLabel value="Hide Shift"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{shiftController.current.hideShift ? 'Yes':'No'}" />
+
+
+                        <p:outputLabel value="This Shift Id"/>
+                        <h:outputLabel value=":"/>
+                        <p:outputLabel value="#{shiftController.current.id}"/>
+
+                        <p:outputLabel value="Previous Shift Id"/>
+                        <h:outputLabel value=":"/>
+                        <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
+
+                        <p:outputLabel value="Next Shift Id"/>
+                        <h:outputLabel value=":"/>
+                        <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
+
+                        <p:outputLabel value="Creater"/>
+                        <h:outputLabel value=":"/>
+                        <p:outputLabel value="#{shiftController.current.creater.webUserPerson.name}"/>
+
+                        <p:outputLabel value="Created At"/>
+                        <h:outputLabel value=":"/>
+                        <p:outputLabel value="#{shiftController.current.createdAt}">
+                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                        </p:outputLabel>
+
+                    </h:panelGrid>
+
+                </p:panel>
+
             </p:panel>
 
 

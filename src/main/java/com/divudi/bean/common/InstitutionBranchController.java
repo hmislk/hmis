@@ -144,7 +144,7 @@ public class InstitutionBranchController implements Serializable {
 //                getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
 //            }
 //            getFacade().edit(getCurrent());
-//            UtilityController.addSuccessMessage("savedOldSuccessfully");
+//            UtilityController.addSuccessMessage("Updated Successfully.");
 //        } else {
 //            if (getCurrent().getInstitutionCode() != null) {
 //                if (!checkCodeExist()) {
@@ -157,7 +157,7 @@ public class InstitutionBranchController implements Serializable {
 //            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
 //            getCurrent().setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(getCurrent());
-//            UtilityController.addSuccessMessage("savedNewSuccessfully");
+//            UtilityController.addSuccessMessage("Saved Successfully");
 //        }
         recreateModel();
         getItems();
@@ -206,9 +206,9 @@ public class InstitutionBranchController implements Serializable {
             getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
