@@ -2378,19 +2378,19 @@ public class CommonReport implements Serializable {
 //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelCash, getWebUser(), getDepartment()));
-        getChannelCancells().setCard(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCheque(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
+        getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancells().setSlip(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), BillType.ChannelCash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCard(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCheque(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
+        getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefunds().setSlip(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         
         //channel professional payment        
