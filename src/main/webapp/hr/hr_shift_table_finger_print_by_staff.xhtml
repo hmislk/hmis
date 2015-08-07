@@ -71,7 +71,7 @@
                                      actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                      action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
                                      onclick="onSubmitButton();" 
-                                     style="float: right;"/> 
+                                     style="float: right;" ajax="false"/> 
 
                     <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" 
                                      action="#{hrReportController.back()}" ></p:commandButton>

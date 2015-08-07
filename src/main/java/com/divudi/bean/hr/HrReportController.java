@@ -2556,7 +2556,7 @@ public class HrReportController implements Serializable {
             weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), 1, weekDayWork.getTotal()));
 
             //Fetch Basic
-            double value = humanResourceBean.getOverTimeValue(stf, getToDate());
+            double value = humanResourceBean.getOverTimeValue(stf, tDate);
 
             if (value != 0) {
                 weekDayWork.setBasicPerSecond(value / (200 * 60 * 60));
