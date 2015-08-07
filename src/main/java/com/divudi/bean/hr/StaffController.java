@@ -452,6 +452,27 @@ public class StaffController implements Serializable {
         return suggestions;
     }
     
+    public List<Staff> completeConsultant(String query) {
+        List<Staff> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select s from Staff s "
+                    + " where s.retired=false "
+                    + " and type(s)=:class "
+                    + " and LENGTH(s.person.name) > 0 "
+                    + " and upper(s.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " order by s.person.name";
+
+            ////System.out.println(sql);
+            suggestions = getEjbFacade().findBySQL(sql, hm, 20);
+        }
+        return suggestions;
+    }
+    
     public List<Staff> completeStaffCodeChannel(String query) {
         List<Staff> suggestions;
         String sql;
