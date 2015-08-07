@@ -24,7 +24,7 @@ public class ServiceSession extends Item implements Serializable {
 
     @Transient
     String dayString;
-    
+
     Integer sessionWeekday;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date sessionDate;
@@ -35,9 +35,9 @@ public class ServiceSession extends Item implements Serializable {
     int startingNo;
     int numberIncrement;
     int maxNo;
-    
+
     boolean continueNumbers;
-    
+
     @OneToOne
     ServiceSession afterSession;
     @ManyToOne
@@ -47,23 +47,27 @@ public class ServiceSession extends Item implements Serializable {
     /////Newly Added
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date startingTime;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date endingTime;
+    
     boolean refundable = false;
     int displayCount;
     double displayPercent;
     double duration;
     int roomNo;
-    int durationIncrementCount =1;
+    int durationIncrementCount = 1;
     boolean showAppointmentCount = true;
     boolean oncallBookingsAllowed = true;
     long advanceAppointmentPeriod = 10;
     int advanceAPpointmentPeriodUnit = Calendar.DATE;
     boolean showAppointmentTime = true;
-   
-    
-    
-    
+
     @Transient
     ServiceSession originatingSession;
+    @Transient
+    int transDisplayCountWithoutCancelRefund;
+    @Transient
+    int transCreditBillCount;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -72,8 +76,6 @@ public class ServiceSession extends Item implements Serializable {
     public void setSessionNumberGenerator(SessionNumberGenerator sessionNumberGenerator) {
         this.sessionNumberGenerator = sessionNumberGenerator;
     }
-    
-    
 
     public ServiceSession getOriginatingSession() {
         return originatingSession;
@@ -82,9 +84,7 @@ public class ServiceSession extends Item implements Serializable {
     public void setOriginatingSession(ServiceSession originatingSession) {
         this.originatingSession = originatingSession;
     }
-    
-    
-  
+
     public Integer getSessionWeekday() {
         return sessionWeekday;
     }
@@ -230,6 +230,42 @@ public class ServiceSession extends Item implements Serializable {
         return startingTime;
     }
 
+    public Date getTransStartTime() {
+        Calendar st = Calendar.getInstance();
+        Calendar start = Calendar.getInstance();
+        System.out.println("sessionAt = " + sessionAt);
+        System.out.println("startingTime = " + startingTime);
+        if (sessionAt == null || startingTime ==null) {
+            System.out.println("return null");
+            return null;
+        }
+        st.setTime(sessionAt);
+        start.setTime(startingTime);
+        st.set(Calendar.HOUR, start.get(Calendar.HOUR));
+        st.set(Calendar.MINUTE, start.get(Calendar.MINUTE));
+        st.set(Calendar.SECOND, start.get(Calendar.SECOND));
+        st.set(Calendar.MILLISECOND, start.get(Calendar.MILLISECOND));
+        System.out.println("st = " + st);
+        return st.getTime();
+    }
+
+    public Date getTransEndTime() {
+        Calendar st = Calendar.getInstance();
+        Calendar ending = Calendar.getInstance();
+        System.out.println("sessionAt = " + sessionAt);
+        System.out.println("getEndingTime() = " + getEndingTime());
+        if (sessionAt == null || getEndingTime()==null) {
+            return null;
+        }
+        st.setTime(sessionAt);
+        ending.setTime(endingTime);
+        st.set(Calendar.HOUR, ending.get(Calendar.HOUR));
+        st.set(Calendar.MINUTE, ending.get(Calendar.MINUTE));
+        st.set(Calendar.SECOND, ending.get(Calendar.SECOND));
+        st.set(Calendar.MILLISECOND, ending.get(Calendar.MILLISECOND));
+        return st.getTime();
+    }
+
     public void setStartingTime(Date startingTime) {
         this.startingTime = startingTime;
     }
@@ -273,4 +309,39 @@ public class ServiceSession extends Item implements Serializable {
     public void setRoomNo(int roomNo) {
         this.roomNo = roomNo;
     }
+
+    public Date getEndingTime() {
+        if(endingTime==null){
+            if(startingTime==null){
+                endingTime =null;
+            }else{
+                Calendar e = Calendar.getInstance();
+                e.setTime(startingTime);
+                e.add(Calendar.HOUR, 2);
+                endingTime = e.getTime();
+            }
+        }
+        return endingTime;
+    }
+
+    public void setEndingTime(Date endingTime) {
+        this.endingTime = endingTime;
+    }
+
+    public int getTransDisplayCountWithoutCancelRefund() {
+        return transDisplayCountWithoutCancelRefund;
+    }
+
+    public void setTransDisplayCountWithoutCancelRefund(int transDisplayCountWithoutCancelRefund) {
+        this.transDisplayCountWithoutCancelRefund = transDisplayCountWithoutCancelRefund;
+    }
+
+    public int getTransCreditBillCount() {
+        return transCreditBillCount;
+    }
+
+    public void setTransCreditBillCount(int transCreditBillCount) {
+        this.transCreditBillCount = transCreditBillCount;
+    }
+    
 }

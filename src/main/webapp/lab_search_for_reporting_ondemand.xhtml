@@ -76,7 +76,7 @@
                                     </h:panelGroup>
                                 </p:tooltip>
                             </p:column>
-                            
+
                             <p:column  headerText="Dep ID" styleClass="alignTop" >
                                 <h:outputLabel id="lblInvNo" 
                                                value="#{pi.billItem.bill.deptId}" 
@@ -135,11 +135,11 @@
                             <p:column headerText="Investigation"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
-                               
+
                             </p:column>
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
-                                <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
+                                <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
                                     <p:commandLink process="btnSample" update="tblBills"  
                                                    disabled="#{pi.collected}"   
@@ -160,6 +160,22 @@
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>
+                                    <h:panelGroup >
+                                        <p:commandLink process="btnSms" update="tblBills"  
+                                                       id="btnSms" 
+                                                       rendered="#{!pi.billItem.bill.smsed}"
+                                                       action="#{patientInvestigationController.sendSms()}" >
+                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                            <p:graphicImage library="image/icon" styleClass="standedicon" name="sms.jpg" ></p:graphicImage>
+                                        </p:commandLink>
+                                        <p:commandLink process="btnSmsSent" update="tblBills"  
+                                                       id="btnSmsSent"
+                                                       rendered="#{pi.billItem.bill.smsed}"
+                                                       action="#{patientInvestigationController.sendSms()}" >
+                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                            <p:graphicImage library="image/icon" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
+                                        </p:commandLink>
+                                    </h:panelGroup>
                                 </h:panelGrid>
 
                                 <p:tooltip for="btnReceive"  >

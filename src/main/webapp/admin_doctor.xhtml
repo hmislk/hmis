@@ -69,6 +69,8 @@
                                     <p:inputText autocomplete="off"  value="#{doctorController.current.qualification}" />
                                     <h:outputText  value="Refering Charge" />
                                     <p:inputText autocomplete="off"  value="#{doctorController.current.charge}"  />
+                                    <h:outputLabel value="Use In Channel" />
+                                    <p:selectBooleanCheckbox value="#{doctorController.current.activeForChanneling}"/>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"
