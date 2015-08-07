@@ -64,6 +64,10 @@ public class ServiceSession extends Item implements Serializable {
 
     @Transient
     ServiceSession originatingSession;
+    @Transient
+    int transDisplayCountWithoutCancelRefund;
+    @Transient
+    int transCreditBillCount;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -323,6 +327,21 @@ public class ServiceSession extends Item implements Serializable {
     public void setEndingTime(Date endingTime) {
         this.endingTime = endingTime;
     }
-    
+
+    public int getTransDisplayCountWithoutCancelRefund() {
+        return transDisplayCountWithoutCancelRefund;
+    }
+
+    public void setTransDisplayCountWithoutCancelRefund(int transDisplayCountWithoutCancelRefund) {
+        this.transDisplayCountWithoutCancelRefund = transDisplayCountWithoutCancelRefund;
+    }
+
+    public int getTransCreditBillCount() {
+        return transCreditBillCount;
+    }
+
+    public void setTransCreditBillCount(int transCreditBillCount) {
+        this.transCreditBillCount = transCreditBillCount;
+    }
     
 }

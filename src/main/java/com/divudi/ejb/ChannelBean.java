@@ -111,6 +111,48 @@ public class ChannelBean {
 
         return lg.intValue();
     }
+    
+    public int getBillSessionsCountWithOutCancelRefund(ServiceSession ss, Date date) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select count(bs) From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession =:ser "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " and bs.bill.cancelled=false "
+                + " and bs.bill.refunded=false ";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", date);
+        hh.put("ser", ss);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        Long lg = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
+
+        return lg.intValue();
+    }
+    
+    public int getBillSessionsCountCrditBill(ServiceSession ss, Date date) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select count(bs) From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession =:ser "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " and bs.bill.paidAmount=:pa ";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", date);
+        hh.put("ser", ss);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("pa", 0.0);
+        Long lg = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
+
+        return lg.intValue();
+    }
 
     public List<ServiceSession> setSessionAt(List<ServiceSession> sessions) {
         int sessionDayCount = 0;
@@ -272,7 +314,11 @@ public class ChannelBean {
                         newSs.setSessionAt(nowDate);
                         newSs.setSessionDate(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
+                        newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                        newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
+                        System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                        System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
                         System.out.println("newSs.getDepartment() = " + newSs.getDepartment());
                         System.out.println("newSs.getInstitution() = " + newSs.getInstitution());
                         //Temprory
@@ -316,6 +362,10 @@ public class ChannelBean {
                         System.out.println("newSs.getInstitution() 2= " + newSs.getInstitution());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
+                        newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                        newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
+                        System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                        System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
                         newSs.setSessionDate(nowDate);
                         //Temprory

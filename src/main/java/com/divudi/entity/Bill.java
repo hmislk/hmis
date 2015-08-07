@@ -288,6 +288,8 @@ public class Bill implements Serializable {
     @ManyToOne
     Bill paidBill;
     double qty;
+    @Transient
+    double transTotalSaleValue;
     
     //Sms Info
     private Boolean smsed = false;
@@ -298,6 +300,14 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
 
+    public double getTransTotalSaleValue() {
+        return transTotalSaleValue;
+    }
+
+    public void setTransTotalSaleValue(double transTotalSaleValue) {
+        this.transTotalSaleValue = transTotalSaleValue;
+    }
+    
     public double getQty() {
         return qty;
     }

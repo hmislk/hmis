@@ -445,6 +445,22 @@ public class PharmacyBillSearch implements Serializable {
         bill.setNetTotal(0 - tmp);
         getBillFacade().edit(bill);
     }
+    
+    public void calTotalSaleRate(Bill bill) {
+        double tmp = 0;
+        System.out.println("bill = " + bill);
+        for (BillItem b : bill.getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            double tmp2 = (b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getRetailRate());
+            System.err.println("sale Total " + tmp2);
+            tmp += tmp2;
+        }
+
+        bill.setTransTotalSaleValue(tmp);
+       
+    }
 
     public WebUser getUser() {
         return user;

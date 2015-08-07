@@ -307,7 +307,7 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
-            if (getSessionController().getCurrentPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
                 sql = "select p from Staff p where p.retired=false "
                         + " and p.speciality=:sp "
                         + " and p.activeForChanneling=true "
@@ -475,7 +475,7 @@ public class BookingController implements Serializable {
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
-                    + " order by s.sessionWeekday";
+                    + " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
             System.err.println("Fetch Sessions " + tmp);
             calculateFee(tmp);

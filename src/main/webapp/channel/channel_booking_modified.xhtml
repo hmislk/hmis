@@ -30,8 +30,8 @@
                                                         value="#{bookingController.speciality}" 
                                                         style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                                         <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                        <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
-                                        <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                        <p:ajax  event="change" process="@this" update="scStaff" /> 
+                                        <p:ajax  event="click" process="@this" update="scStaff" /> 
                                     </p:selectOneListbox>
                                 </h:panelGrid>
                             </td>
@@ -53,7 +53,7 @@
                                 <h:panelGrid columns="1">
                                     <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                         <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                                        <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                        <p:ajax  event="click" process="@this scStaff" update=":#{p:component('schedule')}"  
                                                  listener="#{bookingController.generateSessions}"/>
                                     </p:selectOneListbox>
                                 </h:panelGrid>
@@ -64,131 +64,84 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
-                        <tr>
-                            <th>
-                                <p:outputLabel value="Sessions" ></p:outputLabel>
-                            </th>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
-                                             id="tblSessionsOfSelectedConsultant" var="ses"
-                                             selectionMode="single" 
-                                             selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
 
-                                    <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                            update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
-                                            listener="#{bookingController.fillBillSessions}" />  
+                    <p:schedule id="schedule" value="#{bookingController.eventModel}" widgetVar="myschedule" timeZone="IST" style="min-width: 600px;">
+                        <p:ajax event="eventSelect" process="@this schedule" 
+                                update=":#{p:component('digSession')} :#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
+                                listener="#{bookingController.onEventSelect}"
+                                oncomplete="PF('digSession').show();"/>  
 
-                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}">
-                                            <f:convertDateTime pattern="E"/>
-                                        </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.sessionAt}">
-                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
-                                        </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.startingTime}">
-                                            <f:convertDateTime pattern="hh:mm a"/>
-                                        </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;Rs." />
-                                        <h:outputText value="#{ses.originatingSession.totalFee}">
-                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                        </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                        <h:outputText value="(" />
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                        <h:outputText value=") &nbsp;&nbsp;#" />
-                                        <h:outputText value="#{ses.displayCount+1}" style="color: red">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;**" />
-                                        <h:outputText value="#{ses.transCreditBillCount}" >
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                        <h:outputText value="**" />
-                                    </p:column>
-                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
-                                        <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
-                                    </p:column>
-                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
+                    </p:schedule>
 
-                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.displayCount}">
-                                            <f:convertNumber pattern="00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}">
-                                            <f:convertDateTime pattern="dd MMM"/>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.startingTime}">
-                                            <f:convertDateTime pattern="hh:mm"/>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.originatingSession.totalFee}">
-                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                        </h:outputText>                                                            
-                                    </p:column>   
-                                </p:dataTable>
-                            </td>
-                        </tr>
-                    </table>
+                    <p:dialog id="digSession" widgetVar="digSession" modal="false"  >
+                        <p:panelGrid columns="2" >
+                            <p:panel header="Session Details" >
+                                <p:panelGrid columns="2" >
+                                    <h:outputText value="Session" ></h:outputText>
+                                    <h:outputLabel value="#{bookingController.selectedServiceSession.name}" ></h:outputLabel>
+
+                                    <h:outputLabel value="Maximum Number" ></h:outputLabel>
+                                    <h:outputLabel rendered="#{bookingController.selectedServiceSession.maxNo ne 0}" value="#{bookingController.selectedServiceSession.maxNo}" ></h:outputLabel>
+                                    <h:outputLabel rendered="#{bookingController.selectedServiceSession.maxNo eq 0}" value="Not Limited" ></h:outputLabel>
+
+                                    <h:outputLabel value="Booked" ></h:outputLabel>
+                                    <h:outputText value="#{bookingController.selectedServiceSession.displayCount}">
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Date" ></h:outputLabel>
+                                    <h:outputText value="#{bookingController.selectedServiceSession.sessionAt}">
+                                        <f:convertDateTime pattern="dd MMM"/>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Time" ></h:outputLabel>
+                                    <h:outputText value="#{bookingController.selectedServiceSession.startingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Fee" ></h:outputLabel>
+                                    <h:outputText value="#{bookingController.selectedServiceSession.originatingSession.totalFee}">
+                                        <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                    </h:outputText>  
+                                </p:panelGrid>
+                            </p:panel>
+
+
+
+                        </p:panelGrid>
+
+
+                    </p:dialog>
+
+
                 </h:panelGroup>
 
-                <h:panelGroup >
-                    <table >
-                        <tr>
-                            <th>
-                                <p:outputLabel value="Bookings" ></p:outputLabel>
-                            </th>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
-                                             value="#{bookingController.billSessions}" var='bs'
-                                             selectionMode="single" rowKey="#{bs.id}"
-                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="560">
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
-                                            listener="#{channelBillController.createBillfees}" />  
+                <p:panel >
+                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
+                                 value="#{bookingController.billSessions}" var='bs'
+                                 selectionMode="single" rowKey="#{bs.id}"
+                                 selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="560">
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                                listener="#{channelBillController.createBillfees}" />  
 
-                                    <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
-                                    <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                                    <p:column headerText="Paid">
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
-                                    </p:column>
-                                    <p:column headerText="C/R">
-                                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                                    </p:column>   
-                                    <p:column headerText="Agent">
-                                        <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
-                                    </p:column> 
-                                    <p:column headerText="P/A">                           
-                                        <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                    </p:column> 
-                                </p:dataTable>    
-                            </td>
-                        </tr>
-                    </table>
-                </h:panelGroup>
-
+                        <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
+                        <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Paid">
+                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                        </p:column>
+                        <p:column headerText="C/R">
+                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                        </p:column>   
+                        <p:column headerText="Agent">
+                            <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
+                        </p:column> 
+                        <p:column headerText="P/A">                           
+                            <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                        </p:column> 
+                    </p:dataTable>    
+                </p:panel>
 
             </h:panelGrid>
 
@@ -222,7 +175,7 @@
 
                             <h:outputLabel/>
                             <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
-                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
+                                <f:ajax event="change" execute="@this schedule" render="lblSessionTotal"/>
                             </p:selectBooleanCheckbox>
                             <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
