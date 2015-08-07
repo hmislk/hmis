@@ -54,7 +54,7 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        if (sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (sessionController.getInstitutionPreference()!=null && sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);

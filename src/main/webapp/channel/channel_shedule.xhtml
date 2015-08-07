@@ -26,7 +26,7 @@
                         <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           converter="stfcon"   >   
-                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />
+                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{sheduleController.prepareAdd()}" />
                         </p:autoComplete>  
                         
                         

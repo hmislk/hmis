@@ -2436,7 +2436,9 @@ public class PharmacyBillSearch implements Serializable {
     public void setBill(Bill bb) {
         recreateModel();
         this.bill = bb;
-        paymentMethod = bb.getPaymentMethod();
+        if (bb.getPaymentMethod()!=null) {
+            paymentMethod = bb.getPaymentMethod();
+        }
 
     }
 
