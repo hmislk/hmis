@@ -80,6 +80,7 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
+    PaymentMethod cancelPaymentMethod;
     PaymentMethodData paymentMethodData;
     Institution institution;
     Institution settleInstitution;
@@ -482,6 +483,49 @@ public class ChannelBillController implements Serializable {
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
 
     }
+    
+    
+    
+    public void cancelAgentPaidBill() {
+        if (getBillSession() == null) {
+            UtilityController.addErrorMessage("No BillSession");
+            return;
+        }
+
+        if (getBillSession().getBill() == null) {
+            UtilityController.addErrorMessage("No Bill To Cancel");
+            return;
+        }
+
+        if (getBillSession().getPaidBillSession() == null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
+            return;
+        }
+
+        if (getBillSession().getPaidBillSession().getBill() == null) {
+            UtilityController.addErrorMessage("No Paid Paid Bill Session");
+            return;
+        }
+
+        if (getBillSession().getPaidBillSession().getBill().isRefunded()) {
+            UtilityController.addErrorMessage("Already Refunded");
+            return;
+        }
+
+        if (getBillSession().getPaidBillSession().getBill().isCancelled()) {
+            UtilityController.addErrorMessage("Already Cancelled");
+            return;
+        }
+
+        if (getCancelPaymentMethod()==null) {
+            UtilityController.addErrorMessage("Select Payment Method");
+            return;
+        }
+        
+        cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
+        cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+
+    }
 
     public void cancelCreditPaidBill() {
         if (getBillSession() == null) {
@@ -514,14 +558,6 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
-        System.out.println("getBillSession().getPaidBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
-        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getBill());
-
-        System.out.println("getBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
-        System.out.println("getBillSession().getBillItem() = " + getBillSession().getPaidBillSession().getBill());
-        System.out.println("getBillSession() = " + getBillSession().getPaidBillSession().getBill());
-
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
 
@@ -549,8 +585,8 @@ public class ChannelBillController implements Serializable {
 //            getBillSession().setBill(getBillSession().getBill().getReferenceBill());
 //            getBillSessionFacade().edit(getBillSession());
 //        }
-        if (cb.getPaymentMethod() == PaymentMethod.Agent) {
-            updateBallance(cb.getFromInstitution(),
+        if (cb.getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
+            updateBallance(cb.getCreditCompany(),
                     0 - cb.getNetTotal(),
                     HistoryType.ChannelBookingCancel,
                     cb, cItem, cbs, cItem.getAgentRefNo());
@@ -799,6 +835,10 @@ public class ChannelBillController implements Serializable {
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession, String refNo) {
+        System.out.println("updating agency balance");
+        System.out.println("ins.getName() = " + ins.getName());
+        System.out.println("ins.getBallance() before " + ins.getBallance());
+        System.out.println("transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setBill(bill);
@@ -812,6 +852,8 @@ public class ChannelBillController implements Serializable {
 
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
+        System.out.println("ins.getBallance() after " + ins.getBallance());
+        
     }
 
     public double getAmount() {
@@ -1215,6 +1257,7 @@ public class ChannelBillController implements Serializable {
                 break;
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
+                bill.setCreditCompany(institution);
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
@@ -1295,7 +1338,7 @@ public class ChannelBillController implements Serializable {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getInstitution(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
             savingBill.setBalance(0.0);
@@ -1612,5 +1655,15 @@ public class ChannelBillController implements Serializable {
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
+
+    public PaymentMethod getCancelPaymentMethod() {
+        return cancelPaymentMethod;
+    }
+
+    public void setCancelPaymentMethod(PaymentMethod cancelPaymentMethod) {
+        this.cancelPaymentMethod = cancelPaymentMethod;
+    }
+    
+    
 
 }
