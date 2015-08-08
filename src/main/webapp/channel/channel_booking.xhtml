@@ -587,7 +587,7 @@
                                 <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
                                     <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.refundPaymentMethod}">  
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
                                     </p:selectOneMenu>
