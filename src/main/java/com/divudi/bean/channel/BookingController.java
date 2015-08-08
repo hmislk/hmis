@@ -8,13 +8,13 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
@@ -40,7 +40,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -48,9 +47,7 @@ import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
-import org.primefaces.model.DefaultScheduleEvent;
 import org.primefaces.model.DefaultScheduleModel;
-import org.primefaces.model.ScheduleEvent;
 import org.primefaces.model.ScheduleModel;
 
 /**
@@ -112,14 +109,10 @@ public class BookingController implements Serializable {
     int serealNo;
     Date date;
 
-    
-    
-    
     private ScheduleModel eventModel;
- 
+
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-    
-    
+
     public String nurse() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
@@ -200,10 +193,10 @@ public class BookingController implements Serializable {
 
         return alreadyExists;
     }
-    
+
     public boolean errorCheck() {
-        boolean flag=false;
-        if (serealNo==0) {
+        boolean flag = false;
+        if (serealNo == 0) {
             UtilityController.addErrorMessage("Cant Add This Number");
             return true;
         }
@@ -217,7 +210,7 @@ public class BookingController implements Serializable {
                     if (serealNo == bi.getBillSession().getSerialNo()) {
                         System.err.println("Equals");
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
-                        flag=true;
+                        flag = true;
                     }
                 }
             }
@@ -308,14 +301,20 @@ public class BookingController implements Serializable {
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
             if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-                sql = "select p from Staff p where p.retired=false "
-                        + " and p.speciality=:sp "
-                        + " and p.activeForChanneling=true "
-                        + " order by p.person.name ";
-            }else{
+
+                sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                        + " and pi.type=:typ "
+                        + " and pi.institution=:ins "
+                        + " and pi.staff.speciality=:sp "
+                        + " order by pi.staff.person.name ";
+
+                m.put("ins", getSessionController().getInstitution());
+                m.put("typ", PersonInstitutionType.Channelling);
+
+            } else {
                 sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
             }
-            
+
             consultants = getStaffFacade().findBySQL(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
@@ -338,7 +337,6 @@ public class BookingController implements Serializable {
      */
     public BookingController() {
     }
-    
 
     public Speciality getSpeciality() {
         return speciality;
@@ -368,8 +366,6 @@ public class BookingController implements Serializable {
     public void setDate(Date date) {
         this.date = date;
     }
-    
-    
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
@@ -485,10 +481,10 @@ public class BookingController implements Serializable {
             System.err.println("Calling End");
         }
     }
-    
-    public void generateSessionEvents(List<ServiceSession> sss){
+
+    public void generateSessionEvents(List<ServiceSession> sss) {
         eventModel = new DefaultScheduleModel();
-        for(ServiceSession s:sss){
+        for (ServiceSession s : sss) {
             ChannelScheduleEvent e = new ChannelScheduleEvent();
             e.setServiceSession(s);
             e.setTitle(s.getName());
@@ -499,14 +495,14 @@ public class BookingController implements Serializable {
         }
         System.out.println("eventModel = " + eventModel);
     }
-    
+
     public void onEventSelect(SelectEvent selectEvent) {
         event = (ChannelScheduleEvent) selectEvent.getObject();
         selectedServiceSession = event.getServiceSession();
         fillBillSessions();
     }
-    
-    public  void generateSessionsFutureBooking(SelectEvent event) {
+
+    public void generateSessionsFutureBooking(SelectEvent event) {
         date = null;
         date = ((Date) event.getObject());
         serviceSessions = new ArrayList<>();
@@ -523,20 +519,20 @@ public class BookingController implements Serializable {
         if (staff != null) {
             Calendar c = Calendar.getInstance();
             c.setTime(getDate());
-            int wd = c.get(Calendar.DAY_OF_WEEK);            
-            
+            int wd = c.get(Calendar.DAY_OF_WEEK);
+
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
                     + " and s.sessionWeekday=:wd ";
-            
+
             m.put("staff", getStaff());
-            m.put("wd", wd);            
+            m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
             calculateFee(tmp);
             serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
-        }        
-        
+        }
+
         billSessions = new ArrayList<>();
     }
 
@@ -582,7 +578,7 @@ public class BookingController implements Serializable {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
-        HashMap hh = new HashMap();     
+        HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
@@ -591,7 +587,7 @@ public class BookingController implements Serializable {
         System.out.println("billSessions" + billSessions);
 
     }
-    
+
     public void fillBillSessions() {
         selectedBillSession = null;
 //        selectedServiceSession = ((ServiceSession) event.getObject());
@@ -606,7 +602,7 @@ public class BookingController implements Serializable {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
-        HashMap hh = new HashMap();     
+        HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
@@ -807,7 +803,7 @@ public class BookingController implements Serializable {
     }
 
     public ScheduleModel getEventModel() {
-        if(eventModel==null){
+        if (eventModel == null) {
             eventModel = new DefaultScheduleModel();
         }
         return eventModel;
@@ -818,7 +814,7 @@ public class BookingController implements Serializable {
     }
 
     public ChannelScheduleEvent getEvent() {
-        if(event==null){
+        if (event == null) {
             event = new ChannelScheduleEvent();
         }
         return event;
@@ -828,6 +824,4 @@ public class BookingController implements Serializable {
         this.event = event;
     }
 
-    
-    
 }

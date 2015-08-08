@@ -1065,6 +1065,10 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        if (getAgentReferenceBookController().checkAgentReferenceNumber( getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            UtilityController.addErrorMessage("Invaild Reference Number.");
+            return true;
+        }
         if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
             UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
