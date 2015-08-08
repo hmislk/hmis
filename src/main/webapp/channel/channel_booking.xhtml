@@ -544,7 +544,7 @@
                         </p:panel>
 
                         <p:tab title="Cancel" id="cancel">                                                         
-                            #{channelBillController.billSession.bill.billType.parent}
+                            #{channelBillController.billSession.bill.billType}
 
                             <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
                                 <p:outputLabel value="Re-payment Method"/>
@@ -561,8 +561,8 @@
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel Agent Bill" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.cancelCashFlowBill}"
+                                             rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
+                                             action="#{channelBillController.cancelAgentPaidBill()}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
@@ -573,7 +573,7 @@
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel Paid" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
@@ -584,6 +584,15 @@
 
                         <p:tab title="Refund" id="refund">                          
                             <h:panelGroup>
+                                <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+
+                                    <p:outputLabel value="Re-payment Method"/>
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
+                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
@@ -606,15 +615,23 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
+                            
+                            <p:commandButton ajax="false" value="Refund Agent Bills" 
+                                             rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"
+                                             action="#{channelBillController.refundAgentBill}" 
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                             onclick="onSubmitButton();"/>
+                            
                             <p:commandButton ajax="false" value="Refund" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Refund Paid" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' }"
                                              action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
