@@ -544,10 +544,28 @@
                         </p:panel>
 
                         <p:tab title="Cancel" id="cancel">                                                         
+                            #{channelBillController.billSession.bill.billType.parent}
+
+                            <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+                                <p:outputLabel value="Re-payment Method"/>
+                                <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
+                                    <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+
 
                             <h:panelGroup>
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
+                            <p:commandButton ajax="false" value="Cancel Agent Bill" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             action="#{channelBillController.cancelCashFlowBill}"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
