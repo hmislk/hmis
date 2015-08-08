@@ -545,7 +545,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
+        //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         cancelPaymentMethod = null;
     }
@@ -591,30 +591,52 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        CancelledBill cb = createCancelBill(bill);
+        if (bill.getPaidBill().equals(bill)) {
+            CancelledBill cb = createCancelBill(bill);
+            BillItem cItem = cancelBillItems(billItem, cb);
+            BillSession cbs = cancelBillSession(billSession, cb, cItem);
+            bill.setCancelled(true);
+            bill.setCancelledBill(cb);
+            getBillFacade().edit(bill);
 
-        BillItem cItem = cancelBillItems(billItem, cb);
-        BillSession cbs = cancelBillSession(billSession, cb, cItem);
+            //Update BillSession        
+            billSession.setReferenceBillSession(cbs);
+            billSessionFacade.edit(billSession);
 
-        bill.setCancelled(true);
-        bill.setCancelledBill(cb);
-        getBillFacade().edit(bill);
+            if (bill.getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
+                updateBallance(bill.getCreditCompany(),
+                        0 - bill.getNetTotal(),
+                        HistoryType.ChannelBooking,
+                        cb, cItem, cbs, billSession.getBillItem().getAgentRefNo());
+            }
+        } else {
+            CancelledBill cb = createCancelBill(bill);
+            BillItem cItem = cancelBillItems(billItem, cb);
+            BillSession cbs = cancelBillSession(billSession, cb, cItem);
+            bill.setCancelled(true);
+            bill.setCancelledBill(cb);
+            getBillFacade().edit(bill);
+            billSession.setReferenceBillSession(cbs);
+            billSessionFacade.edit(billSession);
 
-        //Update BillSession        
-        billSession.setReferenceBillSession(cbs);
-        billSessionFacade.edit(billSession);
+            CancelledBill cpb = createCancelBill(bill.getPaidBill());
+            BillItem cpItem = cancelBillItems(bill.getPaidBill().getSingleBillItem(), cb);
+            BillSession cpbs = cancelBillSession(billSession.getPaidBillSession(), cpb, cpItem);
+            bill.getPaidBill().setCancelled(true);
+            bill.getPaidBill().setCancelledBill(cpb);
+            getBillFacade().edit(bill.getPaidBill());
+            billSession.getPaidBillSession().setReferenceBillSession(cpbs);
+            billSessionFacade.edit(billSession.getPaidBillSession());
 
-//        if (getBillSession().getBill().getReferenceBill() != null) {
-//            getBillSession().setBill(getBillSession().getBill().getReferenceBill());
-//            getBillSessionFacade().edit(getBillSession());
-//        }
-        if (cb.getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
-            updateBallance(cb.getCreditCompany(),
-                    0 - cb.getNetTotal(),
-                    HistoryType.ChannelBooking,
-                    cb, cItem, cbs, cItem.getAgentRefNo());
+            if (bill.getPaidBill().getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
+                updateBallance(bill.getPaidBill().getCreditCompany(),
+                        0 - bill.getPaidBill().getNetTotal(),
+                        HistoryType.ChannelBooking,
+                        cpb, cpItem, cpbs, billItem.getAgentRefNo());
+            }
+
         }
-
+        
         UtilityController.addSuccessMessage("Cancelled");
 
     }
