@@ -86,7 +86,8 @@ public class AgentReferenceBookController implements Serializable {
 
         String sql;
         sql = "select a from AgentReferenceBook a where "
-                + " a.retired=false ";
+                + " a.retired=false "
+                + " and a.deactivate=false ";
 
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql);
 
@@ -207,6 +208,16 @@ public class AgentReferenceBookController implements Serializable {
             return false;
         }
 
+    }
+    
+    public Boolean checkAgentReferenceNumber( String refNumber) {
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     public AgentReferenceBook getAgentReferenceBook() {
