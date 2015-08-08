@@ -68,44 +68,6 @@ body {
     }
 }
 
-h1, h2, h3 {
-    margin: 0px;
-    padding: 0px;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-    font-family: 'Arvo', serif;
-    font-weight: normal;
-    color: #107710;
-    color: red;
-
-}
-
-h1 {
-    font-size: 2em;
-}
-
-h2 {
-    font-size: 2.4em;
-}
-
-h3 {
-    font-size: 1.6em;
-}
-
-p, ul, ol {
-    margin-top: 0;
-    line-height: 180%;
-}
-
-ul, ol {
-}
-
-a {
-    color: #107710;
-}
-
-a:hover {
-}
 
 /* Header */
 
@@ -864,6 +826,10 @@ a:hover {
     width: 300px!important;
 }
 
+.mediuminput .ui-autocomplete-input.ui-inputfield { 
+    width : 300px!important;
+}
+
 .shortinput .ui-autocomplete-input {
     width: 200px!important;
 }
@@ -872,7 +838,9 @@ a:hover {
     width: 100px!important;
 }
 
-
+.shortinput .ui-autocomplete-input.ui-inputfield { 
+    width : 100px!important;
+}
 
 .standardList{
     height: 300px;

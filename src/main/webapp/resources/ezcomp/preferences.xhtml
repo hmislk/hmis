@@ -122,6 +122,8 @@
 
                     <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
+                    <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
 
 
 
@@ -146,6 +148,7 @@
 
         </h:panelGrid>
 
+        <h:outputLabel value="#{sessionController.currentPreference.id}" ></h:outputLabel>
 
 
 

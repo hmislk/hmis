@@ -108,7 +108,7 @@ public class SheduleController implements Serializable {
 
         return hos;
     }
-    
+
     public ItemFee createAgencyFee() {
         ItemFee agency = new ItemFee();
         agency.setName("Agency Fee");
@@ -152,7 +152,15 @@ public class SheduleController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                    sql = "select p from Staff p where p.retired=false "
+                            + " and p.activeForChanneling=true "
+                            + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) "
+                            + " and p.speciality.id = " + getSpeciality().getId() 
+                            + " order by p.person.name";
+                } else {
+                    sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                }
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
@@ -223,10 +231,9 @@ public class SheduleController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    
     @EJB
     DepartmentFacade departmentFacade;
-    
+
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         if (getCurrent().getInstitution() == null) {
@@ -239,7 +246,6 @@ public class SheduleController implements Serializable {
         return d;
     }
 
-    
     public ServiceSession getCurrent() {
         if (current == null) {
             current = new ServiceSession();
@@ -268,7 +274,8 @@ public class SheduleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
-                + " and s.staff=:stf ";
+                + " and s.staff=:stf "
+                + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
         //hm.put("class", ServiceSessionLeave.class);
         items = getFacade().findBySQL(sql, hm);
@@ -427,7 +434,7 @@ public class SheduleController implements Serializable {
 
         getCurrent().setTotal(calTot());
         getCurrent().setTotalFfee(calFTot());
-        
+
         facade.edit(getCurrent());
 
         prepareAdd();
@@ -441,7 +448,7 @@ public class SheduleController implements Serializable {
         }
         return tot;
     }
-    
+
     private double calFTot() {
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
