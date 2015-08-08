@@ -98,6 +98,8 @@ public class BhtEditController implements Serializable {
         hm.put("pEnc", current);
         Bill bill = getBillFacade().findFirstBySQL(sql, hm);
         if (bill != null) {
+            System.out.println("bill.getInsId() = " + bill.getInsId());
+            System.out.println("bill.isCancelled() = " + bill.isCancelled());
             return true;
         }
 

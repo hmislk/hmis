@@ -12,17 +12,29 @@ import javax.annotation.Resource;
 import javax.transaction.UserTransaction;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.util.PagingInfo;
+import com.divudi.data.PersonInstitutionType;
+import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PersonInstitution;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.PersonInstitutionFacade;
+import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.model.SelectItem;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -33,7 +45,7 @@ import javax.persistence.PersistenceUnit;
  */
 @Named
 @SessionScoped
-public class PersonInstitutionController implements Serializable{
+public class PersonInstitutionController implements Serializable {
 
     public PersonInstitutionController() {
         pagingInfo = new PagingInfo();
@@ -49,11 +61,26 @@ public class PersonInstitutionController implements Serializable{
     @PersistenceUnit(unitName = "hmisPU")
     private EntityManagerFactory emf = null;
 
+    @Inject
+    SessionController sessionController;
+
+    @EJB
+    StaffFacade staffFacade;
+    @EJB
+    PersonInstitutionFacade personInstitutionFacade;
+
+    ReportKeyWord reportKeyWord;
+
     Institution institution;
+    Speciality speciality;
     List<PersonInstitution> institutionPersons;
-    Staff staff;
+    List<Staff> selectedList;
+    List<Staff> withOutInstitutionPersonsStaffs;
 
     public Institution getInstitution() {
+        if (institution == null) {
+            institution = getSessionController().getInstitution();
+        }
         return institution;
     }
 
@@ -69,35 +96,237 @@ public class PersonInstitutionController implements Serializable{
         this.institutionPersons = institutionPersons;
     }
 
-    public Staff getStaff() {
-        return staff;
+    public List<Staff> getSelectedList() {
+        return selectedList;
     }
 
-    public void setStaff(Staff staff) {
-        this.staff = staff;
+    public void setSelectedList(List<Staff> selectedList) {
+        this.selectedList = selectedList;
     }
-    
-    
-    
-    public void addStaffToInstitutionPersons(){
+
+    public List<Staff> getWithOutInstitutionPersonsStaffs() {
+        return withOutInstitutionPersonsStaffs;
+    }
+
+    public void setWithOutInstitutionPersonsStaffs(List<Staff> withOutInstitutionPersonsStaffs) {
+        this.withOutInstitutionPersonsStaffs = withOutInstitutionPersonsStaffs;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
+    }
+
+    public PersonInstitutionFacade getPersonInstitutionFacade() {
+        return personInstitutionFacade;
+    }
+
+    public void setPersonInstitutionFacade(PersonInstitutionFacade personInstitutionFacade) {
+        this.personInstitutionFacade = personInstitutionFacade;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public void addStaffToInstitutionPersons() {
         //Search database for same persons institution >> If retired > active, it not error
         // New Person Institition
         // Institution Person List Update
         // staff null
-        
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select Institution");
+            return;
+        }
+
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing To Add.");
+            return;
+        }
+
+        System.out.println("selectedList = " + selectedList.size());
+        for (Staff s : selectedList) {
+            PersonInstitution pi = findDeactivatedPersonInstitution(institution, s, true);
+            if (findDeactivatedPersonInstitution(institution, s, false) != null) {
+                System.err.println("Alredy Added");
+                continue;
+            }
+            System.out.println("pi = " + pi);
+            if (pi == null) {
+                PersonInstitution p = new PersonInstitution();
+                p.setStaff(s);
+                p.setInstitution(institution);
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setCreatedAt(new Date());
+                p.setType(PersonInstitutionType.Channelling);
+                getPersonInstitutionFacade().create(p);
+            } else {
+                System.out.println("pi.getInstitution().getName() = " + pi.getInstitution().getName());
+                System.out.println("pi.getStaff().getPerson().getNameWithInitials() = " + pi.getStaff().getPerson().getNameWithInitials());
+                System.out.println("pi.isRetired() = " + pi.isRetired());
+                pi.setRetired(false);
+                getPersonInstitutionFacade().edit(pi);
+            }
+        }
+        JsfUtil.addSuccessMessage("Sucessfull " + selectedList.size() + " Doctors added");
+        selectedList = new ArrayList<>();
+        withOutInstitutionPersonsStaffs = new ArrayList<>();
+        createWithOutInstitutionPersonsStaffs();
+
     }
-    
-    public void removeStaffToInstitutionPersons(){
-        
+
+    public void removeStaffToInstitutionPersons(PersonInstitution pi) {
+        if (pi == null) {
+            return;
+        }
+        pi.setRetired(true);
+        pi.setRetirer(getSessionController().getLoggedUser());
+        pi.setRetiredAt(new Date());
+        getPersonInstitutionFacade().edit(pi);
+        fillStaffInstitutionPersons();
+        JsfUtil.addSuccessMessage("Removed");
     }
-    
-        
-    
-    public void fillStaffInstitutionPersons(){
+
+    public void fillStaffInstitutionPersons() {
         // sdfsdf
-        
+        //restrictions
+        if (reportKeyWord == null) {
+            System.err.println("ReportKeyword Is null");
+            return;
+        }
+        institutionPersons = findPersonInstitutions(reportKeyWord.getInstitution(), reportKeyWord.getStaff(),reportKeyWord.getSpeciality());
+        System.out.println("institutionPersons = " + institutionPersons.size());
+
     }
-    
+
+    public void createWithOutInstitutionPersonsStaffs() {
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select Institution");
+            return;
+        }
+        List<Staff> staffsWithInstitutionPersons = new ArrayList<>();
+        List<Staff> staffsAll = new ArrayList<>();
+        withOutInstitutionPersonsStaffs = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                + " and pi.staff.retired=false "
+                + " and pi.institution=:ins "
+                + " and pi.type=:typ ";
+        if (speciality != null) {
+            sql += " and pi.staff.speciality=:spe ";
+            m.put("spe", speciality);
+        }
+
+        m.put("ins", institution);
+
+        m.put("typ", PersonInstitutionType.Channelling);
+
+        staffsWithInstitutionPersons = getStaffFacade().findBySQL(sql, m);
+
+        m = new HashMap();
+
+        sql = " select s from Staff s where s.retired=false "
+                + " and type(s)=:class ";
+
+        if (speciality != null) {
+            sql += " and s.speciality=:spe ";
+            m.put("spe", speciality);
+        }
+
+        sql += " order by s.person.name ";
+
+        m.put("class", Consultant.class);
+
+        staffsAll = getStaffFacade().findBySQL(sql, m);
+
+        withOutInstitutionPersonsStaffs.addAll(staffsAll);
+        withOutInstitutionPersonsStaffs.removeAll(staffsWithInstitutionPersons);
+
+        System.out.println("staffsAll = " + staffsAll.size());
+        System.out.println("staffsWithInstitutionPersons = " + staffsWithInstitutionPersons.size());
+        System.out.println("withOutInstitutionPersonsStaffs = " + withOutInstitutionPersonsStaffs.size());
+    }
+
+    public PersonInstitution findDeactivatedPersonInstitution(Institution i, Staff s, boolean b) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi from PersonInstitution pi where pi.staff=:staff "
+                + " and pi.institution=:ins "
+                + " and pi.type=:typ ";
+
+        if (b) {
+            sql += " and pi.retired=true ";
+        } else {
+            sql += " and pi.retired=false ";
+        }
+
+        m.put("ins", i);
+        m.put("typ", PersonInstitutionType.Channelling);
+        m.put("staff", s);
+
+        return getPersonInstitutionFacade().findFirstBySQL(sql, m);
+    }
+
+    public List<PersonInstitution> findPersonInstitutions(Institution i, Staff s,Speciality sp) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi from PersonInstitution pi where pi.retired=false "
+                + " and pi.type=:typ ";
+
+        if (i != null) {
+            sql += " and pi.institution=:ins ";
+            m.put("ins", i);
+        }
+
+        if (s != null) {
+            sql += " and pi.staff=:staff ";
+            m.put("staff", s);
+        }
+        
+        if (sp != null) {
+            sql += " and pi.staff.speciality=:spe ";
+            m.put("spe", sp);
+        }
+
+        sql += " order by pi.staff.person.name ";
+
+        m.put("typ", PersonInstitutionType.Channelling);
+
+        return getPersonInstitutionFacade().findBySQL(sql, m);
+    }
+
     public PagingInfo getPagingInfo() {
         if (pagingInfo.getItemCount() == -1) {
             pagingInfo.setItemCount(getJpaController().count());
@@ -334,5 +563,5 @@ public class PersonInstitutionController implements Serializable{
     public Converter getConverter() {
         return converter;
     }
-    
+
 }
