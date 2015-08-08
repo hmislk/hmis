@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
@@ -148,16 +149,23 @@ public class SheduleController implements Serializable {
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
+        Map m = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
                 if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-                    sql = "select p from Staff p where p.retired=false "
-                            + " and p.activeForChanneling=true "
-                            + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) "
-                            + " and p.speciality.id = " + getSpeciality().getId() 
-                            + " order by p.person.name";
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and (upper(pi.staff.person.name) like '%" + query.toUpperCase() + "%'or  upper(pi.staff.code) like '%" + query.toUpperCase() + "%' )"
+                            + " and pi.staff.speciality=:spe "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("spe", getSpeciality());
+                    m.put("typ", PersonInstitutionType.Channelling);
                 } else {
                     sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
                 }
@@ -165,7 +173,7 @@ public class SheduleController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             ////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findBySQL(sql,m);
         }
         return suggestions;
     }
