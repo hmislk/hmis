@@ -7,6 +7,7 @@ package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaperType;
+import com.divudi.data.PaymentMethod;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -34,7 +35,18 @@ public class UserPreference implements Serializable {
     String abbreviationForTreatments;
     String abbreviationForManagement;
     @Lob
+    String pharmacyBillHeader;
+    @Lob
     String pharmacyBillFooter;
+    @Lob
+    String opdBillHeader;
+    @Lob
+    String opdBillFooter;
+    @Lob
+    String channellingBillHeader;
+    @Lob
+    String channellingBillFooter;
+    
     @ManyToOne
     WebUser webUser;
     @ManyToOne
@@ -65,9 +77,12 @@ public class UserPreference implements Serializable {
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
+    @Enumerated(EnumType.STRING)
     PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     ApplicationInstitution applicationInstitution;
+    @Enumerated(EnumType.STRING)
+    PaymentMethod channellingPaymentMethod;
 
     public ApplicationInstitution getApplicationInstitution() {
         if(applicationInstitution==null){
@@ -385,6 +400,56 @@ public class UserPreference implements Serializable {
     public void setShowOnlyMarkedDoctors(boolean showOnlyMarkedDoctors) {
         this.showOnlyMarkedDoctors = showOnlyMarkedDoctors;
     }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+
+    public String getOpdBillHeader() {
+        return opdBillHeader;
+    }
+
+    public void setOpdBillHeader(String opdBillHeader) {
+        this.opdBillHeader = opdBillHeader;
+    }
+
+    public String getOpdBillFooter() {
+        return opdBillFooter;
+    }
+
+    public void setOpdBillFooter(String opdBillFooter) {
+        this.opdBillFooter = opdBillFooter;
+    }
+
+    public String getChannellingBillHeader() {
+        return channellingBillHeader;
+    }
+
+    public void setChannellingBillHeader(String channellingBillHeader) {
+        this.channellingBillHeader = channellingBillHeader;
+    }
+
+    public String getChannellingBillFooter() {
+        return channellingBillFooter;
+    }
+
+    public void setChannellingBillFooter(String channellingBillFooter) {
+        this.channellingBillFooter = channellingBillFooter;
+    }
+
+    public PaymentMethod getChannellingPaymentMethod() {
+        return channellingPaymentMethod;
+    }
+
+    public void setChannellingPaymentMethod(PaymentMethod channellingPaymentMethod) {
+        this.channellingPaymentMethod = channellingPaymentMethod;
+    }
+    
+    
     
     @Override
     public int hashCode() {

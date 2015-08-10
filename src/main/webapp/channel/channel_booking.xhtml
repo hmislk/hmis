@@ -216,6 +216,7 @@
 
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
+                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip staff autoStaff" event="change" />
                             </p:selectOneMenu>
@@ -259,7 +260,7 @@
                         </h:panelGrid>                        
 
                     </f:facet>
-                    <p:tabView>
+                    <p:tabView activeIndex="#{channelBillController.patientSearchTab}" >
                         <p:ajax event="tabChange"  process="@this" listener="#{channelBillController.onTabChange}" />
                         <p:tab id="tabNewPt" title="New Pateint">
                             <h:panelGrid columns="2">

@@ -19,17 +19,17 @@
     <cc:implementation>
         <p:panel>
             <f:facet name="header">
-            <h:outputLabel value="Program Preferences" ></h:outputLabel>
-            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
-            <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
-                <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
-            </h:panelGroup>
-            <h:panelGroup rendered="#{cc.attrs.department ne null}" >
-                <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
-            </h:panelGroup>
+                <h:outputLabel value="Program Preferences" ></h:outputLabel>
+                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
+                    <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.department ne null}" >
+                    <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
+                </h:panelGroup>
             </f:facet>
         </p:panel>
-        
+
 
         <h:panelGrid columns="3" styleClass="alignTop" >
 
@@ -89,7 +89,7 @@
 
                     <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
-                    
+
                     <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
 
@@ -124,7 +124,10 @@
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
                     <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
-
+                    <h:outputLabel value="Default Payment Method"></h:outputLabel>
+                    <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
+                        <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                    </p:selectOneMenu>
 
 
                 </h:panelGrid>
