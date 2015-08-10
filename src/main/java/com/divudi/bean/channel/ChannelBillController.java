@@ -996,6 +996,7 @@ public class ChannelBillController implements Serializable {
         agentRefNo = "";
         billSession = null;
         patientTabId = "tabNewPt";
+        patientSearchTab=0;
         billFee = null;
         refundBillFee = null;
         billItems = null;
@@ -1009,6 +1010,10 @@ public class ChannelBillController implements Serializable {
     AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
+        if (getbookingController().getSelectedServiceSession()==null) {
+            UtilityController.addErrorMessage("Please Select Specility and Doctor.");
+            return true;
+        }
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
             UtilityController.addErrorMessage("Please Select Session");
             return true;
@@ -1043,6 +1048,14 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
+            if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                UtilityController.addErrorMessage("Invaild Reference Number.");
+                return true;
+            }
+            if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                return true;
+            }
         }
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
@@ -1063,14 +1076,6 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-            UtilityController.addErrorMessage("Invaild Reference Number.");
-            return true;
-        }
-        if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-            return true;
-        }
 
         return false;
     }
