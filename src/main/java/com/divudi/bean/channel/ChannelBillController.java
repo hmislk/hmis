@@ -1014,6 +1014,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         System.out.println("patientTabId = " + patientTabId);
+        System.out.println("getPatientTabId = " + getPatientTabId());
         if (patientTabId.equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
                 UtilityController.addErrorMessage("Can not bill without Patient ");
@@ -1587,6 +1588,8 @@ public class ChannelBillController implements Serializable {
     public void setPatientTabId(String patientTabId) {
         this.patientTabId = patientTabId;
         System.out.println("Setting Tab Id : " + patientTabId);
+        System.out.println("this.patientTabId = " + this.patientTabId);
+        System.out.println("getPatientTabId() = " + getPatientTabId());
     }
 
     public boolean isForiegn() {
