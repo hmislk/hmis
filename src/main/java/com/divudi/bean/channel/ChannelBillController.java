@@ -74,6 +74,7 @@ public class ChannelBillController implements Serializable {
     private String settleAgentRefNo;
     private double amount;
     private boolean foriegn = false;
+    boolean settleSucessFully = false;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
     PaymentMethod cancelPaymentMethod;
@@ -83,6 +84,7 @@ public class ChannelBillController implements Serializable {
     Institution settleInstitution;
     Bill printingBill;
     Staff toStaff;
+    String errorText;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -996,7 +998,7 @@ public class ChannelBillController implements Serializable {
         agentRefNo = "";
         billSession = null;
         patientTabId = "tabNewPt";
-        patientSearchTab=0;
+        patientSearchTab = 0;
         billFee = null;
         refundBillFee = null;
         billItems = null;
@@ -1010,11 +1012,13 @@ public class ChannelBillController implements Serializable {
     AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
-        if (getbookingController().getSelectedServiceSession()==null) {
+        if (getbookingController().getSelectedServiceSession() == null) {
+            errorText = "Please Select Specility and Doctor.";
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
+            errorText = "Please Select Session.";
             UtilityController.addErrorMessage("Please Select Session");
             return true;
         }
@@ -1022,43 +1026,51 @@ public class ChannelBillController implements Serializable {
         System.out.println("getPatientTabId = " + getPatientTabId());
         if (patientTabId.equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
-                UtilityController.addErrorMessage("Can not bill without Patient ");
+                errorText = "Can not bill without Patient.";
+                UtilityController.addErrorMessage("Can't Settle Without Patient.");
                 return true;
             }
         }
         if (patientTabId.equals("tabSearchPt")) {
             if (getSearchPatient() == null) {
+                errorText = "Please select Patient";
                 UtilityController.addErrorMessage("Please select Patient");
                 return true;
             }
         }
 
         if (paymentMethod == null) {
+            errorText = "Please select Paymentmethod";
             UtilityController.addErrorMessage("Please select Paymentmethod");
             return true;
         }
 
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
+                errorText = "Please select Agency";
                 UtilityController.addErrorMessage("Please select Agency");
                 return true;
             }
 
             if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+                errorText = "Agency Ballance is Not Enough";
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                errorText = "Invaild Reference Number.";
                 UtilityController.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
                 UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
                 return true;
             }
         }
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
+                errorText = "Please Select Staff.";
                 JsfUtil.addErrorMessage("Please Select Staff.");
                 return true;
             }
@@ -1066,12 +1078,14 @@ public class ChannelBillController implements Serializable {
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
             if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                UtilityController.addErrorMessage("Please Enter Agent Ref No");
+                errorText = "Please Enter Agent Ref No";
+                UtilityController.addErrorMessage("Please Enter Agent Ref No.");
                 return true;
             }
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
+            errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
             return true;
         }
@@ -1124,7 +1138,9 @@ public class ChannelBillController implements Serializable {
 //
 //    }
     public void add() {
+        errorText = "";
         if (errorCheck()) {
+            settleSucessFully = false;
             return;
         }
 
@@ -1133,6 +1149,7 @@ public class ChannelBillController implements Serializable {
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessions();
+        settleSucessFully = true;
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 
@@ -1770,6 +1787,22 @@ public class ChannelBillController implements Serializable {
 
     public void setPatientSearchTab(int patientSearchTab) {
         this.patientSearchTab = patientSearchTab;
+    }
+
+    public boolean isSettleSucessFully() {
+        return settleSucessFully;
+    }
+
+    public void setSettleSucessFully(boolean settleSucessFully) {
+        this.settleSucessFully = settleSucessFully;
+    }
+
+    public String getErrorText() {
+        return errorText;
+    }
+
+    public void setErrorText(String errorText) {
+        this.errorText = errorText;
     }
 
 }

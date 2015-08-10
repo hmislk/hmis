@@ -330,14 +330,18 @@
                               modal="true" height="400" width="600" closable="false">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
+                        
+                        <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
+                                         rendered="#{!channelBillController.settleSucessFully}" 
+                                         ></p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" action="#"
-                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">
+                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0 or !channelBillController.settleSucessFully}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
 
-                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
+                        <h:panelGroup styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
                             <div >
                                 <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
@@ -349,6 +353,13 @@
                                     <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="#{channelBillController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
+                            
                         </h:panelGroup>
 
                     </p:dialog>  
