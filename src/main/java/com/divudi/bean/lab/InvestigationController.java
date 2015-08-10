@@ -13,6 +13,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.SymanticType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
@@ -54,18 +55,31 @@ import javax.faces.convert.FacesConverter;
 @SessionScoped
 public class InvestigationController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * Managed Beans
+     */
     @Inject
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
     @Inject
     InvestigationItemController investigationItemController;
-
+    @Inject
+    IxCalController ixCalController;
+    @Inject
+    ItemFeeManager itemFeeManager;
+    /**
+     * EJBs
+     */
     @EJB
     private InvestigationFacade ejbFacade;
     @EJB
     private SpecialityFacade specialityFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
+    /**
+     * Properties
+     */
     List<Investigation> selectedItems;
     private Investigation current;
     private List<Investigation> items = null;
@@ -77,13 +91,8 @@ public class InvestigationController implements Serializable {
     InvestigationCategory category;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
-    @EJB
-    private DepartmentFacade departmentFacade;
-
     List<Investigation> itemsToRemove;
-
     Institution institution;
-
     List<Investigation> deletedIxs;
     List<Investigation> selectedIxs;
 
@@ -102,6 +111,36 @@ public class InvestigationController implements Serializable {
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
         return "lab_investigation_format";
+    }
+
+    public String toEditReportCalculations() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        ixCalController.setIx((Investigation) current.getReportedAs()); 
+        return "lab_calculation";
+    }
+    
+    public String toEditFees() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        itemFeeManager.setItem(current);
+        itemFeeManager.fillFees();
+        return "/common/manage_item_fees";
     }
 
     public void listDeletedIxs() {
@@ -263,7 +302,7 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeInvest(String query) {
         System.out.println("master" + listMasterItemsOnly);
-        System.out.println("master login Lab" );
+        System.out.println("master login Lab");
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }
