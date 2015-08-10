@@ -442,6 +442,9 @@ public class UserPreference implements Serializable {
     }
 
     public PaymentMethod getChannellingPaymentMethod() {
+        if(channellingPaymentMethod==null){
+            channellingPaymentMethod = PaymentMethod.OnCall;
+        }
         return channellingPaymentMethod;
     }
 
