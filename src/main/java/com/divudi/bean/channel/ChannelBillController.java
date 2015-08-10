@@ -1132,7 +1132,7 @@ public class ChannelBillController implements Serializable {
 
     public void clearBillValues() {
         patientSearchTab = 0;
-        paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();s
+        paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
     }
 
     public void addOnCall() {
