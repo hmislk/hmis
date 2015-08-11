@@ -146,6 +146,15 @@
                 </h:panelGrid>
 
             </p:panel>
+            
+            <p:panel header="Lab" >
+                <h:panelGrid columns="2" styleClass="alignTop" >
+                    <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
+                    <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
+                    <p:watermark for="fontName" value="Eg- Courier New" />
+                    
+                </h:panelGrid>
+            </p:panel>
 
 
 
