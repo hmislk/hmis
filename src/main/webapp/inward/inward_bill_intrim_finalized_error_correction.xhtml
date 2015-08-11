@@ -803,9 +803,10 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:inputText> 
                                         <h:outputLabel value="Discount"/>
-                                        <h:outputLabel value="#{rm.discountNursingCharge}">
+                                        <p:inputText value="#{rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel> 
+                                        </p:inputText
+                                        > 
                                         <h:outputLabel value="Net"/>
                                         <h:outputLabel value="#{rm.calculatedNursingCharge-rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>

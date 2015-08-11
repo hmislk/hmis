@@ -11,7 +11,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Extra Shift Normal">
-                <h:panelGrid columns="2">
+                <h:panelGrid columns="3" styleClass="alignTop">
                     <p:panel >
                         <h:panelGrid columns="2">                           
                             <h:outputLabel value="Form Number"/>
@@ -131,6 +131,12 @@
 
                         </p:dataTable>
                     </p:panel>
+                    <p:panel header="Links" >
+                        <p:panelGrid columns="2" >
+                            <p:commandLink value="Finger Print Analysis" action="/hr/hr_shift_table_finger_print_by_staff" ajax="false" ></p:commandLink>
+                        </p:panelGrid>
+                    </p:panel>
+                
                 </h:panelGrid>
             </p:panel>
         </h:form>

@@ -142,6 +142,13 @@ public class SpecialityController implements Serializable {
         selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
+    
+    public List<Speciality> completeDoctorSpeciality(String qry) {
+        Map m=new HashMap();
+        m.put("class", DoctorSpeciality.class);
+        selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and type(c)=:class and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name",m);
+        return selectedItems;
+    }
 
     public List<Speciality> getSelectedItems() {
         if (selectText.trim().equals("")) {

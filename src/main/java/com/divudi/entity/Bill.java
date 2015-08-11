@@ -288,7 +288,26 @@ public class Bill implements Serializable {
     @ManyToOne
     Bill paidBill;
     double qty;
+    @Transient
+    double transTotalSaleValue;
+    
+    //Sms Info
+    private Boolean smsed = false;
+    @ManyToOne
+    private WebUser smsedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date smsedAt;
+    @OneToMany(mappedBy = "bill")
+    private List<Sms> sentSmses;
 
+    public double getTransTotalSaleValue() {
+        return transTotalSaleValue;
+    }
+
+    public void setTransTotalSaleValue(double transTotalSaleValue) {
+        this.transTotalSaleValue = transTotalSaleValue;
+    }
+    
     public double getQty() {
         return qty;
     }
@@ -1578,6 +1597,38 @@ public class Bill implements Serializable {
 
     public void setTransError(boolean transError) {
         this.transError = transError;
+    }
+
+    public List<Sms> getSentSmses() {
+        return sentSmses;
+    }
+
+    public void setSentSmses(List<Sms> sentSmses) {
+        this.sentSmses = sentSmses;
+    }
+
+    public Boolean getSmsed() {
+        return smsed;
+    }
+
+    public void setSmsed(Boolean smsed) {
+        this.smsed = smsed;
+    }
+
+    public WebUser getSmsedUser() {
+        return smsedUser;
+    }
+
+    public void setSmsedUser(WebUser smsedUser) {
+        this.smsedUser = smsedUser;
+    }
+
+    public Date getSmsedAt() {
+        return smsedAt;
+    }
+
+    public void setSmsedAt(Date smsedAt) {
+        this.smsedAt = smsedAt;
     }
 
 }

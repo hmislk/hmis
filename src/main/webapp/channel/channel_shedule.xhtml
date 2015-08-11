@@ -26,22 +26,26 @@
                         <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           converter="stfcon"   >   
-                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />
+                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{sheduleController.prepareAdd()}" />
                         </p:autoComplete>  
-                        
-                        
+
+
+
+                        <h:outputLabel  value="Sessions" ></h:outputLabel>
+                        <h:panelGrid id="gpSelectText" >
+                            <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="width: 400px; min-height: 200px;" >
+                                <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
+                                </f:ajax>
+                            </p:selectOneListbox>
+                        </h:panelGrid>
+
                     </h:panelGrid>
-                    
 
 
 
-                    <h:panelGrid id="gpSelectText" >
-                        <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="min-width: 100%;" >
-                            <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                            <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
-                            </f:ajax>
-                        </p:selectOneListbox>
-                    </h:panelGrid>
+
+
 
 
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
@@ -53,16 +57,21 @@
                                     return false;" action="#{sheduleController.delete()}"  value="Delete"  >
                         </p:commandButton>
 
-                        <p:commandButton ajax="false" id="btnSave" value="Save"  
-                                        action="#{sheduleController.saveSelected}"
-                                         styleClass="buttons" onclick="onSubmitButton();">
 
-                        </p:commandButton>
                     </h:panelGrid>
 
                 </p:panel>
 
-                <p:panel id="gpDetail">  
+                <p:panel id="gpDetail" header="Session Details">  
+                    <f:facet name="header" >
+                        <p:outputLabel value="Session Details" ></p:outputLabel>
+                        <p:spacer width="30" height="1" ></p:spacer>
+                        <p:commandButton ajax="false" id="btnSave" value="Save"  
+                                         action="#{sheduleController.saveSelected}"
+                                         styleClass="buttons" onclick="onSubmitButton();">
+
+                        </p:commandButton>
+                    </f:facet>
 
                     <p:panelGrid columns="2">  
 
@@ -93,6 +102,11 @@
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
+                        
+                         <p:outputLabel value="End Time"/>                        
+                         <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                        </p:calendar>
+                        
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
 

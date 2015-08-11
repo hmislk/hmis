@@ -10,15 +10,22 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                
+
                 <h:form >
-                    
+                    <h:commandLink action="#{personInstitution.listSetup}" value="Show All PersonInstitution Items"/>
+                    <br></br>
+                    <!--<h:commandLink action="/personinstitution/person_institution" value="create delete view PersonInstitution"/>-->
                 </h:form>
+
+                <h:outputLabel value="#{sessionController.institutionPreference.id}" rendered="#{sessionController.institutionPreference ne null}" ></h:outputLabel>
+                <h:outputLabel value="Institution Preference is null" rendered="#{sessionController.institutionPreference eq null}" ></h:outputLabel>
+
             </ui:define>
         </ui:composition>
 
 
     </body>
+
 
 
 
