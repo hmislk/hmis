@@ -239,12 +239,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 + " and b.cancelled=false "
                 + " and b.toDepartment=:dep "
                 + " and b.createdAt between :fd and :td "
-//                + " and bi.refunded!=:bool "
+                + " and (bi.refunded is null or bi.refunded=FALSE) "
                 + " and bi.retired=false ";
         m.put("dep", department);
         m.put("fd", fromDate);
         m.put("td", toDate);
-//        m.put("bool", Boolean.TRUE);
         pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
