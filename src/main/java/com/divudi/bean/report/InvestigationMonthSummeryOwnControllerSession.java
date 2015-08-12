@@ -237,16 +237,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 + " from PatientInvestigation pi join pi.billItem bi join bi.bill b "
                 + " where b.retired=false "
                 + " and b.cancelled=false "
-                + " and b.department=:dep "
+                + " and b.toDepartment=:dep "
                 + " and b.createdAt between :fd and :td "
-                + " and bi.refunded=false "
+                + " and (bi.refunded is null or bi.refunded=FALSE) "
                 + " and bi.retired=false ";
         m.put("dep", department);
         m.put("fd", fromDate);
         m.put("td", toDate);
         pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("pis.size() = " + pis.size());
     }
-
+    
     public void createInvestigationTurnoverTime() {
         System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
