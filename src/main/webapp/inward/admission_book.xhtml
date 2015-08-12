@@ -151,6 +151,15 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                <p:column headerText="Admission Created Time" rendered="#{inwardReportController.addmitDetails}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admission Created Time"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Address" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
