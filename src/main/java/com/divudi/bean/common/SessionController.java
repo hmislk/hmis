@@ -108,14 +108,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String toManageIntitutionPreferences() {
         String jpql;
         Map m = new HashMap();
-        jpql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql);
+        jpql = "select p from UserPreference p where p.institution=:ins order by p.id";
+        m.put("ins", institution);
+        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql,m);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
             currentPreference.setWebUser(null);
             currentPreference.setDepartment(null);
-            currentPreference.setInstitution(sessionController.getInstitution());
-            getUserPreferenceFacade().create(currentPreference);
+            currentPreference.setInstitution(institution);
         }
         return "/admin_mange_institutions_preferences";
     }
@@ -123,14 +123,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String toManageDepartmentPreferences() {
         String jpql;
         Map m = new HashMap();
-        jpql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
+        jpql = "select p from UserPreference p where p.department=:dep order by p.id";
+        m.put("dep", department);
         currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
             currentPreference.setWebUser(null);
-            currentPreference.setDepartment(sessionController.getDepartment());
+            currentPreference.setDepartment(department);
             currentPreference.setInstitution(null);
-            getUserPreferenceFacade().create(currentPreference);
         }
         return "/admin_mange_department_preferences";
     }
