@@ -197,7 +197,7 @@
 
                 <p:panel id="gpThisBookingDetails" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;"  >
                     <f:facet name="header" >
-                        <h:panelGrid columns="2"  > 
+                        <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
                             <p:outputLabel value="Amount"/>
 
                             <h:panelGroup id="lblSessionTotal">
@@ -260,7 +260,7 @@
                         </h:panelGrid>                        
 
                     </f:facet>
-                    <p:tabView activeIndex="#{channelBillController.patientSearchTab}" >
+                    <p:tabView id="tabViewPatientDetails" activeIndex="#{channelBillController.patientSearchTab}" >
                         <p:ajax event="tabChange"  process="@this" listener="#{channelBillController.onTabChange}" />
                         <p:tab id="tabNewPt" title="New Pateint">
                             <h:panelGrid columns="2">
@@ -311,7 +311,8 @@
                     <h:panelGrid columns="3" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" process="@form" 
+                        <p:commandButton   id="btnAdd" 
+                                           value="Add" process=":#{p:component('tabNewPt')} :#{p:component('tabSearchPt')} btnAdd :#{p:component('pgNewBookingDetail')}" 
                                            update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">   
@@ -322,21 +323,25 @@
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
                         </p:confirmDialog>
 
-                        <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
+                        <p:commandButton  action="#{channelBillController.makeNull}"  value="New Booking" ajax="false"/>
                     </h:panelGrid>
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600" closable="false">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
+                        
+                        <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
+                                         rendered="#{!channelBillController.settleSucessFully}" 
+                                         ></p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" action="#"
-                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">
+                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0 or !channelBillController.settleSucessFully}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
 
-                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
+                        <h:panelGroup styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
                             <div >
                                 <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
@@ -348,6 +353,13 @@
                                     <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="#{channelBillController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
+                            
                         </h:panelGroup>
 
                     </p:dialog>  

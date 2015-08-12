@@ -74,6 +74,7 @@ public class UserPreference implements Serializable {
     boolean pharmacyBillWithOutItem;
     boolean fiveFivePaperWithHeadings;
     boolean showOnlyMarkedDoctors=false;
+    String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
@@ -296,6 +297,14 @@ public class UserPreference implements Serializable {
 
     public void setGrnBillDetailed(boolean grnBillDetailed) {
         this.grnBillDetailed = grnBillDetailed;
+    }
+
+    public String getMicroBiologyFont() {
+        return microBiologyFont;
+    }
+
+    public void setMicroBiologyFont(String microBiologyFont) {
+        this.microBiologyFont = microBiologyFont;
     }
 
     
