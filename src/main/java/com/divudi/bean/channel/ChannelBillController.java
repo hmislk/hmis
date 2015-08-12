@@ -594,6 +594,13 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
+        //dr. buddhika said
+        if (bill.getPaidBill() == null) {
+            System.out.println("bill = " + bill);
+            System.out.println("paid bill = " + bill.getPaidBill());
+            return;
+        }
+
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelBill(bill);
             BillItem cItem = cancelBillItems(billItem, cb);
@@ -1062,7 +1069,7 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
-            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(),institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "This Reference Number is alredy Given.";
                 UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                 return true;
@@ -1409,7 +1416,17 @@ public class ChannelBillController implements Serializable {
 
         bill.setToDepartment(getbookingController().getSelectedServiceSession().getDepartment());
         bill.setToInstitution(getbookingController().getSelectedServiceSession().getInstitution());
+        
+        System.out.println("Billtype"+bill.getBillType());
+        
         getBillFacade().create(bill);
+        
+        if (bill.getBillType() == BillType.ChannelCash) {
+            System.out.println("paidBill 1= " + bill.getPaidBill());
+            bill.setPaidBill(bill);
+            getBillFacade().edit(bill);
+            System.out.println("paidBill 2= " + bill.getPaidBill());
+        }
 
         return bill;
     }
