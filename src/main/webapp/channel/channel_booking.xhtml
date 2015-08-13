@@ -336,7 +336,7 @@
                                          ></p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" action="#"
-                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0 or !channelBillController.settleSucessFully}">
+                                         disabled="#{channelBillController.printingBill.balance ne 0.0 or !channelBillController.settleSucessFully}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
