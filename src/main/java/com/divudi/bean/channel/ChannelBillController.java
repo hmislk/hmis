@@ -410,17 +410,71 @@ public class ChannelBillController implements Serializable {
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
         calRefundTotal();
 
-        RefundBill rb = (RefundBill) createRefundBill(bill);
-        BillItem rBilItm = refundBillItems(billItem, rb);
-        createReturnBillFee(billFees, rb, rBilItm);
-        BillSession rSession = refundBillSession(billSession, rb, rBilItm);
+        if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
+            System.out.println("paid bill set");
+            bill.setPaidBill(bill);
+            billFacade.edit(bill);
+        }
 
-        billSession.setReferenceBillSession(rSession);
-        billSessionFacade.edit(billSession);
+        if (bill.getPaidBill() == null) {
+            System.out.println("bill = " + bill);
+            System.out.println("paid bill = " + bill.getPaidBill());
+            return;
+        }
 
-        bill.setRefunded(true);
-        bill.setRefundedBill(rb);
-        getBillFacade().edit(getBillSession().getBill());
+        if (bill.getPaidBill().equals(bill)) {
+            RefundBill rb = (RefundBill) createRefundBill(bill);
+            BillItem rBilItm = refundBillItems(billItem, rb);
+            createReturnBillFee(billFees, rb, rBilItm);
+            BillSession rSession = refundBillSession(billSession, rb, rBilItm);
+
+            billSession.setReferenceBillSession(rSession);
+            billSessionFacade.edit(billSession);
+
+            bill.setRefunded(true);
+            bill.setRefundedBill(rb);
+            getBillFacade().edit(bill);
+            
+
+            if (bill.getPaymentMethod() == PaymentMethod.Agent && refundPaymentMethod == PaymentMethod.Agent) {
+                updateBallance(bill.getCreditCompany(),
+                        0 - bill.getNetTotal(),
+                        HistoryType.ChannelBooking,
+                        rb, rBilItm, rSession, billSession.getBillItem().getAgentRefNo());
+            }
+        } else {
+            RefundBill rb = (RefundBill) createRefundBill(bill);
+            BillItem rBilItm = refundBillItems(billItem, rb);
+            createReturnBillFee(billFees, rb, rBilItm);
+            BillSession rSession = refundBillSession(billSession, rb, rBilItm);
+
+            billSession.setReferenceBillSession(rSession);
+            billSessionFacade.edit(billSession);
+
+            bill.setRefunded(true);
+            bill.setRefundedBill(rb);
+            getBillFacade().edit(bill);
+            
+            RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
+            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
+            BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
+
+            billSession.getPaidBillSession().setReferenceBillSession(rpSession);
+            billSessionFacade.edit(billSession.getPaidBillSession());
+
+            bill.getPaidBill().setRefunded(true);
+            bill.getPaidBill().setRefundedBill(rpb);
+            getBillFacade().edit(bill.getPaidBill());
+
+
+            if (bill.getPaymentMethod() == PaymentMethod.Agent && refundPaymentMethod == PaymentMethod.Agent) {
+                updateBallance(bill.getCreditCompany(),
+                        0 - bill.getNetTotal(),
+                        HistoryType.ChannelBooking,
+                        rb, rBilItm, rSession, billSession.getBillItem().getAgentRefNo());
+            }
+
+        }
 
     }
     List<BillFee> listBillFees;
@@ -594,7 +648,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        if (bill.getBillType() == BillType.ChannelCash && bill.getPaidBill() == null) {
+        if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
             System.out.println("paid bill set");
             bill.setPaidBill(bill);
             billFacade.edit(bill);
@@ -1427,7 +1481,7 @@ public class ChannelBillController implements Serializable {
 
         getBillFacade().create(bill);
 
-        if (bill.getBillType() == BillType.ChannelCash) {
+        if (bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) {
             System.out.println("paidBill 1= " + bill.getPaidBill());
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
