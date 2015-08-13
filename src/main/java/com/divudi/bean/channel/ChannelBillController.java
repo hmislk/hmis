@@ -594,6 +594,12 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
+        if (bill.getBillType() == BillType.ChannelCash && bill.getPaidBill() == null) {
+            System.out.println("paid bill set");
+            bill.setPaidBill(bill);
+            billFacade.edit(bill);
+        }
+
         //dr. buddhika said
         if (bill.getPaidBill() == null) {
             System.out.println("bill = " + bill);
@@ -1416,11 +1422,11 @@ public class ChannelBillController implements Serializable {
 
         bill.setToDepartment(getbookingController().getSelectedServiceSession().getDepartment());
         bill.setToInstitution(getbookingController().getSelectedServiceSession().getInstitution());
-        
-        System.out.println("Billtype"+bill.getBillType());
-        
+
+        System.out.println("Billtype" + bill.getBillType());
+
         getBillFacade().create(bill);
-        
+
         if (bill.getBillType() == BillType.ChannelCash) {
             System.out.println("paidBill 1= " + bill.getPaidBill());
             bill.setPaidBill(bill);
