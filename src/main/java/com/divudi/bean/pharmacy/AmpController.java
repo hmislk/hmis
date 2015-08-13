@@ -75,7 +75,7 @@ public class AmpController implements Serializable {
     @Inject
     ItemsDistributorsController itemDistributorsController;
 
-    public void fillItemSupplierPrices() {
+    public void fillItemsForItemSupplierPrices() {
         List<Amp> amps = getLongCodeItems();
         itemSupplierPrices = new ArrayList<>();
         for (Amp a : amps) {
@@ -85,12 +85,37 @@ public class AmpController implements Serializable {
             p.setVmp(a.getVmp());
             itemSupplierPrices.add(p);
         }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setPp(getPharmacyBean().getLastPurchaseRate(p.getAmp()));
+//        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSp(getPharmacyBean().getLastRetailRate(p.getAmp()));
+//        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+//        }
+    }
+
+    public void fillPricesForItemSupplierPrices() {
+//        List<Amp> amps = getLongCodeItems();
+//        itemSupplierPrices = new ArrayList<>();
+//        for (Amp a : amps) {
+//            ItemSupplierPrices p = new ItemSupplierPrices();
+//            p.setItem(a);
+//            p.setAmp(a);
+//            p.setVmp(a.getVmp());
+//            itemSupplierPrices.add(p);
+//        }
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setPp(getPharmacyBean().getLastPurchaseRate(p.getAmp()));
-        }
-        for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSp(getPharmacyBean().getLastRetailRate(p.getAmp()));
         }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+//        }
+    }
+
+    public void fillSuppliersForItemSupplierPrices() {
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }

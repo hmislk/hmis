@@ -17,8 +17,12 @@
                         <p:commandButton ajax="false" value="Excel">
                             <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Process"
-                                         action="#{ampController.fillItemSupplierPrices}"/>
+                        <p:commandButton ajax="false" value="Fill Items"
+                                         action="#{ampController.fillItemsForItemSupplierPrices}"/>
+                        <p:commandButton ajax="false" value="Fill Prices For Items"
+                                         action="#{ampController.fillPricesForItemSupplierPrices}"/>
+                        <p:commandButton ajax="false" value="Fill Suppliers For Items"
+                                         action="#{ampController.fillSuppliersForItemSupplierPrices}"/>
 
                         <p:panel id="paItems">
                             <p:dataTable id="tblItem" value="#{ampController.itemSupplierPrices}" var="i"
