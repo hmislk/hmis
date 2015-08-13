@@ -83,10 +83,16 @@ public class AmpController implements Serializable {
             p.setItem(a);
             p.setAmp(a);
             p.setVmp(a.getVmp());
-            p.setPp(getPharmacyBean().getLastPurchaseRate(a));
-            p.setSp(getPharmacyBean().getLastRetailRate(a));
-            p.setSupplier(itemDistributorsController.getDistributor(a));
             itemSupplierPrices.add(p);
+        }
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setPp(getPharmacyBean().getLastPurchaseRate(p.getAmp()));
+        }
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setSp(getPharmacyBean().getLastRetailRate(p.getAmp()));
+        }
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
     }
 

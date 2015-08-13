@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
@@ -21,7 +22,7 @@
 
                         <p:panel id="paItems">
                             <p:dataTable id="tblItem" value="#{ampController.itemSupplierPrices}" var="i"
-                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rowKey="#{i.id}" 
                                          rows="100"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -67,12 +68,16 @@
                                 <p:column headerText="Purchase Price" 
                                           sortBy="#{i.pp}"
                                           filterBy="#{i.pp}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.pp}"></p:outputLabel>
+                                    <p:outputLabel value="#{i.pp}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Sale Price" 
                                           sortBy="#{i.sp}"
                                           filterBy="#{i.sp}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.sp}"></p:outputLabel>
+                                    <p:outputLabel value="#{i.sp}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
 
                             </p:dataTable>
