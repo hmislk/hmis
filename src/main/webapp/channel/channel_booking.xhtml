@@ -197,7 +197,7 @@
 
                 <p:panel id="gpThisBookingDetails" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;"  >
                     <f:facet name="header" >
-                        <h:panelGrid columns="2"  > 
+                        <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
                             <p:outputLabel value="Amount"/>
 
                             <h:panelGroup id="lblSessionTotal">
@@ -216,6 +216,7 @@
 
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
+                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip staff autoStaff" event="change" />
                             </p:selectOneMenu>
@@ -259,7 +260,7 @@
                         </h:panelGrid>                        
 
                     </f:facet>
-                    <p:tabView>
+                    <p:tabView id="tabViewPatientDetails" activeIndex="#{channelBillController.patientSearchTab}" >
                         <p:ajax event="tabChange"  process="@this" listener="#{channelBillController.onTabChange}" />
                         <p:tab id="tabNewPt" title="New Pateint">
                             <h:panelGrid columns="2">
@@ -310,7 +311,8 @@
                     <h:panelGrid columns="3" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" process="@form" 
+                        <p:commandButton   id="btnAdd" 
+                                           value="Add" process=":#{p:component('tabNewPt')} :#{p:component('tabSearchPt')} btnAdd :#{p:component('pgNewBookingDetail')}" 
                                            update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">   
@@ -321,21 +323,25 @@
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
                         </p:confirmDialog>
 
-                        <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
+                        <p:commandButton  action="#{channelBillController.makeNull}"  value="New Booking" ajax="false"/>
                     </h:panelGrid>
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600" closable="false">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
+                        
+                        <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
+                                         rendered="#{!channelBillController.settleSucessFully}" 
+                                         ></p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" action="#"
-                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">
+                                         disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0 or !channelBillController.settleSucessFully}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
 
-                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
+                        <h:panelGroup styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
                             <div >
                                 <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                     <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
@@ -347,6 +353,13 @@
                                     <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="#{channelBillController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
+                            
                         </h:panelGroup>
 
                     </p:dialog>  
@@ -544,10 +557,28 @@
                         </p:panel>
 
                         <p:tab title="Cancel" id="cancel">                                                         
+                            #{channelBillController.billSession.bill.billType}
+
+                            <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+                                <p:outputLabel value="Re-payment Method"/>
+                                <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
+                                    <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+
 
                             <h:panelGroup>
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
+                            <p:commandButton ajax="false" value="Cancel Agent Bill" 
+                                             rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
+                                             action="#{channelBillController.cancelAgentPaidBill()}"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
@@ -555,7 +586,7 @@
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel Paid" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
@@ -566,6 +597,15 @@
 
                         <p:tab title="Refund" id="refund">                          
                             <h:panelGroup>
+                                <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+
+                                    <p:outputLabel value="Re-payment Method"/>
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
+                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
@@ -588,15 +628,23 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
+                            
+                            <p:commandButton ajax="false" value="Refund Agent Bills" 
+                                             rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"
+                                             action="#{channelBillController.refundAgentBill}" 
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                             onclick="onSubmitButton();"/>
+                            
                             <p:commandButton ajax="false" value="Refund" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Refund Paid" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' }"
                                              action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true

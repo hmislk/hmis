@@ -33,11 +33,16 @@
                                     <p:column headerText="Name" >
                                         <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                     </p:column>
-                                     <p:column headerText="Institution" >
+                                    <p:column headerText="Institution" >
                                         <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
                                     </p:column>
-                                     <p:column headerText="Department" >
+                                    <p:column headerText="Department" >
                                         <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Total" >
+                                        <p:outputLabel value="#{ix.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
                                     </p:column>
                                 </p:autoComplete>
 

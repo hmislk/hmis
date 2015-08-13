@@ -7,10 +7,14 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.entity.channel.AgentReferenceBook;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -40,6 +44,8 @@ public class AgentReferenceBookController implements Serializable {
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     InstitutionFacade institutionFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
     @EJB
     CommonFunctions commonFunctions;
     @Inject
@@ -86,7 +92,8 @@ public class AgentReferenceBookController implements Serializable {
 
         String sql;
         sql = "select a from AgentReferenceBook a where "
-                + " a.retired=false ";
+                + " a.retired=false "
+                + " and a.deactivate=false ";
 
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql);
 
@@ -139,9 +146,9 @@ public class AgentReferenceBookController implements Serializable {
 
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
-    
-    public void bulkDeleteChannelBooks(){
-        if (selectedList==null) {
+
+    public void bulkDeleteChannelBooks() {
+        if (selectedList == null) {
             JsfUtil.addSuccessMessage("Nothing to Delete");
             return;
         }
@@ -149,7 +156,7 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete(Empty)");
             return;
         }
-        System.err.println("selectedList.size()"+selectedList.size());
+        System.err.println("selectedList.size()" + selectedList.size());
         for (AgentReferenceBook rb : selectedList) {
             System.out.println("rb = " + rb.getBookNumber());
             System.out.println("rb.getInstitution().getName() = " + rb.getInstitution().getName());
@@ -205,6 +212,52 @@ public class AgentReferenceBookController implements Serializable {
             return true;
         } else {
             return false;
+        }
+
+    }
+
+    public Boolean checkAgentReferenceNumber(String refNumber) {
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution) {
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ah from AgentHistory ah join ah.bill b "
+                + " where "
+                + " b.retired=false "
+                + " and b.billType=:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.creditCompany=:ins "
+                + " and (upper(ah.referenceNo) like :rn) ";
+
+        m.put("bt", BillType.ChannelAgent);
+        m.put("pm", PaymentMethod.Agent);
+        m.put("ins", institution);
+        m.put("rn", "%" + refNumber.toUpperCase() + "%");
+
+        List<AgentHistory> ahs = agentHistoryFacade.findBySQL(sql, m);
+
+        System.err.println("ahs = " + ahs.size());
+
+        if (ahs.isEmpty()) {
+            return false;
+        } else {
+            return true;
         }
 
     }

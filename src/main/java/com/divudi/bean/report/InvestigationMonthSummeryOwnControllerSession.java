@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
@@ -47,8 +48,16 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InvestigationMonthSummeryOwnControllerSession implements Serializable {
 
+    /**
+     * Managed Beans
+     */
     @Inject
     private SessionController sessionController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    /**
+     * EJBs
+     */
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -61,6 +70,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private BillItemFacade billItemFacade;
     @EJB
     BillEjb billEjb;
+    /**
+     * Properties
+     */
     private Date fromDate;
     private Date toDate;
     Institution reportedInstitution;
@@ -73,6 +85,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> items;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
+    List<Bill> bills;
+    List<PatientInvestigation> pis;
     List<InvestigationSummeryData> itemsLab;
     Long totalCount;
     int progressValue = 0;
@@ -216,12 +230,32 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         progressStarted = false;
     }
 
+    public void createInvestigationTurnoverTimeByBills() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select pi "
+                + " from PatientInvestigation pi join pi.billItem bi join bi.bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.toDepartment=:dep "
+                + " and b.createdAt between :fd and :td "
+                + " and (bi.refunded is null or bi.refunded=FALSE) "
+                + " and bi.retired=false ";
+        m.put("dep", department);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("pis.size() = " + pis.size());
+    }
+    
     public void createInvestigationTurnoverTime() {
         System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
         double totalMins = 0;
         double averageCount = 0;
-        List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
+        List<PatientInvestigation> temPis = billEjb.getPatientInvestigations(item,
                 fromDate,
                 toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
@@ -234,8 +268,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 null,
                 true,
                 null);
-        System.out.println("pis.size() = " + pis.size());
-        for (PatientInvestigation pi : pis) {
+        System.out.println("pis.size() = " + temPis.size());
+        for (PatientInvestigation pi : temPis) {
 
             System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
             if (pi.getPrintingAt() != null && pi.getBillItem().getBill().getCreatedAt() != null) {
@@ -1196,4 +1230,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         rows = 20;
     }
 
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public List<PatientInvestigation> getPis() {
+        return pis;
+    }
+
+    public void setPis(List<PatientInvestigation> pis) {
+        this.pis = pis;
+    }
+
+    
+    
 }

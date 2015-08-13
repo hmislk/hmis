@@ -43,35 +43,35 @@
                                 </p:panel>
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No (Ins Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.insId}" />
+                                        <h:outputText value="Bill No (Ins Id) :" ></h:outputText>
+                                        <h:outputText value="#{billSearch.billSearch.insId}" />
 
-                                        <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        <h:outputText value="Bill No (Dept Id) :" ></h:outputLabel>
+                                        <h:outputText value="#{billSearch.billSearch.deptId}" />
 
-                                        <h:outputLabel value="Billed bill:" ></h:outputLabel>
-                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.id}" />
+                                        <h:outputText value="Billed bill:" ></h:outputText>
+                                        <h:outputText value="#{billSearch.billSearch.billedBill.id}" />
 
-                                        <h:outputLabel value="Billed bill No (Ins Id) :" ></h:outputLabel>
-                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.insId}" />
+                                        <h:outputText value="Billed bill No (Ins Id) :" ></h:outputText>
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.insId}" />
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
-                                        <p:outputLabel value="#{billSearch.billSearch.billedBill.deptId}" />
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" />
 
                                         <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.billedBill.createdAt}" />
+                                        <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" />
 
-                                        <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="Cancelled" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.cancelled}" ></h:outputLabel>
 
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
 
                                         <h:outputLabel value="Canceled Bill(Ins Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.insId}" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" ></p:inputText>
 
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.cancelledBill.deptId}" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" ></p:inputText>
 
                                         <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.referenceBill}" />

@@ -52,6 +52,7 @@ public class InstitutionController implements Serializable {
     private List<Institution> creditCompanies = null;
     private List<Institution> banks = null;
     private List<Institution> suppliers = null;
+    private List<Institution> agencies = null;
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
@@ -85,6 +86,28 @@ public class InstitutionController implements Serializable {
         }
         sql += " order by c.name";
         return getFacade().findBySQL(sql, hm);
+    }
+
+    public List<Institution> getSuppliers() {
+        if (suppliers == null) {
+            suppliers = completeInstitution(null, InstitutionType.Dealer);
+        }
+        return suppliers;
+    }
+
+    public void setSuppliers(List<Institution> suppliers) {
+        this.suppliers = suppliers;
+    }
+
+    public List<Institution> getAgencies() {
+        if (agencies == null) {
+            agencies = completeInstitution(null, InstitutionType.Agency);
+        }
+        return agencies;
+    }
+
+    public void setAgencies(List<Institution> agencies) {
+        this.agencies = agencies;
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType type) {
@@ -157,8 +180,8 @@ public class InstitutionController implements Serializable {
         }
         return i;
     }
-    
-        private Boolean checkCodeExist() {
+
+    private Boolean checkCodeExist() {
         String sql = "SELECT i FROM Institution i where i.retired=false ";
         List<Institution> ins = getEjbFacade().findBySQL(sql);
         if (ins != null) {
@@ -180,6 +203,12 @@ public class InstitutionController implements Serializable {
         current = new Institution();
     }
 
+    public void prepareAddAgency() {
+        codeDisabled = false;
+        current = new Institution();
+        current.setInstitutionType(InstitutionType.Agency);
+    }
+    
     public void setSelectedItems(List<Institution> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -190,9 +219,15 @@ public class InstitutionController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        agencies = null;
+        suppliers = null;
+        companies = null;
+        creditCompanies = null;
+        banks = null;
+        suppliers = null;
+        agencies = null;
+
     }
-
-
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {

@@ -683,14 +683,17 @@ public class ShiftTableController implements Serializable {
         List<Staff> staffs = staffFacade.findBySQL(sql);
         System.out.println("staffs = " + staffs.size());
 
-        sql = "Select ss from StaffShift ss "
-                + " where ss.retired=false "
-                + " and ss.shiftDate is not null";
-
-        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql);
+//        sql = "Select ss from StaffShift ss "
+//                + " where ss.retired=false "
+//                + " and ss.shiftDate is not null";
+//
+//        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql);
+        
+        
 
         Calendar nc = Calendar.getInstance();
-        nc.setTime(staffShift.getShiftDate());
+        nc.setTime(new Date());
+        nc.set(2015, 00, 01, 00, 00, 00);
         Date nowDate = nc.getTime();
 
         nc.setTime(new Date());
@@ -699,7 +702,8 @@ public class ShiftTableController implements Serializable {
 
         System.out.println("nowDate = " + nowDate);
         System.out.println("tmpToDate = " + tmpToDate);
-
+        int i=0;
+        System.out.println("i(start) = " + i);
         while (tmpToDate.after(nowDate)) {
 
             for (Staff s : staffs) {
@@ -708,6 +712,7 @@ public class ShiftTableController implements Serializable {
                     System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                     System.err.println("ss.size() = " + ss.size());
                     System.err.println("nowDate = " + nowDate);
+                    i++;
                     for (StaffShift sss : ss) {
                         System.out.println("sss.getShift().getName() = " + sss.getShift().getName());
                     }
@@ -719,7 +724,7 @@ public class ShiftTableController implements Serializable {
             c.add(Calendar.DATE, 1);
             nowDate = c.getTime();
         }
-
+        System.out.println("i(end) = " + i);
     }
 
     public void makeTableNull() {

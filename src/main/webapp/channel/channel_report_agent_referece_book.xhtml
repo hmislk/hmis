@@ -24,7 +24,10 @@
                     <p:outputLabel value="Agent Name" />
                     <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
                                     forceSelection="true"
-                                    completeMethod="#{agentReferenceBookController.completeAgent}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                    completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        <p:column>#{vt.institutionCode}</p:column>
+                        <p:column>#{vt.name}</p:column>
+                    </p:autoComplete>
 
 
                     <p:commandButton action="#{agentReferenceBookController.createAllBooks}" value="Fill" ajax="false" ></p:commandButton> 

@@ -1175,8 +1175,8 @@
                                     <p:menuitem  ajax="false"  action="/admin_items" value="Manage Items/Services" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages"></p:menuitem>
                                     <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" ></p:menuitem>
-
                                 </p:submenu>
+                                
                                 <p:submenu label="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" >
                                     <p:submenu label="Membership Sheme">
                                         <p:menuitem action="/memberShip/membership_scheme"   value="Membership Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>

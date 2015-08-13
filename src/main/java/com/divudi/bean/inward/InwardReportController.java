@@ -109,6 +109,7 @@ public class InwardReportController implements Serializable {
     boolean dueAmount = true;
     boolean calculatedAmount = true;
     boolean differentAmount = true;
+    boolean developers = false;
     // for disscharge book
 
     public List<PatientEncounter> getPatientEncounters() {
@@ -1487,6 +1488,14 @@ public class InwardReportController implements Serializable {
 
     public void setGuardian(boolean guardian) {
         this.guardian = guardian;
+    }
+
+    public boolean isDevelopers() {
+        return developers;
+    }
+
+    public void setDevelopers(boolean developers) {
+        this.developers = developers;
     }
 
 }
