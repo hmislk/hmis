@@ -115,6 +115,22 @@ public class PatientInvestigationController implements Serializable {
         toReceive = null;
     }
 
+    
+    public PatientInvestigation getPatientInvestigationFromBillItem(BillItem bi){
+        String j;
+        Map m = new HashMap();
+        j="select pi "
+                + " from PatientInvestigation pi "
+                + " where pi.billItem =:bi "
+                + " and pi.retired=false "
+                + " order by pi.id";
+        m.put("bi", bi);
+        PatientInvestigation pi = getFacade().findFirstBySQL(j, m);
+        pi.isRetired();
+        return pi;
+    }
+    
+    
     public boolean sampledForAnyItemInTheBill(Bill bill) {
         //System.out.println("bill = " + bill);
         String jpql;
