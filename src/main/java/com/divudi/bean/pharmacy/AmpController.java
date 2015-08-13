@@ -11,15 +11,13 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemSupplierPrices;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
-import com.divudi.entity.Service;
 import com.divudi.facade.AmpFacade;
 import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.entity.pharmacy.VtmsVmps;
@@ -73,7 +71,24 @@ public class AmpController implements Serializable {
     List<Amp> listToRemove = null;
     Department department;
     List<Amp> itemList;
+    List<ItemSupplierPrices> itemSupplierPrices;
+    @Inject
+    ItemsDistributorsController itemDistributorsController;
     
+    public void fillItemSupplierPrices(){
+        List<Amp> amps = getItems();
+        itemSupplierPrices = new ArrayList<>();
+        for (Amp a:amps){
+            ItemSupplierPrices p = new ItemSupplierPrices();
+            p.setItem(a);
+            p.setAmp(a);
+            p.setVmp(a.getVmp());
+            p.setPp(getPharmacyBean().getLastPurchaseRate(a));
+            p.setSp(getPharmacyBean().getLastRetailRate(a));
+            p.setSupplier(itemDistributorsController.getDistributor(a));
+            itemSupplierPrices.add(p);
+        }
+    }
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -124,6 +139,8 @@ public class AmpController implements Serializable {
         this.itemList = itemList;
     }
 
+    
+    
     
     public double fetchStockQty(Item item) {
 
@@ -590,6 +607,15 @@ public class AmpController implements Serializable {
         this.department = department;
     }
 
+    public List<ItemSupplierPrices> getItemSupplierPrices() {
+        return itemSupplierPrices;
+    }
+
+    public void setItemSupplierPrices(List<ItemSupplierPrices> itemSupplierPrices) {
+        this.itemSupplierPrices = itemSupplierPrices;
+    }
+
+    
     
     /**
      *
