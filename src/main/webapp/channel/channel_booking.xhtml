@@ -75,7 +75,7 @@
                                 <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                              id="tblSessionsOfSelectedConsultant" var="ses"
                                              selectionMode="single" 
-                                             selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
+                                             selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="275">
 
                                     <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                             update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
@@ -152,7 +152,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <table >
+                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
                         <tr>
                             <th>
                                 <p:outputLabel value="Bookings" ></p:outputLabel>
@@ -163,7 +163,7 @@
                                 <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
                                              value="#{bookingController.billSessions}" var='bs'
                                              selectionMode="single" rowKey="#{bs.id}"
-                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="560">
+                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                             listener="#{channelBillController.createBillfees}" />  
 
