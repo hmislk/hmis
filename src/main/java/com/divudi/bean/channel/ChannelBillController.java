@@ -410,7 +410,7 @@ public class ChannelBillController implements Serializable {
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
         calRefundTotal();
 
-        if (bill.getBillType() == BillType.ChannelCash && bill.getPaidBill() == null) {
+        if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
             System.out.println("paid bill set");
             bill.setPaidBill(bill);
             billFacade.edit(bill);
@@ -648,7 +648,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        if (bill.getBillType() == BillType.ChannelCash && bill.getPaidBill() == null) {
+        if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
             System.out.println("paid bill set");
             bill.setPaidBill(bill);
             billFacade.edit(bill);
@@ -1481,7 +1481,7 @@ public class ChannelBillController implements Serializable {
 
         getBillFacade().create(bill);
 
-        if (bill.getBillType() == BillType.ChannelCash) {
+        if (bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) {
             System.out.println("paidBill 1= " + bill.getPaidBill());
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);

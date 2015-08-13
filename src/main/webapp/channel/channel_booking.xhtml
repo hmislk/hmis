@@ -418,7 +418,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -461,7 +461,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+                                <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -500,7 +500,8 @@
                                         </p:outputLabel>
                                     </h:panelGrid>                            
                                 </p:panel>
-                                <p:panel header="Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+                                
+                                <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Booking Id"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.bookingId}"/>
