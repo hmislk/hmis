@@ -86,6 +86,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node121 = new PrivilageNode("Room Occupency", node12, Privileges.InwardRoomRoomOccupency);
         TreeNode node122 = new PrivilageNode("Room Change", node12, Privileges.InwardRoomRoomChange);
         TreeNode node123 = new PrivilageNode("Gurdian Room Change", node12, Privileges.InwardRoomGurdianRoomChange);
+        TreeNode node124 = new PrivilageNode("Dischage Room in Room Ocupency", node12, Privileges.InwardRoomDischarge);
         TreeNode node13 = new PrivilageNode("Services & Items", node1);
         TreeNode node130 = new PrivilageNode("Services & Items", node13, Privileges.InwardServicesAndItems);
         TreeNode node131 = new PrivilageNode("Add Services", node13, Privileges.InwardServicesAndItemsAddServices);
