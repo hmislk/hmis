@@ -548,7 +548,7 @@
 
                             <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
                                 <p:outputLabel value="Re-payment Method"/>
-                                <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
+                                <p:selectOneMenu  id="cmbCancelPs" value="#{channelBillController.cancelPaymentMethod}">  
                                     <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
                                 </p:selectOneMenu>
@@ -567,13 +567,13 @@
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'  and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel Paid" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
@@ -587,7 +587,7 @@
                                 <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
                                     <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.refundPaymentMethod}">  
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
                                     </p:selectOneMenu>
