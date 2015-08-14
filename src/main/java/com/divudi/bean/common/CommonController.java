@@ -40,5 +40,11 @@ public class CommonController implements Serializable {
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
     }
+    
+    
+    public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
+        long timeInMs = toDate.getTime() - fromDate.getTime();
+        return timeInMs/(1000*60);
+    }
 
 }
