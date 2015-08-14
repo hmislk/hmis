@@ -1074,6 +1074,11 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Can't Settle Without Patient.");
                 return true;
             }
+            if (getNewPatient().getPerson().getPhone() == null || getNewPatient().getPerson().getPhone().trim().equals("")) {
+                errorText = "Can not bill without Patient Contact Number.";
+                UtilityController.addErrorMessage("Can't Settle Without Patient Contact Number.");
+                return true;
+            }
         }
         if (patientTabId.equals("tabSearchPt")) {
             if (getSearchPatient() == null) {

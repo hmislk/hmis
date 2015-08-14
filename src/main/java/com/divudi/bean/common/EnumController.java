@@ -357,7 +357,7 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForChannelSettle() {
-        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Card};
         return p;
     }
 
