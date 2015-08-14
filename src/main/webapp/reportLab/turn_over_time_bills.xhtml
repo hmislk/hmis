@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+
+
+                <p:panel id="panelPrint"  
+                         header="Turnover Time">
+
+                    <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
+                        <h:outputLabel value="Department"/>
+                        <autocomplete:department value="#{investigationMonthSummeryOwnControllerSession.department}" ></autocomplete:department>
+
+                        <h:outputLabel value="From"/>
+                        <p:calendar id="frmDate" navigator="true" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate"  navigator="true" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value=""/>
+                        <p:commandButton ajax="false"  value="Process."  
+                                         action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
+                                         styleClass="noPrintButton" style="float: left;" />
+
+                    </h:panelGrid>
+
+                    <p:panel style="width: 500px; margin-top: 20px;">
+
+
+                        <p:dataTable value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
+                            <p:column headerText="Ins Id" >
+                                <p:outputLabel value="#{pi.billItem.bill.insId}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Dept Id" >
+                                <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Bill Type" >
+                                <p:outputLabel value="#{pi.billItem.bill.class}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Bill No" >
+                                <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Investigation" >
+                                <p:outputLabel value="#{pi.billItem.item.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed At" >
+                                <p:outputLabel value="#{pi.billItem.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Printed At" >
+                                <p:outputLabel value="#{pi.printingAt}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+
+                </p:panel>        
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

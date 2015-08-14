@@ -196,7 +196,8 @@
                                     </table>
                                 </p:panel>
 
-                                <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
+                                <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" 
+                                         style="#{sessionController.institutionPreference.microBiologyFont ne null? 'font-family: ' + sessionController.institutionPreference.microBiologyFont + ';':''}">
                                     <f:view contentType="text/html">
                                         <table >
                                             <ui:repeat id="tblMicVals" 
@@ -350,8 +351,9 @@
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
-                            <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 150%;">
+                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}">
+                            <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 150%;
+                                 #{sessionController.institutionPreference.microBiologyFont ne null? 'font-family: ' + sessionController.institutionPreference.microBiologyFont + ';':''}">
                                 <ui:repeat value="#{commonReportItemController.items}" var="myCli" >
                                     <div style="#{myCli.cssStyle}; position:absolute;">
                                         <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
