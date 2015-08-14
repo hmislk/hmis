@@ -436,12 +436,6 @@ public class ChannelBillController implements Serializable {
             getBillFacade().edit(bill);
             
 
-            if (bill.getPaymentMethod() == PaymentMethod.Agent && refundPaymentMethod == PaymentMethod.Agent) {
-                updateBallance(bill.getCreditCompany(),
-                        0 - bill.getNetTotal(),
-                        HistoryType.ChannelBooking,
-                        rb, rBilItm, rSession, billSession.getBillItem().getAgentRefNo());
-            }
         } else {
             RefundBill rb = (RefundBill) createRefundBill(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
@@ -467,12 +461,6 @@ public class ChannelBillController implements Serializable {
             getBillFacade().edit(bill.getPaidBill());
 
 
-            if (bill.getPaymentMethod() == PaymentMethod.Agent && refundPaymentMethod == PaymentMethod.Agent) {
-                updateBallance(bill.getCreditCompany(),
-                        0 - bill.getNetTotal(),
-                        HistoryType.ChannelBooking,
-                        rb, rBilItm, rSession, billSession.getBillItem().getAgentRefNo());
-            }
 
         }
 
@@ -673,12 +661,6 @@ public class ChannelBillController implements Serializable {
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
-            if (bill.getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
-                updateBallance(bill.getCreditCompany(),
-                        0 - bill.getNetTotal(),
-                        HistoryType.ChannelBooking,
-                        cb, cItem, cbs, billSession.getBillItem().getAgentRefNo());
-            }
         } else {
             CancelledBill cb = createCancelBill(bill);
             BillItem cItem = cancelBillItems(billItem, cb);
@@ -698,12 +680,6 @@ public class ChannelBillController implements Serializable {
             billSession.getPaidBillSession().setReferenceBillSession(cpbs);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
-            if (bill.getPaidBill().getPaymentMethod() == PaymentMethod.Agent && cancelPaymentMethod == PaymentMethod.Agent) {
-                updateBallance(bill.getPaidBill().getCreditCompany(),
-                        0 - bill.getPaidBill().getNetTotal(),
-                        HistoryType.ChannelBooking,
-                        cpb, cpItem, cpbs, billItem.getAgentRefNo());
-            }
 
         }
 
@@ -977,6 +953,7 @@ public class ChannelBillController implements Serializable {
         System.out.println("transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);

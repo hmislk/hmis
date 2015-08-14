@@ -178,7 +178,7 @@
                                         <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                     </p:column>   
                                     <p:column headerText="Agent">
-                                        <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
+                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
                                     </p:column> 
                                     <p:column headerText="P/A">                           
                                         <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
@@ -266,6 +266,7 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu  value="#{channelBillController.newPatient.person.title}"  >
+                                    <f:selectItem itemLabel="Select Title"/>
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
