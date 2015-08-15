@@ -360,6 +360,11 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Card};
         return p;
     }
+    
+    public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
+        return p;
+    }
 
 //    public boolean checkPaymentScheme(PaymentScheme scheme, String paymentMathod) {
 //        if (scheme != null && scheme.getPaymentMethod() != null) {

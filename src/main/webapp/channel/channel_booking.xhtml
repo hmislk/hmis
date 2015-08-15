@@ -14,7 +14,7 @@
         <h:form>
 
 
-            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGroup id="panSpeciality">
                     <table  header="Specialities" styleClass="noPaddingMargin" > 
                         <tr>
@@ -587,7 +587,7 @@
                                 <p:outputLabel value="Re-payment Method"/>
                                 <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
                                     <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>                                                               
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
@@ -624,9 +624,9 @@
                                 <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
                                     <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}" >  
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
