@@ -269,7 +269,7 @@
 
                 <table width="100%" style="width: 100%; margin-left: 50px;" >
                     <tr>
-                       
+
                         <td colspan="3" style="width: 25%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
@@ -277,7 +277,7 @@
                     </tr>
 
                     <tr>
-                       
+
                         <td colspan="3" >
                             <h:outputLabel value="-----------------------------------------------"   />                           
                         </td>
@@ -286,7 +286,7 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
-                            
+
                             <td colspan="3" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
@@ -381,16 +381,12 @@
 
             <div class="footer">
                 <br/>
-                THANK YOU. PLEASE COME AGAIN<br/>
-                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                THANK YOU.
                 <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                Software by www.lakmedi.com - 0715812399<br/>
+                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
             </div>
-
-
-
         </div>
     </cc:implementation>
 </html>
