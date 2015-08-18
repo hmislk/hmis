@@ -128,6 +128,8 @@
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
                     <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
+                    <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
                     <h:outputLabel value="Default Payment Method"></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                         <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               

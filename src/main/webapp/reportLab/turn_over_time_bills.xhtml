@@ -38,7 +38,7 @@
 
                     </h:panelGrid>
 
-                    <p:panel style="width: 500px; margin-top: 20px;">
+                    <p:panel style="width: 100%; margin-top: 20px;">
 
 
                         <p:dataTable value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
@@ -49,7 +49,7 @@
                                 <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Bill Type" >
-                                <p:outputLabel value="#{pi.billItem.bill.class}" ></p:outputLabel>
+                                <p:outputLabel value="#{pi.billItem.bill.billType.label}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Bill No" >
                                 <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
@@ -66,6 +66,22 @@
                                 <p:outputLabel value="#{pi.printingAt}" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Turn over time" >
+                                <h:panelGroup rendered="#{pi.printingAt ne null}" >
+                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt)}" rendered="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt) lt 60}" >
+                                        <f:convertNumber pattern="0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" minutes" rendered="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt) lt 60}" >
+                                    </p:outputLabel>
+                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt)/60}" rendered="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt) gt 60}" >
+                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" hours" rendered="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt) gt 60}" >
+                                    </p:outputLabel>
+                                    <p:outputLabel value="One Hour" rendered="#{commonController.dateDifferenceInMinutes(pi.billItem.bill.createdAt, pi.printingAt) eq 60}" >
+                                    </p:outputLabel>
+                                </h:panelGroup>
                             </p:column>
 
 
