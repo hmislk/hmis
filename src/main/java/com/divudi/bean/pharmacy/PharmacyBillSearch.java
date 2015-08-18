@@ -173,6 +173,10 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Please Select a Bill");
             return;
         }
+        
+        if (checkIssueReturn(getBill())) {
+            return;
+        }
 
         if (checkDepartment(getBill())) {
             return;
@@ -813,6 +817,24 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyPre);
+        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+
+        if (!tmp.isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean checkIssueReturn(Bill b) {
+        String sql = "Select b From RefundBill b where b.retired=false "
+                + " and b.creater is not null"
+                + " and b.cancelled=false "
+                + " and b.billType=:btp "
+                + " and b.billedBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyIssue);
         List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
 
         if (!tmp.isEmpty()) {
