@@ -175,6 +175,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         
         if (checkIssueReturn(getBill())) {
+            UtilityController.addErrorMessage("Issue Bill had been Returned You can't cancell bill ");
             return;
         }
 
