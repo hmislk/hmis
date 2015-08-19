@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -461,7 +462,7 @@ public class ChannelBillController implements Serializable {
 
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
-            
+
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
                 rb.setPaymentMethod(refundPaymentMethod);
                 if (refundPaymentMethod == PaymentMethod.Agent) {
@@ -1095,7 +1096,7 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Can't Settle Without Patient.");
                 return true;
             }
-            if ((getNewPatient().getPerson().getPhone() == null || getNewPatient().getPerson().getPhone().trim().equals(""))&&!getSessionController().getInstitutionPreference().isChannelSettleWithoutPatientPhoneNumber()) {
+            if ((getNewPatient().getPerson().getPhone() == null || getNewPatient().getPerson().getPhone().trim().equals("")) && !getSessionController().getInstitutionPreference().isChannelSettleWithoutPatientPhoneNumber()) {
                 errorText = "Can not bill without Patient Contact Number.";
                 UtilityController.addErrorMessage("Can't Settle Without Patient Contact Number.");
                 return true;
@@ -1162,6 +1163,12 @@ public class ChannelBillController implements Serializable {
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
+            return true;
+        }
+
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna && getSs().isTransLeave()) {
+            errorText = "Doctor Leave day Can't Channel.";
+            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
             return true;
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());

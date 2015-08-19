@@ -584,6 +584,11 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("hh = " + hh);
+        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
+        if (getSelectedServiceSession().isTransLeave()) {
+            billSessions=null;
+        }
         System.out.println("billSessions" + billSessions);
 
     }
@@ -608,6 +613,11 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("hh = " + hh);
+        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
+        if (getSelectedServiceSession().isTransLeave()) {
+            billSessions=null;
+        }
         System.out.println("billSessions" + billSessions);
 
     }

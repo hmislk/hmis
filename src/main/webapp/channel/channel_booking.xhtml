@@ -82,38 +82,43 @@
                                             listener="#{bookingController.fillBillSessions}" />  
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}">
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="E"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.sessionAt}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.startingTime}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="hh:mm a"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;Rs." />
-                                        <h:outputText value="#{ses.originatingSession.totalFee}">
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.originatingSession.totalFee}" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="(" />
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                        <h:outputText value="(" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.transLeave}" >
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=") &nbsp;&nbsp;#" />
-                                        <h:outputText value="#{ses.displayCount+1}" style="color: red">
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;**" />
-                                        <h:outputText value="#{ses.transCreditBillCount}" >
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="**" />
+                                        <h:outputText value="**" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{ses.transLeave}" style="color: red;">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.transLeave}" style="color: red;"/>
                                     </p:column>
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>

@@ -4,6 +4,8 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.SessionController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelFee;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -43,6 +46,8 @@ public class ChannelBean {
     private BillFeeFacade billFeeFacade;
     @EJB
     private ServiceSessionLeaveFacade serviceSessionLeaveFacade;
+    @Inject
+    SessionController sessionController;
 
     public ChannelFee getChannelFee(BillSession bs, FeeType feeType) {
         ChannelFee doctorFee = new ChannelFee();
@@ -111,7 +116,7 @@ public class ChannelBean {
 
         return lg.intValue();
     }
-    
+
     public int getBillSessionsCountWithOutCancelRefund(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -132,7 +137,7 @@ public class ChannelBean {
 
         return lg.intValue();
     }
-    
+
     public int getBillSessionsCountCrditBill(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -281,6 +286,9 @@ public class ChannelBean {
             boolean hasSpecificDateSession = false;
 //            System.err.println("SESSSION");
             if (checkLeaveDate(nowDate, inputSessions.get(0).getStaff())) {
+                if (getSessionController().getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+                    createDocLeaveSession(createdSessions,nowDate);
+                }
                 System.err.println("INSIDE");
                 Calendar nc = Calendar.getInstance();
                 nc.setTime(nowDate);
@@ -316,6 +324,7 @@ public class ChannelBean {
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
                         newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
+                        newSs.setTransLeave(false);
                         newSs.setStaff(ss.getStaff());
                         System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
                         System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
@@ -397,7 +406,19 @@ public class ChannelBean {
         return createdSessions;
     }
 
-    public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions,Date date) {
+    public void createDocLeaveSession(List<ServiceSession> createdSessions,Date nDate) {
+        ServiceSession newSs = new ServiceSession();
+        newSs.setName("Leave");
+        newSs.setSessionAt(nDate);
+        newSs.setMaxNo(0);
+        newSs.setTransDisplayCountWithoutCancelRefund(0);
+        newSs.setTransCreditBillCount(0);
+        newSs.setTransLeave(true);
+        createdSessions.add(newSs);
+
+    }
+
+    public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions, Date date) {
         int sessionDayCount = 0;
         System.err.println("Passing Sessions " + inputSessions);
         List<ServiceSession> createdSessions = new ArrayList<>();
@@ -482,5 +503,13 @@ public class ChannelBean {
 
     public void setServiceSessionLeaveFacade(ServiceSessionLeaveFacade serviceSessionLeaveFacade) {
         this.serviceSessionLeaveFacade = serviceSessionLeaveFacade;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
     }
 }
