@@ -74,6 +74,7 @@ public class UserPreference implements Serializable {
     boolean pharmacyBillWithOutItem;
     boolean fiveFivePaperWithHeadings;
     boolean showOnlyMarkedDoctors=false;
+    boolean channelSettleWithoutPatientPhoneNumber=false;
     String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
@@ -459,6 +460,14 @@ public class UserPreference implements Serializable {
 
     public void setChannellingPaymentMethod(PaymentMethod channellingPaymentMethod) {
         this.channellingPaymentMethod = channellingPaymentMethod;
+    }
+
+    public boolean isChannelSettleWithoutPatientPhoneNumber() {
+        return channelSettleWithoutPatientPhoneNumber;
+    }
+
+    public void setChannelSettleWithoutPatientPhoneNumber(boolean channelSettleWithoutPatientPhoneNumber) {
+        this.channelSettleWithoutPatientPhoneNumber = channelSettleWithoutPatientPhoneNumber;
     }
     
     

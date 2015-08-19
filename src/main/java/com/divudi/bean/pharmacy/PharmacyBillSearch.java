@@ -173,6 +173,11 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Please Select a Bill");
             return;
         }
+        
+        if (checkIssueReturn(getBill())) {
+            UtilityController.addErrorMessage("Issue Bill had been Returned You can't cancell bill ");
+            return;
+        }
 
         if (checkDepartment(getBill())) {
             return;
@@ -731,6 +736,23 @@ public class PharmacyBillSearch implements Serializable {
                 return true;
             }
         }
+        System.out.println("getBill().getBillType() = " + getBill().getBillType());
+        System.out.println("getBill().getBillClass() = " + getBill().getBillClass());
+        if (getBill().getBillType() == BillType.PharmacyPre) {
+            if (checkSaleReturn(getBill())) {
+                UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
+                return true;
+            }
+        }
+        
+        if (getBill().getBillType() == BillType.PharmacySale) {
+            System.out.println("getBill().getReferenceBill() = " + getBill().getReferenceBill().getInsId());
+            System.out.println("getBill().getReferenceBill().getBillType() = " + getBill().getReferenceBill().getBillType());
+            if (checkSaleReturn(getBill().getReferenceBill())) {
+                UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
+                return true;
+            }
+        }
 
         if (getBill().getBillType() == BillType.PharmacyTransferIssue) {
             if (getBill().checkActiveForwardReference()) {
@@ -777,6 +799,43 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("btp", BillType.PharmacyGrnReturn);
+        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+
+        if (!tmp.isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean checkSaleReturn(Bill b) {
+        String sql = "Select b From RefundBill b where b.retired=false "
+                + " and b.creater is not null"
+                + " and b.cancelled=false "
+                + " and b.billType=:btp "
+                + " and b.billedBill=:ref "
+                + " and b.referenceBill.cancelled=false";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyPre);
+        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+
+        if (!tmp.isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean checkIssueReturn(Bill b) {
+        String sql = "Select b From RefundBill b where b.retired=false "
+                + " and b.creater is not null"
+                + " and b.cancelled=false "
+                + " and b.billType=:btp "
+                + " and b.billedBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyIssue);
         List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
 
         if (!tmp.isEmpty()) {

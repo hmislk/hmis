@@ -286,7 +286,7 @@ itemsBlockRight{
 .headingBill{
     text-align: center!important;
     font-weight: bold!important;
-    font-size: 15px!important;
+    font-size: 12px!important;
     font-weight: bold;
 }
 
@@ -304,7 +304,7 @@ itemsBlockRight{
 }
 
 .totalsBlock{
-    font-size: 16px!important;
+    font-size: 12px!important;
     font-family:Arial, Helvetica, sans-serif!important;
 }
 

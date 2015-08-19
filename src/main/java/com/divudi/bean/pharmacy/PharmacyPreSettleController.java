@@ -342,14 +342,14 @@ public class PharmacyPreSettleController implements Serializable {
             getBillFacade().create(getSaleReturnBill());
         }
 
-        //   updateSaleReturnPreBill();
+           updateSaleReturnPreBill();
     }
 
-//     private void updateSaleReturnPreBill() {
-//        getPreBill().setReferenceBill(getSaleReturnBill());
-//        getBillFacade().edit(getPreBill());
-//    }
-//  
+     private void updateSaleReturnPreBill() {
+        getPreBill().setReferenceBill(getSaleReturnBill());
+        getBillFacade().edit(getPreBill());
+    }
+  
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
 
