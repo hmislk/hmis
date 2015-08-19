@@ -6,9 +6,12 @@
 
 package com.divudi.entity;
 
+import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.Inheritance;
 
 @Entity
-public class ServiceSessionLeave extends ServiceSession {
+@Inheritance
+public class ServiceSessionLeave extends ServiceSession implements Serializable{
     
 }
