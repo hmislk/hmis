@@ -9,7 +9,6 @@
 
     <ui:define name="content">
         <h:form>
-            <h:outputStylesheet library="css" name="pharmacyA4.css"/>
             <h:panelGroup rendered="#{!preReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
@@ -17,9 +16,9 @@
 
                         <h:panelGrid columns="15"  >                                                     
 
-                                <p:commandButton  value="Return" action="#{preReturnController.settle}" 
-                                                   onclick="onSubmitButton();"
-                                                ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            <p:commandButton  value="Return" action="#{preReturnController.settle}" 
+                                              onclick="onSubmitButton();"
+                                              ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" /> 
                             <p:outputLabel id="total"  value="#{preReturnController.returnBill.total}" style="float: right;"/> 
@@ -67,7 +66,7 @@
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
-              
+
             </h:panelGroup>
 
             <p:panel rendered="#{preReturnController.printPreview}">
@@ -79,11 +78,11 @@
                     <p:printer target="gpBillPreview2" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview1"   >
-                    <ph:returnBill bill="#{preReturnController.returnBill}"/>                
+                        <ph:returnBill bill="#{preReturnController.returnBill}"/>                
                 </p:panel>
-                <p:panel   id="gpBillPreview2"   >
-                    <ph:saleBill  bill="#{preReturnController.bill}"/>                
-                </p:panel>
+                    <p:panel   id="gpBillPreview2"   >
+                        <ph:saleBill  bill="#{preReturnController.bill}"/>                
+                    </p:panel>
             </p:panel>
 
         </h:form>
