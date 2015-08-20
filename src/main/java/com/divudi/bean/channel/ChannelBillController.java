@@ -1083,6 +1083,13 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
+        
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna && getbookingController().getSelectedServiceSession().isTransLeave()) {
+            errorText = "******** Doctor Leave day Can't Channel ********";
+            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
+            return true;
+        }
+        
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
             errorText = "Please Select Session.";
             UtilityController.addErrorMessage("Please Select Session");
@@ -1166,11 +1173,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna && getSs().isTransLeave()) {
-            errorText = "Doctor Leave day Can't Channel.";
-            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
-            return true;
-        }
+        
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
 
         return false;

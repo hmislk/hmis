@@ -79,7 +79,7 @@
 
                                     <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                             update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
-                                            listener="#{bookingController.fillBillSessions}" />  
+                                            listener="#{bookingController.fillBillSessions}" />
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                                         <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
@@ -114,7 +114,7 @@
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
                                         <h:outputText value="**" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
+                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
                                         <h:outputText value="#{ses.sessionAt}" rendered="#{ses.transLeave}" style="color: red;">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
