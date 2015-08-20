@@ -30,6 +30,12 @@
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.id}-#{pharmacyBillSearch.bill.billType}" ></h:outputLabel>
+                                    <h:outputLabel value="Billed No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.referenceBill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Billed No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.referenceBill.id} - #{pharmacyBillSearch.bill.referenceBill.billType}" ></h:outputLabel>
                                     <h:outputLabel value="Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
                                     <h:outputLabel value="Discount :" ></h:outputLabel>

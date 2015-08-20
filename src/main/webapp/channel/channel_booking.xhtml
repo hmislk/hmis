@@ -14,7 +14,7 @@
         <h:form>
 
 
-            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGroup id="panSpeciality">
                     <table  header="Specialities" styleClass="noPaddingMargin" > 
                         <tr>
@@ -75,45 +75,50 @@
                                 <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                              id="tblSessionsOfSelectedConsultant" var="ses"
                                              selectionMode="single" 
-                                             selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
+                                             selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="275">
 
                                     <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                             update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                             listener="#{bookingController.fillBillSessions}" />  
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}">
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="E"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.sessionAt}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.startingTime}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.transLeave}">
                                             <f:convertDateTime pattern="hh:mm a"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;Rs." />
-                                        <h:outputText value="#{ses.originatingSession.totalFee}">
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.originatingSession.totalFee}" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" />
-                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="(" />
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                        <h:outputText value="(" rendered="#{!ses.transLeave}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.transLeave}" >
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=") &nbsp;&nbsp;#" />
-                                        <h:outputText value="#{ses.displayCount+1}" style="color: red">
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;**" />
-                                        <h:outputText value="#{ses.transCreditBillCount}" >
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.transLeave}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="**" />
+                                        <h:outputText value="**" rendered="#{!ses.transLeave}"/>
+                                        <h:outputText value="***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{ses.transLeave}" style="color: red;">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.transLeave}" style="color: red;"/>
                                     </p:column>
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
@@ -152,7 +157,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <table >
+                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
                         <tr>
                             <th>
                                 <p:outputLabel value="Bookings" ></p:outputLabel>
@@ -163,7 +168,7 @@
                                 <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
                                              value="#{bookingController.billSessions}" var='bs'
                                              selectionMode="single" rowKey="#{bs.id}"
-                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="560">
+                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                             listener="#{channelBillController.createBillfees}" />  
 
@@ -171,14 +176,18 @@
                                     <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                     <p:column headerText="Paid">
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: red;"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: red;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                                     </p:column>
                                     <p:column headerText="C/R">
                                         <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                         <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                     </p:column>   
                                     <p:column headerText="Agent">
-                                        <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
+                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
                                     </p:column> 
                                     <p:column headerText="P/A">                           
                                         <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
@@ -266,6 +275,7 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu  value="#{channelBillController.newPatient.person.title}"  >
+                                    <f:selectItem itemLabel="Select Title"/>
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
@@ -330,7 +340,7 @@
                               modal="true" height="400" width="600" closable="false">
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
                                          ></p:commandButton>
-                        
+
                         <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
                                          rendered="#{!channelBillController.settleSucessFully}" 
                                          ></p:commandButton>
@@ -341,25 +351,34 @@
                         </p:commandButton>
 
 
-                        <h:panelGroup styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
                             <div >
-                                <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                    <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
-                                    <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </div>
                             <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                    <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                        <ch:channelReciptPosDouble bill="#{channelBillController.printingBill}" dup="false"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                        <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
                             </div>
                         </h:panelGroup>
-                        
-                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
+
+                        <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
                             <br/>
                             <br/>
                             <p:outputLabel value="#{channelBillController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
-                            
+
                         </h:panelGroup>
 
                     </p:dialog>  
@@ -418,7 +437,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -447,7 +466,7 @@
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
@@ -461,7 +480,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+                                <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -500,7 +519,8 @@
                                         </p:outputLabel>
                                     </h:panelGrid>                            
                                 </p:panel>
-                                <p:panel header="Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}">
+
+                                <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Booking Id"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.bookingId}"/>
@@ -534,14 +554,23 @@
 
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </div>
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
-                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                            <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                            <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        </h:panelGroup>
+
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -563,7 +592,7 @@
                                 <p:outputLabel value="Re-payment Method"/>
                                 <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
                                     <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>                                                               
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
@@ -580,7 +609,7 @@
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
@@ -600,9 +629,9 @@
                                 <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
                                     <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}">  
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}" >  
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
@@ -628,14 +657,14 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
-                            
+
                             <p:commandButton ajax="false" value="Refund Agent Bills" 
                                              rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"
                                              action="#{channelBillController.refundAgentBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
-                            
+
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
@@ -703,18 +732,23 @@
                                         </p:commandButton>
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
                                             <div >
-                                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                                    <div>
+                                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                                         <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                                    </div>
-                                                    <div>
                                                         <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                                    </div>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </div>
                                             <div >
-                                                <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
-                                                    <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                                        <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                    </h:panelGroup>
+
                                                 </h:panelGroup>
                                             </div>
                                         </h:panelGroup>

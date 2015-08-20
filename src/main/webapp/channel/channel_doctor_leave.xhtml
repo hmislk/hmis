@@ -12,8 +12,8 @@
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{serviceSessionLeaveController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
-                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                            <p:ajax  event="change" process="@this" update="scStaff"  /> 
+                            <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <p:ajax  event="change" process="@this" update="tbl scStaff"  /> 
                         </p:selectOneListbox>
 
                     </h:panelGrid>
@@ -28,14 +28,21 @@
                     </h:panelGrid>
                 </p:panel>
 
-                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.items}" var="d">
+                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.items}" var="d" rowStyleClass="#{d.retired ? 'crossLine':''}" >
                     <p:column>
-                        <h:outputLabel value="#{d.sessionDate}"/>
+                        <h:outputLabel value="#{d.sessionDate}">
+                            <f:convertDateTime parent="YYYY MM dd" />
+                        </h:outputLabel>
                     </p:column>
-                    
                     <p:column>
-                        <p:commandButton value="Remove" ajax="false" action="#{serviceSessionLeaveController.remove}" onclick="onSubmitButton();">
-                            <f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>
+                        <h:outputLabel value="#{d.creater.webUserPerson.name}"/>
+                    </p:column>
+                    <p:column>
+                        <p:commandButton value="Remove" 
+                                         ajax="false" action="#{serviceSessionLeaveController.remove(d)}" 
+                                         onclick="onSubmitButton();" disabled="#{d.retired eq true}"
+                                         >
+                            <!--<f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>-->
                         </p:commandButton>
                     </p:column>
                     

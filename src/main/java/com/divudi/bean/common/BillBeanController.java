@@ -1328,7 +1328,7 @@ public class BillBeanController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
-        String sql = "Select b.department,"
+        String sql = "Select b.toDepartment,"
                 + " sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.retired=false"

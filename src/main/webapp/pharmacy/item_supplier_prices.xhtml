@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Item List with Suppliers and Latest Rates" >
+                        <p:commandButton ajax="false" value="Excel">
+                            <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Fill Items"
+                                         action="#{ampController.fillItemsForItemSupplierPrices}"/>
+                        <p:commandButton ajax="false" value="Fill Prices For Items"
+                                         action="#{ampController.fillPricesForItemSupplierPrices}"/>
+                        <p:commandButton ajax="false" value="Fill Suppliers For Items"
+                                         action="#{ampController.fillSuppliersForItemSupplierPrices}"/>
+
+                        <p:panel id="paItems">
+                            <p:dataTable id="tblItem" value="#{ampController.itemSupplierPrices}" var="i"
+                                         rowKey="#{i.id}" 
+                                         rows="100"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="100,250,500,1000"
+                                         >
+
+
+
+                                <p:column headerText="Item Code" 
+                                          sortBy="#{i.amp.code}"
+                                          filterBy="#{i.amp.code}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.amp.code}"></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item Name" 
+                                          sortBy="#{i.amp.name}" 
+                                          filterBy="#{i.amp.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.amp.name}"></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Generic Code" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Generic Name" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Supplier Code" 
+                                          sortBy="#{i.supplier.institutionCode}"
+                                          filterBy="#{i.supplier.institutionCode}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.supplier.institutionCode}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Supplier Name" 
+                                          sortBy="#{i.supplier.name}"
+                                          filterBy="#{i.supplier.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.supplier.name}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Purchase Price" 
+                                          sortBy="#{i.pp}"
+                                          filterBy="#{i.pp}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.pp}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Sale Price" 
+                                          sortBy="#{i.sp}"
+                                          filterBy="#{i.sp}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{i.sp}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>
