@@ -13,6 +13,7 @@ import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.Admission;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.persistence.TemporalType;
@@ -44,6 +46,7 @@ public class CreditCompanyDueController implements Serializable {
     private Date fromDate;
     private Date toDate;
     Admission patientEncounter;
+    boolean withOutDueUpdate;
 
     ////////////
     private List<InstitutionBills> items;
@@ -175,8 +178,6 @@ public class CreditCompanyDueController implements Serializable {
         this.dealerDueDetailRows = dealerDueDetailRows;
     }
 
-    
-    
     public void createInwardAgeDetailAnalysis() {
         dealerDueDetailRows = new ArrayList<>();
         createInwardAgeTable();
@@ -225,8 +226,8 @@ public class CreditCompanyDueController implements Serializable {
             }
 
         }
-        
-        creditCompanyAge=new ArrayList<>();
+
+        creditCompanyAge = new ArrayList<>();
 
     }
 
@@ -503,13 +504,62 @@ public class CreditCompanyDueController implements Serializable {
             newIns.setPatientEncounters(lst);
 
             for (PatientEncounter b : lst) {
+                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
+                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getPaidAmount());
+                newIns.setTransPaidTotalPatient(newIns.getTransPaidTotalPatient() + b.getTransPaidByPatient());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
+                newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
             }
 
             institutionEncounters.add(newIns);
         }
+
+    }
+
+    public double createInwardPaymentTotal(PatientEncounter pe, Date fd, Date td, BillType bt) {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "select sum(b.netTotal) from BilledBill b where "
+                + " b.billType=:billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.refunded=false "
+                + " and b.cancelled=false "
+                + " and b.patientEncounter=:pe ";
+
+        m.put("pe", pe);
+        m.put("billType", bt);
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double createInwardPaymentTotalCredit(PatientEncounter pe, Date fd, Date td, BillType bt) {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "select sum(bi.netValue) from BillItem bi where "
+                + " bi.bill.billType=:billType "
+                + " and type(bi.bill)=:cl "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.refunded=false "
+                + " and bi.bill.cancelled=false "
+                + " and bi.patientEncounter=:pe ";
+
+        m.put("pe", pe);
+        m.put("billType", bt);
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("cl", BilledBill.class);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -793,6 +843,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setAdmissionFacade(AdmissionFacade admissionFacade) {
         this.admissionFacade = admissionFacade;
+    }
+
+    public boolean isWithOutDueUpdate() {
+        return withOutDueUpdate;
+    }
+
+    public void setWithOutDueUpdate(boolean withOutDueUpdate) {
+        this.withOutDueUpdate = withOutDueUpdate;
     }
 
 }
