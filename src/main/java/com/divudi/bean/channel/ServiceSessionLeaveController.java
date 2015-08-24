@@ -5,21 +5,25 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.StaffFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -39,17 +43,35 @@ public class ServiceSessionLeaveController implements Serializable {
     @EJB
     private ServiceSessionLeaveFacade facade;
 
-    public List<Staff> getConsultants() {
-        List<Staff> suggestions;
-        String sql;
+    @Inject
+    SessionController sessionController;
 
-        if (getSpeciality() != null) {
-            sql = "select p from Staff p where p.retired=false and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+    public List<Staff> getConsultants() {
+        List<Staff> suggestions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        m.put("sp", getSpeciality());
+        if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+            sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                    + " and pi.type=:typ "
+                    + " and pi.institution=:ins "
+                    + " and pi.staff.speciality=:sp "
+                    + " order by pi.staff.person.name ";
+
+            m.put("ins", getSessionController().getInstitution());
+            m.put("typ", PersonInstitutionType.Channelling);
+
         } else {
-            sql = "select p from Staff p where p.retired=false order by p.person.name";
+            sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
         }
-        ////System.out.println(sql);
-        suggestions = getStaffFacade().findBySQL(sql);
+
+        suggestions = getStaffFacade().findBySQL(sql, m);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("suggestions.size() = " + suggestions.size());
 
         return suggestions;
     }
@@ -67,9 +89,16 @@ public class ServiceSessionLeaveController implements Serializable {
         return false;
     }
 
-    public void remove() {
-        getFacade().remove(getCurrent());
-        current = null;
+//    public void remove() {
+//        getFacade().remove(getCurrent());
+//        current = null;
+//    }
+    
+    public void remove(ServiceSessionLeave ssl) {
+        ssl.setRetired(true);
+        ssl.setRetiredAt(new Date());
+        ssl.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(ssl);
     }
 
     public List<ServiceSessionLeave> getItems() {
@@ -80,14 +109,14 @@ public class ServiceSessionLeaveController implements Serializable {
         hm.put("st", getCurrentStaff());
         return getFacade().findBySQL(slq, hm, TemporalType.DATE);
     }
-    
-    
 
     public void addLeave() {
         if (errorCheck()) {
             return;
         }
 
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setStaff(getCurrentStaff());
         getFacade().create(getCurrent());
         current = null;
@@ -125,6 +154,7 @@ public class ServiceSessionLeaveController implements Serializable {
     }
 
     public void setSpeciality(Speciality speciality) {
+        currentStaff = null;
         this.speciality = speciality;
     }
 
@@ -144,6 +174,12 @@ public class ServiceSessionLeaveController implements Serializable {
         this.facade = facade;
     }
 
-  
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
 
 }

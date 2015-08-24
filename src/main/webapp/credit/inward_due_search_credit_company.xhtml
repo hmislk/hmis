@@ -15,13 +15,15 @@
 
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                                     <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                                     <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                                 </p:calendar>
+                                <h:outputLabel value="With Out Due Update"/>
+                                <p:selectBooleanCheckbox value="#{creditCompanyDueController.withOutDueUpdate}" />
                                 <p:spacer width="100" height="1"/>
                                 <p:commandButton ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" onclick="onSubmitButton();"/>
                             </h:panelGrid>
@@ -69,18 +71,33 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                 
                                 </p:column>
-                                <p:column style="text-align: right;">                              
+                                <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >                              
                                     <h:outputLabel value="#{b.finalBill.paidAmount}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;">                              
+                                <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >                              
+                                    <h:outputLabel value="#{b.transPaidByPatient}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >                              
                                     <h:outputLabel value="#{b.creditPaidAmount}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </p:column>                           
-                                <p:column style="text-align: right;">                              
+                                </p:column>
+                                <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >                              
+                                    <h:outputLabel value="#{b.transPaidByCompany}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >                              
                                     <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.paidAmount+b.paidByCreditCompany)}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >                              
+                                    <h:outputLabel value="#{b.finalBill.netTotal-(b.transPaidByPatient+b.transPaidByCompany)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -94,23 +111,44 @@
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" >
+                                        <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.paidTotalPatient}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" >
+                                        <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.transPaidTotalPatient}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.paidTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" >
+                                        <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.transPaidTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.total-(i.paidTotal+i.paidTotalPatient)}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.total-(i.transPaidTotalPatient+i.transPaidTotal)}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -118,9 +156,9 @@
                                     </p:row>
                                 </p:columnGroup>
                             </p:subTable>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
 
                         </p:dataTable>
                     </p:panel>

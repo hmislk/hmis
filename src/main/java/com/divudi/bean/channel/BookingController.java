@@ -353,7 +353,7 @@ public class BookingController implements Serializable {
     }
 
     public void setStaff(Staff staff) {
-        System.err.println("CLIKED");
+//        System.err.println("CLIKED");
         this.staff = staff;
         //generateSessions();
         setSelectedServiceSession(null);
@@ -438,7 +438,7 @@ public class BookingController implements Serializable {
                 + " and f.item=:ses ";
         m.put("ses", item);
         List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Fetch Fess " + list);
+        System.err.println("Fetch Fess " + list.size());
         return list;
     }
 
@@ -450,9 +450,9 @@ public class BookingController implements Serializable {
             dbl = fetchFee(ss, FeeType.Staff);
             ss.setProfessionalFee(dbl[0]);
             ss.setProfessionalFfee(dbl[1]);
-            System.err.println("1111");
+//            System.err.println("1111");
             dbl = fetchFee(ss, FeeType.Tax);
-            System.err.println("2222");
+//            System.err.println("2222");
             ss.setTaxFee(dbl[0]);
             ss.setTaxFfee(dbl[1]);
             ss.setTotalFee(fetchLocalFee(ss));
@@ -473,7 +473,7 @@ public class BookingController implements Serializable {
                     + " and s.staff=:staff "
                     + " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
-            System.err.println("Fetch Sessions " + tmp);
+            System.err.println("Fetch Sessions " + tmp.size());
             calculateFee(tmp);
             System.err.println("Calling Start");
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
@@ -584,6 +584,11 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("hh = " + hh);
+        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
+        if (getSelectedServiceSession().isTransLeave()) {
+            billSessions=null;
+        }
         System.out.println("billSessions" + billSessions);
 
     }
@@ -608,6 +613,11 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("hh = " + hh);
+        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
+        if (getSelectedServiceSession().isTransLeave()) {
+            billSessions=null;
+        }
         System.out.println("billSessions" + billSessions);
 
     }

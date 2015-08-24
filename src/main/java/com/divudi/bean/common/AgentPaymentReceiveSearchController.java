@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -25,6 +26,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.CancelledBillFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -66,11 +68,15 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private RefundBillFacade refundBillFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
 
     @Inject
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    AgentPaymentRecieveBillController agentPaymentRecieveBillController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -258,6 +264,10 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
                 UtilityController.addSuccessMessage("Cancelled");
+
+                //for channel agencyHistory Update
+                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), HistoryType.ChannelDepositCancel, cb);
+                //for channel agencyHistory Update
 
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
@@ -524,6 +534,22 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
+    }
+
+    public InstitutionFacade getInstitutionFacade() {
+        return institutionFacade;
+    }
+
+    public void setInstitutionFacade(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
+    }
+
+    public AgentPaymentRecieveBillController getAgentPaymentRecieveBillController() {
+        return agentPaymentRecieveBillController;
+    }
+
+    public void setAgentPaymentRecieveBillController(AgentPaymentRecieveBillController agentPaymentRecieveBillController) {
+        this.agentPaymentRecieveBillController = agentPaymentRecieveBillController;
     }
 
 }

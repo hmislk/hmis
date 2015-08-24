@@ -282,12 +282,12 @@ public class SheduleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
+                + " and type(s)=:class "
                 + " and s.staff=:stf "
                 + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
-        //hm.put("class", ServiceSessionLeave.class);
+        hm.put("class", ServiceSession.class);
         items = getFacade().findBySQL(sql, hm);
-//        }
 
         return items;
     }
