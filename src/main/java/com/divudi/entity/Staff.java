@@ -140,9 +140,7 @@ public class Staff implements Serializable {
     boolean allowedLateInLeave = true;
     boolean allowedEarlyOutLeave = true;
     
-    //for channeling
-   boolean activeForChanneling;
-
+    
     public double getTransDblValue() {
         return transDblValue;
     }
@@ -674,12 +672,5 @@ public class Staff implements Serializable {
         this.epfAccountNo = epfAccountNo;
     }
 
-    public boolean isActiveForChanneling() {
-        return activeForChanneling;
-    }
-
-    public void setActiveForChanneling(boolean activeForChanneling) {
-        this.activeForChanneling = activeForChanneling;
-    }
 
 }
