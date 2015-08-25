@@ -883,6 +883,14 @@ table.standardTable td {
     padding-right: 5px;
 }
 
+.largeNumericColumn{
+    text-align: right;
+    width: 120px;
+    max-width: 120px;
+    padding-right: 5px;
+}
+
+
 .shortNumericColumn{
     text-align: right;
     width: 50px;

@@ -179,6 +179,7 @@
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: red;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: red;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                                     </p:column>
