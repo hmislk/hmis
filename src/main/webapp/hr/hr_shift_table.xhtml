@@ -37,7 +37,8 @@
                                 <p:commandButton ajax="false" value="Fill New"
                                                  actionListener="#{shiftTableController.makeTableNull()}"
                                                  action="#{shiftTableController.createShiftTable()}"
-                                                 onclick="onSubmitButton();" />  
+                                                 onclick="if (!confirm('Really want to do that?'))
+                                                             return false" />  
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Fill Old Roster"
@@ -91,9 +92,9 @@
 
 
             </div>
-            
+
             <p:panel id="print3" styleClass="printOnly"  >
-                     <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
+                <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
                     <tr >
                         <ui:repeat value="#{shiftTableController.shiftTables}" var="data" >
 
@@ -131,7 +132,7 @@
                                             </th>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{shiftTableController.shiftTables[0] eq data}" >
-                                           
+
                                             <th style="border: 1px solid black; text-align:center;">
                                                 <p:outputLabel value="#{data.date}" >
                                                     <f:convertDateTime pattern="EEE" ></f:convertDateTime>
@@ -183,7 +184,7 @@
                 </f:facet>
 
 
-           
+
 
 
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
