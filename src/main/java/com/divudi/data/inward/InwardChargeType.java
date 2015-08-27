@@ -52,6 +52,7 @@ public enum InwardChargeType {
     ExerciseECG("Exercise E.C.G"),
     OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
+    TheaterConsumables("Theater Consumables"),
     @Deprecated
     Investigations("Investigations"),
     @Deprecated
