@@ -17,7 +17,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Purchase Detail">
 
 
-                    <h:panelGrid columns="6" style="noPrintButton">
+                    <h:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -39,7 +39,7 @@
                     </h:panelGrid>
                     
                     <h:panelGrid columns="3">
-                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
+                        <p:commandButton id="btnRefresh" ajax="false" value="Process" 
                                          styleClass="noPrintButton" 
                                         actionListener="#{commonReport.createPurchaseDetailTable()}"
                                          style="float: right;" />  
@@ -82,29 +82,32 @@
                             <h:outputLabel value="Purchase"/>
                         </f:facet>
 
-                        <p:column headerText="Purchase No" >
+                        <p:column headerText="Purchase No" styleClass="largeNumericColumn" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Purchase No"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.deptId}"/>
                         </p:column>
 
-                        <p:column headerText="Invoice No" >
+                        <p:column headerText="Invoice No" styleClass="averageNumericColumn">
                             <f:facet name="header">  
                                 <h:outputLabel value="Invoice No"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.invoiceNumber}"/>
                         </p:column>
 
-                        <p:column headerText="Created At"  >
+                        <p:column headerText="Bill Date / Time" styleClass="largeNumericColumn" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Created At"/>
+                                <h:outputLabel value="Bill Date / Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="dd/MM/yy hh:mm a"/>
                             </h:outputLabel>
                         </p:column>
 
+                        0912232152
+                        malinda
+                        
                         <p:column headerText="Suplier Name"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Suplier Name"/>
@@ -113,32 +116,39 @@
 
                         </p:column>
 
-                        <p:column headerText="GRN No" >
+                        <p:column headerText="GRN No" styleClass="averageNumericColumn">
                             <f:facet name="header">  
                                 <h:outputLabel value="GRN No"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.referenceBill.deptId}"/>
                         </p:column>
-
-                        <p:column headerText="Cash" style=" text-align: right"  >
+                        
+                        <p:column  styleClass="shortText">
                             <f:facet name="header">  
-                                <h:outputLabel value="Cash"/>
+                                <h:outputLabel value="Paid as"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            <h:outputLabel value="#{b.paymentMethod}"/>
                         </p:column>
 
-                        <p:column headerText="Credit" style=" text-align: right" >
+                        <p:column styleClass="averageNumericColumn"  >
                             <f:facet name="header">  
-                                <h:outputLabel value="Credit"/>
+                                <h:outputLabel value="Purchase Value"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                            <h:outputLabel value="#{b.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
+                        
+                         <p:column styleClass="averageNumericColumn"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Sale Value"/>
+                            </f:facet> 
+                             <h:outputLabel value="#{b.saleValue}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        
                         <p:column headerText="Remark" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Remark"/>

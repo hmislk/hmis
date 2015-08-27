@@ -43,6 +43,7 @@ public enum Privileges {
     InwardRoomRoomOccupency,
     InwardRoomRoomChange,
     InwardRoomGurdianRoomChange,
+    InwardRoomDischarge,
     InwardServicesAndItems,
     InwardServicesAndItemsAddServices,
     InwardServicesAndItemsAddOutSideCharges,

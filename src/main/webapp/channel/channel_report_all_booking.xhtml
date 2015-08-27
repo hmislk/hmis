@@ -23,41 +23,50 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                         </h:panelGrid>
-                        <h:panelGrid columns="4"> 
-                            <p:spacer width="70" height="1"/>
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.channelBillList()}">
+                    </h:panelGrid>
+                    <h:panelGrid columns="4"> 
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.channelBillListCreatedDate}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" id="btnRefresh2" value="Process Session Date" action="#{channelReportController.channelBillListSessionDate}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
-                        <p:commandButton actionListener="#{channelReportController.channelBillList()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
                         </p:commandButton>
-                            </h:panelGrid>
-                   
-                    </p:panel>
-                    <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
-                    
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+
 
                     <p:panel id="reportPrint">
                         <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary" />
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
                             </f:facet>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Crteated Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
@@ -112,9 +121,9 @@
                                 <p:outputLabel value="Cancelled" rendered="#{b.cancelled==true}"/>
                                 <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        
                             </p:column>  
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
                         </p:dataTable>
                     </p:panel>
                 </p:panel>

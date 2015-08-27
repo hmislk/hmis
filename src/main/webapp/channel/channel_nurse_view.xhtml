@@ -13,6 +13,7 @@
                 <p:printer target="nurseView"/>
             </p:commandButton>
             <p:commandButton ajax="false" action="#{channelReportController.fillNurseView()}" value="Refresh"  ></p:commandButton>
+            <p:commandButton ajax="false" action="#{channelReportController.markAsAbsent()}" value="Mark Selected as Absent"  ></p:commandButton>
             <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" ></p:commandButton>
             <p:panel id="nurseView">
                 <f:facet name="header">
@@ -28,7 +29,7 @@
                     </h:panelGrid>
                 </f:facet>
 
-                <p:dataTable value="#{channelReportController.nurseViewSessions}" var="bs">
+                <p:dataTable value="#{channelReportController.nurseViewSessions}" selection="#{channelReportController.selectedBillSessions}" var="bs" rowKey="#{bs.id}">
 
                     <p:column headerText="No">#{bs.serialNo}</p:column>
                     <p:column headerText="Booking Id">#{bs.bill.bookingId}</p:column>
@@ -46,15 +47,13 @@
 
                     </p:column>
                     <p:column headerText="Agent Name">
-                        <p:outputLabel value="#{bs.bill.fromInstitution.name}"/>  
-                        <p:outputLabel value="(#{bs.bill.fromInstitution.institutionCode})" rendered="#{bs.bill.fromInstitution ne null}"/> 
+                        <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.creditCompany ne null}"/>  
+                        <p:outputLabel value="(#{bs.bill.creditCompany.institutionCode})" rendered="#{bs.bill.creditCompany ne null}"/> 
                     </p:column>                
                     <p:column headerText="Agent Ref No">
                         <p:outputLabel value="#{bs.bill.insId}"/>                          
                     </p:column>
-                    
-                    <p:column selectionMode="multiple" ></p:column>
-                    
+                    <p:column selectionMode="multiple" headerText="Mark Absent"></p:column>
                     <p:column headerText="P/A">
 
                         <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  

@@ -68,6 +68,8 @@ public class ServiceSession extends Item implements Serializable {
     int transDisplayCountWithoutCancelRefund;
     @Transient
     int transCreditBillCount;
+    @Transient
+    boolean transLeave;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -342,6 +344,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setTransCreditBillCount(int transCreditBillCount) {
         this.transCreditBillCount = transCreditBillCount;
+    }
+
+    public boolean isTransLeave() {
+        return transLeave;
+    }
+
+    public void setTransLeave(boolean transLeave) {
+        this.transLeave = transLeave;
     }
     
 }

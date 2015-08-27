@@ -5,9 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -48,7 +46,7 @@
                                         <h:outputText value="Bill No (Ins Id) :" ></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.insId}" />
 
-                                        <h:outputText value="Bill No (Dept Id) :" />
+                                        <h:outputText value="Bill No (Dept Id) :" ></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.deptId}" />
 
                                         <h:outputText value="Billed bill:" ></h:outputText>
@@ -328,24 +326,15 @@
                                     </p:column> 
                                     <p:column>
                                         <f:facet name="header">Speciality</f:facet>
-                                        <p:cellEditor>  
-                                            <f:facet name="output"> 
-                                                <h:outputLabel value="#{bip.fee.speciality.name}"  ></h:outputLabel>
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <au:completeDoctorSpeciality id="spec" value="#{bip.fee.speciality}" />
-                                                
-                                            </f:facet>  
-                                        </p:cellEditor> 
-                                    </p:column>
-                                    
+                                        <h:outputLabel value="#{bip.fee.speciality.name}"/>
+                                    </p:column> 
                                     <p:column headerText="Payee">
                                         <p:cellEditor>  
                                             <f:facet name="output"> 
                                                 <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
                                             </f:facet>  
                                             <f:facet name="input">  
-                                                <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" id="stf" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
+                                                <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
                                                     <f:selectItem itemLabel="Select Staff" />
                                                     <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                 </p:selectOneMenu>
