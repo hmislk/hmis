@@ -2270,13 +2270,22 @@ public class HumanResourceBean {
                 + " and  s.staff=:stf "
                 + " and s.paysheetComponent.componentType=:type "
                 + " and s.fromDate<=:cu  "
-                + " and s.toDate>=:cu ";
+                + " and s.toDate>=:cu "
+                + " order by s.createdAt desc ";
 
         hm = new HashMap();
         hm.put("stf", staff);
         hm.put("type", PaysheetComponentType.BasicSalary);
         hm.put("cu", date);
         tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null) {
+            System.err.println("******Basic*******");
+            System.err.println("tmp.getStaffPaySheetComponentValue() = " + tmp.getStaffPaySheetComponentValue());
+            System.err.println("tmp.getFromDate() = " + tmp.getFromDate());
+            System.out.println("tmp.getToDate() = " + tmp.getToDate());
+            System.err.println("******Basic*******");
+        }
 
 //        if (tmp == null) {
 //            sql = "Select s From StaffPaysheetComponent s "
@@ -2727,6 +2736,7 @@ public class HumanResourceBean {
             System.out.println("1. dbl = " + dbl);
             System.out.println("ss.getLeaveType() = " + ss.getLeaveType());
             System.out.println("ss.isConsiderForEarlyOut() = " + ss.isConsiderForEarlyOut());
+            System.out.println("ss.isConsiderForLateIn() = " + ss.isConsiderForLateIn());
 
             if (ss.getLeaveType() == null) {
                 dbl += ss.getWorkedWithinTimeFrameVarified();
@@ -2734,7 +2744,24 @@ public class HumanResourceBean {
                 System.out.println("2. dbl = " + dbl);
             } else if ((ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf)
                     && (ss.isConsiderForEarlyOut() || ss.isConsiderForLateIn())) {
-                dbl += ss.getWorkedWithinTimeFrameVarified();
+//                
+                //
+                if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0) {
+                    double d = ss.getWorkedWithinTimeFrameVarified() + (ss.getShift().getLeaveHourHalf() * 60 * 60);
+                    System.out.println("d = " + d);
+                    System.out.println("ss.getShift().getDurationMin() = " + ss.getShift().getDurationMin());
+                    if ((ss.getShift().getDurationMin() * 60) < d) {
+                        dbl += ss.getShift().getDurationMin() * 60;
+                        System.out.println("2.4.b dbl(if) = " + dbl);
+                    } else {
+                        dbl += d;
+                        System.out.println("2.4.b dbl(else) = " + dbl);
+                    }
+                    System.out.println("2.4.b dbl = " + dbl);
+                } else {
+                    dbl += ss.getWorkedWithinTimeFrameVarified();
+                }
+                //
                 System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
                 System.out.println("2.a dbl = " + dbl); // shell I run ???ok
             } else {
@@ -3081,12 +3108,17 @@ public class HumanResourceBean {
                 + " and ss.endRecord.recordTimeStamp is not null ) "
                 + " and ss.dayType=:dtp "
                 + " and ss.shiftDate between :fd  and :td "
+                + " and ss.extraTimeFromStartRecordVarified=:d "
+                + " and ss.extraTimeFromEndRecordVarified=:d "
+                + " and ss.extraTimeCompleteRecordVarified=:d "
                 + " and ss.staff=:stf ";
+        
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("dtp", dayType);
         hm.put("stf", staff);
+        hm.put("d", 0.0);
 
         List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
@@ -3095,6 +3127,9 @@ public class HumanResourceBean {
         if (list != null) {
 
             for (StaffShift s : list) {
+                System.out.println("s = " + s);
+                System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
+                System.out.println("s.getShift().getName() = " + s.getShift().getName());
                 dbl += s.getShift().isHalfShift() ? 0.5 : 1;
 
             }

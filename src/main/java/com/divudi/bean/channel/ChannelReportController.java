@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -72,6 +73,7 @@ public class ChannelReportController implements Serializable {
     private List<BillSession> billSessionsBilled;
     private List<BillSession> billSessionsReturn;
     private List<BillSession> billSessionsCancelled;
+    List<BillSession> selectedBillSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     double netTotal;
     double cancelTotal;
@@ -210,6 +212,14 @@ public class ChannelReportController implements Serializable {
 
     public void setRows(List<ChannelReportColumnModel> rows) {
         this.rows = rows;
+    }
+
+    public List<BillSession> getSelectedBillSessions() {
+        return selectedBillSessions;
+    }
+
+    public void setSelectedBillSessions(List<BillSession> selectedBillSessions) {
+        this.selectedBillSessions = selectedBillSessions;
     }
 
     public void fillIncomeWithAgentBookings() {
@@ -1752,16 +1762,28 @@ public class ChannelReportController implements Serializable {
 
     List<Bill> channelBills;
 
-    public void channelBillList() {
+    public void channelBillListCreatedDate() {
+        channelBillList(true);
+    }
+
+    public void channelBillListSessionDate() {
+        channelBillList(false);
+    }
+
+    public void channelBillList(boolean createdDate) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
 
         String sql = " select b from Bill b "
                 + " where b.billType in :bt "
-                + " and b.retired=false "
-                + " and b.createdAt between :fDate and :tDate "
-                + " order by b.singleBillSession.sessionDate ";
+                + " and b.retired=false ";
+        if (createdDate) {
+            sql += " and b.createdAt between :fDate and :tDate ";
+        } else {
+            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+        }
+        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
 
         hm.put("bt", bts);
         hm.put("fDate", getFromDate());
@@ -1922,6 +1944,21 @@ public class ChannelReportController implements Serializable {
 
     public void setDoctorViewSessions(List<BillSession> doctorViewSessions) {
         this.doctorViewSessions = doctorViewSessions;
+    }
+
+    public void markAsAbsent() {
+        if (selectedBillSessions == null) {
+            UtilityController.addSuccessMessage("Please Select Sessions");
+            return;
+        }
+
+        for (BillSession bs : selectedBillSessions) {
+            System.out.println("bs = " + bs.isAbsent());
+            bs.setAbsent(true);
+            billSessionFacade.edit(bs);
+            System.out.println("bs = " + bs.isAbsent());
+            UtilityController.addSuccessMessage("Marked Succesful");
+        }
     }
 
     public void fillNurseView() {
@@ -2219,13 +2256,13 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAgentHistoryTable() {
-        if (institution==null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
         }
         String sql;
         Map m = new HashMap();
-        agentHistorys=new ArrayList<>();
+        agentHistorys = new ArrayList<>();
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.retired=false "
@@ -2237,8 +2274,8 @@ public class ChannelReportController implements Serializable {
         m.put("ins", institution);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        agentHistorys=getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("agentHistorys.size() = " + agentHistorys.size());

@@ -22,6 +22,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -53,7 +54,7 @@ public class StaffLoanController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
     boolean chequeDetails = false;
-
+    
     private boolean errorCheck() {
 
         if (getCurrent().getPaysheetComponent() == null) {
@@ -69,11 +70,16 @@ public class StaffLoanController implements Serializable {
             UtilityController.addErrorMessage("Check Staff");
             return true;
         }
-
-        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+        
+        if (getCurrent().isCompleted()&&getCurrent().getCompletedAt()==null) {
+            UtilityController.addErrorMessage("Check Completed Date");
             return true;
         }
+
+//        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+//            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+//            return true;
+//        }
 
         return false;
     }
@@ -103,8 +109,13 @@ public class StaffLoanController implements Serializable {
         }
 
         if (getCurrent().getId() == null) {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
             getStaffPaysheetComponentFacade().create(getCurrent());
         } else {
+            if(getCurrent().isCompleted()){
+                getCurrent().setCompleter(getSessionController().getLoggedUser());
+            }
             getStaffPaysheetComponentFacade().edit(getCurrent());
         }
 

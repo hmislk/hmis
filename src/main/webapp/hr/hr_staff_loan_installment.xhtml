@@ -26,10 +26,10 @@
                                            var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                         </p:selectOneMenu>
                         <h:outputLabel value="From"/>
-                        <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MM yyyy">                            
+                        <p:calendar  value="#{staffLoanController.current.fromDate}"  navigator="true" pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
-                        <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MM yyyy">                            
+                        <p:calendar   value="#{staffLoanController.current.toDate}" navigator="true" pattern="dd MM yyyy">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
@@ -50,7 +50,11 @@
                         <p:inputText autocomplete="off"  value="#{staffLoanController.current.comment}"/>
                         <h:outputLabel/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
-                                                 itemLabel="Completed"/>
+                                                 itemLabel="Completed" >
+                            <f:ajax event="change" render="calComplete" execute="@this" />
+                        </p:selectBooleanCheckbox>
+                        <h:outputLabel value="Complete Date"/>
+                        <p:calendar id="calComplete" value="#{staffLoanController.current.completedAt}"  navigator="true" pattern="dd MM yyyy" disabled="#{!staffLoanController.current.completed}" />
                         <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
                         <p:commandButton value="Remove" action="#{staffLoanController.remove}" ajax="false" onclick="onSubmitButton();"/>
                     </h:panelGrid>
@@ -64,7 +68,7 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         
-                        <p:calendar value="#{staffLoanController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                        <p:calendar navigator="true" value="#{staffLoanController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
                         <h:outputLabel value="Component "/>
                         <p:selectOneMenu value="#{staffLoanController.paysheetComponent}">
                             <f:selectItem itemLabel="Select Component"/>
@@ -166,6 +170,14 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.loanNo}"/>
                             </p:column>
+                            
+                            <p:column headerText="Account No" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Account No"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.accountNo}"/>
+                            </p:column>
+                            
                             <p:column headerText="Loan Full Amount" >
                                   <f:facet name="header">
                                     <h:outputLabel value="Loan Full Amount"  />
@@ -182,8 +194,19 @@
                                 <p:inputText autocomplete="off"  value="#{i.chequeNumber}"/>
                             </p:column>    
                             <p:column headerText="Cheque Date" rendered="#{staffLoanController.chequeDetails}">
-                                <p:calendar value="#{i.chequeDate}" pattern="dd MM yyyy" />  
+                                <p:calendar navigator="true" value="#{i.chequeDate}" pattern="dd MM yyyy" />  
                             </p:column>
+                            
+                            <p:column headerText="Compleated At" >
+                                  <f:facet name="header">
+                                    <h:outputLabel value="Compleated At"/>
+                                </f:facet>
+                                <p:outputLabel value="#{i.completedAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                </p:outputLabel>
+                                <!--<p:calendar value="#{i.completedAt}" pattern="dd MM yyyy" />-->
+                            </p:column>
+                            
                             <p:column>
                                 <p:commandButton value="Edit" ajax="false" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffLoanController.current}"  value="#{i}" />
