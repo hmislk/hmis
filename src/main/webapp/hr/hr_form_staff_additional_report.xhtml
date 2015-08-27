@@ -182,7 +182,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additionl OT Before Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/60}" 
+                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
+                                    <f:convertNumber pattern="0"/>
+                                </p:outputLabel>
+                                <p:outputLabel value="0" 
+                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -191,7 +196,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Additional OT After Shift"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified/60}"  
+                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
+                                    <f:convertNumber pattern="0"/>
+                                </p:outputLabel>
+                                <p:outputLabel value="0" 
+                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -200,8 +210,23 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="All"/>
                                 </f:facet>
-                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified/60}" >
+                                <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified/60}"  
+                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
                                     <f:convertNumber pattern="0"/>
+                                </p:outputLabel>
+                                <p:outputLabel value="0" 
+                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
+                                    <f:convertNumber pattern="0"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Count(PH/Day Off)">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Count(PH/Day Off)"/>
+                                </f:facet>
+                                <p:outputLabel value="1" rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya') and add.staffShift.shift.halfShift eq false}" >
+                                </p:outputLabel>
+                                <p:outputLabel value="0.5" rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya') and add.staffShift.shift.halfShift eq true}" >
                                 </p:outputLabel>
                             </p:column>
 
@@ -246,7 +271,7 @@
 
                             <p:column>
                                 <p:commandButton ajax="false" value="Update"
-                                                action="#{staffAdditionalFormController.update(add)}"/>
+                                                 action="#{staffAdditionalFormController.update(add)}"/>
                             </p:column>
 
                         </p:dataTable>

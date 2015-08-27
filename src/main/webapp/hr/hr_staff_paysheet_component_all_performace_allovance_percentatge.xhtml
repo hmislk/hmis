@@ -21,11 +21,11 @@
                             <h:outputLabel value="Component"/>
                             <h:outputLabel value="#{staffPaySheetComponentAllPerformancePercentageController.paysheetComponent.name}"/>                            
                             <h:outputLabel value="From"/>                            
-                            <p:calendar value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}" pattern="dd MM yyyy">
+                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}" pattern="dd MM yyyy">
                                 <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
+                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
 
                             <p:commandButton  value="Save" action="#{staffPaySheetComponentAllPerformancePercentageController.save}" onclick="onSubmitButton();">
 
@@ -105,7 +105,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar id="frm" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}"
+                        <p:calendar navigator="true" id="frm" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}"
                                     pattern="dd MM yyyy" />                                              
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.staff}"/>

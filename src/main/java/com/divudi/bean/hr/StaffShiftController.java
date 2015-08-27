@@ -171,7 +171,7 @@ public class StaffShiftController implements Serializable {
     public void updateStaffShiftWithoutRoster() {
 
         String sql = "Select s from StaffShift s where s.roster is null order by s.id desc";
-        List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql, 100000);
+        List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql);
         System.err.println("lststaffShifts = "+lststaffShifts.size());
         for (StaffShift ss : lststaffShifts) {
             if (ss.getRoster() == null) {

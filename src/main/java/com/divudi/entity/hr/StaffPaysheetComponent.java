@@ -55,6 +55,10 @@ public class StaffPaysheetComponent implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    @ManyToOne
+    private WebUser completer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
     //LastEdited
     @ManyToOne
     private WebUser lastEditor;
@@ -250,6 +254,24 @@ public class StaffPaysheetComponent implements Serializable {
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
+
+    public WebUser getCompleter() {
+        return completer;
+    }
+
+    public void setCompleter(WebUser completer) {
+        this.completer = completer;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+    
+    
 
     public String getRetireComments() {
         return retireComments;
