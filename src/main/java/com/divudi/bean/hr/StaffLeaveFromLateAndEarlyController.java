@@ -600,12 +600,13 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     public void addLeaveDataToStaffShift(StaffShift ss, LeaveType leaveType, HrForm form) {
 
         ss.resetLeaveData(leaveType);
+        ss.setLeaveType(leaveType);
         ss.calLeaveTime();
         System.out.println("ss.getLeavedTime(add) = " + ss.getLeavedTime());
         System.out.println("ss.getLeavedTimeOther(add) = " + ss.getLeavedTimeOther());
         System.out.println("ss.getLeavedTimeNoPay(add) = " + ss.getLeavedTimeNoPay());
         ss.setLeaveForm(form);
-        ss.setLeaveType(leaveType);
+        // ss.setLeaveType(leaveType); move to up 
         ss.setAutoLeave(true);
         staffShiftFacade.edit(ss);
 
