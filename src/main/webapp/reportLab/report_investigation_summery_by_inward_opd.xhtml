@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:lab="http://java.sun.com/jsf/composite/lab" 
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:form >
+
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Investigation Summary Inward"  styleClass="noPrintButton" />
+                </f:facet>
+
+                <h:panelGrid columns="2" >
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                    </p:calendar>
+
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                    </p:calendar>
+
+                    <h:outputLabel value="Select Institution"/>
+
+                    <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                    forceSelection="true"
+                                    requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                    var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+
+
+                    <p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/>
+
+                </h:panelGrid>
+                <h:panelGrid columns="4" >
+                    <p:spacer width="110" height="1"/>
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                     action="#{bookKeepingSummery.createInwardFee()}"/>
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <pe:exporter type="xlsx" target="tbl1"
+                                     fileName="Book_Keeping_Summery_without_pro_day"
+                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton>
+                </h:panelGrid>
+
+            </p:panel>
+            <!--            <p:spacer height="30" />-->
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr"
+                             rows="20"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100" 
+                             >
+
+                    <f:facet name="header">
+                        <h:outputLabel value="#{bookKeepingSummery.fromDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="--"/>
+                        <h:outputLabel value="#{bookKeepingSummery.toDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:column headerText="Item/Service" 
+                              sortBy="#{sr.itemName}" 
+                              filterBy="#{sr.itemName}"
+                              filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item/Service"/>
+                        </f:facet>
+                        <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Count"
+                              sortBy="#{sr.catCount}" 
+                              filterBy="#{sr.catCount}"
+                              filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputLabel value="Count"/>
+                        </f:facet>
+                        <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Reagent Fee">
+                        <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                        <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.totalRegentFee}"/>
+                        </f:facet>
+                        <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+
+                    </p:column>
+
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
