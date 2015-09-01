@@ -284,6 +284,7 @@ public class SheduleController implements Serializable {
                 + " where s.retired=false "
                 + " and type(s)=:class "
                 + " and s.staff=:stf "
+                + " and s.originatingSession is null "
                 + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
