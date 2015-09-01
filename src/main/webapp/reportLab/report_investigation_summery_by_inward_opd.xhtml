@@ -95,14 +95,14 @@
                         <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                     </p:column>
                     
-                    <p:column headerText="Rate">
+                    <p:column headerText="Rate" style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
                         <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Reagent Fee">
+                    <p:column headerText="Reagent Fee" style="text-align: right;">
                         <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                         <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -155,20 +155,20 @@
                         <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                     </p:column>
                     
-                    <p:column headerText="Rate">
+                    <p:column headerText="Rate" style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
                         <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Reagent Fee">
+                    <p:column headerText="Reagent Fee" style="text-align: right;">
                         <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                         <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </p:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{bookKeepingSummery.totalRegentFee}"/>
+                            <h:outputLabel value="#{bookKeepingSummery.totalRegentFeeInward}"/>
                         </f:facet>
                         <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
 

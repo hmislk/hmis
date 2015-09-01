@@ -1297,13 +1297,12 @@ public class BookKeepingSummery implements Serializable {
         bookKeepingSummeryRowsInward.addAll(createFee(BillClassType.BilledBill, BillType.InwardBill, FeeType.Chemical,
                 getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
         System.out.println("bookKeepingSummeryRowsInward = " + bookKeepingSummeryRowsInward.size());
+        totalRegentFeeInward=getTotal(bookKeepingSummeryRowsInward);
         
         
         bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
-        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());
-        
-        totalRegentFee=getTotal(bookKeepingSummeryRows);
-        totalRegentFeeInward=getTotal(bookKeepingSummeryRowsInward);
+        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
+        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
         
         
         
@@ -1311,6 +1310,10 @@ public class BookKeepingSummery implements Serializable {
     
     public double getTotal(List<BookKeepingSummeryRow> list){
         double total=0.0;
+        
+        if(list==null){
+            return 0;
+        }
         
         for(BookKeepingSummeryRow bk:list){
             total+=bk.getReagentFee();
