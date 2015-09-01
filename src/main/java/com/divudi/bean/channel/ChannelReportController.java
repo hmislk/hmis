@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -72,6 +73,7 @@ public class ChannelReportController implements Serializable {
     private List<BillSession> billSessionsBilled;
     private List<BillSession> billSessionsReturn;
     private List<BillSession> billSessionsCancelled;
+    List<BillSession> selectedBillSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     double netTotal;
     double cancelTotal;
@@ -210,6 +212,14 @@ public class ChannelReportController implements Serializable {
 
     public void setRows(List<ChannelReportColumnModel> rows) {
         this.rows = rows;
+    }
+
+    public List<BillSession> getSelectedBillSessions() {
+        return selectedBillSessions;
+    }
+
+    public void setSelectedBillSessions(List<BillSession> selectedBillSessions) {
+        this.selectedBillSessions = selectedBillSessions;
     }
 
     public void fillIncomeWithAgentBookings() {
@@ -1751,12 +1761,12 @@ public class ChannelReportController implements Serializable {
     }
 
     List<Bill> channelBills;
-    
-    public void channelBillListCreatedDate(){
+
+    public void channelBillListCreatedDate() {
         channelBillList(true);
     }
-    
-    public void channelBillListSessionDate(){
+
+    public void channelBillListSessionDate() {
         channelBillList(false);
     }
 
@@ -1934,6 +1944,21 @@ public class ChannelReportController implements Serializable {
 
     public void setDoctorViewSessions(List<BillSession> doctorViewSessions) {
         this.doctorViewSessions = doctorViewSessions;
+    }
+
+    public void markAsAbsent() {
+        if (selectedBillSessions == null) {
+            UtilityController.addSuccessMessage("Please Select Sessions");
+            return;
+        }
+
+        for (BillSession bs : selectedBillSessions) {
+            System.out.println("bs = " + bs.isAbsent());
+            bs.setAbsent(true);
+            billSessionFacade.edit(bs);
+            System.out.println("bs = " + bs.isAbsent());
+            UtilityController.addSuccessMessage("Marked Succesful");
+        }
     }
 
     public void fillNurseView() {
