@@ -99,7 +99,9 @@
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
-                        <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+                        <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </p:outputLabel>
                     </p:column>
 
                     <p:column headerText="Reagent Fee" style="text-align: right;">
@@ -159,7 +161,9 @@
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
                         </f:facet>
-                        <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+                        <p:outputLabel value=" #{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </p:outputLabel>
                     </p:column>
 
                     <p:column headerText="Reagent Fee" style="text-align: right;">
