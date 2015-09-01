@@ -1266,17 +1266,21 @@ public class ChannelBillController implements Serializable {
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setDepartment(getbookingController().getSelectedServiceSession().getOriginatingSession().getDepartment());
         bs.setInstitution(getbookingController().getSelectedServiceSession().getOriginatingSession().getInstitution());
-        bs.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
+        bs.setItem(getbookingController().getSelectedServiceSession());
+//        bs.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
+        
 //        bs.setPresent(true);
 
         System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession() = " + getbookingController().getSelectedServiceSession().getOriginatingSession());
-
-        bs.setServiceSession(getbookingController().getSelectedServiceSession().getOriginatingSession());
+        System.out.println("getbookingController().getSelectedServiceSession() = " + getbookingController().getSelectedServiceSession());
+        
+        bs.setServiceSession(getbookingController().getSelectedServiceSession());
+//        bs.setServiceSession(getbookingController().getSelectedServiceSession().getOriginatingSession());
         bs.setSessionDate(getbookingController().getSelectedServiceSession().getSessionDate());
         bs.setSessionTime(getbookingController().getSelectedServiceSession().getSessionTime());
         bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
-        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt(), bs);
+        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession(), getbookingController().getSelectedServiceSession().getSessionDate(), bs);
         System.err.println("count" + count);
         bs.setSerialNo(count);
 
@@ -1294,7 +1298,8 @@ public class ChannelBillController implements Serializable {
         bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
         bi.setGrossValue(getbookingController().getSelectedServiceSession().getOriginatingSession().getTotal());
-        bi.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
+        bi.setItem(getbookingController().getSelectedServiceSession());
+//        bi.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
         bi.setNetRate(getbookingController().getSelectedServiceSession().getOriginatingSession().getTotal());
         bi.setNetValue(getbookingController().getSelectedServiceSession().getOriginatingSession().getTotal());
         bi.setQty(1.0);

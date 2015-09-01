@@ -62,7 +62,7 @@ public class ServiceSession extends Item implements Serializable {
     int advanceAPpointmentPeriodUnit = Calendar.DATE;
     boolean showAppointmentTime = true;
 
-    @Transient
+    @ManyToOne
     ServiceSession originatingSession;
     @Transient
     int transDisplayCountWithoutCancelRefund;
@@ -70,6 +70,8 @@ public class ServiceSession extends Item implements Serializable {
     int transCreditBillCount;
     @Transient
     boolean transLeave;
+    @Transient
+    int transRowNumber;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -352,6 +354,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setTransLeave(boolean transLeave) {
         this.transLeave = transLeave;
+    }
+
+    public int getTransRowNumber() {
+        return transRowNumber;
+    }
+
+    public void setTransRowNumber(int transRowNumber) {
+        this.transRowNumber = transRowNumber;
     }
     
 }
