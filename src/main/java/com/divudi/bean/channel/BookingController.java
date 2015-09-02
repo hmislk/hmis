@@ -109,6 +109,7 @@ public class BookingController implements Serializable {
     double absentCount;
     int serealNo;
     Date date;
+    Date sessionStartingDate;
 
     private ScheduleModel eventModel;
 
@@ -277,6 +278,7 @@ public class BookingController implements Serializable {
         /////////////////////
         serviceSessions = null;
         billSessions = null;
+        sessionStartingDate=null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -514,7 +516,7 @@ public class BookingController implements Serializable {
             System.err.println("Fetch Sessions " + tmp.size());
             calculateFee(tmp);
             System.err.println("Calling Start");
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp);
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp,sessionStartingDate);
             generateSessionEvents(serviceSessions);
             System.err.println("Calling End");
         }
@@ -687,6 +689,12 @@ public class BookingController implements Serializable {
     
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
+        ServiceSession ss=getServiceSessionFacade().find(tmp.getId());
+        if (ss.getMaxNo()!=tmp.getMaxNo()) {
+            tmp.setEditedAt(new Date());
+            tmp.setEditer(getSessionController().getLoggedUser());
+            System.err.println("***********Edited******");
+        }
         getServiceSessionFacade().edit(tmp);
     }
 
@@ -875,6 +883,17 @@ public class BookingController implements Serializable {
 
     public void setEvent(ChannelScheduleEvent event) {
         this.event = event;
+    }
+
+    public Date getSessionStartingDate() {
+        if (sessionStartingDate==null) {
+            sessionStartingDate=new Date();
+        }
+        return sessionStartingDate;
+    }
+
+    public void setSessionStartingDate(Date sessionStartingDate) {
+        this.sessionStartingDate = sessionStartingDate;
     }
 
 }
