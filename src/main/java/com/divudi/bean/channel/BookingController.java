@@ -46,6 +46,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
@@ -682,6 +683,11 @@ public class BookingController implements Serializable {
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
         //absentCount=billSessions.size();
 
+    }
+    
+    public void onEditItem(RowEditEvent event) {
+        ServiceSession tmp = (ServiceSession) event.getObject();
+        getServiceSessionFacade().edit(tmp);
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
