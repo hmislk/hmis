@@ -425,7 +425,7 @@ public class ChannelBean {
         return createdSessions;
     }
 
-    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNew(List<ServiceSession> inputSessions) {
+    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNew(List<ServiceSession> inputSessions,Date d) {
         int sessionDayCount = 0;
         System.err.println("Passing Sessions " + inputSessions.size());
         List<ServiceSession> createdSessions = new ArrayList<>();
@@ -433,10 +433,19 @@ public class ChannelBean {
         if (inputSessions == null || inputSessions.isEmpty()) {
             return createdSessions;
         }
-
-        Date nowDate = Calendar.getInstance().getTime();
+        System.err.println("d = " + d);
+        Date nowDate;
+        if (d==null) {
+            nowDate = Calendar.getInstance().getTime();
+            System.out.println("1.nowDate = " + nowDate);
+        }else{
+            nowDate=d;
+            System.out.println("2.nowDate = " + nowDate);
+        }
+        
 
         Calendar c = Calendar.getInstance();
+        c.setTime(nowDate);
         c.add(Calendar.MONTH, 1);
         Date toDate = c.getTime();
         Integer tmp = 0;
