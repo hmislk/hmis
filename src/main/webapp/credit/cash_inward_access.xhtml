@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -24,8 +25,18 @@
                             <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                         </p:calendar>
                         <p:spacer width="100" height="1"/>
-                        <p:commandButton ajax="false" value="Process Cash ACCESS" action="#{creditCompanyDueController.createInwardCashAccess()}" onclick="onSubmitButton();"/>
+                        
                     </h:panelGrid>
+                        
+                        <p:commandButton ajax="false" value="Process Cash ACCESS" action="#{creditCompanyDueController.createInwardCashAccess()}" onclick="onSubmitButton();"/>
+                        
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="lst"  />
+                        </p:commandButton>
+
+                        <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <pe:exporter type="xlsx" target="lst" fileName="Due Search(Credit Company)" subTable="true" />
+                        </p:commandButton>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
                         <f:facet name="header">
