@@ -78,6 +78,8 @@ public class BookingController implements Serializable {
     private ChannelReportController channelReportController;
     @Inject
     private ChannelSearchController channelSearchController;
+    @Inject
+    ServiceSessionLeaveController serviceSessionLeaveController;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -360,6 +362,8 @@ public class BookingController implements Serializable {
         this.staff = staff;
         //generateSessions();
         setSelectedServiceSession(null);
+        serviceSessionLeaveController.setSelectedServiceSession(null);
+        serviceSessionLeaveController.setCurrentStaff(staff);
     }
 
     public Date getDate() {
@@ -398,7 +402,7 @@ public class BookingController implements Serializable {
         }
 
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
-        System.err.println("Fetch Fee Values " + dbl);
+//        System.err.println("Fetch Fee Values " + dbl);
         return dbl;
     }
 
@@ -441,7 +445,7 @@ public class BookingController implements Serializable {
                 + " and f.item=:ses ";
         m.put("ses", item);
         List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Fetch Fess " + list.size());
+//        System.err.println("Fetch Fess " + list.size());
         return list;
     }
 
@@ -653,12 +657,7 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        System.out.println("hh = " + hh);
-        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
-        if (getSelectedServiceSession().isTransLeave()) {
-            billSessions=null;
-        }
-        System.out.println("billSessions" + billSessions);
+        System.out.println("billSessions.size() = " + billSessions.size());
 
     }
 
