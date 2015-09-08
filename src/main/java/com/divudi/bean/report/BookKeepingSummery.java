@@ -1291,18 +1291,21 @@ public class BookKeepingSummery implements Serializable {
     }
     
     public void createInwardOpdFee() {
-        bookKeepingSummeryRowsOpd = new ArrayList<>();
-        bookKeepingSummeryRowsInward = new ArrayList<>();       
+        //bookKeepingSummeryRowsOpd = new ArrayList<>();
+        bookKeepingSummeryRowsInward = new ArrayList<>();
+        BillType bt[]={BillType.InwardBill,BillType.OpdBill};
+        List<BillType> bts=Arrays.asList(bt);
+        
 
-        bookKeepingSummeryRowsInward.addAll(createFee(BillClassType.BilledBill, BillType.InwardBill, FeeType.Chemical,
+        bookKeepingSummeryRowsInward.addAll(createFee(BillClassType.BilledBill, bts, FeeType.Chemical,
                 getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
         System.out.println("bookKeepingSummeryRowsInward = " + bookKeepingSummeryRowsInward.size());
-        totalRegentFeeInward=getTotal(bookKeepingSummeryRowsInward);
+        totalRegentFee=getTotal(bookKeepingSummeryRowsInward);
         
         
-        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
-        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
-        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
+//        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
+//        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
+//        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
         
         
         
@@ -1322,7 +1325,7 @@ public class BookKeepingSummery implements Serializable {
         return total;
     }
 
-    public List<BookKeepingSummeryRow> createFee(BillClassType billClassType, BillType billType, FeeType feeType,
+    public List<BookKeepingSummeryRow> createFee(BillClassType billClassType, List<BillType> billType, FeeType feeType,
             Department department, Institution institution, Date fDate, Date tDate, boolean cancelled, boolean refunded) {
         Map hm = new HashMap();
         String sql;
@@ -1345,8 +1348,8 @@ public class BookKeepingSummery implements Serializable {
                 hm.put("td", tDate);
             }
 
-            if (billType != null) {
-                sql += " and bf.bill.billType= :bTp ";
+            if (!billType.isEmpty()) {
+                sql += " and bf.bill.billType in :bTp ";
                 hm.put("bTp", billType);
             }
 
