@@ -349,6 +349,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode node23071 = new PrivilageNode("Pay Doctor", node2307, Privileges.ChannellingPaymentPayDoctor);
         TreeNode node23072 = new PrivilageNode("Payment Due Search", node2307, Privileges.ChannellingPaymentDueSearch);
         TreeNode node23073 = new PrivilageNode("Payment Done Search", node2307, Privileges.ChannellingPaymentDoneSearch);
+        TreeNode node23010 = new PrivilageNode("Administrator", node23);
+        TreeNode node230100 = new PrivilageNode("Edit Appoinment Count", node23010, Privileges.ChannellingApoinmentNumberCountEdit);
         
 
         return tmproot;

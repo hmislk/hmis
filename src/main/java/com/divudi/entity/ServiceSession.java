@@ -61,15 +61,20 @@ public class ServiceSession extends Item implements Serializable {
     long advanceAppointmentPeriod = 10;
     int advanceAPpointmentPeriodUnit = Calendar.DATE;
     boolean showAppointmentTime = true;
+    
+    //Deactivate Properties(Doctor Leave)
+    boolean deactivated;
+    String deactivateComment;
 
-    @Transient
+    @ManyToOne
     ServiceSession originatingSession;
     @Transient
     int transDisplayCountWithoutCancelRefund;
     @Transient
     int transCreditBillCount;
+    
     @Transient
-    boolean transLeave;
+    int transRowNumber;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -346,12 +351,28 @@ public class ServiceSession extends Item implements Serializable {
         this.transCreditBillCount = transCreditBillCount;
     }
 
-    public boolean isTransLeave() {
-        return transLeave;
+    public boolean isDeactivated() {
+        return deactivated;
     }
 
-    public void setTransLeave(boolean transLeave) {
-        this.transLeave = transLeave;
+    public void setDeactivated(boolean deactivated) {
+        this.deactivated = deactivated;
+    }
+
+    public int getTransRowNumber() {
+        return transRowNumber;
+    }
+
+    public void setTransRowNumber(int transRowNumber) {
+        this.transRowNumber = transRowNumber;
+    }
+
+    public String getDeactivateComment() {
+        return deactivateComment;
+    }
+
+    public void setDeactivateComment(String deactivateComment) {
+        this.deactivateComment = deactivateComment;
     }
     
 }

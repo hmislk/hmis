@@ -148,17 +148,24 @@
                             <h:panelGroup>
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
+                            <p:commandButton ajax="false" value="Cancel Agent Bill" 
+                                             rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
+                                             action="#{channelBillController.cancelAgentPaidBill()}"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Cancel" 
-                                             rendered="#{channelBillController.billSession.bill.paidAmount ne 0.0}"
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Cancel Credit" 
-                                             rendered="false"
+                            <p:commandButton ajax="false" value="Cancel Paid" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                                         or channelBillController.billSession.bill.cancelled==true
+                                                         or channelBillController.billSession.bill.paidAmount eq 0}" 
                                              onclick="onSubmitButton();"/>
                         </p:tab>
 
