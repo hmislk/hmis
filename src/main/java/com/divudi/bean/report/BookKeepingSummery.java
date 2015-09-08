@@ -1238,7 +1238,7 @@ public class BookKeepingSummery implements Serializable {
 
         for (Item item : getItems()) {
 
-            sql = " select sum(bf.feeValue),count(bf.billItem.bill) from BillFee bf "
+            sql = " select sum(bf.feeGrossValue),count(bf.billItem.bill) from BillFee bf "
                     + " where bf.retired=false "
                     + " and bf.bill.createdAt between :fd and :td "
                     + " and bf.billItem.item=:itm "
