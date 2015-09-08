@@ -145,7 +145,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTableController.setFromDate(fromDate);
         shiftTableController.setToDate(toDate);
         shiftTableController.setStaff(staff);
-        shiftTableController.setRoster(staff.getRoster());
+        shiftTableController.setRoster(roster);
     }
     
     public StaffLeaveFacade getStaffLeaveFacade() {
@@ -435,7 +435,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void fetchAndSetDayType(StaffShift ss) {
-        if (ss.getDayType() == DayType.Extra) {
+        if (ss.getDayType() == DayType.Extra || ss.getDayType() == DayType.DayOff) {
             return;
         }
 

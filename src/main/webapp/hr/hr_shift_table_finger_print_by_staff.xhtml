@@ -90,10 +90,6 @@
                         <p:commandLink ajax="false" value="Holiday Forms" action="/hr/hr_form_staff_additional_shift_day_off" 
                                        actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
 
-                        <p:commandLink ajax="false" value="Roster Table" 
-                                       action="/hr/hr_shift_table" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"></p:commandLink>
-
 
                         <p:commandLink ajax="false" value="Roster" 
                                        action="/hr/hr_shift_table_by_staff" 
@@ -115,6 +111,9 @@
                             <f:convertDateTime pattern="dd MM yyyy - (EEEE)"/>
                         </h:outputLabel>
                     </f:facet>
+                    <p:column >
+                        <p:outputLabel value="#{sts.id}" ></p:outputLabel>
+                    </p:column>
                     <p:column headerText="Shift" styleClass="fixedColumn75" >
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >

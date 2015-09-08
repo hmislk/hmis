@@ -36,10 +36,10 @@
                     </p:selectOneMenu>
 
                     <h:outputLabel value="From"/>
-                    <p:calendar  value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MM yyyy">                            
+                    <p:calendar  navigator="true" value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MM yyyy">                            
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar   value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MM yyyy">                            
+                    <p:calendar  navigator="true" value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MM yyyy">                            
                     </p:calendar>                    
                     <h:outputLabel value="Value"/>
                     <p:inputText autocomplete="off" value="#{staffPaySheetComponentController.current.staffPaySheetComponentValue}"/>
@@ -56,7 +56,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <p:calendar navigator="true" value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
 
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentController.paysheetComponent}">                        
@@ -156,7 +156,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar autocomplete="off" value="#{i.fromDate}">
+                                        <p:calendar navigator="true" autocomplete="off" value="#{i.fromDate}">
 
                                         </p:calendar>
                                     </f:facet>
@@ -174,7 +174,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar autocomplete="off" value="#{i.toDate}">
+                                        <p:calendar navigator="true" autocomplete="off" value="#{i.toDate}">
 
                                         </p:calendar>
                                     </f:facet>

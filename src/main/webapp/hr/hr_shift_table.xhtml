@@ -37,17 +37,16 @@
                                 <p:commandButton ajax="false" value="Fill New"
                                                  actionListener="#{shiftTableController.makeTableNull()}"
                                                  action="#{shiftTableController.createShiftTable()}"
-                                                 onclick="if (!confirm('Really want to do that?'))
-                                                             return false" />  
+                                                 onclick="onSubmitButton();" />  
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Fill Old Roster"
                                                  actionListener="#{shiftTableController.makeTableNull()}"
                                                  action="#{shiftTableController.fetchShiftTable()}"
-                                                 onclick="onSubmitButton();" />   
+                                                 onclick="onSubmitButton();"  />   
                             </td>
                             <td colspan="2" >
-                                <p:commandButton value="Go to Individual Roster Table" ajax="false" action="hr_shift_table_by_staff" actionListener="#{shiftTableController.makeNull()}"  >
+                                <p:commandButton value="Go to Roster Table" ajax="false" action="hr_shift_table_finger_print" actionListener="#{shiftTableController.makeNull()}"  >
                                 </p:commandButton>
                             </td>
                         </tr>
@@ -92,9 +91,20 @@
 
 
             </div>
-
+            
             <p:panel id="print3" styleClass="printOnly"  >
-                <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
+                
+                <f:facet name="header">
+                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value="#{shiftTableController.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="   To  "/>
+                    <h:outputLabel value="#{shiftTableController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+                     <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
                     <tr >
                         <ui:repeat value="#{shiftTableController.shiftTables}" var="data" >
 
@@ -132,7 +142,7 @@
                                             </th>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{shiftTableController.shiftTables[0] eq data}" >
-
+                                           
                                             <th style="border: 1px solid black; text-align:center;">
                                                 <p:outputLabel value="#{data.date}" >
                                                     <f:convertDateTime pattern="EEE" ></f:convertDateTime>
@@ -184,7 +194,7 @@
                 </f:facet>
 
 
-
+           
 
 
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"

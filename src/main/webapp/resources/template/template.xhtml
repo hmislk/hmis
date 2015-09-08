@@ -445,6 +445,7 @@
                                     <p:menuitem  ajax="false"  value="Past Booking"  action="/channel/channel_booking_past" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingBookedList')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Leave"  action="/channel/channel_doctor_leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  value="Doctor Leave By Service Session"  action="/channel/channel_doctor_leave_by_service_session" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
@@ -540,7 +541,7 @@
                                 </p:submenu>
                                 <p:submenu label="Human Resource" rendered="#{webUserController.hasPrivilege('Hr')}" >
                                     <p:submenu label="Working Time">
-                                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table"  ></p:menuitem>
+                                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff" value="Analyse Attendance By Staff"  ></p:menuitem>
