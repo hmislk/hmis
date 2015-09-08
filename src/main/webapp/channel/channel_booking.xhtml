@@ -435,6 +435,11 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+
+                                        <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -516,6 +521,10 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="Booked At"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </h:panelGrid>                            
