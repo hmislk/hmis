@@ -4542,14 +4542,49 @@ public class SearchController implements Serializable {
 
         sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
                 + " and bi.bill.billType=:bt "
+                + " and type(bi.bill)=:class "
                 + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fromDate and :toDate ";
+        
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.bill.patientEncounter.patient.person.name) like :patientName )";
+            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.bill.insId) like :billNo or upper(bi.paidForBillFee.bill.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().trim().equals("")) {
+            sql += " and  (upper(bi.bill.insId) like :insId )";
+            m.put("insId", "%" + getSearchKeyword().getInsId().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.staff.speciality.name) like :special )";
+            m.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.staff.person.name) like :staff )";
+            m.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.feeValue) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        
+        sql += " order by bi.bill.createdAt desc  ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.PaymentBill);
         m.put("bts", bts);
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        m.put("class", BilledBill.class);
+        
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP,50);
 
     }
 
