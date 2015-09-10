@@ -88,6 +88,20 @@ public class ItemFeeController implements Serializable {
 
         return d;
     }
+    
+    public List<Department> getInstitutionDepatrments(ItemFee fee) {
+        System.out.println("inside = ");
+        List<Department> d;
+        ////System.out.println("gettin ins dep ");
+        if (getCurrentFee().getInstitution() == null) {
+            return new ArrayList<Department>();
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution.id=" + fee.getInstitution().getId();
+            d = getDepartmentFacade().findBySQL(sql);
+        }
+
+        return d;
+    }
 
     public void saveCharge() {
         if (currentIx == null) {

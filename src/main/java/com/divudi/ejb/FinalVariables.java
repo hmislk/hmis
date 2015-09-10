@@ -58,6 +58,24 @@ public class FinalVariables {
 
         return maxRowNumber;
     }
+    
+    public Integer getSessionSessionDayCounterLargest(List<ServiceSession> inputSessions) {
+        int maxRowNumber = 0;
+        for (ServiceSession ss : inputSessions) {
+//            System.out.println("maxRowNumber = " + maxRowNumber);
+//            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
+            if (maxRowNumber <ss.getMaxTableRows()) {
+                maxRowNumber = ss.getMaxTableRows();
+//                System.out.println("maxRowNumber = " + maxRowNumber);
+            }
+        }
+        
+        if (maxRowNumber<14) {
+            maxRowNumber=14;
+        }
+        System.out.println("maxRowNumber = " + maxRowNumber);
+        return maxRowNumber;
+    }
 
     public double getCahnnelingDurationMinute() {
         return 10.0;

@@ -82,43 +82,43 @@
                                             listener="#{bookingController.fillBillSessions}" />
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="E"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="hh:mm a"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.totalFee}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="(" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.transLeave}" >
+                                        <h:outputText value="(" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.deactivated}" >
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="**" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
-                                        <h:outputText value="#{ses.sessionAt}" rendered="#{ses.transLeave}" style="color: red;">
+                                        <h:outputText value="**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.transLeave}" style="color: red;"/>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                                     </p:column>
                                     
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
@@ -464,7 +464,7 @@
                                         <p:separator ></p:separator>
 
                                         <p:outputLabel value="Bill No"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}"/>
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -524,8 +524,8 @@
 
                                 <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Booking Id"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.bookingId}"/>
+                                        <p:outputLabel value="Bill Id"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
                                         <p:outputLabel value="Payment Method"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>

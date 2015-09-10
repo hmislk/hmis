@@ -1084,7 +1084,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna && getbookingController().getSelectedServiceSession().isTransLeave()) {
+        if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
             UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
             return true;
