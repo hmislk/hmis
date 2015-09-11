@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
@@ -227,6 +228,12 @@ public class ItemFeeController implements Serializable {
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
         fees = itemFeeFacade.findBySQL(sql);
+    }
+    
+    public List<ItemFee> getFees(Item i){
+        String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
+        List<ItemFee> fees=itemFeeFacade.findBySQL(sql);
+        return fees;
     }
 
     public List<ItemFee> getCharges() {
