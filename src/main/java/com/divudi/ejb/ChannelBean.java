@@ -572,7 +572,7 @@ public class ChannelBean {
         newSs.setProfessionalFee(ss.getProfessionalFee());
         newSs.setDepartment(ss.getDepartment());
         newSs.setInstitution(ss.getInstitution());
-        newSs.setSessionAt(ss.getStartingTime());//what is this feild
+        newSs.setSessionAt(d);//what is this feild
         newSs.setSessionDate(d);
         newSs.setSessionTime(ss.getStartingTime());
         newSs.setStartingTime(ss.getStartingTime());
