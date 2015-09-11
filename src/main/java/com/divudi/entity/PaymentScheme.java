@@ -9,6 +9,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -55,9 +56,11 @@ public class PaymentScheme implements Serializable {
     Date retiredAt;
     String retireComments;
     int orderNo;
-    boolean validForPayments;
+    @Column(name = "validForPayments")
+    boolean validForPharmacy;
     boolean validForBilledBills;
     boolean validForCrBills;
+    boolean validForChanneling;
     
 //    @ManyToOne
 //    MembershipScheme membershipScheme;
@@ -86,12 +89,12 @@ public class PaymentScheme implements Serializable {
         this.orderNo = orderNo;
     }
 
-    public boolean isValidForPayments() {
-        return validForPayments;
+    public boolean isValidForPharmacy() {
+        return validForPharmacy;
     }
 
-    public void setValidForPayments(boolean validForPayments) {
-        this.validForPayments = validForPayments;
+    public void setValidForPharmacy(boolean validForPharmacy) {
+        this.validForPharmacy = validForPharmacy;
     }
 
     public boolean isValidForBilledBills() {
@@ -247,5 +250,13 @@ public class PaymentScheme implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public boolean isValidForChanneling() {
+        return validForChanneling;
+    }
+
+    public void setValidForChanneling(boolean validForChanneling) {
+        this.validForChanneling = validForChanneling;
     }
 }
