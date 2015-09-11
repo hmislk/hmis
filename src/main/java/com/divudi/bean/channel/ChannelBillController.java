@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.ApplicationInstitution;
@@ -28,10 +29,12 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
+import com.divudi.entity.memberShip.PaymentSchemeDiscount;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -86,7 +89,7 @@ public class ChannelBillController implements Serializable {
     Bill printingBill;
     Staff toStaff;
     String errorText;
-    double creditLimit;
+    PaymentScheme paymentScheme;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -119,6 +122,8 @@ public class ChannelBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     private BookingController bookingController;
+    @Inject
+    PriceMatrixController priceMatrixController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -1073,6 +1078,7 @@ public class ChannelBillController implements Serializable {
         institution = null;
         refundableTotal = 0;
         toStaff = null;
+        paymentScheme = null;
     }
 
     @Inject
@@ -1172,46 +1178,6 @@ public class ChannelBillController implements Serializable {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
             return true;
-        }
-
-        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        return false;
-    }
-
-    private boolean errorCheckAgentValidate() {
-        if (getbookingController().getSelectedServiceSession() == null) {
-            errorText = "Please Select Specility and Doctor.";
-            UtilityController.addErrorMessage("Please Select Specility and Doctor.");
-            return true;
-        }
-
-        if (getbookingController().getSelectedServiceSession().isDeactivated()) {
-            errorText = "******** Doctor Leave day Can't Channel ********";
-            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
-            return true;
-        }
-
-        if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
-            errorText = "Please Select Session.";
-            UtilityController.addErrorMessage("Please Select Session");
-            return true;
-        }
-        System.out.println("patientTabId = " + patientTabId);
-        System.out.println("getPatientTabId = " + getPatientTabId());
-
-        if (paymentMethod == PaymentMethod.Agent) {
-            if (institution == null) {
-                errorText = "Please select Agency";
-                UtilityController.addErrorMessage("Please select Agency");
-                return true;
-            }
-
-            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Ballance is Not Enough";
-                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
-                return true;
-            }
-
         }
 
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
@@ -1350,7 +1316,8 @@ public class ChannelBillController implements Serializable {
 
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
-
+        double tmpTotal = 0;
+        double tmpDiscount = 0;
         for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
             BillFee bf = new BillFee();
             bf.setBill(bill);
@@ -1387,11 +1354,23 @@ public class ChannelBillController implements Serializable {
                 bf.setInstitution(sessionController.getInstitution());
             }
 
+            PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
+            double d = 0;
             if (foriegn) {
                 bf.setFeeValue(f.getFfee());
             } else {
                 bf.setFeeValue(f.getFee());
             }
+
+            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
+                d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                bf.setFeeDiscount(d);
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                tmpDiscount += d;
+            }
+
+            tmpTotal += bf.getFeeValue();
 
 //            if (paymentMethod.equals(PaymentMethod.Credit)) {
 //                bf.setPaidValue(0.0);
@@ -1402,6 +1381,20 @@ public class ChannelBillController implements Serializable {
             billFeeList.add(bf);
             System.out.println("billFees = " + billFeeList);
         }
+        bill.setDiscount(tmpDiscount);
+        bill.setNetTotal(tmpTotal);
+        System.out.println("tmpDiscount = " + tmpDiscount);
+        System.out.println("tmpTotal = " + tmpTotal);
+        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
+        System.out.println("bill.getTotal() = " + bill.getTotal());
+        getBillFacade().edit(bill);
+
+        billItem.setDiscount(tmpDiscount);
+        billItem.setNetValue(tmpTotal);
+        System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
+        System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
+        getBillItemFacade().edit(billItem);
+
         if (paymentMethod != PaymentMethod.Agent) {
             changeAgentFeeToHospitalFee();
         }
@@ -1763,59 +1756,40 @@ public class ChannelBillController implements Serializable {
     public void validateAgentBalance() {
         System.out.println("inside");
 
-        if (errorCheckAgentValidate()) {
+        if (errorCheck()) {
             return;
         }
 
-        if (isForiegn()) {
-            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > (institution.getBallance() + institution.getAllowedCredit())) {
-                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
-                return;
+        if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > institution.getBallance()
+                || bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > institution.getBallance()) {
+            UtilityController.addErrorMessage("Please Increase Balance");
+        }
+
+    }
+
+    public void changeListener() {
+        bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFee(0.0);
+        bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFfee(0.0);
+        for (ItemFee f : bookingController.getSelectedServiceSession().getOriginatingSession().getItemFees()) {
+            bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFee(bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() + f.getFee());
+            bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFfee(bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() + f.getFfee());
+        }
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
+        double d = 0;
+        if (paymentSchemeDiscount != null) {
+            for (ItemFee itmf : bookingController.getSelectedServiceSession().getOriginatingSession().getItemFees()) {
+                if (itmf.getFeeType() == FeeType.OwnInstitution) {
+                    if (foriegn) {
+                        d += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    } else {
+                        d += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
+
+                }
             }
         }
-
-        if (!isForiegn()) {
-            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > (institution.getBallance() + institution.getAllowedCredit())) {
-                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
-                return;
-            }
-        }
-
-    }
-
-    public void updateCreditLimit() {
-        if (institution == null) {
-            UtilityController.addErrorMessage("Please Select a Agency");
-            return;
-        }
-
-        if (institution.getMaxCreditLimit() > 0) {
-            if (institution.getMaxCreditLimit() < creditLimit) {
-                UtilityController.addErrorMessage("Please Enter less than Maximum Credit Limit");
-                return;
-            }
-        }
-
-        createAgentCreditLimitUpdateHistory(institution, creditLimit, HistoryType.AgentBalanceUpdateBill);
-        creditLimit = 0.0;
-    }
-
-    public void createAgentCreditLimitUpdateHistory(Institution ins, double transactionValue, HistoryType historyType) {
-        AgentHistory agentHistory = new AgentHistory();
-        agentHistory.setCreatedAt(new Date());
-        agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(ins.getBallance());
-        agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setHistoryType(historyType);
-        agentHistoryFacade.create(agentHistory);
-    }
-
-    public double getCreditLimit() {
-        return creditLimit;
-    }
-
-    public void setCreditLimit(double creditLimit) {
-        this.creditLimit = creditLimit;
+        bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFee(bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() - d);
+        bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFfee(bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() - d);
     }
 
     public BookingController getbookingController() {
@@ -1999,6 +1973,14 @@ public class ChannelBillController implements Serializable {
 
     public void setErrorText(String errorText) {
         this.errorText = errorText;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
 }
