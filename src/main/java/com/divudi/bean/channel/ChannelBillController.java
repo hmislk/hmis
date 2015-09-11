@@ -1415,7 +1415,7 @@ public class ChannelBillController implements Serializable {
         Bill bill = new BilledBill();
         bill.setStaff(getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff());
         bill.setToStaff(toStaff);
-        bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
+        bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionDate());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
         bill.setPaymentMethod(paymentMethod);

@@ -65,7 +65,7 @@
                                 </h:panelGrid>
 
 
-                                <p:dataTable   id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
+                                <p:dataTable id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
@@ -74,7 +74,10 @@
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
+                                    
+                                    <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
 
                                     <p:column selectionMode="multiple" ></p:column>
 

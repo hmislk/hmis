@@ -96,6 +96,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     Speciality speciality;
     private ServiceSession selectedServiceSession;
     boolean considerDate = false;
+    BillFee billFee;
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -334,6 +335,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        System.out.println("dueBillFees = " + dueBillFees.size());
 
     }
 
@@ -887,6 +891,19 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setConsiderDate(boolean considerDate) {
         this.considerDate = considerDate;
+    }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        if (billFee!=null) {
+            setSpeciality(billFee.getSpeciality());
+            setCurrentStaff(billFee.getStaff());
+            calculateDueFees();
+        }
+        this.billFee = billFee;
     }
 
     /**

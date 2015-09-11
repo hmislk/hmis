@@ -4653,11 +4653,33 @@ public class SearchController implements Serializable {
             sql += " and bs.serviceSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
-
-        if (getCurrentStaff() != null) {
-            sql += " and b.staff=:stf ";
-            hm.put("stf", getCurrentStaff());
+        
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.bill.patient.person.name) like :patientName )";
+            hm.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.bill.insId) like :billNo )";
+            hm.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.feeValue) like :total )";
+            hm.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(b.staff.speciality.name) like :special )";
+            hm.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.staff.person.name) like :staff )";
+            hm.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+        
+        sql += " order by b.speciality.name ";
 
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
