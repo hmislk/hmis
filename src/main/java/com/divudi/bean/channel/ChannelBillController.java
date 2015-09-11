@@ -86,6 +86,7 @@ public class ChannelBillController implements Serializable {
     Bill printingBill;
     Staff toStaff;
     String errorText;
+    double creditLimit;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -1176,7 +1177,7 @@ public class ChannelBillController implements Serializable {
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
     }
-    
+
     private boolean errorCheckAgentValidate() {
         if (getbookingController().getSelectedServiceSession() == null) {
             errorText = "Please Select Specility and Doctor.";
@@ -1197,7 +1198,7 @@ public class ChannelBillController implements Serializable {
         }
         System.out.println("patientTabId = " + patientTabId);
         System.out.println("getPatientTabId = " + getPatientTabId());
-       
+
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 errorText = "Please select Agency";
@@ -1210,10 +1211,9 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
-            
-            
+
         }
-        
+
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
     }
@@ -1762,16 +1762,60 @@ public class ChannelBillController implements Serializable {
 
     public void validateAgentBalance() {
         System.out.println("inside");
-        
-        if(errorCheckAgentValidate()){
+
+        if (errorCheckAgentValidate()) {
             return;
         }
 
-        if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > institution.getBallance()
-                || bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > institution.getBallance()) {
-            UtilityController.addErrorMessage("Please Increase Balance");
+        if (isForiegn()) {
+            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
+                return;
+            }
         }
 
+        if (!isForiegn()) {
+            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
+                return;
+            }
+        }
+
+    }
+
+    public void updateCreditLimit() {
+        if (institution == null) {
+            UtilityController.addErrorMessage("Please Select a Agency");
+            return;
+        }
+
+        if (institution.getMaxCreditLimit() > 0) {
+            if (institution.getMaxCreditLimit() < creditLimit) {
+                UtilityController.addErrorMessage("Please Enter less than Maximum Credit Limit");
+                return;
+            }
+        }
+
+        createAgentCreditLimitUpdateHistory(institution, creditLimit, HistoryType.AgentBalanceUpdateBill);
+        creditLimit = 0.0;
+    }
+
+    public void createAgentCreditLimitUpdateHistory(Institution ins, double transactionValue, HistoryType historyType) {
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
+        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setHistoryType(historyType);
+        agentHistoryFacade.create(agentHistory);
+    }
+
+    public double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(double creditLimit) {
+        this.creditLimit = creditLimit;
     }
 
     public BookingController getbookingController() {

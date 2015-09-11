@@ -85,9 +85,14 @@
                                         <h:inputText autocomplete="off"  value="#{institutionController.current.allowedCredit}"  >
                                         </h:inputText>
                                         
+                                        <h:outputText value="Allowed Maximum Credit Limit" >                                        
+                                        </h:outputText>
+                                        <h:inputText autocomplete="off"  value="#{institutionController.current.maxCreditLimit}"  >
+                                        </h:inputText>
+                                        
                                          <h:outputText value="Balance" >                                        
                                         </h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{institutionController.current.ballance}"  disabled="true">
+                                        <h:inputText autocomplete="off"  value="#{institutionController.current.ballance}"  disabled="false">
                                         </h:inputText>
 
                                         <h:outputText id="lblPhone" value="Phone" ></h:outputText>
