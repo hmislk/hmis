@@ -57,7 +57,6 @@ public class ItemController implements Serializable {
     /**
      * EJBs
      */
-    
     private static final long serialVersionUID = 1L;
     @EJB
     private ItemFacade ejbFacade;
@@ -74,6 +73,8 @@ public class ItemController implements Serializable {
     DepartmentController departmentController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ItemFeeController itemFeeController;
 
     /**
      * Properties
@@ -81,11 +82,13 @@ public class ItemController implements Serializable {
     private Item current;
     private List<Item> items = null;
     List<Item> allItems;
+    List<ItemFee> allItemFees;
     List<Item> selectedList;
+    List<ItemFee> selectedItemFeeList;
     private Institution instituion;
     Department department;
+    FeeType feeType;
     List<Department> departments;
-    
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -96,7 +99,6 @@ public class ItemController implements Serializable {
         this.departments = departments;
     }
 
-    
     public void createNewItemsFromMasterItems() {
         //System.out.println("createNewItemsFromMasterItems");
         if (instituion == null) {
@@ -178,6 +180,36 @@ public class ItemController implements Serializable {
             }
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
+    }
+
+    public void updateItemsAndFees() {
+        if (instituion == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Select department");
+            return;
+        }
+        if (selectedItemFeeList == null || selectedItemFeeList.isEmpty()) {
+            JsfUtil.addErrorMessage("Select Items");
+            return;
+        }
+
+        System.out.println("selectedItemFeeList = " + selectedItemFeeList);
+
+        for (ItemFee fee : selectedItemFeeList) {
+            if (fee.getDepartment() != null) {
+                fee.setDepartment(department);
+            }
+
+            if (fee.getInstitution() != null) {
+                fee.setInstitution(instituion);
+            }
+            getItemFeeFacade().edit(fee);
+        }
+
+        selectedItemFeeList = null;
     }
 
     public List<Item> completeDealorItem(String query) {
@@ -804,6 +836,39 @@ public class ItemController implements Serializable {
         return items;
     }
 
+    public List<ItemFee> fetchOPDItemFeeList(boolean ins, FeeType ftype) {
+        List<ItemFee> itemFees = new ArrayList<>();
+        HashMap m = new HashMap();
+        String sql;
+
+        sql = "select c from ItemFee c "
+                + " where c.retired=false "
+                + " and type(c.item)!=:pac "
+                + " and type(c.item)!=:inw "
+                + " and (type(c.item)=:ser "
+                + " or type(c.item)=:inv)  ";
+
+        if (ftype != null) {
+            sql += " and c.feeType=:fee ";
+            m.put("fee", ftype);
+        }
+
+        if (ins) {
+            sql += " and c.institution is null ";
+        }
+
+        sql += " order by c.name";
+
+        m.put("pac", Packege.class);
+        m.put("inw", InwardService.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        //System.out.println(sql);
+        itemFees = getItemFeeFacade().findBySQL(sql, m);
+        System.err.println("itemFees" + itemFees.size());
+        return itemFees;
+    }
+
     public void createMasterItemsList() {
         allItems = new ArrayList<>();
         allItems = fetchOPDItemList(false);
@@ -814,10 +879,15 @@ public class ItemController implements Serializable {
         allItems = fetchOPDItemList(true);
     }
 
+    public void createAllItemsFeeList() {
+        allItemFees = new ArrayList<>();
+        allItemFees = fetchOPDItemFeeList(false, feeType);
+    }
+
     public void updateSelectedOPDItemList() {
 
     }
-   
+
     /**
      *
      */
@@ -974,6 +1044,14 @@ public class ItemController implements Serializable {
         this.instituion = instituion;
     }
 
+    public FeeType getFeeType() {
+        return feeType;
+    }
+
+    public void setFeeType(FeeType feeType) {
+        this.feeType = feeType;
+    }
+
     public List<Item> getSelectedList() {
         return selectedList;
     }
@@ -988,6 +1066,22 @@ public class ItemController implements Serializable {
 
     public void setAllItems(List<Item> allItems) {
         this.allItems = allItems;
+    }
+
+    public List<ItemFee> getAllItemFees() {
+        return allItemFees;
+    }
+
+    public void setAllItemFees(List<ItemFee> allItemFees) {
+        this.allItemFees = allItemFees;
+    }
+
+    public List<ItemFee> getSelectedItemFeeList() {
+        return selectedItemFeeList;
+    }
+
+    public void setSelectedItemFeeList(List<ItemFee> selectedItemFeeList) {
+        this.selectedItemFeeList = selectedItemFeeList;
     }
 
     public Department getDepartment() {
