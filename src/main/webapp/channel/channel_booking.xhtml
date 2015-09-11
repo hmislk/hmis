@@ -240,7 +240,7 @@
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt"/>
+                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt" listener="#{channelBillController.validateAgentBalance()}"/>
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete> 

@@ -1083,13 +1083,13 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
-        
+
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
             UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
             return true;
         }
-        
+
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
             errorText = "Please Select Session.";
             UtilityController.addErrorMessage("Please Select Session");
@@ -1173,9 +1173,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 
-        
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-
         return false;
     }
 
@@ -1268,12 +1266,11 @@ public class ChannelBillController implements Serializable {
         bs.setInstitution(getbookingController().getSelectedServiceSession().getOriginatingSession().getInstitution());
         bs.setItem(getbookingController().getSelectedServiceSession());
 //        bs.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
-        
-//        bs.setPresent(true);
 
+//        bs.setPresent(true);
         System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession() = " + getbookingController().getSelectedServiceSession().getOriginatingSession());
         System.out.println("getbookingController().getSelectedServiceSession() = " + getbookingController().getSelectedServiceSession());
-        
+
         bs.setServiceSession(getbookingController().getSelectedServiceSession());
 //        bs.setServiceSession(getbookingController().getSelectedServiceSession().getOriginatingSession());
         bs.setSessionDate(getbookingController().getSelectedServiceSession().getSessionDate());
@@ -1720,6 +1717,20 @@ public class ChannelBillController implements Serializable {
 
     public void setForiegn(boolean foriegn) {
         this.foriegn = foriegn;
+    }
+
+    public void validateAgentBalance() {
+        System.out.println("inside");
+        
+        if(errorCheck()){
+            return;
+        }
+
+        if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > institution.getBallance()
+                || bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > institution.getBallance()) {
+            UtilityController.addErrorMessage("Please Increase Balance");
+        }
+
     }
 
     public BookingController getbookingController() {
