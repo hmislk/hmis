@@ -23,11 +23,11 @@
 
 
                             <h:outputLabel value="From"/>                            
-                            <p:calendar value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}" pattern="dd MM yyyy">
+                            <p:calendar  navigator="true" value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}" pattern="dd MM yyyy">
                                 <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar value="#{staffPaySheetComponentAllPerformanceAllowanceController.toDate}" pattern="dd MM yyyy"/>
+                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformanceAllowanceController.toDate}" pattern="dd MM yyyy"/>
 
                             <h:outputLabel value="Value"/>
                             <p:inputText id="val" autocomplete="off"  value="#{staffPaySheetComponentAllPerformanceAllowanceController.staffPaySheetComponentValue}"/>
@@ -115,7 +115,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar id="frm" value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}"
+                        <p:calendar navigator="true" id="frm" value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}"
                                     pattern="dd MM yyyy hh:mm:ss a" />                                              
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffPaySheetComponentAllPerformanceAllowanceController.reportKeyWord.staff}"/>
@@ -148,23 +148,14 @@
                         <p:dataTable  value="#{staffPaySheetComponentAllPerformanceAllowanceController.items}" id="tb3"
                                       var="i"  editable="true"
                                       rowStyleClass="#{i.exist eq true ? 'exist':null}"
-                                        selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
+                                      selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
                                       rowKey="#{i.id}"  >
+                            
+                            <p:ajax event="rowEdit" listener="#{staffPaySheetComponentAllPerformanceAllowanceController.onEdit}" />  
 
                             <p:column  selectionMode="multiple" >                            
                             </p:column>
-
-                            <p:column headerText="From" >
-                                <h:outputLabel value="#{i.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="To" >
-                                <h:outputLabel value="#{i.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                </h:outputLabel>
-                            </p:column>
-
+                            
                             <p:column headerText="Staff Code" >
                                 <h:outputLabel value="#{i.staff.code}"/>
                             </p:column>
@@ -200,6 +191,38 @@
                             <p:column headerText="Roster">
                                 <h:outputLabel value="#{i.staff.roster.name}"/>
                             </p:column>
+
+                            <p:column headerText="From" >
+
+                                <p:cellEditor>  
+                                    <f:facet name="output">
+                                        <h:outputLabel value="#{i.fromDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:calendar navigator="true" value="#{i.fromDate}" pattern="dd MM yyyy"/>
+                                    </f:facet>
+                                </p:cellEditor>
+
+                            </p:column>
+                            
+                            <p:column headerText="To" >
+
+                                <p:cellEditor>  
+                                    <f:facet name="output">
+                                        <h:outputLabel value="#{i.toDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:calendar navigator="true" value="#{i.toDate}" pattern="dd MM yyyy"/>
+                                    </f:facet>
+                                </p:cellEditor>
+
+
+                            </p:column>
+
                             <p:column headerText="Value" >
                                 <p:cellEditor>  
                                     <f:facet name="output">

@@ -48,7 +48,7 @@
                             <h:outputLabel value="Type GRN No or Dealor Name"/>                           
                             <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                             value="#{pharmacyDealorBill.institution}"
-                                            completeMethod="#{institutionController.completeSupplier}"
+                                            completeMethod="#{institutionController.completeSuppliers}"
                                             var="ix" itemLabel="#{ix.name}"
                                             itemValue="#{ix}" size="30"  style="width: 400px;"
                                             converter="institutionConverter">                                  

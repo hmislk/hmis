@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
+
+                <h:panelGroup id="panSpeciality">
+                    <table  header="Specialities" styleClass="noPaddingMargin" > 
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Specialities" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="1">
+                                    <p:selectOneListbox converter="specilityCon" 
+                                                        id="acSpeciality" 
+                                                        value="#{bookingController.speciality}" 
+                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
+                                        <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                                        <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                        <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                    </p:selectOneListbox>
+                                </h:panelGrid>
+                            </td>
+                        </tr>
+
+                    </table>
+                </h:panelGroup>
+
+                <h:panelGroup id="scStaff" >
+
+                    <table >
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Consultants" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="1">
+                                    <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
+                                        <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                                        <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('tbl')} "  
+                                                 listener="#{bookingController.generateSessions}"/>
+                                        <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('tbl')} "  
+                                                 listener="#{serviceSessionLeaveController.fillLeaveItems}"/>
+                                    </p:selectOneListbox>
+                                </h:panelGrid>
+                            </td>
+                        </tr>
+                    </table>
+
+                </h:panelGroup>
+
+                <h:panelGroup id="panDate">
+                    <table  header="Date From" styleClass="noPaddingMargin" >
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Date From" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
+                                            styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                    <p:ajax event="dateSelect" 
+                                            process="@this date" 
+                                            update=":#{p:component('tblSessionsOfSelectedConsultant')} a tbl"  
+                                            listener="#{bookingController.generateSessions}"
+                                            />
+                                </p:calendar>
+                                <p:watermark for="date" value="Date" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+
+                            </td>
+                        </tr>
+                    </table>
+
+
+
+                </h:panelGroup>
+
+                <h:panelGroup >
+                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                        <tr>
+                            <th>
+                                <p:outputLabel value="Sessions From - " ></p:outputLabel>
+                                <h:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
+                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                </h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
+                                             id="tblSessionsOfSelectedConsultant" var="ses"
+                                             selectionMode="single" 
+                                             selection="#{serviceSessionLeaveController.selectedServiceSession}" scrollable="true" scrollHeight="275">
+
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="E"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="hh:mm a"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="(" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.deactivated}" >
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
+                                        <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
+                                    </p:column>
+                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.displayCount}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.sessionDate}">
+                                            <f:convertDateTime pattern="dd MMM"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.startingTime}">
+                                            <f:convertDateTime pattern="hh:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.totalFee}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>                                                            
+                                    </p:column>
+                                </p:dataTable>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
+                                <p:watermark for="inComment" value="Comment" />
+                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" onclick="onSubmitButton();"/>
+                            </td>
+                        </tr>
+                    </table>
+                </h:panelGroup>
+
+
+
+
+            </h:panelGrid>
+            <h:panelGrid columns="1" id="spec">     
+                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.serviceSessionLeaves}" var="d" rowStyleClass="#{d.retired ? 'crossLine':''}" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Leave Detail - " />
+                        <p:outputLabel value="#{serviceSessionLeaveController.currentStaff.person}" />
+                        <p:outputLabel value=" - Leve From - " />
+                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                        </p:outputLabel>
+                    </f:facet>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Leave Date" />
+                        </f:facet>
+                        <h:outputLabel value="#{d.sessionDate}">
+                            <f:convertDateTime parent="YYYY/MM/dd" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Leave Session" />
+                        </f:facet>
+                        <h:outputLabel value="#{d.originatingSession.sessionTime}">
+                            <f:convertDateTime pattern="hh:mm a"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Leave Comment" />
+                        </f:facet>
+                        <h:outputLabel value="#{d.deactivateComment}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Leave Creater" />
+                        </f:facet>
+                        <h:outputLabel value="#{d.creater.webUserPerson.name}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Leave Remove Comment" />
+                        </f:facet>
+                        <p:inputText id="inComment" value="#{d.retireComments}" disabled="#{d.retired eq true}" />
+                        <p:watermark for="inComment" value="Leave Remove Comment" />
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Remove" />
+                        </f:facet>
+                        <p:commandButton value="Remove" 
+                                         ajax="false" action="#{serviceSessionLeaveController.removeLeaveAndActiveServiceSession(d)}" 
+                                         disabled="#{d.retired eq true}"
+                                         >
+                            <!--<f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>-->
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </h:panelGrid>
+
+        </h:form>
+
+    </ui:define>
+
+
+</ui:composition>

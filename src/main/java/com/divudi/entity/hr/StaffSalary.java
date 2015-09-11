@@ -555,6 +555,20 @@ public class StaffSalary implements Serializable {
 //                } else {
 //                    value = 0 - spc.getComponantValue();
 //                }
+                
+//                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getName()!=null){
+//                    System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getName() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getName());
+//                }
+//                
+//                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType()!=null){
+//                    System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
+//                }
+//                
+//                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()!=0){
+//                    System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()); 
+//                }
+                
+                
 
                 switch (paysheetComponentType) {
                     case BasicSalary:

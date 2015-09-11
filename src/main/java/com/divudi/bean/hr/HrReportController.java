@@ -1796,11 +1796,11 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime+ss.leavedTimeOther),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
                 + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond), "
                 + " ss, "
-                + " sum(ss.leavedTime)"
+                + " sum(ss.leavedTime+ss.leavedTimeOther)"
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and type(ss)!=:tp"
@@ -1851,17 +1851,17 @@ public class HrReportController implements Serializable {
                 + " order by ss.dayOfWeek,ss.staff.codeInterger ";
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
-    private List<Object[]> fetchWorkedTimeByDateOnly(Staff staff,Date f,Date t) {
+
+    private List<Object[]> fetchWorkedTimeByDateOnly(Staff staff, Date f, Date t) {
         String sql = "";
 
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime+ss.leavedTimeOther),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
                 + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond), "
                 + " ss, "
-                + " sum(ss.leavedTime)"
+                + " sum(ss.leavedTime+ss.leavedTimeOther)"
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and type(ss)!=:tp"
@@ -2479,7 +2479,7 @@ public class HrReportController implements Serializable {
             weekDayWork.setStaff(stf);
 //            List<Object[]> list = fetchWorkedTime(stf);
 
-            List<Object[]> list = fetchWorkedTimeByDateOnly(stf,frDate,tDate); 
+            List<Object[]> list = fetchWorkedTimeByDateOnly(stf, frDate, tDate);
 
             System.err.println("list = " + list);
             System.out.println("list size " + list.size());
@@ -2556,7 +2556,7 @@ public class HrReportController implements Serializable {
             weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), 1, weekDayWork.getTotal()));
 
             //Fetch Basic
-            double value = humanResourceBean.getOverTimeValue(stf, getToDate());
+            double value = humanResourceBean.getOverTimeValue(stf, tDate);
 
             if (value != 0) {
                 weekDayWork.setBasicPerSecond(value / (200 * 60 * 60));
@@ -2973,7 +2973,26 @@ public class HrReportController implements Serializable {
 
         int i = 0;
         for (StaffShift ss : list) {
-            DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+
+            //
+            DayType dayType = ss.getDayType();
+
+            System.out.println("ss.getDayType() = " + ss.getDayType());
+
+            System.out.println("dayType out = " + dayType);
+
+            ss.setDayType(null);
+
+            DayType dtp;
+            if (dayType != null || dayType == DayType.DayOff) {
+                dtp = dayType;
+                System.out.println("dayType if = " + dtp);
+            } else {
+                dtp = phDateController.getHolidayType(ss.getShiftDate());
+                System.out.println("dayType else = " + dtp);
+            }
+            //
+
             ss.setDayType(dtp);
             if (dtp == null) {
                 if (ss.getShift() != null) {

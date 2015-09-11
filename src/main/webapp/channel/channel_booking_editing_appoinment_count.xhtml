@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+
+        <h:form>
+
+
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
+
+                <h:panelGroup id="panSpeciality">
+                    <table  header="Specialities" styleClass="noPaddingMargin" > 
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Specialities" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="1">
+                                    <p:selectOneListbox converter="specilityCon" 
+                                                        id="acSpeciality" 
+                                                        value="#{bookingController.speciality}" 
+                                                        style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
+                                        <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                                        <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                        <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
+                                    </p:selectOneListbox>
+                                </h:panelGrid>
+                            </td>
+                        </tr>
+
+                    </table>
+                </h:panelGroup>
+
+                <h:panelGroup id="scStaff" >
+
+                    <table >
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Consultants" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:panelGrid columns="1">
+                                    <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
+                                        <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                                        <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                                 listener="#{bookingController.generateSessions}"/>
+                                    </p:selectOneListbox>
+                                </h:panelGrid>
+                            </td>
+                        </tr>
+                    </table>
+
+                </h:panelGroup>
+
+                <h:panelGroup id="panDate">
+                    <table  header="Date From" styleClass="noPaddingMargin" >
+                        <tr>
+                            <th>
+                                <h:outputLabel value="Date From" ></h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
+                                            styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                    <p:ajax event="dateSelect" 
+                                            process="@this date" 
+                                            update=":#{p:component('tblSessionsOfSelectedConsultant')} a"  
+                                            listener="#{bookingController.generateSessions}"
+                                            />
+                                </p:calendar>
+                                <p:watermark for="date" value="Date" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+
+                            </td>
+                        </tr>
+                    </table>
+
+
+
+                </h:panelGroup>
+
+                <h:panelGroup >
+                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                        <tr>
+                            <th>
+                                <p:outputLabel value="Sessions From - " ></p:outputLabel>
+                                <h:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
+                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                </h:outputLabel>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
+                                             id="tblSessionsOfSelectedConsultant" var="ses" editable="true"
+                                             scrollable="true" scrollHeight="275">
+
+                                    <p:ajax event="rowEdit" listener="#{bookingController.onEditItem}" />  
+                                    <p:ajax event="rowEditCancel" listener="#{bookingController.onEditItem}" />
+
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="E"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
+                                            <f:convertDateTime pattern="hh:mm a"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="(" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.deactivated}" >
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.deactivated}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value="**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionAt}" rendered="#{ses.deactivated}" style="color: red;">
+                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
+                                        <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
+                                    </p:column>
+                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.displayCount}">
+                                            <f:convertNumber pattern="00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.sessionDate}">
+                                            <f:convertDateTime pattern="dd MMM"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.startingTime}">
+                                            <f:convertDateTime pattern="hh:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <h:outputText value="#{ses.totalFee}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>                                                            
+                                    </p:column>
+                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{webUserController.hasPrivilege('ChannellingApoinmentNumberCountEdit')}">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputText value="#{ses.maxNo}">
+                                                    <f:convertNumber pattern="00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{ses.maxNo}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+
+                                    </p:column>
+                                    <p:column style="width:6%" rendered="#{webUserController.hasPrivilege('ChannellingApoinmentNumberCountEdit')}">  
+                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('ChannellingApoinmentNumberCountEdit')}"> 
+                                        </p:rowEditor>
+                                    </p:column> 
+                                </p:dataTable>
+                            </td>
+                        </tr>
+                    </table>
+                </h:panelGroup>
+
+
+
+
+            </h:panelGrid>
+
+        </h:form>
+
+
+    </ui:define>
+
+
+</ui:composition>

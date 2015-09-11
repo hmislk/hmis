@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
@@ -108,7 +109,7 @@ public class SheduleController implements Serializable {
 
         return hos;
     }
-    
+
     public ItemFee createAgencyFee() {
         ItemFee agency = new ItemFee();
         agency.setName("Agency Fee");
@@ -148,16 +149,31 @@ public class SheduleController implements Serializable {
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
+        Map m = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and (upper(pi.staff.person.name) like '%" + query.toUpperCase() + "%'or  upper(pi.staff.code) like '%" + query.toUpperCase() + "%' )"
+                            + " and pi.staff.speciality=:spe "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("spe", getSpeciality());
+                    m.put("typ", PersonInstitutionType.Channelling);
+                } else {
+                    sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                }
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             ////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findBySQL(sql,m);
         }
         return suggestions;
     }
@@ -223,10 +239,9 @@ public class SheduleController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    
     @EJB
     DepartmentFacade departmentFacade;
-    
+
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         if (getCurrent().getInstitution() == null) {
@@ -239,7 +254,6 @@ public class SheduleController implements Serializable {
         return d;
     }
 
-    
     public ServiceSession getCurrent() {
         if (current == null) {
             current = new ServiceSession();
@@ -268,11 +282,13 @@ public class SheduleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
-                + " and s.staff=:stf ";
+                + " and type(s)=:class "
+                + " and s.staff=:stf "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
-        //hm.put("class", ServiceSessionLeave.class);
+        hm.put("class", ServiceSession.class);
         items = getFacade().findBySQL(sql, hm);
-//        }
 
         return items;
     }
@@ -427,7 +443,7 @@ public class SheduleController implements Serializable {
 
         getCurrent().setTotal(calTot());
         getCurrent().setTotalFfee(calFTot());
-        
+
         facade.edit(getCurrent());
 
         prepareAdd();
@@ -441,7 +457,7 @@ public class SheduleController implements Serializable {
         }
         return tot;
     }
-    
+
     private double calFTot() {
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
