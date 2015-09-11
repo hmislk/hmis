@@ -180,6 +180,31 @@ root {
 
 
 
+@media print{
+    .noBorderWhenPrint div *,
+    .noBorderWhenPrint div ,
+    .noBorderWhenPrint table *,
+    .noBorderWhenPrint td{
+        border: none!important;
+        border-top:none!important;
+
+    }
+}
+
+@media screen{
+    .noBorderWhenPrint div{
+        width: 21.0cm;
+        height: 29.7cm;
+        border: 1px solid red;
+    }
+    .noBorderWhenPrint div *,
+    .noBorderWhenPrint div ,
+    .noBorderWhenPrint table *,
+    .noBorderWhenPrint td{
+        border: 1px solid gray!important;
+        background-color: whitesmoke;
+    }
+}
 
 @media print{
     .staffFive{
@@ -743,7 +768,7 @@ root {
     position: absolute!important;
     left: 36%!important;
     top: 6.5%!important;
-    
+
 }
 
 .receiptnoPrintingRuhunu{

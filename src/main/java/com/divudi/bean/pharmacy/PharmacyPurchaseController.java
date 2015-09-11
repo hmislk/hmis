@@ -251,7 +251,6 @@ public class PharmacyPurchaseController implements Serializable {
             }
         }
 
-    
         wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
         wsRate = CommonFunctions.round(wsRate);
         tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
@@ -321,7 +320,7 @@ public class PharmacyPurchaseController implements Serializable {
         if (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() != 0) {
             wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
         }
-        wsRate= CommonFunctions.round(wsRate);
+        wsRate = CommonFunctions.round(wsRate);
         getCurrentBillItem().getPharmaceuticalBillItem().setWholesaleRate(wsRate);
 
     }
@@ -362,7 +361,7 @@ public class PharmacyPurchaseController implements Serializable {
         saveBill();
         //   saveBillComponent();
         getPharmacyBillBean().calSaleFreeValue(getBill());
-        
+
         Payment p = createPayment(getBill());
 
         for (BillItem i : getBillItems()) {
@@ -387,7 +386,7 @@ public class PharmacyPurchaseController implements Serializable {
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-            
+
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
@@ -414,14 +413,14 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
 
     }
-    
+
     public Payment createPayment(Bill bill) {
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, bill.getPaymentMethod());
         return p;
     }
-    
+
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
 
         p.setInstitution(getSessionController().getInstitution());
@@ -438,7 +437,7 @@ public class PharmacyPurchaseController implements Serializable {
         }
 
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -459,7 +458,7 @@ public class PharmacyPurchaseController implements Serializable {
         }
         createBillFeePaymentAndPayment(bf, p);
     }
-    
+
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -499,33 +498,27 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void addItem() {
-
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
-            UtilityController.addErrorMessage("Please enter Purchase Rate");
+            UtilityController.addErrorMessage("Please enter a purchase rate");
             return;
         }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
-            UtilityController.addErrorMessage("Please Set DAte of Expiry");
+            UtilityController.addErrorMessage("Please set the date of expiry");
             return;
         }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
-            UtilityController.addErrorMessage("Please enter Purchase QTY");
+            UtilityController.addErrorMessage("Please enter the purchase quantity");
             return;
         }
-
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
-            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
-            return;
-        }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
-            UtilityController.addErrorMessage("Please enter Sale Price");
+            UtilityController.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
+            UtilityController.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
             return;
         }
 
@@ -585,22 +578,20 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calTotal() {
         double tot = 0.0;
+        double saleValue =0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             p.setSearialNo(serialNo++);
             double netValue = p.getQty() * p.getRate();
-
             p.setNetValue(0 - netValue);
-
             tot += p.getNetValue();
-
+            saleValue += (p.getPharmaceuticalBillItem().getQtyInUnit() + p.getPharmaceuticalBillItem().getFreeQtyInUnit()) * p.getPharmaceuticalBillItem().getRetailRate() ;
         }
-
         getBill().setTotal(tot);
         getBill().setNetTotal(tot);
-
+        getBill().setSaleValue(saleValue);
     }
 
     public BilledBill getBill() {
