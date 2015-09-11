@@ -229,7 +229,20 @@
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                 <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip staff autoStaff" event="change" />
+                                <p:ajax process="@this" 
+                                        update="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCard cheque slip staff autoStaff lblSessionTotal" 
+                                        event="change" 
+                                        listener="#{channelBillController.changeListener()}" />
+                            </p:selectOneMenu>
+                            <p:outputLabel value="Discount Scheme"/>
+                            <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
+                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}" 
+                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                    <p:ajax process="@this" 
+                                            update="lblSessionTotal" 
+                                            event="change" 
+                                            listener="#{channelBillController.changeListener()}"/>
                             </p:selectOneMenu>
 
                             <h:outputLabel/>
