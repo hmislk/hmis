@@ -90,6 +90,8 @@ public class ChannelBillController implements Serializable {
     Staff toStaff;
     String errorText;
     PaymentScheme paymentScheme;
+    double creditLimit;
+    boolean activeCreditLimitPannel = false;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -1184,6 +1186,46 @@ public class ChannelBillController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckAgentValidate() {
+        if (getbookingController().getSelectedServiceSession() == null) {
+            errorText = "Please Select Specility and Doctor.";
+            UtilityController.addErrorMessage("Please Select Specility and Doctor.");
+            return true;
+        }
+
+        if (getbookingController().getSelectedServiceSession().isDeactivated()) {
+            errorText = "******** Doctor Leave day Can't Channel ********";
+            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
+            return true;
+        }
+
+        if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
+            errorText = "Please Select Session.";
+            UtilityController.addErrorMessage("Please Select Session");
+            return true;
+        }
+        System.out.println("patientTabId = " + patientTabId);
+        System.out.println("getPatientTabId = " + getPatientTabId());
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
+                errorText = "Please select Agency";
+                UtilityController.addErrorMessage("Please select Agency");
+                return true;
+            }
+
+            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+                errorText = "Agency Ballance is Not Enough";
+                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+                return true;
+            }
+
+        }
+
+        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        return false;
+    }
+
     private void savePatient() {
         switch (getPatientTabId()) {
             case "tabNewPt":
@@ -1755,16 +1797,56 @@ public class ChannelBillController implements Serializable {
 
     public void validateAgentBalance() {
         System.out.println("inside");
+        activeCreditLimitPannel = false;
 
-        if (errorCheck()) {
+        if (errorCheckAgentValidate()) {
+            activeCreditLimitPannel = true;
             return;
         }
 
-        if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > institution.getBallance()
-                || bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > institution.getBallance()) {
-            UtilityController.addErrorMessage("Please Increase Balance");
+        if (isForiegn()) {
+            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFfee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
+                activeCreditLimitPannel = true;
+                return;
+            }
         }
 
+        if (!isForiegn()) {
+            if (bookingController.getSelectedServiceSession().getOriginatingSession().getTotalFee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                UtilityController.addErrorMessage("Please Increase Credit Limit or Balance");
+                activeCreditLimitPannel = true;
+                return;
+            }
+        }
+    }
+
+    public void updateCreditLimit() {
+        if (institution == null) {
+            UtilityController.addErrorMessage("Please Select a Agency");
+            return;
+        }
+
+        if (institution.getMaxCreditLimit() > 0) {
+            if (institution.getMaxCreditLimit() < creditLimit) {
+                UtilityController.addErrorMessage("Please Enter less than Maximum Credit Limit");
+                return;
+            }
+        }
+
+        createAgentCreditLimitUpdateHistory(institution, creditLimit, HistoryType.AgentBalanceUpdateBill);
+        creditLimit = 0.0;
+    }
+
+    public void createAgentCreditLimitUpdateHistory(Institution ins, double transactionValue, HistoryType historyType) {
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
+        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setHistoryType(historyType);
+        agentHistory.setInstitution(institution);
+        agentHistoryFacade.create(agentHistory);
     }
 
     public void changeListener() {
@@ -1982,5 +2064,23 @@ public class ChannelBillController implements Serializable {
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
     }
+
+    public double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(double creditLimit) {
+        this.creditLimit = creditLimit;
+    }
+
+    public boolean isActiveCreditLimitPannel() {
+        return activeCreditLimitPannel;
+    }
+
+    public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
+        this.activeCreditLimitPannel = activeCreditLimitPannel;
+    }
+    
+    
 
 }
