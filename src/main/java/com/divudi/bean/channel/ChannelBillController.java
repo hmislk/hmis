@@ -1176,6 +1176,47 @@ public class ChannelBillController implements Serializable {
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
     }
+    
+    private boolean errorCheckAgentValidate() {
+        if (getbookingController().getSelectedServiceSession() == null) {
+            errorText = "Please Select Specility and Doctor.";
+            UtilityController.addErrorMessage("Please Select Specility and Doctor.");
+            return true;
+        }
+
+        if (getbookingController().getSelectedServiceSession().isDeactivated()) {
+            errorText = "******** Doctor Leave day Can't Channel ********";
+            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
+            return true;
+        }
+
+        if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
+            errorText = "Please Select Session.";
+            UtilityController.addErrorMessage("Please Select Session");
+            return true;
+        }
+        System.out.println("patientTabId = " + patientTabId);
+        System.out.println("getPatientTabId = " + getPatientTabId());
+       
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
+                errorText = "Please select Agency";
+                UtilityController.addErrorMessage("Please select Agency");
+                return true;
+            }
+
+            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+                errorText = "Agency Ballance is Not Enough";
+                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+                return true;
+            }
+            
+            
+        }
+        
+        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        return false;
+    }
 
     private void savePatient() {
         switch (getPatientTabId()) {
@@ -1722,7 +1763,7 @@ public class ChannelBillController implements Serializable {
     public void validateAgentBalance() {
         System.out.println("inside");
         
-        if(errorCheck()){
+        if(errorCheckAgentValidate()){
             return;
         }
 
