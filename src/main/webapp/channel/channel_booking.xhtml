@@ -72,7 +72,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
+                                <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
                                              id="tblSessionsOfSelectedConsultant" var="ses"
                                              selectionMode="single" 
                                              selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="275">
@@ -82,44 +82,45 @@
                                             listener="#{bookingController.fillBillSessions}" />
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="E"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.sessionAt}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
                                             <f:convertDateTime pattern="hh:mm a"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.originatingSession.totalFee}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="(" rendered="#{!ses.transLeave}" />
-                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.transLeave}" >
+                                        <h:outputText value="(" rendered="#{!ses.deactivated}" />
+                                        <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.deactivated}" >
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.transLeave}">
+                                        <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.deactivated}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
-                                        <h:outputText value="**" rendered="#{!ses.transLeave}"/>
-                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.transLeave}" style="color: red;"/>
-                                        <h:outputText value="#{ses.sessionAt}" rendered="#{ses.transLeave}" style="color: red;">
+                                        <h:outputText value="**" rendered="#{!ses.deactivated}"/>
+                                        <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
+                                        <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
                                             <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                         </h:outputText>
-                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.transLeave}" style="color: red;"/>
+                                        <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                                     </p:column>
+                                    
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                         <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
@@ -136,7 +137,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.sessionAt}">
+                                        <h:outputText value="#{ses.sessionDate}">
                                             <f:convertDateTime pattern="dd MMM"/>
                                         </h:outputText>
                                     </p:column>
@@ -146,7 +147,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:outputText value="#{ses.originatingSession.totalFee}">
+                                        <h:outputText value="#{ses.totalFee}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>                                                            
                                     </p:column>   
@@ -179,6 +180,7 @@
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: red;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: red;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                                     </p:column>
@@ -237,7 +239,7 @@
                             <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
                                 <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt"/>
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
@@ -434,10 +436,15 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+
+                                        <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq bookingController.selectedBillSession.bill and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
@@ -462,7 +469,7 @@
                                         <p:separator ></p:separator>
 
                                         <p:outputLabel value="Bill No"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}"/>
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -517,13 +524,17 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
+                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
                                     </h:panelGrid>                            
                                 </p:panel>
 
                                 <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Booking Id"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.bookingId}"/>
+                                        <p:outputLabel value="Bill Id"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
                                         <p:outputLabel value="Payment Method"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
@@ -547,7 +558,7 @@
 
                         <p:tab title="Reprint" id="rePrint" >
 
-                            <p:commandButton value="Print" ajax="false" action="#">
+                            <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
                             </p:commandButton>
 

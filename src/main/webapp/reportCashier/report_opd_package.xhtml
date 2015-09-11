@@ -64,7 +64,7 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
-                                         action="#{billPackageMedicalController.createOtherPackageBillItems()}"
+                                         action="#{billPackageMedicalController.createOtherPackageBillItems}"
                                          onclick="onSubmitButton();" />
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
@@ -74,14 +74,14 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
-                            <pe:exporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
+                            <pe:exporter type="xlsx" target="tbl1 tbl2 tbl3" fileName="Package_Bill_Detail_Report" />
                         </p:commandButton>
 
                     </p:panel>
                 </h:panelGrid>   
 
                 <p:panel id="gpBillPreview">
-                    <p:dataTable id="tbl" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
+                    <p:dataTable id="tbl1" value="#{billPackageMedicalController.billedBillItemLst}" rowIndexVar="i" var="bi">
                         <f:facet name="header">
                             <p:outputLabel value="Package Bill Detail Report - By Bill Item" /><br/>
                             <p:outputLabel value="From : "/>
@@ -97,7 +97,8 @@
                             <p:spacer width="30" height="1"/>
                             <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
                             <p:spacer width="30" height="1"/>
-                            <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
+                            <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" /><br/>
+                            <p:outputLabel value="Billed BillItem" />
                         </f:facet>
                         <p:column headerText="Serial No">
                             <f:facet name="header">
@@ -165,9 +166,171 @@
                                         <p:outputLabel value="Total" />
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{billPackageMedicalController.total}">
+                                <p:column footerText="#{billPackageMedicalController.billedBillTotal}">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{billPackageMedicalController.total}">
+                                        <h:outputLabel value="#{billPackageMedicalController.billedBillTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+                    
+                    <p:dataTable id="tbl2" value="#{billPackageMedicalController.canceledBillItemLst}" rowIndexVar="i" var="bi">
+                        <f:facet name="header">                            
+                            <p:outputLabel value="Cacelled BillItem"/>
+                        </f:facet>
+                        <p:column headerText="Serial No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Serial No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="Bill No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Bill No" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.insId}" />
+                        </p:column> 
+                        <p:column headerText="Institution">
+                            <f:facet name="header">
+                                <p:outputLabel value="Institution" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.forInstitution.name}" />
+                        </p:column>
+                        <p:column headerText="Patient Name">
+                            <f:facet name="header">
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patient.person.nameWithTitle}" />
+                        </p:column>                   
+                        <p:column headerText="Investigation/Service">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Investigation/Service" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.item.name}" />
+                        </p:column>
+                        <p:column headerText="Added Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Added Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Payment Methord">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Payment Methord" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.paymentMethod}" />
+                        </p:column>
+
+                        <p:column headerText="Package">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Package" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.name}" />
+                        </p:column>
+                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                            <f:facet name="header">
+                                <p:outputLabel value="Net Value" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.netValue}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="8" footerText="Total">
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="Total" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{billPackageMedicalController.canceledBillTotal}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{billPackageMedicalController.canceledBillTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+                    
+                    <p:dataTable id="tbl3" value="#{billPackageMedicalController.refundedBillItemLst}" rowIndexVar="i" var="bi">
+                        <f:facet name="header">                            
+                            <p:outputLabel value="Refunded BillItem"/>
+                        </f:facet>
+                        <p:column headerText="Serial No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Serial No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="Bill No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Bill No" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.insId}" />
+                        </p:column> 
+                        <p:column headerText="Institution">
+                            <f:facet name="header">
+                                <p:outputLabel value="Institution" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.forInstitution.name}" />
+                        </p:column>
+                        <p:column headerText="Patient Name">
+                            <f:facet name="header">
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patient.person.nameWithTitle}" />
+                        </p:column>                   
+                        <p:column headerText="Investigation/Service">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Investigation/Service" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.item.name}" />
+                        </p:column>
+                        <p:column headerText="Added Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Added Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Payment Methord">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Payment Methord" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.paymentMethod}" />
+                        </p:column>
+
+                        <p:column headerText="Package">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Package" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.name}" />
+                        </p:column>
+                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                            <f:facet name="header">
+                                <p:outputLabel value="Net Value" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.netValue}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="8" footerText="Total">
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="Total" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{billPackageMedicalController.refundedBillTotal}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{billPackageMedicalController.refundedBillTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
