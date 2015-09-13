@@ -54,7 +54,7 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        if (sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (sessionController.getInstitutionPreference()!=null && sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
@@ -496,6 +496,21 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
+
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+
+    }
+    
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", paymentScheme);
+        sql = "Select i from PaymentSchemeDiscount i"
+                + "  where i.retired=false "
+                + " and i.paymentScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.department is null ";
 
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 

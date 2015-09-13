@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
@@ -15,6 +16,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
@@ -46,8 +48,16 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InvestigationMonthSummeryOwnControllerSession implements Serializable {
 
+    /**
+     * Managed Beans
+     */
     @Inject
     private SessionController sessionController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    /**
+     * EJBs
+     */
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -60,15 +70,23 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private BillItemFacade billItemFacade;
     @EJB
     BillEjb billEjb;
+    /**
+     * Properties
+     */
     private Date fromDate;
     private Date toDate;
+    Institution reportedInstitution;
+    Department reportedDepartment;
     private Institution creditCompany;
     Institution institution;
+    Department department;
     Institution collectingCentre;
     Item item;
     private List<InvestigationSummeryData> items;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
+    List<Bill> bills;
+    List<PatientInvestigation> pis;
     List<InvestigationSummeryData> itemsLab;
     Long totalCount;
     int progressValue = 0;
@@ -97,10 +115,27 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+
+    public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
+        items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             System.out.println("w.getName() = " + w.getName());
@@ -120,17 +155,111 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         progressStarted = false;
     }
 
-    public void createInvestigationTurnoverTime() {
+    public void createInvestigationMonthEndSummeryCountsFilteredByBilledDepartment() {
+        items = new ArrayList<>();
+        totalCount = null;
         progressStarted = true;
         progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+
+    public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+
+    public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
+        items = new ArrayList<>();
+        totalCount = null;
+        progressStarted = true;
+        progressValue = 0;
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        double singleItem = 100 / ixs.size();
+        for (Item w : ixs) {
+            System.out.println("w.getName() = " + w.getName());
+            if (totalCount == null) {
+                totalCount = 0l;
+            }
+            if (stopProgress == true) {
+                break;
+            }
+            progressValue += (int) singleItem;
+            InvestigationSummeryData temp = setIxSummeryCount(w);
+            if (temp.getCount() != 0) {
+                totalCount += temp.getCount();
+                items.add(temp);
+            }
+        }
+        progressStarted = false;
+    }
+
+    public void createInvestigationTurnoverTimeByBills() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select pi "
+                + " from PatientInvestigation pi join pi.billItem bi join bi.bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.toDepartment=:dep "
+                + " and b.createdAt between :fd and :td "
+                + " and (bi.refunded is null or bi.refunded=FALSE) "
+                + " and bi.retired=false ";
+        m.put("dep", department);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("pis.size() = " + pis.size());
+    }
+    
+    public void createInvestigationTurnoverTime() {
+        System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
         double totalMins = 0;
         double averageCount = 0;
-        List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
+        List<PatientInvestigation> temPis = billEjb.getPatientInvestigations(item,
                 fromDate,
                 toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
-                new Class[]{Bill.class},
+                new Class[]{BilledBill.class},
                 true,
                 null,
                 true,
@@ -139,18 +268,21 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 null,
                 true,
                 null);
-        double singleItem = 0;
-        if (pis.size() != 0) {
-            singleItem = 100 / pis.size();
-        }
+        System.out.println("pis.size() = " + temPis.size());
+        for (PatientInvestigation pi : temPis) {
 
-        for (PatientInvestigation pi : pis) {
             System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
-            progressValue += (int) singleItem;
-            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
-            totalMins += averateMins;
-            averageCount++;
+            if (pi.getPrintingAt() != null && pi.getBillItem().getBill().getCreatedAt() != null) {
+                System.out.println("pi.getPrintingAt().getTime() = " + pi.getPrintingAt().getTime());
+                System.out.println("pi.getBillItem().getBill().getCreatedAt().getTime() = " + pi.getBillItem().getBill().getCreatedAt().getTime());
+                averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+                System.out.println("averateMins = " + averateMins);
+                totalMins += averateMins;
+                averageCount++;
+            }
         }
+        System.out.println("totalMins = " + totalMins);
+        System.out.println("averageCount = " + averageCount);
         totalCount = (long) (totalMins / averageCount);
         progressStarted = false;
     }
@@ -223,6 +355,30 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
+    }
+
+    public Institution getReportedInstitution() {
+        return reportedInstitution;
+    }
+
+    public void setReportedInstitution(Institution reportedInstitution) {
+        this.reportedInstitution = reportedInstitution;
+    }
+
+    public Department getReportedDepartment() {
+        return reportedDepartment;
+    }
+
+    public void setReportedDepartment(Department reportedDepartment) {
+        this.reportedDepartment = reportedDepartment;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     private Institution collectingIns;
@@ -991,6 +1147,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.progressStarted = progressStarted;
     }
 
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -1048,4 +1220,32 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     }
 
+    public void prepareForPrint() {
+        paginator = false;
+        rows = getItems().size();
+    }
+
+    public void prepareForView() {
+        paginator = true;
+        rows = 20;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public List<PatientInvestigation> getPis() {
+        return pis;
+    }
+
+    public void setPis(List<PatientInvestigation> pis) {
+        this.pis = pis;
+    }
+
+    
+    
 }

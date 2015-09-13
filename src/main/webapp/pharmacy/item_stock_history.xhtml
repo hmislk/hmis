@@ -54,11 +54,12 @@
                       
 
                         <p:commandButton rendered="#{reorderController.dateModel ne null}" type="button" value="Reset" icon="ui-icon-cancel" onclick="PF('chart').resetZoom()"/>
-                        <p:chart rendered="#{reorderController.dateModel ne null}" widgetVar="chart"  type="line" 
-                                 model="#{reorderController.dateModel}" 
+                        
+<!--                        <p:chart rendered="#-{reorderController.dateModel ne null}" widgetVar="chart"  type="line" 
+                                 model="#-{reorderController.dateModel}" 
                                  style="height:400px;"
                                  />
-                        
+                        -->
 
 
                     </p:panel>

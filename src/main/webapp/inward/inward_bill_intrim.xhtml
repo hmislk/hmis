@@ -216,12 +216,12 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>   
-                                <p:column >
-                                    <h:outputLabel value="#{ti.creater.webUserPerson.name}"/>     
+                                <p:column headerText="Creater" >
+                                    <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{ti.retired}" >
                                         <h:outputLabel style="color: red;" value="Deleted By " />
-                                        <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}" >                                       
+                                        <h:outputLabel style="color: red;"  value="#{pt.retirer.webUserPerson.name}" >                                       
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>     
@@ -234,7 +234,7 @@
                                 </p:column>
                                 <p:column>
                                     <p:commandButton ajax="false" value="Remove "  
-                                                    action="#{inwardTimedItemController.removePatientItem(ti)}" onclick="onSubmitButton();"/>
+                                                    action="#{surgeryBillController.removeTimeService(pt)}" onclick="onSubmitButton();"/>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>

@@ -139,7 +139,8 @@ public class Staff implements Serializable {
     Integer codeInterger;
     boolean allowedLateInLeave = true;
     boolean allowedEarlyOutLeave = true;
-
+    
+    
     public double getTransDblValue() {
         return transDblValue;
     }
@@ -671,7 +672,5 @@ public class Staff implements Serializable {
         this.epfAccountNo = epfAccountNo;
     }
 
-   
-    
 
 }

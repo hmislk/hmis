@@ -1,0 +1,473 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Employee Working Time and Over Time Report" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Salary Cycle : "/>
+                            <p:selectOneMenu id="advanced" 
+                                             value="#{hrReportController.salaryCycle}" 
+                                             converter="salaryCycleConverter"                                      
+                                             effect="fade" var="t" 
+                                             filter="true" 
+                                             filterMatchMode="startsWith"  >
+
+                                <f:selectItem itemLabel="Slect Cycle"/>
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                               var="theme" 
+                                               itemLabel="#{theme.name}" 
+                                               itemValue="#{theme}" ></f:selectItems>
+
+                                <p:column style="width:10%" headerText="Name">
+                                    <h:outputText value="#{t.name}" />
+                                </p:column>
+
+                                <p:column headerText="Year">
+                                    <h:outputText value="#{t.salaryYear}" />
+                                </p:column>
+                                <p:column headerText="Month">
+                                    <h:outputText value="#{t.salaryMonth}" />
+                                </p:column>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Staff Designation : "/>
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="4" >
+                            <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportForMonth}"/>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
+                            </p:commandButton>
+                            <p:commandButton value="Print All" ajax="false" action="#" >
+                                <p:printer target="gpBillPreviewPrint" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton value="Print(Summery)" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview1" ></p:printer>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <p:panel id="gpBillPreviewPrint" styleClass="summeryBorder"  >
+                            <p:panel id="gpBillPreview1" >
+                                <p:dataTable value="#{hrReportController.summeryForMonths}" var="ss">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Summery" />
+                                    </f:facet>
+
+                                    <p:column  styleClass="shortNumericColumn">
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Code" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{ss.staff.codeInterger}" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Staff" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{ss.staff.person.nameWithInitials}" />
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Week 1" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblw1" value="#{ss.week1/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblw1" >
+                                            <h:outputLabel  value="#{ss.week1/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Week 2" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblw2" value="#{ss.week2/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblw2" >
+                                            <h:outputLabel  value="#{ss.week2/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Week 3" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblw3" value="#{ss.week3/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblw3" >
+                                            <h:outputLabel  value="#{ss.week3/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Week 4" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblw4" value="#{ss.week4/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblw4" >
+                                            <h:outputLabel  value="#{ss.week4/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Week 5" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblw5" value="#{ss.week5/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblw5" >
+                                            <h:outputLabel  value="#{ss.week5/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Total" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblwt" value="#{ss.total/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblwt" >
+                                            <h:outputLabel  value="#{ss.total/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Entitled" />
+                                        </f:facet>
+                                        <h:outputLabel id="lbloEnt" value="#{ss.staff.workingTimeForOverTimePerWeek*60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lbloEnt" >
+                                            <h:panelGrid columns="2">
+                                                <h:outputLabel  value="#{ss.staff.workingTimeForOverTimePerWeek*60*4}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Mins(4 Weeks)" ></h:outputLabel>
+                                                <h:outputLabel  value="#{ss.staff.workingTimeForOverTimePerWeek*60*5}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Mins(5 Weeks)" ></h:outputLabel>
+                                            </h:panelGrid>
+                                        </p:tooltip>
+                                    </p:column> 
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Over Time" />
+                                        </f:facet>
+                                        <h:outputLabel id="lblwot" value="#{ss.overTime/60}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                        <p:tooltip for="lblwot" >
+                                            <h:outputLabel  value="#{ss.overTime/3600}">
+                                                <f:convertNumber pattern="0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="hrs" ></h:outputLabel>
+                                        </p:tooltip>
+                                    </p:column>
+                                    <p:column styleClass="shortNumericColumn" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="OT Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
+                                            <f:convertNumber pattern="0"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel id="gpBillPreview" >
+                                <p:dataTable value="#{hrReportController.overTimeAllMonths}" var="o">
+                                    <f:facet name="header" >
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                                            <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                                            <h:outputLabel value="Employee #{hrReportController.reportKeyWord.staff.person.name}" rendered="#{hrReportController.reportKeyWord.staff ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                                            <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                                            <h:outputLabel value="#{hrReportController.reportKeyWord.department.name} Department" rendered="#{hrReportController.reportKeyWord.department ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
+                                            <h:outputLabel value="Staff Category #{hrReportController.reportKeyWord.staffCategory.name}" rendered="#{hrReportController.reportKeyWord.staffCategory ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
+                                            <h:outputLabel value="Staff Designation #{hrReportController.reportKeyWord.designation.name}" rendered="#{hrReportController.reportKeyWord.designation ne null}"/>
+                                            <br />
+                                        </h:panelGroup>
+
+                                        <h:outputLabel value="Employee Working Time and Over Time Report " />
+                                        <h:outputLabel value="From : "/>
+                                        <h:outputLabel value="#{hrReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" To : "/>
+                                        <h:outputLabel value="#{hrReportController.toDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <p:columnGroup type="header" >
+                                        <p:row>
+                                            <p:column headerText="Code"/>
+                                            <p:column headerText="Staff"/>
+                                            <p:column headerText="Sun"/>
+                                            <p:column headerText="Mon"/>
+                                            <p:column headerText="Tue"/>
+                                            <p:column headerText="Wed"/>
+                                            <p:column headerText="Thur"/>
+                                            <p:column headerText="Fri"/>
+                                            <p:column headerText="Sat"/>
+                                            <p:column headerText="Total"/>
+                                            <p:column headerText="Entitled"/>
+                                            <p:column headerText="OT"/>
+                                            <p:column headerText="Value"/>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:subTable value="#{o.dayWorks}" var="ss">
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="#{o.dateRange}" />
+                                        </f:facet>
+                                        <p:column  styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Code" />
+                                            </f:facet>
+                                            <h:outputLabel value="#{ss.staff.codeInterger}" />
+                                        </p:column>
+                                        <p:column headerText="Staff">
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Staff" />
+                                            </f:facet>
+                                            <p:outputLabel value="#{ss.staff.person.name}" />
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Sun" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblSun" value="#{ss.sunDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblSun" >
+                                                <h:outputLabel  value="#{ss.sunDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Mon" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblMon" value="#{ss.monDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblMon" >
+                                                <h:outputLabel  value="#{ss.monDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Tue" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblTue" value="#{ss.tuesDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblTue" >
+                                                <h:outputLabel  value="#{ss.tuesDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Wed" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblWed" value="#{ss.wednesDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblWed" >
+                                                <h:outputLabel  value="#{ss.wednesDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Thur" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblThu"  value="#{ss.thursDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblThu" >
+                                                <h:outputLabel  value="#{ss.thursDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Fri" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblFri" value="#{ss.friDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblFri" >
+                                                <h:outputLabel  value="#{ss.friDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Sat" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblSat"  value="#{ss.saturDay/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblSat" >
+                                                <h:outputLabel  value="#{ss.saturDay/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel id="lblTotTitle" value="Total" />
+                                                <p:tooltip for="lblTotTitle" >
+                                                    <h:outputLabel value="Total Work Time" />
+                                                </p:tooltip>
+                                            </f:facet>
+                                            <h:outputLabel id="lblTot" value="#{ss.total/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblTot" >
+                                                <h:outputLabel  value="#{ss.total/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column> 
+                                        <p:column styleClass="shortNumericColumn" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Entitled" />
+                                            </f:facet>
+                                            <h:outputLabel id="lblEnt" value="#{ss.staff.workingTimeForOverTimePerWeek*60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblEnt" >
+                                                <h:outputLabel  value="#{ss.staff.workingTimeForOverTimePerWeek}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column> 
+
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel id="lblOtTitle" value="OT" />
+                                                <p:tooltip for="lblOtTitle" >
+                                                    <h:outputLabel value="Weekely Overtime (Minutes)" />
+                                                </p:tooltip>
+                                            </f:facet>
+                                            <h:outputLabel id="lblOt" value="#{ss.overTime/60}">
+                                                <f:convertNumber pattern="0"/>
+                                            </h:outputLabel>
+                                            <p:tooltip for="lblOt" >
+                                                <h:outputLabel  value="#{ss.overTime/3600}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="hrs" ></h:outputLabel>
+                                            </p:tooltip>
+                                        </p:column>  
+
+                                        <p:column styleClass="shortNumericColumn">
+                                            <f:facet name="header" >
+                                                <h:outputLabel id="lblOtValTitle" value="Value" />
+                                                <p:tooltip for="lblOtValTitle" >
+                                                    <h:outputLabel value="Weekely Orvertime Value" />
+                                                </p:tooltip>
+                                            </f:facet>
+                                            <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                                <f:convertNumber pattern="0" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:subTable>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

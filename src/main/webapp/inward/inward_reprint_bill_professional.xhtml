@@ -103,7 +103,7 @@
                                         <f:facet name="input">  
                                             <p:autoComplete value="#{bip.staff}" 
                                                             disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
-                                                            completeMethod="#{staffController.completeStaffCode}"
+                                                            completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                             var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" 
                                                             forceSelection="true"/>
                                            

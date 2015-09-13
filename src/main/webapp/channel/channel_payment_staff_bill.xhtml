@@ -16,15 +16,15 @@
                         <p:panel header="Staff Payments" >
                             <h:panelGrid columns="1" >
                                 <h:panelGrid columns="2" >
-                                    <h:panelGrid columns="1">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Speciality" />
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{channelStaffPaymentBillController.speciality}" id="acSpeciality"
-                                                        completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                         converter="specilityCon"   >
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                         </p:autoComplete>
-                                        <p:watermark value="Speciality" for="acSpeciality"/>
 
-
+                                        <p:outputLabel value="Staff" />
                                         <p:autoComplete minQueryLength="2"  style="width: 400px;"
                                                         forceSelection="true" 
                                                         value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
@@ -35,6 +35,7 @@
                                                     listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>
 
+                                        <p:outputLabel value="Session" />
                                         <p:selectOneMenu  id="lstSelect" converter="sscon"  
                                                           value="#{channelStaffPaymentBillController.selectedServiceSession}" style="min-width: 100%;" >
                                             <f:selectItem itemLabel="Select"  ></f:selectItem>
@@ -42,13 +43,21 @@
                                                             itemValue="#{ses}" 
                                                             itemLabel="#{ses.name}" ></f:selectItems>
                                         </p:selectOneMenu>
-
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
-                                        <p:watermark value="Staff" for="scStaff"/>
+                                        <p:outputLabel value="Consider Date" />
+                                        <p:selectBooleanCheckbox value="#{channelStaffPaymentBillController.considerDate}" >
+                                            <p:ajax update="fDate tDate" process="@this" event="change" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel value="From Date" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" id="fDate" styleClass="dateTimePicker"
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                        <p:outputLabel value="To Date" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" id="tDate" styleClass="dateTimePicker"
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
 
                                         <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>
+                                        <p:watermark value="Speciality" for="acSpeciality"/>
+                                        <p:watermark value="Staff" for="scStaff"/>
                                     </h:panelGrid>
 
 
@@ -56,7 +65,7 @@
                                 </h:panelGrid>
 
 
-                                <p:dataTable   id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
+                                <p:dataTable id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
@@ -65,7 +74,10 @@
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
+                                    
+                                    <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
 
                                     <p:column selectionMode="multiple" ></p:column>
 
@@ -84,10 +96,17 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
-
-                                    <p:column headerText="Paid or Not">
-                                        <p:outputLabel rendered="#{bf.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
-                                        <p:outputLabel rendered="#{bf.bill.billType eq 'ChannelPaid'}" value="Paid" style="color: green;"/>
+                                    
+                                    <p:column headerText="Channel on">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Appoinment At">
+                                        <h:outputLabel value="#{bf.bill.appointmentAt}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Charge" >
@@ -134,7 +153,7 @@
                         <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="Clear" action="#{channelStaffPaymentBillController.makenull()}" />
+                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
 
                         <bi:staffBill  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>

@@ -23,9 +23,9 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
                                 <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tblBills" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton>
-                               
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="Cashier_Detailed_Report"  />
+                                </p:commandButton>
+
 
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/><h:outputLabel/><h:outputLabel/>

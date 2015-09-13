@@ -49,7 +49,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <h:panelGrid columns="5" styleClass="noPrintButton">
+                                <h:panelGrid columns="6" styleClass="noPrintButton">
                                     <p:spacer height="1" width="30"/>
                                     <p:commandButton ajax="false"  value="Process"  
                                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
@@ -93,37 +93,10 @@
                             </f:facet>
 
 
-                            <p:columnGroup type="header">  
-                                <p:row>                              
-                                    <p:column colspan="3">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Investigation Counts"/>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column colspan="3"  >
-                                        <f:facet name="header">
-                                            <h:outputLabel value="FROM : "/>
-                                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}">
-                                                <f:convertDateTime pattern="dd MMMM yyyy" />
-                                            </h:outputLabel>
-                                            <h:outputLabel value=" TO : "/>
-                                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}">
-                                                <f:convertDateTime pattern="dd MMMM yyyy" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>                             
-                                </p:row>  
-                                <p:row>
-                                    <p:column headerText="No." style="width: 80px;" ></p:column>
-                                    <p:column headerText="Investigation" ></p:column>
-                                    <p:column headerText="Count" ></p:column>
-                                </p:row>
-                            </p:columnGroup> 
 
                             <p:column >
                                 <h:outputLabel value="#{i+1}"  />
+                                
                             </p:column>
 
                             <p:column headerText="Test Name" 
@@ -134,23 +107,20 @@
                                     <h:outputLabel value="Test Name"/>
                                 </f:facet>
                                 <h:outputLabel value="#{c.investigation.name}"  />
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total">
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Count" style="text-align:right" 
                                       sortBy="#{c.count}">
                                 <h:outputLabel value="#{c.count}" />
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
-                            <p:columnGroup type="footer">  
-                                <p:row>       
-                                    <p:column ></p:column>
-                                    <p:column footerText="Total" />
-                                    <p:column footerText="#{investigationMonthSummeryOwnControllerSession.totalCount}"  style="text-align:right">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>                             
-                                </p:row>  
-                            </p:columnGroup> 
+                            
 
                         </p:dataTable>
                     </p:panel>

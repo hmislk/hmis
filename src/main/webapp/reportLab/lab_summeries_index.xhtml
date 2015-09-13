@@ -15,7 +15,8 @@
                                 <p:panel header="Monthly Summeries" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Counts" action="investigation_counts"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time" action="turn_over_time"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time Average" action="turn_over_time"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time By Bills" action="turn_over_time_bills"/> 
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre" action="report_lab_collection_centre.xhtml"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor" action="report_lab_by_refering_doctor.xhtml"/>
@@ -50,14 +51,23 @@
 
                                     </p:panelGrid>
                                 </p:panel>
+                                <p:panel header="Counts" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <p:panelGrid columns="1" styleClass="alignTop">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
+                                        
+                                    </p:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
                                 <p:panel header="Lab Summary" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
-                                        
-
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
+                                       
                                     </p:panelGrid>
                                 </p:panel>
                             </h:panelGrid>

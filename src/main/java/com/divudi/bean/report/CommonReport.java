@@ -11,6 +11,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -53,9 +54,11 @@ import javax.persistence.TemporalType;
 @RequestScoped
 public class CommonReport implements Serializable {
 
-    @Inject
-    SessionController sessionController;
-    ///////////////////
+    /**
+     * 
+     * EJBs
+     * 
+     */
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -66,7 +69,16 @@ public class CommonReport implements Serializable {
     BillItemFacade billItemFac;
     @EJB
     BillFeeFacade billFeeFacade;
-    ////////////////////
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    /**
+     * 
+     * Properties
+     * 
+     */
     List<BillFee> billFees;
     List<Bill> referralBills;
     List<BillItem> referralBillItems;
@@ -120,14 +132,14 @@ public class CommonReport implements Serializable {
     private BillsTotals cancellededBills;
     private BillsTotals refundedBills;
     private BillsTotals billedBillsPh;
-    
+
     /////pharmacy whole sale
     private BillsTotals cancelledPhWholeSale;
     private BillsTotals refundedPhWholeSale;
     private BillsTotals billedPhWholeSale;
-    
+
     private BillsTotals billedBillsCh;
-    
+
     private BillsTotals billedBillsPh2;
     private BillsTotals cancellededBillsPh;
     private BillsTotals cancellededBillsPh2;
@@ -640,8 +652,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelCancellProPayment() {
-        if(channelCancellProPayment==null){
-            channelCancellProPayment=new BillsTotals();
+        if (channelCancellProPayment == null) {
+            channelCancellProPayment = new BillsTotals();
         }
         return channelCancellProPayment;
     }
@@ -651,8 +663,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelBilledProPayment() {
-        if(channelBilledProPayment==null){
-            channelBilledProPayment=new BillsTotals();
+        if (channelBilledProPayment == null) {
+            channelBilledProPayment = new BillsTotals();
         }
         return channelBilledProPayment;
     }
@@ -662,8 +674,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelRefundsProPayment() {
-        if(channelRefundsProPayment==null){
-            channelRefundsProPayment=new BillsTotals();
+        if (channelRefundsProPayment == null) {
+            channelRefundsProPayment = new BillsTotals();
         }
         return channelRefundsProPayment;
     }
@@ -673,8 +685,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelCancellAgnPayment() {
-        if(channelCancellAgnPayment==null){
-            channelCancellAgnPayment=new BillsTotals();
+        if (channelCancellAgnPayment == null) {
+            channelCancellAgnPayment = new BillsTotals();
         }
         return channelCancellAgnPayment;
     }
@@ -684,8 +696,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelBilledAgnPayment() {
-        if(channelBilledAgnPayment==null){
-            channelBilledAgnPayment=new BillsTotals();
+        if (channelBilledAgnPayment == null) {
+            channelBilledAgnPayment = new BillsTotals();
         }
         return channelBilledAgnPayment;
     }
@@ -695,8 +707,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getChannelRefundAgnPayment() {
-        if(channelRefundAgnPayment==null){
-            channelRefundAgnPayment=new BillsTotals();
+        if (channelRefundAgnPayment == null) {
+            channelRefundAgnPayment = new BillsTotals();
         }
         return channelRefundAgnPayment;
     }
@@ -704,9 +716,6 @@ public class CommonReport implements Serializable {
     public void setChannelRefundAgnPayment(BillsTotals channelRefundAgnPayment) {
         this.channelRefundAgnPayment = channelRefundAgnPayment;
     }
-    
-    
-    
 
     public List<Bill> getBillsByReferingDoc() {
 
@@ -1033,6 +1042,42 @@ public class CommonReport implements Serializable {
 
     }
 
+    private List<Bill> userBillsOwn(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser webUser, Department department) {
+        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
+                + " and b.retired=false"
+                + " and b.billType = :btp "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            temMap.put("web", webUser);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bill", billClass.getClass());
+        temMap.put("btp", billType);
+
+        temMap.put("ins", getSessionController().getInstitution());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     private List<Bill> getBills(Bill billClass, BillType billType, Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -1174,20 +1219,20 @@ public class CommonReport implements Serializable {
 
     public void createGRNBillItemForAsset() {
         billItems = new ArrayList<>();
-        billItems=createStoreGRNBillItem(DepartmentType.Inventry);
+        billItems = createStoreGRNBillItem(DepartmentType.Inventry);
         System.out.println("billItems Size = " + billItems.size());
     }
-    
+
     public void createGRNBillItemForStore() {
         billItems = new ArrayList<>();
-        billItems=createStoreGRNBillItem(DepartmentType.Store);
+        billItems = createStoreGRNBillItem(DepartmentType.Store);
         System.out.println("billItems Size = " + billItems.size());
     }
-    
+
     public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
         String sql;
         Map m = new HashMap();
-        List<BillItem> bs=new ArrayList<>();
+        List<BillItem> bs = new ArrayList<>();
 
         sql = " SELECT bi FROM BillItem bi WHERE "
                 + " type(bi.bill)=:bill "
@@ -1206,7 +1251,7 @@ public class CommonReport implements Serializable {
         bs = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
         //System.out.println("billItems = " + billItems);
         System.out.println("billItems Size = " + bs.size());
-        
+
         return bs;
     }
 
@@ -1227,11 +1272,11 @@ public class CommonReport implements Serializable {
 
         return billedBillsPh;
     }
-        public BillsTotals getUserBillsOwnCh() {
+
+    public BillsTotals getUserBillsOwnCh() {
 
         return billedBillsCh;
     }
-
 
     public BillsTotals getUserBillsPhOther() {
         return billedBillsPh2;
@@ -1572,6 +1617,39 @@ public class CommonReport implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("btp", billType);
+        temMap.put("pm", paymentMethod);
+
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private double calValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, WebUser wUser, Department department) {
+        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+                + " type(b)=:bill and b.retired=false  "
+                + " and b.billType in :btps "
+                + " and (b.paymentMethod=:pm )"
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:w";
+            temMap.put("w", wUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("btps", billTypes);
         temMap.put("pm", paymentMethod);
 
         temMap.put("ins", getSessionController().getInstitution());
@@ -2198,7 +2276,7 @@ public class CommonReport implements Serializable {
         getRefundedBillsPh().setCheque(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getRefundedBillsPh().setCredit(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getRefundedBillsPh().setSlip(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
+
         //Pharmacy Whole Billed
         getBilledPhWholeSale().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacyWholeSale, getWebUser()));
         getBilledPhWholeSale().setCard(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -2222,9 +2300,9 @@ public class CommonReport implements Serializable {
         getRefundedPhWholeSale().setCheque(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getRefundedPhWholeSale().setCredit(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getRefundedPhWholeSale().setSlip(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
+
         //Pharmacy GRN Payment Billed
-        getGrnPaymentBill().setBills(userBillsOwn(new BilledBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentBill().setBills(userBillsOwn(new BilledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
         getGrnPaymentBill().setCard(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
         getGrnPaymentBill().setCash(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getGrnPaymentBill().setCheque(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
@@ -2232,7 +2310,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         //Pharmacy GRN Payment Cancelled       
-        getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setCheque(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
@@ -2240,13 +2318,13 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         //Pharmacy GRN Payment Refunded      
-        getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(),getDepartment()));
+        getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCheque(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCredit(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setSlip(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
+
         //Payment Billed Bill
         getPaymentBills().setBills(userBillsOwn(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
         getPaymentBills().setCard(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -2336,30 +2414,33 @@ public class CommonReport implements Serializable {
         getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         //channell bills
-//        BillType bty[]={BillType.ChannelCash,BillType.ChannelPaid};
-//        List<BillType> btys=Arrays.asList(bty);
-        getChannelBilled().setBills(userBillsOwn(new BilledBill(), BillType.ChannelCash, getWebUser(), getDepartment()));
-        getChannelBilled().setCard(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilled().setCash(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilled().setCheque(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        //getChannelBilled().setCredit(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilled().setSlip(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> btys = Arrays.asList(bty);
+        getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
+        getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+//        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
+        getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelCash, getWebUser(), getDepartment()));
-        getChannelCancells().setCard(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCheque(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
+        getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelCancells().setCash(getChannelCancells().getCash()+calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancells().setSlip(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), BillType.ChannelCash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCard(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCheque(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
+        getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+        getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelCancells().setCash(getChannelRefunds().getCash()+calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefunds().setSlip(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        
         //channel professional payment        
         getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
         getChannelBilledProPayment().setCard(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -2381,7 +2462,7 @@ public class CommonReport implements Serializable {
         getChannelRefundsProPayment().setCheque(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getChannelRefundsProPayment().setCredit(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelRefundsProPayment().setSlip(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
+
         //channel agent payment
         getChannelBilledAgnPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
         getChannelBilledAgnPayment().setCard(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -2674,6 +2755,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
     }
+    
 
     public void createPurchaseDetailTable() {
         recreteModal();
@@ -2684,6 +2766,7 @@ public class CommonReport implements Serializable {
         purchaseReturnCancel = new BillsTotals();
 
         if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
@@ -3731,7 +3814,6 @@ public class CommonReport implements Serializable {
         this.refundedBillsPh = refundedBillsPh;
     }
 
-    
     public BillsTotals getBilledBillsPh2() {
         if (billedBillsPh2 == null) {
             billedBillsPh2 = new BillsTotals();
@@ -3764,8 +3846,6 @@ public class CommonReport implements Serializable {
     public void setRefundedBillsPh2(BillsTotals refundedBillsPh2) {
         this.refundedBillsPh2 = refundedBillsPh2;
     }
-    
-    
 
     public BillsTotals getGrnBilled() {
         return grnBilled;
@@ -3848,8 +3928,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentBill() {
-        if(GrnPaymentBill==null){
-            GrnPaymentBill=new BillsTotals();
+        if (GrnPaymentBill == null) {
+            GrnPaymentBill = new BillsTotals();
         }
         return GrnPaymentBill;
     }
@@ -3859,8 +3939,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentReturn() {
-        if(GrnPaymentReturn==null){
-            GrnPaymentReturn=new BillsTotals();
+        if (GrnPaymentReturn == null) {
+            GrnPaymentReturn = new BillsTotals();
         }
         return GrnPaymentReturn;
     }
@@ -3870,8 +3950,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getGrnPaymentCancell() {
-        if(GrnPaymentCancell==null){
-            GrnPaymentCancell=new BillsTotals();
+        if (GrnPaymentCancell == null) {
+            GrnPaymentCancell = new BillsTotals();
         }
         return GrnPaymentCancell;
     }
@@ -4036,7 +4116,7 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getCancelledPhWholeSale() {
-        if(cancelledPhWholeSale==null){
+        if (cancelledPhWholeSale == null) {
             cancelledPhWholeSale = new BillsTotals();
         }
         return cancelledPhWholeSale;
@@ -4047,8 +4127,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getRefundedPhWholeSale() {
-        if(refundedPhWholeSale==null){
-            refundedPhWholeSale=new BillsTotals();
+        if (refundedPhWholeSale == null) {
+            refundedPhWholeSale = new BillsTotals();
         }
         return refundedPhWholeSale;
     }
@@ -4058,8 +4138,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getBilledPhWholeSale() {
-        if(billedPhWholeSale==null){
-            billedPhWholeSale= new BillsTotals();
+        if (billedPhWholeSale == null) {
+            billedPhWholeSale = new BillsTotals();
         }
         return billedPhWholeSale;
     }

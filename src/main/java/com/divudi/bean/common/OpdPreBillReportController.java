@@ -102,10 +102,17 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userBilledBillsPharmacyGRNPayment;
     BillsTotals userCancellededBillsPharmacyGRNPayment;
     BillsTotals userRefundedBillsPharmacyGRNPayment;
-//    BillsTotals userRefundedBillsPharmacyGRNPaymentCancel;
+    
+    //Doc Pay
+    BillsTotals userBilledBillsDocPay;
+    BillsTotals userCancellededBillsDocPay;
+    
+    //For show totals
+    List<BillsTotals>totalRow = new ArrayList<>();
 
     List<PaymentMethod> getPaymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Card, PaymentMethod.Slip);
     List<Bill> getBillClassTypes = Arrays.asList(new BilledBill(), new CancelledBill(), new RefundBill());
+    List<BillsTotals> billsTotalses = new ArrayList<>();
 
     /**
      * Creates a new instance of OpdPreBillReportController
@@ -146,32 +153,59 @@ public class OpdPreBillReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
         }
+        billsTotalses=new ArrayList<>();
 
         userBilledBills = createBillsTotalsPayment(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBills);
         userBilledBillsPatcial = createBillsTotalsPayment(new BilledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsPatcial);
         userBilledBillsForCashier = createBillsTotalsPayment(new BilledBill(), BillType.OpdBathcBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsForCashier);
         userCancellededBills = createBillsTotalsPayment(new CancelledBill(), BillType.OpdBill, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBills);
         userRefundedBills = createBillsTotalsPayment(new RefundBill(), BillType.OpdBill, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBills);
 
         userBilledBillsPharmacy = createBillsTotalsPayment(new BilledBill(), BillType.PharmacySale, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsPharmacy);
         userCancellededBillsPharmacy = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsPharmacy);
         userRefundedBillsPharmacy = createBillsTotalsPayment(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacy);
 
         userBilledBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsPharmacyPurchase);
         userCancellededBillsPharmacyPurchase = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyPurchaseBill, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsPharmacyPurchase);
         //purchase bill return as billed bill and bill type purchase return
         userRefundedBillsPharmacyPurchase = createBillsTotalsPayment(new BilledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacyPurchase);
         //purchase retrn bills
         userRefundedBillsPharmacyPurchaseCancel = createBillsTotalsPayment(new CancelledBill(), BillType.PurchaseReturn, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacyPurchaseCancel);
 
         userBilledBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsPharmacyGRN);
         userCancellededBillsPharmacyGRN = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnBill, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsPharmacyGRN);
         userRefundedBillsPharmacyGRN = createBillsTotalsPayment(new BilledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacyGRN);
         userRefundedBillsPharmacyGRNCancel = createBillsTotalsPayment(new CancelledBill(), BillType.PharmacyGrnReturn, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacyGRNCancel);
 
         userBilledBillsPharmacyGRNPayment = createBillsTotalsPayment(new BilledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsPharmacyGRNPayment);
         userCancellededBillsPharmacyGRNPayment = createBillsTotalsPayment(new CancelledBill(), BillType.GrnPayment, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsPharmacyGRNPayment);
         userRefundedBillsPharmacyGRNPayment = createBillsTotalsPayment(new RefundBill(), BillType.GrnPayment, getWebUser(), getDepartment());
+        billsTotalses.add(userRefundedBillsPharmacyGRNPayment);
+        
+        userBilledBillsDocPay = createBillsTotalsPayment(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
+        billsTotalses.add(userBilledBillsDocPay);
+        userCancellededBillsDocPay = createBillsTotalsPayment(new CancelledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
+        billsTotalses.add(userCancellededBillsDocPay);
+
+        calTotals(billsTotalses);
 
     }
 
@@ -426,7 +460,7 @@ public class OpdPreBillReportController implements Serializable {
         m.put("bt", bt);
         m.put("ins", getSessionController().getInstitution());
 
-        if (getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP)!=null) {
+        if (getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) != null) {
             System.out.println("paymentMethod = " + paymentMethod);
             System.out.println("sql = " + sql);
             System.out.println("getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) = " + getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP));
@@ -541,7 +575,7 @@ public class OpdPreBillReportController implements Serializable {
                     break;
             }
         }
-        System.err.println("billsTotals = "+billsTotals.getBills().size());
+        System.err.println("billsTotals = " + billsTotals.getBills().size());
         return billsTotals;
     }
 
@@ -637,6 +671,33 @@ public class OpdPreBillReportController implements Serializable {
             BillType.GrnPaymentPre,};
 
         return b;
+    }
+
+    public void calTotals(List<BillsTotals> bts) {
+        System.out.println("bts.size() = " + bts.size());
+        double cash=0.0;
+        double credit=0.0;
+        double card=0.0;
+        double cheque=0.0;
+        double slip=0.0;
+        for (BillsTotals bt : bts) {
+            cash+=bt.getCash();
+            card+=bt.getCard();
+            credit+=bt.getCredit();
+            cheque+=bt.getCheque();
+            slip+=bt.getSlip();
+        }
+        System.out.println("Totals = cash - " + cash+" - card - "+card+" - credit - "+credit+" - cheque - "+cheque+" - slip - "+slip);
+        BillsTotals tr=new BillsTotals();
+        totalRow=new ArrayList<>();
+        tr.setName("Final Total");
+        tr.setCard(card);
+        tr.setCash(cash);
+        tr.setCheque(cheque);
+        tr.setCredit(credit);
+        tr.setSlip(slip);
+        tr.setBold(true);
+        totalRow.add(tr);
     }
 
     //getters and Setters
@@ -950,5 +1011,29 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setUserBilledBillsPatcial(BillsTotals userBilledBillsPatcial) {
         this.userBilledBillsPatcial = userBilledBillsPatcial;
+    }
+
+    public List<BillsTotals> getTotalRow() {
+        return totalRow;
+    }
+
+    public void setTotalRow(List<BillsTotals> totalRow) {
+        this.totalRow = totalRow;
+    }
+
+    public BillsTotals getUserBilledBillsDocPay() {
+        return userBilledBillsDocPay;
+    }
+
+    public void setUserBilledBillsDocPay(BillsTotals userBilledBillsDocPay) {
+        this.userBilledBillsDocPay = userBilledBillsDocPay;
+    }
+
+    public BillsTotals getUserCancellededBillsDocPay() {
+        return userCancellededBillsDocPay;
+    }
+
+    public void setUserCancellededBillsDocPay(BillsTotals userCancellededBillsDocPay) {
+        this.userCancellededBillsDocPay = userCancellededBillsDocPay;
     }
 }

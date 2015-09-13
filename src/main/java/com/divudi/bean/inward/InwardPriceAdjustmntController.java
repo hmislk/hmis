@@ -147,7 +147,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         if (a.getId() == null) {
             getFacade().create(a);
         }
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         recreateModel();
 //        createItems();
     }
@@ -260,9 +260,9 @@ public class InwardPriceAdjustmntController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
         getItems();

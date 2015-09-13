@@ -98,6 +98,8 @@ public class BhtEditController implements Serializable {
         hm.put("pEnc", current);
         Bill bill = getBillFacade().findFirstBySQL(sql, hm);
         if (bill != null) {
+            System.out.println("bill.getInsId() = " + bill.getInsId());
+            System.out.println("bill.isCancelled() = " + bill.isCancelled());
             return true;
         }
 
@@ -219,9 +221,9 @@ public class BhtEditController implements Serializable {
             getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         makeNull();
         getItems();

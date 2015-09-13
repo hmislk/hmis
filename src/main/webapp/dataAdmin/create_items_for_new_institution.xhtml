@@ -42,7 +42,7 @@
                                 </p:column>
 
                                 <p:column   sortBy="#{i.name}"
-                                           filterMatchMode="contains" filterBy="#{i.name}" >  
+                                            filterMatchMode="contains" filterBy="#{i.name}" >  
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name" />
                                     </f:facet>
@@ -50,7 +50,7 @@
                                 </p:column>
 
                                 <p:column sortBy="#{i.institution.name}"
-                                           filterMatchMode="contains" filterBy="#{i.institution.name}">
+                                          filterMatchMode="contains" filterBy="#{i.institution.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Institution" />
                                     </f:facet>
@@ -58,7 +58,7 @@
                                 </p:column>
 
                                 <p:column sortBy="#{i.department.name}"
-                                           filterMatchMode="contains" filterBy="#{i.department.name}">
+                                          filterMatchMode="contains" filterBy="#{i.department.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Department" />
                                     </f:facet>
@@ -99,6 +99,9 @@
                                 </h:panelGrid>
                                 <p:commandButton value="Create New Items for Selected Master Items"
                                                  action="#{itemController.createNewItemsFromMasterItems}" ajax="false" ></p:commandButton>
+
+                                <p:commandButton value="Update Items"
+                                                 action="#{itemController.updateItemsAndFees}" ajax="false" ></p:commandButton>
                             </p:panel>
 
                         </h:panelGrid>

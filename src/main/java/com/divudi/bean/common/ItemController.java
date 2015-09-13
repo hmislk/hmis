@@ -1,11 +1,3 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
@@ -62,25 +54,41 @@ import org.apache.commons.beanutils.BeanUtils;
 @SessionScoped
 public class ItemController implements Serializable {
 
+    /**
+     * EJBs
+     */
     private static final long serialVersionUID = 1L;
     @EJB
     private ItemFacade ejbFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    /**
+     * Managed Beans
+     */
     @Inject
     SessionController sessionController;
     @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ItemForItemController itemForItemController;
+    @Inject
+    ItemFeeController itemFeeController;
+
+    /**
+     * Properties
+     */
     private Item current;
     private List<Item> items = null;
     List<Item> allItems;
+    List<ItemFee> allItemFees;
     List<Item> selectedList;
+    List<ItemFee> selectedItemFeeList;
     private Institution instituion;
     Department department;
+    FeeType feeType;
     List<Department> departments;
-    
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -90,9 +98,6 @@ public class ItemController implements Serializable {
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
     }
-
-    @Inject
-    ItemForItemController itemForItemController;
 
     public void createNewItemsFromMasterItems() {
         //System.out.println("createNewItemsFromMasterItems");
@@ -175,6 +180,36 @@ public class ItemController implements Serializable {
             }
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
+    }
+
+    public void updateItemsAndFees() {
+        if (instituion == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Select department");
+            return;
+        }
+        if (selectedItemFeeList == null || selectedItemFeeList.isEmpty()) {
+            JsfUtil.addErrorMessage("Select Items");
+            return;
+        }
+
+        System.out.println("selectedItemFeeList = " + selectedItemFeeList);
+
+        for (ItemFee fee : selectedItemFeeList) {
+            if (fee.getDepartment() != null) {
+                fee.setDepartment(department);
+            }
+
+            if (fee.getInstitution() != null) {
+                fee.setInstitution(instituion);
+            }
+            getItemFeeFacade().edit(fee);
+        }
+
+        selectedItemFeeList = null;
     }
 
     public List<Item> completeDealorItem(String query) {
@@ -801,6 +836,39 @@ public class ItemController implements Serializable {
         return items;
     }
 
+    public List<ItemFee> fetchOPDItemFeeList(boolean ins, FeeType ftype) {
+        List<ItemFee> itemFees = new ArrayList<>();
+        HashMap m = new HashMap();
+        String sql;
+
+        sql = "select c from ItemFee c "
+                + " where c.retired=false "
+                + " and type(c.item)!=:pac "
+                + " and type(c.item)!=:inw "
+                + " and (type(c.item)=:ser "
+                + " or type(c.item)=:inv)  ";
+
+        if (ftype != null) {
+            sql += " and c.feeType=:fee ";
+            m.put("fee", ftype);
+        }
+
+        if (ins) {
+            sql += " and c.institution is null ";
+        }
+
+        sql += " order by c.name";
+
+        m.put("pac", Packege.class);
+        m.put("inw", InwardService.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        //System.out.println(sql);
+        itemFees = getItemFeeFacade().findBySQL(sql, m);
+        System.err.println("itemFees" + itemFees.size());
+        return itemFees;
+    }
+
     public void createMasterItemsList() {
         allItems = new ArrayList<>();
         allItems = fetchOPDItemList(false);
@@ -811,10 +879,15 @@ public class ItemController implements Serializable {
         allItems = fetchOPDItemList(true);
     }
 
+    public void createAllItemsFeeList() {
+        allItemFees = new ArrayList<>();
+        allItemFees = fetchOPDItemFeeList(false, feeType);
+    }
+
     public void updateSelectedOPDItemList() {
 
     }
-   
+
     /**
      *
      */
@@ -950,9 +1023,9 @@ public class ItemController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -971,6 +1044,14 @@ public class ItemController implements Serializable {
         this.instituion = instituion;
     }
 
+    public FeeType getFeeType() {
+        return feeType;
+    }
+
+    public void setFeeType(FeeType feeType) {
+        this.feeType = feeType;
+    }
+
     public List<Item> getSelectedList() {
         return selectedList;
     }
@@ -985,6 +1066,22 @@ public class ItemController implements Serializable {
 
     public void setAllItems(List<Item> allItems) {
         this.allItems = allItems;
+    }
+
+    public List<ItemFee> getAllItemFees() {
+        return allItemFees;
+    }
+
+    public void setAllItemFees(List<ItemFee> allItemFees) {
+        this.allItemFees = allItemFees;
+    }
+
+    public List<ItemFee> getSelectedItemFeeList() {
+        return selectedItemFeeList;
+    }
+
+    public void setSelectedItemFeeList(List<ItemFee> selectedItemFeeList) {
+        this.selectedItemFeeList = selectedItemFeeList;
     }
 
     public Department getDepartment() {

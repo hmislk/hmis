@@ -8,7 +8,6 @@ package com.divudi.bean.common;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
-import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -18,7 +17,6 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
-import com.divudi.data.TextTransform;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
@@ -44,16 +42,16 @@ import java.util.List;
 public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
-    
-    public DepartmentListMethod[] getDepartmentListMethods(){
-        return DepartmentListMethod.values();
-    }
 
     SessionNumberType[] sessionNumberTypes;
 
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+    
+    public DepartmentListMethod[] getDepartmentListMethods(){
+        return DepartmentListMethod.values();
     }
 
     public DepartmentType[] getDepartmentType() {
@@ -189,6 +187,8 @@ public class EnumController implements Serializable {
             InwardChargeType.Equipment,
             InwardChargeType.MealCharges,
             InwardChargeType.OperationTheatreCharges,
+            InwardChargeType.OperationTheatreNursingCharges,
+            InwardChargeType.OperationTheatreMachineryCharges,
             InwardChargeType.LarbourRoomCharges,
             InwardChargeType.ETUCharges,
             InwardChargeType.TreatmentCharges,
@@ -238,7 +238,9 @@ public class EnumController implements Serializable {
             BillType.InwardPaymentBill,
             BillType.PharmacySale,
             BillType.ChannelCash,
-            BillType.ChannelPaid, //            BillType.PharmacyPurchaseBill,
+            BillType.ChannelPaid,
+            BillType.GrnPaymentPre,
+        //            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -278,7 +280,8 @@ public class EnumController implements Serializable {
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyWholeSale,
-            BillType.PharmacyIssue};
+            BillType.PharmacyIssue,
+            BillType.PharmacyTransferReceive};
 
         return b;
     }
@@ -307,12 +310,20 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypes3() {
         BillType[] b = {
             BillType.PharmacyPre,
+            BillType.PharmacyWholesalePre,
             BillType.PharmacyAdjustment,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,
             BillType.PharmacyBhtPre};
 
         return b;
+    }
+
+    public BillType[] getPharmacySaleBillTypes() {
+        BillType[] bt = {
+            BillType.PharmacySale,
+            BillType.PharmacyWholeSale,};
+        return bt;
     }
 
     public PaymentMethod[] getPaymentMethods() {
@@ -342,12 +353,16 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
-        PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent,  PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
-
+        PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
 
     public PaymentMethod[] getPaymentMethodsForChannelSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Card};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
     }
@@ -414,14 +429,6 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
-    }
-    
-    public CssVerticalAlign[] getCssVerticalAlign() {
-        return CssVerticalAlign.values();
-    }
-
-    public TextTransform[] getTextTransforms() {
-        return TextTransform.values();
     }
 
 }

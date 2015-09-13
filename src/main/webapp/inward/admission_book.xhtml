@@ -19,9 +19,9 @@
                         <h:panelGrid columns="6" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -29,7 +29,8 @@
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
-
+                            <p:outputLabel value="Without Canceled BHT" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
                         </h:panelGrid>
 
                         <p:panelGrid columns="7">
@@ -71,7 +72,9 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{inwardReportController.patientEncounters}" stickyHeader="true" editingRow="true" var="i" rowIndexVar="a" >
+                            <p:dataTable id="tbl"  rowStyleClass="#{i.retired ? 'crossLine':''}" 
+                                         styleClass="noBorder normalFont" value="#{inwardReportController.patientEncounters}" 
+                                         var="i" rowIndexVar="a" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Payment Bill Item "/>
                                     <h:outputLabel value="#{i.department.institution.name}"/> 
@@ -148,6 +151,15 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Admission Created Time" rendered="#{inwardReportController.addmitDetails}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admission Created Time"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.createdAt}"  >
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>

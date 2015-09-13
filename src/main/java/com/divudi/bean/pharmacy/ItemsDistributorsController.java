@@ -10,9 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
 import java.util.TimeZone;
 import com.divudi.entity.Item;
@@ -29,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -37,7 +36,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -95,6 +93,20 @@ public class ItemsDistributorsController implements Serializable {
             return true;
         } else {
             return false;
+        }
+    }
+    
+    public Institution getDistributor(Item i) {
+        String sql = "Select i from ItemsDistributors i where i.retired=false"
+                + " and i.item=:item" +
+                " order by i.id desc";
+        Map m =new HashMap();
+        m.put("item", i);
+        ItemsDistributors tmp = getFacade().findFirstBySQL(sql,m);
+        if (tmp != null) {
+            return tmp.getInstitution();
+        } else {
+            return null;
         }
     }
 
@@ -291,12 +303,12 @@ public class ItemsDistributorsController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -314,9 +326,9 @@ public class ItemsDistributorsController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

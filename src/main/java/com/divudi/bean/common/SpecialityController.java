@@ -142,6 +142,13 @@ public class SpecialityController implements Serializable {
         selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
+    
+    public List<Speciality> completeDoctorSpeciality(String qry) {
+        Map m=new HashMap();
+        m.put("class", DoctorSpeciality.class);
+        selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and type(c)=:class and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name",m);
+        return selectedItems;
+    }
 
     public List<Speciality> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -173,12 +180,12 @@ public class SpecialityController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -225,9 +232,9 @@ public class SpecialityController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

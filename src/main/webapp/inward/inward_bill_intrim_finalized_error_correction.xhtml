@@ -232,9 +232,9 @@
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
-                                <p:column>
+<!--                                <p:column>
                                     <p:commandButton ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
-                                </p:column>
+                                </p:column>-->
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
                                         <p:column>
@@ -568,7 +568,10 @@
                                     <h:outputLabel  value="#{bil.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </p:column>         
+                                </p:column>    
+                                <p:column>
+                                    <p:commandButton ajax="false" value="Update Bill and Bill Item" action="#{inwardReportControllerBht.updateBillItemAndBill(bil)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                </p:column>
                             </p:dataTable>
                         </p:tab>
 
@@ -803,9 +806,10 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:inputText> 
                                         <h:outputLabel value="Discount"/>
-                                        <h:outputLabel value="#{rm.discountNursingCharge}">
+                                        <p:inputText value="#{rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel> 
+                                        </p:inputText
+                                        > 
                                         <h:outputLabel value="Net"/>
                                         <h:outputLabel value="#{rm.calculatedNursingCharge-rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>

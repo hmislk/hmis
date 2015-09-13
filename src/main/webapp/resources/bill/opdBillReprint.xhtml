@@ -30,55 +30,55 @@
 
 
                                 <div  class="receiptno">
-                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.insId} **Cancelled"  
-                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}"/> 
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.deptId} **Cancelled"  
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.deptId ne null}"/> 
 
-                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.insId} **Refunded" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"/> 
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.deptId} **Refunded" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId ne null}"/> 
 
-                                    <h:outputLabel value="#{cc.attrs.controller.bill.insId} **Duplicate" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and
-                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/> 
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.deptId} **Duplicate" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId eq null and
+                                                               cc.attrs.controller.bill.cancelledBill.deptId eq null }"/> 
                                 </div>
 
                                 <div  class="billdate">
                                     <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.billDate}"
-                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}"  >
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.deptId ne null}"  >
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.billDate}"
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}">
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId ne null}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.controller.bill.billDate}"
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
-                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }">
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </div>
 
                                 <div class="payment">
                                     <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}" />
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.deptId ne null}" />
                                     <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"/>
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId ne null}"/>
                                     <h:outputLabel value="#{cc.attrs.controller.bill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
-                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/>
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.deptId eq null }"/>
                                 </div>
 
                                 <div class="billtime">
                                     <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.billTime}"  
-                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}">
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.deptId ne null}">
                                         <f:convertDateTime pattern="hh mm a"/>
                                     </h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.billTime}"  
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}">
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId ne null}">
                                         <f:convertDateTime pattern="hh mm a"/>
                                     </h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.controller.bill.billTime}" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
-                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }">
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime pattern="hh mm a"/>
                                     </h:outputLabel>
                                 </div>
@@ -163,12 +163,12 @@
 
                                 <div class="cashier" >
                                     <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.cancelledBill.creater.code}"  
-                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}" />
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.deptId ne null}" />
                                     <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.refundedBill.creater.code}"
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"   />
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId ne null}"   />
                                     <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.creater.code}" 
-                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and
-                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/>
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.deptId eq null and
+                                                               cc.attrs.controller.bill.cancelledBill.deptId eq null }"/>
 
 
                                 </div>

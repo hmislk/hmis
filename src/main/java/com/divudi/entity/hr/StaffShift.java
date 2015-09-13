@@ -172,7 +172,10 @@ public class StaffShift implements Serializable {
     int dayOfWeek;
 //    int leaveDivident;
 
-  
+    @Transient
+    double transWorkTime;
+    @Transient
+    double transShiftTime;
 
     public DayType getDayType() {
         return dayType;
@@ -434,7 +437,11 @@ public class StaffShift implements Serializable {
                 setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case AnnualHalf:
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
+                break;
             case CasualHalf:
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
+                break;
             case LieuHalf:
                 setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
                 break;
@@ -689,8 +696,7 @@ public class StaffShift implements Serializable {
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
 
-            if (dayType == DayType.DayOff
-                    || dayType == DayType.SleepingDay
+            if (dayType == DayType.SleepingDay //dayType == DayType.DayOff removed off doesnt want to come 
                     || dayType == DayType.Extra) {
 
                 Calendar fromCalendar = Calendar.getInstance();
@@ -1344,6 +1350,22 @@ public class StaffShift implements Serializable {
 
     public void setReferenceStaffShiftEarlyOuts(List<StaffShift> referenceStaffShiftEarlyOuts) {
         this.referenceStaffShiftEarlyOuts = referenceStaffShiftEarlyOuts;
+    }
+
+    public double getTransWorkTime() {
+        return transWorkTime;
+    }
+
+    public void setTransWorkTime(double transWorkTime) {
+        this.transWorkTime = transWorkTime;
+    }
+
+    public double getTransShiftTime() {
+        return transShiftTime;
+    }
+
+    public void setTransShiftTime(double transShiftTime) {
+        this.transShiftTime = transShiftTime;
     }
 
 }

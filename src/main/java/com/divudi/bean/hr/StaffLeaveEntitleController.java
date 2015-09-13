@@ -8,13 +8,14 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
-import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.entity.hr.StaffLeaveEntitle;
+import com.divudi.facade.StaffLeaveEntitleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,14 +23,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -45,11 +46,18 @@ public class StaffLeaveEntitleController implements Serializable {
     SessionController sessionController;
     @EJB
     private StaffLeaveEntitleFacade ejbFacade;
+    @EJB
+    HumanResourceBean humanResourceBean;
     List<StaffLeaveEntitle> selectedItems;
     List<StaffLeaveEntitle> selectedAllItems;
     private StaffLeaveEntitle current;
     private List<StaffLeaveEntitle> items = null;
     String selectText = "";
+    @Inject
+    StaffLeaveApplicationFormController leaveApplicationFormController;
+
+    double leaveEntitle;
+    double leaved;
 
     public List<StaffLeaveEntitle> getSelectedItems() {
 //        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -101,15 +109,14 @@ public class StaffLeaveEntitleController implements Serializable {
 
 //        current.setFromDate(fromDate);
 //        current.setToDate(toDate);
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
 //        getItems();
@@ -149,6 +156,38 @@ public class StaffLeaveEntitleController implements Serializable {
         this.current = current;
     }
 
+    public HumanResourceBean getHumanResourceBean() {
+        return humanResourceBean;
+    }
+
+    public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
+        this.humanResourceBean = humanResourceBean;
+    }
+
+    public StaffLeaveApplicationFormController getLeaveApplicationFormController() {
+        return leaveApplicationFormController;
+    }
+
+    public void setLeaveApplicationFormController(StaffLeaveApplicationFormController leaveApplicationFormController) {
+        this.leaveApplicationFormController = leaveApplicationFormController;
+    }
+
+    public double getLeaveEntitle() {
+        return leaveEntitle;
+    }
+
+    public void setLeaveEntitle(double leaveEntitle) {
+        this.leaveEntitle = leaveEntitle;
+    }
+
+    public double getLeaved() {
+        return leaved;
+    }
+
+    public void setLeaved(double leaved) {
+        this.leaved = leaved;
+    }
+
     public void delete() {
 
         if (current != null) {
@@ -156,9 +195,9 @@ public class StaffLeaveEntitleController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -226,6 +265,20 @@ public class StaffLeaveEntitleController implements Serializable {
         this.date = date;
     }
 
+    public void completeStaffDetail() {
+        StaffLeaveEntitle staffLeaveEntitle = leaveApplicationFormController.fetchLeaveEntitle(getCurrent().getStaff(), LeaveType.Annual, getCurrent().getFromDate());
+
+        if (staffLeaveEntitle == null) {
+            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            return;
+        }
+
+        if (staffLeaveEntitle != null) {
+            leaveEntitle = staffLeaveEntitle.getCount();
+            leaved = humanResourceBean.calStaffLeave(getCurrent().getStaff(), LeaveType.Annual, getCurrent().getFromDate());
+        }
+    }
+
     public void createItems() {
         HashMap hm = new HashMap();
         String sql = "select c from StaffLeaveEntitle c "
@@ -258,7 +311,7 @@ public class StaffLeaveEntitleController implements Serializable {
         if (fromDate == null) {
             return;
         }
-        
+
         if (toDate == null) {
             return;
         }

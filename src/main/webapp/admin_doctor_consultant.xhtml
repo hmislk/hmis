@@ -72,7 +72,9 @@
                                     <h:outputText  value="Creater" />
                                     <h:outputText  value="#{consultantController.current.creater.webUserPerson.nameWithTitle}" />
                                     <h:outputText  value="Created At" />
-                                    <h:outputText  value="#{consultantController.current.createdAt}" />
+                                    <h:outputText  value="#{consultantController.current.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                    </h:outputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"

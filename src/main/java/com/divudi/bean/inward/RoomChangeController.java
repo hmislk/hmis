@@ -94,14 +94,29 @@ public class RoomChangeController implements Serializable {
     }
 
     public void remove(PatientRoom pR) {
+        if(pR==null){
+            UtilityController.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        
         AdmissionTypeEnum admissionTypeEnum = pR.getPatientEncounter().getAdmissionType().getAdmissionTypeEnum();
 
+        System.out.println("pR.getPreviousRoom() = " + pR.getPreviousRoom());
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getPreviousRoom() == null) {
             UtilityController.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
-
+        
+        if (admissionTypeEnum == AdmissionTypeEnum.Admission
+                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null 
+                && !pR.getPreviousRoom().isRetired()) {
+            UtilityController.addErrorMessage("You have to Remove Last one First");
+            return;
+        }
+        
+        
+        System.out.println("pR.getNextRoom() = " + pR.getNextRoom());
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
             UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
@@ -316,9 +331,9 @@ public class RoomChangeController implements Serializable {
             getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

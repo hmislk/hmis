@@ -126,7 +126,6 @@ public class BillEjb implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    
     public List<PatientInvestigation> getPatientInvestigations(Item item, Date fromDate,
             Date toDate,
             BillType[] billTypes,
@@ -175,10 +174,11 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
         return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    
     public List<Item> getItemsInBills(Date fromDate,
             Date toDate,
             BillType[] billTypes,
@@ -227,12 +227,14 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
-        
-        if(!allItemClasses){
+
+        if (!allItemClasses) {
             List<Class> ics = Arrays.asList(itemClasses);
             sql += " and type(bi.item) in :ics ";
             temMap.put("ics", ics);
         }
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
         return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -305,14 +307,14 @@ public class BillEjb implements Serializable {
             m.put("fins", fromInstitution);
         }
 
-        //System.out.println("m = " + m);
-        //System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         //System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
         //System.out.println("r = " + r);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        //System.out.println("r.getBills().size() = " + r.getBills().size());
+        System.out.println("r.getBills().size() = " + r.getBills().size());
         //System.out.println("r = " + r);
         r.setBills(bills);
 
@@ -322,6 +324,10 @@ public class BillEjb implements Serializable {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
+                if (r.getSaleValueTotal() != null) {
+                    r.setSaleValueTotal(0.0);
+                }
+                r.setSaleValueTotal(r.getSaleValueTotal() + b.getSaleValue());
             }
         } else {
             r.setBills(new ArrayList<Bill>());

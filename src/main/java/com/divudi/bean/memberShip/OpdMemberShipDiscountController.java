@@ -120,6 +120,30 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsDepartments();
         clearInstanceVars();
     }
+    
+    public void saveSelectedChannelPaymentScheme() {
+        if (paymentScheme == null) {
+            UtilityController.addErrorMessage("Membership Scheme or Payment Scheme");
+            return;
+        }
+        if (paymentMethod == null) {
+            UtilityController.addErrorMessage("Please select Payment Method");
+            return;
+        }
+
+        PaymentSchemeDiscount a = new PaymentSchemeDiscount();
+        a.setPaymentScheme(paymentScheme);
+        a.setPaymentMethod(paymentMethod);
+        a.setBillType(BillType.ChannelCash);
+        a.setDiscountPercent(margin);
+        a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        a.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(a);
+        UtilityController.addSuccessMessage("Saved Successfully");
+        createItemsChannelPaymentScheme();
+        clearInstanceVars();
+
+    }
 
     public void saveDepartment(PriceMatrix a) {
 
@@ -150,7 +174,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -179,7 +203,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -277,7 +301,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -307,7 +331,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("savedNewSuccessfully");
+        UtilityController.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -420,9 +444,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -479,9 +503,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -522,6 +546,22 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.category is null "
                 + " order by a.paymentScheme.name,a.department.name";
         hm.put("pm", paymentScheme);
+        items = getFacade().findBySQL(sql, hm);
+    }
+    
+    public void createItemsChannelPaymentScheme() {
+        filterItems = null;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select a from PaymentSchemeDiscount a "
+                + " where a.retired=false"
+                + " and a.paymentScheme=:pm "
+                + " and a.category is null"
+                + " and a.department is null "
+                + " and a.billType=:bt "
+                + " order by a.paymentScheme.name ";
+        hm.put("pm", paymentScheme);
+        hm.put("bt", BillType.ChannelCash);
         items = getFacade().findBySQL(sql, hm);
     }
 

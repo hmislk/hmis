@@ -80,6 +80,63 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     String billNo;
     String phoneNo;
+    UserPreference currentPreference;
+
+    public UserPreference getCurrentPreference() {
+        return currentPreference;
+    }
+
+    public void setCurrentPreference(UserPreference currentPreference) {
+        this.currentPreference = currentPreference;
+    }
+
+    public String toManageApplicationPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
+        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+
+            getUserPreferenceFacade().create(currentPreference);
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setDepartment(null);
+        currentPreference.setInstitution(null);
+        return "/admin_mange_application_preferences";
+    }
+
+    public String toManageIntitutionPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.institution=:ins order by p.id";
+        m.put("ins", institution);
+        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setInstitution(institution);
+
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setDepartment(null);
+
+        return "/admin_mange_institutions_preferences";
+    }
+
+    public String toManageDepartmentPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.department=:dep order by p.id";
+        m.put("dep", department);
+        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql,m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setDepartment(department);
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setInstitution(null);
+        return "/admin_mange_department_preferences";
+    }
 
     public void updateUserPreferences() {
         if (institutionPreference != null) {
@@ -89,6 +146,47 @@ public class SessionController implements Serializable, HttpSessionListener {
                 JsfUtil.addSuccessMessage("Preferences Saved");
             } else {
                 userPreferenceFacade.edit(institutionPreference);
+                JsfUtil.addSuccessMessage("Preferences Updated");
+            }
+
+        }
+    }
+
+    public void saveUserPreferences() {
+        if (currentPreference != null) {
+            if (currentPreference.getId() == null || currentPreference.getId() == 0) {
+                userPreferenceFacade.create(currentPreference);
+                JsfUtil.addSuccessMessage("Preferences Saved");
+            } else {
+                userPreferenceFacade.edit(currentPreference);
+                JsfUtil.addSuccessMessage("Preferences Updated");
+            }
+
+        }
+    }
+
+    public void removeInstitutionUserPreferences() {
+        if (currentPreference != null) {
+            currentPreference.setInstitution(null);
+            if (currentPreference.getId() == null || currentPreference.getId() == 0) {
+                userPreferenceFacade.create(currentPreference);
+                JsfUtil.addSuccessMessage("Preferences Saved");
+            } else {
+                userPreferenceFacade.edit(currentPreference);
+                JsfUtil.addSuccessMessage("Preferences Updated");
+            }
+
+        }
+    }
+
+    public void removeDepartmentUserPreferences() {
+        if (currentPreference != null) {
+            currentPreference.setDepartment(null);
+            if (currentPreference.getId() == null || currentPreference.getId() == 0) {
+                userPreferenceFacade.create(institutionPreference);
+                JsfUtil.addSuccessMessage("Preferences Saved");
+            } else {
+                userPreferenceFacade.edit(currentPreference);
                 JsfUtil.addSuccessMessage("Preferences Updated");
             }
 
@@ -426,13 +524,46 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     UserPreference insPre;
 
-                    sql = "select p from UserPreference p where p.webUser is null ";
-                    insPre = getUserPreferenceFacade().findFirstBySQL(sql);
+                    sql = "select p from UserPreference p where p.department =:dep order by p.id";
+                    m = new HashMap();
+                    m.put("dep", department);
+
+                    insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    System.out.println("1");
+                    System.out.println("sql = " + sql);
+                    System.out.println("m = " + m);
+                    System.out.println("insPre = " + insPre);
+
                     if (insPre == null) {
-                        insPre = new UserPreference();
-                        insPre.setWebUser(null);
-                        getUserPreferenceFacade().create(insPre);
+
+                        sql = "select p from UserPreference p where p.institution =:ins order by p.id ";
+                        m = new HashMap();
+                        m.put("ins", institution);
+                        insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                        System.out.println("2");
+                        System.out.println("sql = " + sql);
+                        System.out.println("m = " + m);
+                        System.out.println("insPre = " + insPre);
+
+                        if (insPre == null) {
+                            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
+                            insPre = getUserPreferenceFacade().findFirstBySQL(sql);
+                            System.out.println("3");
+                            System.out.println("sql = " + sql);
+                            System.out.println("m = " + m);
+                            System.out.println("insPre = " + insPre);
+
+                        }
+
+                        if (insPre == null) {
+                            insPre = new UserPreference();
+                            insPre.setWebUser(null);
+                            insPre.setDepartment(null);
+                            insPre.setInstitution(null);
+                            getUserPreferenceFacade().create(insPre);
+                        }
                     }
+
                     setInstitutionPreference(insPre);
 
                     recordLogin();

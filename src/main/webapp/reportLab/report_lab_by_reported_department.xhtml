@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:form id="frm">
+            <p:panel 
+                header="Lab Reports Count by Reported Department">
+
+                <h:panelGrid columns="2" >
+
+                    <h:outputLabel value="From Date"/>
+
+                    <p:calendar value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true" pattern="dd MMMM yyyy "  >
+                    </p:calendar>
+
+                    <h:outputLabel value="To Date"/>
+
+                    <p:calendar value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="dd MMMM yyyy " >
+                    </p:calendar>
+
+                    <h:outputLabel value="Reported Departmant"/>
+
+                    <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{investigationMonthSummeryOwnControllerSession.reportedDepartment}"  
+                                    style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="rdep" itemValue="#{rdep}" itemLabel="#{rdep.name}" forceSelection="true" rendered="true"  >
+                    </p:autoComplete>
+
+                   
+                </h:panelGrid>
+
+                <h:panelGrid columns="4">
+                    <p:commandButton ajax="false" value="Process" 
+                                     action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment()}"
+                                     styleClass="noPrintButton" style="float: right;" >
+                    </p:commandButton>
+                    <p:commandButton value="Print" actionListener="#{investigationMonthSummeryOwnControllerSession.prepareForPrint()}" 
+                                     oncomplete="$('#frm\\:print').click()"
+                                     update=":frm:tbl"/>
+                    <p:commandButton id="print" value="Actual print" style="display: none">
+                        <p:ajax event="click" listener="#{investigationMonthSummeryOwnControllerSession.prepareForView()}" update=":frm:tbl"/>
+                        <p:printer target=":frm:tbl" />
+                    </p:commandButton>
+
+
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
+                                     facetBackground="#008000" facetFontSize="15" 
+                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton> 
+                </h:panelGrid>
+
+                <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
+                             rows="20"
+                             paginator="true"
+                             rowIndexVar="i"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100"
+                             >
+                    <f:facet name="header" >
+                        <h:outputLabel value="Investigation Counts by Reported Department"/>
+                    </f:facet>
+
+
+
+                    <p:column >
+                        <h:outputLabel value="#{i+1}"  />
+
+                    </p:column>
+
+                    <p:column headerText="Test Name" 
+                              sortBy="#{c.investigation.name}" 
+                              filterBy="#{c.investigation.name}"
+                              filterMatchMode="contains">
+                        <f:facet name="header">
+                            <h:outputLabel value="Test Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{c.investigation.name}"  />
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total">
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Count" style="text-align:right" 
+                              sortBy="#{c.count}">
+                        <h:outputLabel value="#{c.count}" />
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+
+                </p:dataTable>
+            </p:panel>
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>
