@@ -65,7 +65,8 @@
 
                     <p:column>
                         <f:facet name="header">Item</f:facet>
-                            #{bip.item.name}
+                        <h:outputText value="#{bip.item.name}" ></h:outputText>
+                        <h:outputText value=" (#{bip.item.code})" ></h:outputText>
                     </p:column>
                     <p:column >
                         <f:facet name="header">Expiry</f:facet>
