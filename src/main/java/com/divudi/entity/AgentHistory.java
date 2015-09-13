@@ -41,6 +41,8 @@ public class AgentHistory implements Serializable {
     //Created Properties
     @ManyToOne
     private WebUser creater;
+    @ManyToOne
+    Institution institution;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
@@ -111,6 +113,16 @@ public class AgentHistory implements Serializable {
     public void setTransactionValue(double transactionValue) {
         this.transactionValue = transactionValue;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
     public WebUser getCreater() {
         return creater;

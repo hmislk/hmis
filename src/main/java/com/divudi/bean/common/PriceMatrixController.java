@@ -500,6 +500,21 @@ public class PriceMatrixController implements Serializable {
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
     }
+    
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", paymentScheme);
+        sql = "Select i from PaymentSchemeDiscount i"
+                + "  where i.retired=false "
+                + " and i.paymentScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.department is null ";
+
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+
+    }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentMethod paymentMethod, Department department) {
         String sql;
