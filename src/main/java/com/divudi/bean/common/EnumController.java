@@ -9,6 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CssVerticalAlign;
+import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
@@ -43,6 +44,10 @@ import java.util.List;
 public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
+    
+    public DepartmentListMethod[] getDepartmentListMethods(){
+        return DepartmentListMethod.values();
+    }
 
     SessionNumberType[] sessionNumberTypes;
 

@@ -71,7 +71,13 @@
                                         <h:outputLabel value="Department List Method" ></h:outputLabel>
                                         <p:selectOneMenu style="width: 300px;   "
                                                          value="#{reorderController.departmentListMethod}" >
-                                            <f:selectItems value="#{enumController.departmentListMethods}" ></f:selectItems>
+                                            <f:selectItem itemValue="LoggedDepartmentOnly" itemLabel="LoggedDepartmentOnly" ></f:selectItem>
+                                            <f:selectItem itemValue="AllDepartmentsOfLoggedInstitution" itemLabel="AllDepartmentsOfLoggedInstitution" ></f:selectItem>
+                                            <f:selectItem itemValue="AllDepartmentsOfAllInstitutions" itemLabel="AllDepartmentsOfAllInstitutions" ></f:selectItem>
+                                            <f:selectItem itemValue="AllPharmaciesOfLoggedInstitution" itemLabel="AllPharmaciesOfLoggedInstitution" ></f:selectItem>
+                                            <f:selectItem itemValue="AllPharmaciesOfAllInstitutions" itemLabel="AllPharmaciesOfAllInstitutions" ></f:selectItem>
+                                            <f:selectItem itemValue="ActiveDepartmentsOfAllInstitutions" itemLabel="ActiveDepartmentsOfAllInstitutions" ></f:selectItem>
+                                            <f:selectItem itemValue="ActiveDepartmentsOfLoggedInstitution" itemLabel="ActiveDepartmentsOfLoggedInstitution" ></f:selectItem>
                                         </p:selectOneMenu>
 
 
@@ -200,7 +206,7 @@
                                                    actionListener="#{reorderController.createDailyItemSummery(ir.item,r.department)}"
                                                    action="/pharmacy/item_stock_history">
                                     </p:commandLink>
-                                    
+
                                 </p:column>
 
                                 <p:column style="text-align: right; width:80px!important;">
