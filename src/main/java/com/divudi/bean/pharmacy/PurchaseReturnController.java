@@ -49,20 +49,11 @@ import javax.inject.Inject;
 @SessionScoped
 public class PurchaseReturnController implements Serializable {
 
-    private Bill bill;
-    private Bill returnBill;
-    private boolean printPreview;
-    ////////
-    private List<BillItem> billItems;
-    ///////
+    /**
+     * EJBs
+     */
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    private PharmaceuticalItemController pharmaceuticalItemController;
-    @Inject
-    private PharmacyController pharmacyController;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -77,6 +68,27 @@ public class PurchaseReturnController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
+
+    /**
+     * Controllers
+     */
+    @Inject
+    PharmacyCalculation pharmacyCalculation;
+    @Inject
+    private PharmaceuticalItemController pharmaceuticalItemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SessionController sessionController;
+    /**
+     * Properties
+     *
+     */
+
+    private Bill bill;
+    private Bill returnBill;
+    private boolean printPreview;
+    private List<BillItem> billItems;
 
     public Bill getBill() {
         return bill;
@@ -208,7 +220,7 @@ public class PurchaseReturnController implements Serializable {
         }
 
     }
-    
+
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) (0 - i.getQty()));
@@ -244,7 +256,7 @@ public class PurchaseReturnController implements Serializable {
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(i);
             }
-            
+
             saveBillFee(i, p);
 
             getReturnBill().getBillItems().add(i);
@@ -282,6 +294,8 @@ public class PurchaseReturnController implements Serializable {
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
         saveComponent(p);
+
+        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getReturnBill());
 
@@ -354,7 +368,7 @@ public class PurchaseReturnController implements Serializable {
 
         // onEdit(tmp);
     }
-    
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -380,7 +394,7 @@ public class PurchaseReturnController implements Serializable {
         }
 
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());

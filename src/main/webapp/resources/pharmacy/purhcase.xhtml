@@ -67,46 +67,54 @@
                         <f:facet name="header">Item</f:facet>
                             #{bip.item.name}
                     </p:column>
-                    <p:column>
+                    <p:column >
                         <f:facet name="header">Expiry</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel>
                     </p:column>                                 
 
-                    <p:column>
-                        <f:facet name="header">Rcv QTY</f:facet>
+                    <p:column styleClass="shortNumericColumn">
+                        <f:facet name="header">QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
                     </p:column>
 
-                    <p:column>
-                        <f:facet name="header">Fr QTY</f:facet>
+                    <p:column styleClass="shortNumericColumn">
+                        <f:facet name="header">Free</f:facet>
                             #{bip.pharmaceuticalBillItem.freeQty}
                     </p:column>
-                    <p:column>
-                        <f:facet name="header">Cur Price</f:facet>
+                    <p:column styleClass="shortNumericColumn">
+                        <f:facet name="header">P. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column>
-                        <f:facet name="header">Last Price</f:facet>
+                    <p:column styleClass="shortNumericColumn">
+                        <f:facet name="header">Last P.R.</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column>
-                        <f:facet name="header">Amount</f:facet>
+                    <p:column styleClass="averageNumericColumn">
+                        <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column>
-                        <f:facet name="header">Sale Price</f:facet>
+                    <p:column styleClass="shortNumericColumn">
+                        <f:facet name="header">Re. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column styleClass="averageNumericColumn">
+                        <f:facet name="header">Re. Value</f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate*(bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty )}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
                         <f:facet name="header">Wholesale Price</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}">
@@ -115,15 +123,23 @@
                     </p:column>
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="7" footerText="Total"/>
-                            <p:column footerText="#{0-cc.attrs.bill.total}">
+                            <p:column colspan="6" footerText="Total"/>
+                            <p:column footerText="#{0-cc.attrs.bill.total}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            <p:column ></p:column>
+                            <p:column footerText="#{0-cc.attrs.bill.saleValue}" style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.tax!=0}">
                             <p:column colspan="9" footerText="Tax"/>

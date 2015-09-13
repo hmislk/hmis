@@ -4,13 +4,16 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PharmacyStockRow;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
@@ -20,10 +23,12 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -58,9 +63,9 @@ import javax.inject.Inject;
 @SessionScoped
 public class PharmacyPurchaseController implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-    private BilledBill bill;
+    /**
+     * EJBs
+     */
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -79,14 +84,24 @@ public class PharmacyPurchaseController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    BillEjb billEjb;
+    
+    /**
+     * Controllers
+     */
+    @Inject
+    private SessionController sessionController;
     @Inject
     PharmacyCalculation pharmacyBillBean;
-    ////////////
+    
+    /**
+     * Properties
+     */
+    
+    private BilledBill bill;
     private BillItem currentBillItem;
-    //private PharmacyItemData currentPharmacyItemData;
     private boolean printPreview;
-    ///////////
-    //  private List<PharmacyItemData> pharmacyItemDatas;
 
     double saleRate;
     double wsRate;
@@ -98,6 +113,15 @@ public class PharmacyPurchaseController implements Serializable {
     Date toDate;
     List<PharmacyStockRow> rows;
 
+    BillListWithTotals billListWithTotals;
+    
+
+    public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment(){
+        BillType[] bts= new BillType[] {BillType.PharmacyGrnBill,BillType.PharmacyPurchaseBill,BillType.PharmacyGrnReturn,BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+        billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+    }
+    
     public void fillItemVicePurchaseAndGoodReceive() {
         Map m = new HashMap();
         String sql;
@@ -360,8 +384,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         saveBill();
         //   saveBillComponent();
-        getPharmacyBillBean().calSaleFreeValue(getBill());
-
+        
         Payment p = createPayment(getBill());
 
         for (BillItem i : getBillItems()) {
@@ -393,7 +416,10 @@ public class PharmacyPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
+        getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
+
         getBillFacade().edit(getBill());
+        
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -735,5 +761,15 @@ public class PharmacyPurchaseController implements Serializable {
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
+
+    public BillListWithTotals getBillListWithTotals() {
+        return billListWithTotals;
+    }
+
+    public void setBillListWithTotals(BillListWithTotals billListWithTotals) {
+        this.billListWithTotals = billListWithTotals;
+    }
+    
+    
 
 }
