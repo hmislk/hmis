@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
@@ -83,6 +84,20 @@ public class ItemFeeController implements Serializable {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
+            d = getDepartmentFacade().findBySQL(sql);
+        }
+
+        return d;
+    }
+    
+    public List<Department> getInstitutionDepatrments(ItemFee fee) {
+        System.out.println("inside = ");
+        List<Department> d;
+        ////System.out.println("gettin ins dep ");
+        if (getCurrentFee().getInstitution() == null) {
+            return new ArrayList<Department>();
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution.id=" + fee.getInstitution().getId();
             d = getDepartmentFacade().findBySQL(sql);
         }
 
@@ -213,6 +228,12 @@ public class ItemFeeController implements Serializable {
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
         fees = itemFeeFacade.findBySQL(sql);
+    }
+    
+    public List<ItemFee> getFees(Item i){
+        String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
+        List<ItemFee> fees=itemFeeFacade.findBySQL(sql);
+        return fees;
     }
 
     public List<ItemFee> getCharges() {

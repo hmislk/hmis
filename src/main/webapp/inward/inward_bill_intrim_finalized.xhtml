@@ -753,7 +753,7 @@
                             </p:dataTable>
                         </p:tab>
 
-                        <p:tab title="Madicine Issue">
+                        <p:tab title="Medicine Issues">
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
@@ -763,6 +763,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
+                            
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                          sortBy="#{iss.bill.deptId}"
                                          rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       

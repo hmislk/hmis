@@ -95,6 +95,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     PaymentMethod paymentMethod;
     Speciality speciality;
     private ServiceSession selectedServiceSession;
+    boolean considerDate = false;
+    BillFee billFee;
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -163,7 +165,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         paymentMethod = null;
         speciality = null;
         serviceSessions = null;
-        serviceSessionList=null;
+        serviceSessionList = null;
     }
 
     public StaffFacade getStaffFacade() {
@@ -287,13 +289,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void calculateDueFees() {
-        
-        if (getSpeciality()==null) {
+
+        if (getSpeciality() == null) {
             JsfUtil.addErrorMessage("Select Specility");
             return;
         }
-        
-        if (getCurrentStaff()==null) {
+
+        if (getCurrentStaff() == null) {
             JsfUtil.addErrorMessage("Select Doctor");
             return;
         }
@@ -312,7 +314,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.staff=:stf ";
 
         HashMap hm = new HashMap();
-        if (getFromDate() != null && getToDate() != null) {
+        if (getFromDate() != null && getToDate() != null && considerDate) {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
             hm.put("to", getToDate());
@@ -333,6 +335,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
+        System.out.println("dueBillFees = " + dueBillFees.size());
 
     }
 
@@ -475,6 +480,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " where s.retired=false "
                 + " and type(s)=:class "
                 + " and s.staff=:doc "
+                + " and s.originatingSession is null "
                 + " order by s.sessionWeekday,s.startingTime";
         m.put("doc", currentStaff);
         m.put("class", ServiceSession.class);
@@ -729,9 +735,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public Date getToDate() {
         //Dont Remove Comments if u want ask Safrin
-//        if (toDate == null) {
-//            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-//        }
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return toDate;
     }
 
@@ -742,9 +748,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public Date getFromDate() {
         //Dont Remove Comments if u want ask Safrin
-//        if (fromDate == null) {
-//            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-//        }
+        if (fromDate == null) {
+            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return fromDate;
     }
 
@@ -877,6 +883,27 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setFilteredBillFee(List<BillFee> filteredBillFee) {
         this.filteredBillFee = filteredBillFee;
+    }
+
+    public boolean isConsiderDate() {
+        return considerDate;
+    }
+
+    public void setConsiderDate(boolean considerDate) {
+        this.considerDate = considerDate;
+    }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        if (billFee!=null) {
+            setSpeciality(billFee.getSpeciality());
+            setCurrentStaff(billFee.getStaff());
+            calculateDueFees();
+        }
+        this.billFee = billFee;
     }
 
     /**

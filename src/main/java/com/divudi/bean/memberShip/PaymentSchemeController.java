@@ -75,8 +75,6 @@ public class PaymentSchemeController implements Serializable {
     public void setPaymentSchemeForAllowPayment(PaymentScheme paymentSchemeForAllowPayment) {
         this.paymentSchemeForAllowPayment = paymentSchemeForAllowPayment;
     }
-    
-    
 
     public AllowedPaymentMethodFacade getAllowedPaymentMethodFacade() {
         return allowedPaymentMethodFacade;
@@ -102,12 +100,11 @@ public class PaymentSchemeController implements Serializable {
                 UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
-            
+
         }
 
         if (paymentMethod == PaymentMethod.Slip) {
             if (paymentMethodData.getSlip().getInstitution() == null
-                    
                     || paymentMethodData.getSlip().getDate() == null) {
                 UtilityController.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
                 return true;
@@ -276,10 +273,6 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
-        items = null;
-        if (items == null) {
-            createPaymentSchemes();
-        }
         return items;
     }
 
@@ -291,12 +284,61 @@ public class PaymentSchemeController implements Serializable {
                 + " order by i.orderNo, i.name";
         items = getFacade().findBySQL(temSql);
     }
+    
+    public List<PaymentScheme> getPaymentSchemesForChannel(){
+        return createPaymentSchemes(false, false, true);
+    }
+    
+    public List<PaymentScheme> getPaymentSchemesForOPD(){
+        return createPaymentSchemes(true, false, false);
+    }
+    
+    public List<PaymentScheme> getPaymentSchemesForPharmacy(){
+        return createPaymentSchemes(false, true, false);
+    }
+
+    public List<PaymentScheme> createPaymentSchemes(boolean opd, boolean pharmacy, boolean channel) {
+        String temSql;
+        temSql = "SELECT i FROM PaymentScheme i "
+                + " where  i.retired=false ";
+
+        if (pharmacy) {
+            temSql += " and i.validForPharmacy=true ";
+        }
+        if (channel) {
+            temSql += " and i.validForChanneling=true ";
+        }
+        if (opd) {
+            temSql += " and i.validForBilledBills=true ";
+        }
+        
+        temSql += " order by i.orderNo, i.name";
+        
+        return getFacade().findBySQL(temSql);
+    }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {
         List<PaymentScheme> c;
         HashMap hm = new HashMap();
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        c = getFacade().findBySQL(sql, hm);
+
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public List<PaymentScheme> completePaymentSchemeChannel(String qry) {
+        List<PaymentScheme> c;
+        HashMap hm = new HashMap();
+        String sql = "select c from PaymentScheme c "
+                + " where c.retired=false "
+                + " and c.validForChanneling=true "
                 + " and upper(c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");

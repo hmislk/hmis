@@ -445,6 +445,7 @@
                                     <p:menuitem  ajax="false"  value="Past Booking"  action="/channel/channel_booking_past" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingBookedList')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Leave"  action="/channel/channel_doctor_leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  value="Doctor Leave By Service Session"  action="/channel/channel_doctor_leave_by_service_session" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
@@ -633,7 +634,7 @@
                                         </p:submenu>
                                     </p:submenu>
                                     <p:submenu label="Payment Sheme">
-                                        <p:menuitem action="/memberShip/payment_scheme"   value="Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
+                                        <p:menuitem action="/memberShip/payment_scheme" actionListener="#{paymentSchemeController.createPaymentSchemes()}" value="Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
                                         <p:menuitem action="/memberShip/payment_scheme_payment_method_allowed"   value="Allowed Payment Method" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
                                         <p:submenu label="Scheme Discount">
                                             <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false"/>
@@ -642,6 +643,7 @@
                                             <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_item" value="By Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
                                             <p:menuitem  action="/memberShip/report_opd" value="Opd Payment Report"  ajax="false" />
                                         </p:submenu>
+                                        <p:menuitem action="/memberShip/payment_scheme_discount_channel"   value="Channel Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
                                     </p:submenu>
 
                                     <p:submenu label="Payment Method ">                                                                                
