@@ -17,7 +17,7 @@ public enum InwardChargeType {
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment"),
-    ECG_EEG("ECG/EEG"),
+    ECG_EEG("ECG/EEG/ECHO/EXECG"),
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
     HomeVisiting("Home Visiting"),
@@ -52,6 +52,7 @@ public enum InwardChargeType {
     ExerciseECG("Exercise E.C.G"),
     OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
+    TheaterConsumbale("Theater Consumable"),
     @Deprecated
     Investigations("Investigations"),
     @Deprecated
