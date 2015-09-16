@@ -179,6 +179,10 @@ public class ItemController implements Serializable {
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
     }
+    
+    public void updateItemsFromMasterItems(){
+        
+    }
 
     public List<Item> completeDealorItem(String query) {
         List<Item> suggestions;
