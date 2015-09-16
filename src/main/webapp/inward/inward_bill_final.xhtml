@@ -20,11 +20,11 @@
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Inward Final Bill" />    
                             <p:commandButton update="dList tot" value="Refresh" style="float: right;"
-                                            actionListener="#{bhtSummeryController.updateTotal()}" 
+                                             actionListener="#{bhtSummeryController.updateTotal()}" 
                                              onclick="onSubmitButton();"/>
                             <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
                                               id="settle"
-                                            ajax="false"
+                                              ajax="false"
                                               disabled="#{bhtSummeryController.changed}"
                                               style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
 
@@ -462,12 +462,14 @@
                     <h:panelGrid columns="2">
                         <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Patient Copy" ajax="false">
+                                <p:commandButton value="Print Patient Copy" ajax="false">
                                     <p:printer target="claimablePatientCopy" ></p:printer>
                                 </p:commandButton>                               
-                                <p:commandButton value="Duplicate Copy" ajax="false" >
+                                <p:commandButton value="Print Duplicate Copy" ajax="false" >
                                     <p:printer target="claimableDuplicate" ></p:printer>
                                 </p:commandButton> 
+                                <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
+                                </p:commandButton>
                             </h:panelGrid>
                         </p:panel>
                         <!--                        <p:panel header="Not Claimable" >
@@ -502,8 +504,6 @@
                         </p:panel>
                     </h:panelGrid>
 
-                    <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
-                    </p:commandButton>
 
                     <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
                         <bi:finalBill   bill="#{bhtSummeryController.current}" showProfessional="true"/>

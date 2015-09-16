@@ -83,6 +83,7 @@ public class Institution implements Serializable {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    double maxCreditLimit;
     @Transient
     String transAddress1;
     @Transient
@@ -396,6 +397,16 @@ public class Institution implements Serializable {
     public void setAllowedCredit(double allowedCredit) {
         this.allowedCredit = allowedCredit;
     }
+
+    public double getMaxCreditLimit() {
+        return maxCreditLimit;
+    }
+
+    public void setMaxCreditLimit(double maxCreditLimit) {
+        this.maxCreditLimit = maxCreditLimit;
+    }
+    
+    
 
     public String getChequePrintingName() {
         return chequePrintingName;

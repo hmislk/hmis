@@ -54,12 +54,14 @@
                                     <h:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}"  ></h:inputText>
                                     <h:outputText id="lblOrder" value="Order No" />
                                     <h:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}"  />
-                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Payments" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPayments}" ></p:selectBooleanCheckbox>
+                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" ></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Billing" />
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" ></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Cancellings and Refunds" />
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
+                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" ></p:selectBooleanCheckbox>
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">

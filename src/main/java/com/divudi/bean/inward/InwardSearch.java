@@ -63,6 +63,13 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardSearch implements Serializable {
 
+    /**
+     * EJBs
+     */
+    @EJB
+    PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    EjbApplication ejbApplication;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -73,18 +80,27 @@ public class InwardSearch implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    /////////////////
     @EJB
     private CommonFunctions commonFunctions;
+
+    /**
+     * JSF Controllers
+     */
     @Inject
     private BillBeanController billBean;
     @Inject
     private BillNumberGenerator billNumberBean;
+    @Inject
+    BhtSummeryFinalizedController bhtSummeryFinalizedController;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
-    PatientEncounterFacade patientEncounterFacade;
-    @EJB
-    EjbApplication ejbApplication;
-    ////////////////////
+    PersonFacade personFacade;
+    /**
+     * Properties
+     */
     private Bill bill;
     private boolean printPreview = false;
     @Temporal(TemporalType.TIME)
@@ -102,13 +118,9 @@ public class InwardSearch implements Serializable {
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
     /////////////////////
-    @Inject
-    SessionController sessionController;
-    @Inject
-    private WebUserController webUserController;
+
     PaymentMethod paymentMethod;
-    @EJB
-    PersonFacade personFacade;
+
     private YearMonthDay yearMonthDay;
     Patient patient;
     Sex[] sex;
@@ -137,41 +149,45 @@ public class InwardSearch implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
-    public void update() {
-
-        for (BillItem b : bill.getBillItems()) {
-            getBillItemFacede().edit(b);
-        }
-    }
-
+//    public void update() {
+//
+//        for (BillItem b : bill.getBillItems()) {
+//            getBillItemFacede().edit(b);
+//        }
+//    }
     public Sex[] getSex() {
         return Sex.values();
     }
 
     public void updatePatiantDetails() {
-        if (bill.getPatient().getPerson() == null) {
-            JsfUtil.addErrorMessage("Person Not Set");
+        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("Error in Application. Can not update.");
             return;
         }
         personFacade.edit(getBill().getPatient().getPerson());
-
+        JsfUtil.addSuccessMessage("Patient Details Updated.");
     }
 
-    public void replace() {
-        for (BillItem b : bill.getBillItems()) {
-            b.setAdjustedValue(b.getGrossValue());
-            getBillItemFacede().edit(b);
-        }
-    }
-
+//    public void replace() {
+//        for (BillItem b : bill.getBillItems()) {
+//            b.setAdjustedValue(b.getGrossValue());
+//            getBillItemFacede().edit(b);
+//        }
+//    }
     public void refreshFinalBillBackwordReferenceBills() {
         if (bill == null) {
             return;
         }
-
         for (Bill b : bill.getBackwardReferenceBills()) {
             //   //System.out.println("b = " + b);
         }
+
+    }
+    
+    public String fromBhtFinalBillSearchToBillReprint(){
+        refreshFinalBillBackwordReferenceBills();
+        bhtSummeryFinalizedController.setPatientEncounter(bill.getPatientEncounter());
+        return "/inward/inward_reprint_bill_final";
     }
 
     public void makeNull() {
@@ -541,7 +557,7 @@ public class InwardSearch implements Serializable {
             //To null payment methord
             getBill().setPaymentMethod(null);
             cb.setPaymentMethod(null);
-            
+
             getBillFacade().edit(cb);
             getBillFacade().edit((BilledBill) getBill());
             UtilityController.addSuccessMessage("Cancelled");
@@ -785,7 +801,7 @@ public class InwardSearch implements Serializable {
                     return false;
                 }
             }
-            
+
         }
 
         return true;
@@ -1112,9 +1128,8 @@ public class InwardSearch implements Serializable {
             b.setCreater(getSessionController().getLoggedUser());
 
             b.setPaidForBillFee(nB.getPaidForBillFee());
-            
+
             //System.out.println("nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
-            
             getBillItemFacede().create(b);
 
             cancelBillComponents(can, b);

@@ -1528,7 +1528,7 @@ public class ReportsTransfer implements Serializable {
 
     public BillType[] getBillTypes() {
         if (billTypes == null) {
-            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre};
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre, BillType.PharmacyWholesalePre };
         }
         return billTypes;
     }

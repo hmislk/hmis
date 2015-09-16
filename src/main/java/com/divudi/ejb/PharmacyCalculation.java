@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -522,8 +521,6 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("ItemBatc Id " + itemBatch.getId());
         return itemBatch;
     }
-    
-    
 
     public List<Item> findItem(Amp tmp, List<Item> items) {
 
@@ -665,17 +662,32 @@ public class PharmacyCalculation implements Serializable {
         return msg;
     }
 
-    public void calSaleFreeValue(Bill b) {
+    public void calculateRetailSaleValueAndFreeValueAtPurchaseRate(Bill b) {
+        System.out.println("calculateRetailSaleValueAndFreeValueAtPurchaseRate");
         double sale = 0.0;
         double free = 0.0;
 
         for (BillItem i : b.getBillItems()) {
-            sale += i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
+            System.out.println("i = " + i);
+            System.out.println("sale = " + sale);
+            System.out.println("free = " + free);
+            sale += (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty()) * i.getPharmaceuticalBillItem().getRetailRate();
             free += i.getPharmaceuticalBillItem().getFreeQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
+            System.out.println("sale = " + sale);
+            System.out.println("free = " + free);
         }
-
-        b.setSaleValue(sale);
-        b.setFreeValue(free);
+        System.out.println("b.getBillType() = " + b.getBillType());
+        System.out.println("b.getClass() = " + b.getClass());
+        if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) ||b.getClass().equals(RefundBill.class)  ) {
+            System.out.println("Math.abs(sale) = " + Math.abs(sale));
+            b.setSaleValue(0.0 - Math.abs(sale));
+            b.setFreeValue(0.0 - Math.abs(free));
+        } else {
+            b.setSaleValue(Math.abs(sale));
+            b.setFreeValue(Math.abs(free));
+        }
+        System.out.println("b.getSaleValue() = " + b.getSaleValue());
+        System.out.println("b.getFreeValue() = " + b.getFreeValue());
     }
 
     public boolean checkItemBatch(List<BillItem> list) {

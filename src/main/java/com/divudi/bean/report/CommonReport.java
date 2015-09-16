@@ -11,6 +11,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -53,9 +54,11 @@ import javax.persistence.TemporalType;
 @RequestScoped
 public class CommonReport implements Serializable {
 
-    @Inject
-    SessionController sessionController;
-    ///////////////////
+    /**
+     * 
+     * EJBs
+     * 
+     */
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -66,7 +69,16 @@ public class CommonReport implements Serializable {
     BillItemFacade billItemFac;
     @EJB
     BillFeeFacade billFeeFacade;
-    ////////////////////
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    /**
+     * 
+     * Properties
+     * 
+     */
     List<BillFee> billFees;
     List<Bill> referralBills;
     List<BillItem> referralBillItems;
@@ -2743,6 +2755,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
     }
+    
 
     public void createPurchaseDetailTable() {
         recreteModal();
@@ -2753,6 +2766,7 @@ public class CommonReport implements Serializable {
         purchaseReturnCancel = new BillsTotals();
 
         if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
