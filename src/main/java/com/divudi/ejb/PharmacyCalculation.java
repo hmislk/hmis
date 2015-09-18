@@ -33,9 +33,11 @@ import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -678,7 +680,7 @@ public class PharmacyCalculation implements Serializable {
         }
         System.out.println("b.getBillType() = " + b.getBillType());
         System.out.println("b.getClass() = " + b.getClass());
-        if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) ||b.getClass().equals(RefundBill.class)  ) {
+        if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) || b.getClass().equals(RefundBill.class)) {
             System.out.println("Math.abs(sale) = " + Math.abs(sale));
             b.setSaleValue(0.0 - Math.abs(sale));
             b.setFreeValue(0.0 - Math.abs(free));
@@ -724,6 +726,31 @@ public class PharmacyCalculation implements Serializable {
 //           
 //        }
 //    }
+    public void updatePharmacyPurchaseGrnCancelRefundBilledBills() {
+        BillType[] bts = {BillType.PharmacyGrnReturn, BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn};
+        List<BillType> billTypes = Arrays.asList(bts);
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select b from Bill b "
+                + " where b.billType in :bts "
+                + " and b.saleValue=:sv ";
+
+        m.put("bts", billTypes);
+        m.put("sv", 0.0);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m,100);
+        System.err.println("bills.size() = " + bills.size());
+        for (Bill b : bills) {
+            System.out.println("b.getSaleValue() = " + b.getSaleValue());
+            System.out.println("b.getBillType() = " + b.getBillType());
+            System.out.println("b.getBillClassType() = " + b.getBillClassType());
+            System.out.println("b.getBillClass() = " + b.getBillClass());
+            calculateRetailSaleValueAndFreeValueAtPurchaseRate(b);
+            getBillFacade().edit(b);
+        }
+    }
+
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
