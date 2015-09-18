@@ -1,13 +1,17 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
+import com.divudi.entity.AgentHistory;
 import java.util.TimeZone;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.entity.Institution;
+import com.divudi.facade.AgentHistoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +45,8 @@ public class InstitutionController implements Serializable {
      */
     @EJB
     private InstitutionFacade ejbFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
     /**
      * Properties
      */
@@ -208,7 +214,7 @@ public class InstitutionController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.Agency);
     }
-    
+
     public void setSelectedItems(List<Institution> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -258,6 +264,86 @@ public class InstitutionController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void updateCreditLimit() {
+        if (current == null || current.getId() == null) {
+            UtilityController.addErrorMessage("Please Select a Agency");
+            return;
+        }
+
+        if (current.getMaxCreditLimit() == 0.0) {
+            UtilityController.addErrorMessage("Please Enter Maximum Credit Limit.");
+            return;
+        }
+
+        Institution i = getFacade().find(current.getId());
+        double mcl = i.getMaxCreditLimit();
+        System.out.println("mcl = " + mcl);
+        System.out.println("current.getMaxCreditLimit() = " + current.getMaxCreditLimit());
+        double acl = i.getAllowedCredit();
+        System.out.println("acl = " + acl);
+        System.out.println("current.getAllowedCredit() = " + current.getAllowedCredit());
+        double scl = i.getStandardCreditLimit();
+        System.out.println("scl = " + scl);
+        System.out.println("current.getStandardCreditLimit() = " + current.getStandardCreditLimit());
+
+        if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
+            UtilityController.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
+            return;
+        }
+
+        if (current.getMaxCreditLimit() < current.getAllowedCredit()) {
+            UtilityController.addErrorMessage("Allowed Credit Limit must Less Than Maximum Credit Limit");
+            return;
+        }
+
+        if ((current.getStandardCreditLimit() == scl) && (current.getAllowedCredit() == acl) && (current.getMaxCreditLimit() == mcl)) {
+            UtilityController.addErrorMessage("Nothing To Update");
+            return;
+        }
+
+        if (current.getStandardCreditLimit() != scl) {
+            System.err.println("Update Standard Credit Limit");
+            System.out.println("scl = " + scl);
+            System.out.println("current.getStandardCreditLimit() = " + current.getStandardCreditLimit());
+            createAgentCreditLimitUpdateHistory(current,scl , current.getStandardCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Standard Credit Limit");
+            System.err.println("Update Standard Credit Limit");
+            UtilityController.addSuccessMessage("Standard Credit Limit Updated");
+        }
+
+        if (current.getAllowedCredit() != acl) {
+            System.err.println("Update Allowed Credit Limit");
+            System.out.println("acl = " + acl);
+            System.out.println("current.getAllowedCredit() = " + current.getAllowedCredit());
+            createAgentCreditLimitUpdateHistory(current,acl , current.getAllowedCredit(), HistoryType.AgentBalanceUpdateBill,"Allowed Credit Limit");
+            System.err.println("Update Allowed Credit Limit");
+            UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
+        }
+
+        if (current.getMaxCreditLimit() != mcl) {
+            System.err.println("Update Max Credit Limit");
+            System.out.println("mcl = " + mcl);
+            System.out.println("current.getMaxCreditLimit() = " + current.getMaxCreditLimit());
+            createAgentCreditLimitUpdateHistory(current,mcl , current.getMaxCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Max Credit Limit");
+            System.err.println("Update Max Credit Limit");
+            UtilityController.addSuccessMessage("Max Credit Limit Updated");
+        }
+        getFacade().edit(current);
+        getAgencies();
+    }
+
+    public void createAgentCreditLimitUpdateHistory(Institution ins,double historyValue, double transactionValue, HistoryType historyType,String comment) {
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
+        agentHistory.setBeforeBallance(historyValue);
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setHistoryType(historyType);
+        agentHistory.setComment(comment);
+        agentHistory.setInstitution(ins);
+        agentHistoryFacade.create(agentHistory);
+        UtilityController.addSuccessMessage("History Saved");
     }
 
     public void setSelectText(String selectText) {

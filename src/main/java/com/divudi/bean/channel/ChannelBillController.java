@@ -34,8 +34,10 @@ import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.memberShip.PaymentSchemeDiscount;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -116,6 +118,8 @@ public class ChannelBillController implements Serializable {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    AgentReferenceBookFacade agentReferenceBookFacade;
     //////////////////////////////////
     @EJB
     private ServiceSessionBean serviceSessionBean;
@@ -1361,6 +1365,16 @@ public class ChannelBillController implements Serializable {
         double tmpTotal = 0;
         double tmpDiscount = 0;
         for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
+            if (paymentMethod != PaymentMethod.Agent) {
+                if (f.getFeeType() == FeeType.OtherInstitution) {
+                    continue;
+                }
+            }
+            if (paymentMethod != PaymentMethod.OnCall) {
+                if (f.getFeeType() == FeeType.OwnInstitution && f.getName().equalsIgnoreCase("On-Call Fee")) {
+                    continue;
+                }
+            }
             BillFee bf = new BillFee();
             bf.setBill(bill);
             bf.setBillItem(billItem);
@@ -1437,10 +1451,9 @@ public class ChannelBillController implements Serializable {
         System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
         getBillItemFacade().edit(billItem);
 
-        if (paymentMethod != PaymentMethod.Agent) {
-            changeAgentFeeToHospitalFee();
-        }
-
+//        if (paymentMethod != PaymentMethod.Agent) {
+//            changeAgentFeeToHospitalFee();
+//        }
         return billFeeList;
 
     }
@@ -1797,6 +1810,7 @@ public class ChannelBillController implements Serializable {
 
     public void validateAgentBalance() {
         System.out.println("inside");
+        fetchRecentChannelBooks(institution);
         activeCreditLimitPannel = false;
 
         if (errorCheckAgentValidate()) {
@@ -1819,36 +1833,58 @@ public class ChannelBillController implements Serializable {
                 return;
             }
         }
+        
     }
+    
+    public void fetchRecentChannelBooks(Institution ins) {
+        System.err.println("in");
+        String sql;
+        HashMap m = new HashMap();
 
-    public void updateCreditLimit() {
-        if (institution == null) {
-            UtilityController.addErrorMessage("Please Select a Agency");
-            return;
+        sql = "select a from AgentReferenceBook a "
+                + " where a.retired=false "
+                + " and a.institution=:ins "
+                + " order by a.id desc ";
+        
+        m.put("ins", ins);
+        
+        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findBySQL(sql, m,5);
+        System.out.println("agentReferenceBooks.size() = " + agentReferenceBooks.size());
+        if (agentReferenceBooks.size()>0) {
+            ins.setAgentReferenceBooks(agentReferenceBooks);
         }
-
-        if (institution.getMaxCreditLimit() > 0) {
-            if (institution.getMaxCreditLimit() < creditLimit) {
-                UtilityController.addErrorMessage("Please Enter less than Maximum Credit Limit");
-                return;
-            }
-        }
-
-        createAgentCreditLimitUpdateHistory(institution, creditLimit, HistoryType.AgentBalanceUpdateBill);
-        creditLimit = 0.0;
     }
-
-    public void createAgentCreditLimitUpdateHistory(Institution ins, double transactionValue, HistoryType historyType) {
-        AgentHistory agentHistory = new AgentHistory();
-        agentHistory.setCreatedAt(new Date());
-        agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(ins.getBallance());
-        agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setHistoryType(historyType);
-        agentHistory.setInstitution(institution);
-        agentHistoryFacade.create(agentHistory);
-    }
-
+    
+//    public void updateCreditLimit() {
+//        if (institution == null) {
+//            UtilityController.addErrorMessage("Please Select a Agency");
+//            return;
+//        }
+//
+//        if (institution.getMaxCreditLimit() == 0.0) {
+//            UtilityController.addErrorMessage("Please Enter Maximum Credit Limit.");
+//            return;
+//        }
+//
+//        if (institution.getMaxCreditLimit() < creditLimit) {
+//            UtilityController.addErrorMessage("Please Enter less than Maximum Credit Limit");
+//            return;
+//        }
+//
+//        createAgentCreditLimitUpdateHistory(institution, creditLimit, HistoryType.AgentBalanceUpdateBill);
+//        creditLimit = 0.0;
+//    }
+//
+//    public void createAgentCreditLimitUpdateHistory(Institution ins, double transactionValue, HistoryType historyType) {
+//        AgentHistory agentHistory = new AgentHistory();
+//        agentHistory.setCreatedAt(new Date());
+//        agentHistory.setCreater(getSessionController().getLoggedUser());
+//        agentHistory.setBeforeBallance(ins.getBallance());
+//        agentHistory.setTransactionValue(transactionValue);
+//        agentHistory.setHistoryType(historyType);
+//        agentHistory.setInstitution(institution);
+//        agentHistoryFacade.create(agentHistory);
+//    }
     public void changeListener() {
         bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFee(0.0);
         bookingController.getSelectedServiceSession().getOriginatingSession().setTotalFfee(0.0);
@@ -2080,7 +2116,5 @@ public class ChannelBillController implements Serializable {
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
     }
-    
-    
 
 }

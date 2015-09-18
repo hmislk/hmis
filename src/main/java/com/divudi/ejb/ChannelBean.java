@@ -5,6 +5,7 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
@@ -59,6 +60,8 @@ public class ChannelBean {
     SessionController sessionController;
     @Inject
     BookingController bookingController;
+    @Inject
+    ChannelBillController channelBillController;
 
     public ChannelFee getChannelFee(BillSession bs, FeeType feeType) {
         ChannelFee doctorFee = new ChannelFee();
@@ -527,7 +530,7 @@ public class ChannelBean {
             System.out.println("nowDate = " + nowDate);
 
         }
-        getBookingController().calculateFeeBooking(createdSessions);
+        getBookingController().calculateFeeBooking(createdSessions,channelBillController.getPaymentMethod());
         System.err.println("Created Sessions  " + createdSessions.size());
 //        for (ServiceSession cs : createdSessions) {
 //            System.out.println("cs.getId() = " + cs.getId());

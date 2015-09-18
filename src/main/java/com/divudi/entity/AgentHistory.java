@@ -53,6 +53,7 @@ public class AgentHistory implements Serializable {
     private Date retiredAt;
     private String retireComments;
     String referenceNo;
+    String comment;
 
     public String getReferenceNo() {
         return referenceNo;
@@ -62,8 +63,6 @@ public class AgentHistory implements Serializable {
         this.referenceNo = referenceNo;
     }
     
-    
-
     public HistoryType getHistoryType() {
         return historyType;
     }
@@ -71,8 +70,6 @@ public class AgentHistory implements Serializable {
     public void setHistoryType(HistoryType historyType) {
         this.historyType = historyType;
     }
-    
-    
 
     public BillItem getBillItem() {
         return billItem;
@@ -121,8 +118,6 @@ public class AgentHistory implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
-    
 
     public WebUser getCreater() {
         return creater;
@@ -171,8 +166,6 @@ public class AgentHistory implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
 
     public Long getId() {
         return id;
@@ -180,6 +173,14 @@ public class AgentHistory implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     @Override

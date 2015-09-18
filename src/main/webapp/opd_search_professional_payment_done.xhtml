@@ -20,6 +20,7 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPaymentTable}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createPaymentTableAll}"/>
                                 <h:outputLabel/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
