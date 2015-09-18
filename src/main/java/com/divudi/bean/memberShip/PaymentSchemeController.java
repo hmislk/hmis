@@ -273,6 +273,9 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
+        if(items==null){
+            createPaymentSchemes();
+        }
         return items;
     }
 
