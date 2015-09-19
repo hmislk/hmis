@@ -27,12 +27,38 @@ body {
 }
 
 .fullSpread{
-    min-height: 100%;
-    min-height: 100%;
-    padding: 0px;
-    margin: 0px;
-    border: 0px;
+    height: 100vh;
+    padding: 0px!important;
+    margin: 0px!important;
+    border: 0px!important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+}
 
+.bottomBorderOnly{
+    padding: 0px!important;
+    margin: 0px!important;
+    border: 0px;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+    border-bottom: 1px solid!important;
+}
+
+
+.parent {
+  position: relative;
+}
+
+.child {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /*display: inline-block;*/
 }
 
 @media screen{
