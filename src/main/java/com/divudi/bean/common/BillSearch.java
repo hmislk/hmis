@@ -1421,7 +1421,7 @@ public class BillSearch implements Serializable {
         return list;
     }
 
-    private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
+    public void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
             bf.setFee(nB.getFee());

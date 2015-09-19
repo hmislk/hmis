@@ -3379,7 +3379,12 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
     }
-
+    
+    public void createCashCategoryWithProMonth2() {
+        createDoctorPaymentOpd();
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill);
+    }
+    
     private void createFinalSummery() {
         System.err.println("createFinalSummery");
         finalValues = new ArrayList<>();

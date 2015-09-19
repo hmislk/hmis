@@ -186,7 +186,7 @@ public class GrnController implements Serializable {
             UtilityController.addErrorMessage(msg);
             return;
         }
-        pharmacyCalculation.calSaleFreeValue(getGrnBill());
+        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -252,6 +252,8 @@ public class GrnController implements Serializable {
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
         calGrossTotal();
+        
+        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         getBillFacade().edit(getGrnBill());
 
         //  getPharmacyBillBean().editBill(, , getSessionController());

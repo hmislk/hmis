@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Purchase Bill List">
+
+                    <h:panelGrid columns="2" style="noPrintButton">
+                        <h:outputLabel value="From"/>
+                        <p:calendar id="frmDate" value="#{pharmacyPurchaseController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" value="#{pharmacyPurchaseController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel  value="Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{pharmacyPurchaseController.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+
+                        <p:defaultCommand target="btnRefresh"/>
+
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="3">
+                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
+                                         styleClass="noPrintButton" 
+                                         actionListener="#{pharmacyPurchaseController.createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment()}"
+                                         style="float: right;" />  
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="bills" fileName="report_pharmacy_grn_and_purchase_bill_list"  />
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
+                                         style="float: right;" >
+                            <p:printer target="bills"/>
+                        </p:commandButton>  
+                    </h:panelGrid>
+
+
+
+                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
+
+                        <h:outputLabel value="Purchase Detailed Report "/>
+                        <h:outputLabel/>
+                        <h:outputLabel value="Institution "/>
+                        <h:outputLabel value="#{pharmacyPurchaseController.department.institution.name}"/>
+                        <h:outputLabel value="Department "/>
+                        <h:outputLabel value="#{pharmacyPurchaseController.department.name}"/>
+                        <h:outputLabel value="From" />
+                        <h:outputLabel  value="#{pharmacyPurchaseController.fromDate}" >
+                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="To"/>
+                        <h:outputLabel  value="#{pharmacyPurchaseController.toDate}" style="float: right" >
+                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+
+
+                    <p:dataTable id="bills"  
+                                 value="#{pharmacyPurchaseController.billListWithTotals.bills}" 
+                                 var="b" 
+                                 sortBy="#{b.billType}">
+                        <f:facet name="header" >
+                            <h:outputLabel value="Purchase/Good Receive Bills" ></h:outputLabel>
+                        </f:facet>
+                        <p:column headerText="Purchase No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Purchase No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.deptId}"/>
+                        </p:column>
+                        <p:column headerText="Invoice No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Invoice No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.invoiceNumber}"/>
+                        </p:column>
+                        <p:column headerText="Invoice Date" sortBy="#{b.invoiceDate}" >
+                            <h:outputLabel value="#{b.invoiceDate}" >
+                                <f:convertDateTime pattern="dd MMM yy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="System Date"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Bill Type"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.billType.label}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            </h:outputLabel>
+
+                        </p:column>
+
+                        <p:column sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Suplier"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.fromInstitution.name}"/>
+
+                        </p:column>
+
+                        <p:column headerText="GRN No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceBill.deptId}"/>
+                        </p:column>
+
+                        <p:column style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Purchase Value"/>
+                            </f:facet> 
+                            <h:outputLabel  value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                        <p:column style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Sale Value"/>
+                            </f:facet> 
+                            <h:outputLabel  value="#{b.saleValue}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Remark" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Remark"/>
+                            </f:facet> 
+                            <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                        </p:column>
+
+                        <p:columnGroup type="footer">  
+                            <p:row >  
+                                <p:column colspan="7" style="text-align:left" footerText="Totals:"/>
+
+                                <p:column style="text-align: right;" >
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column style="text-align: right;" >
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.saleValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column>
+                                    
+                                </p:column>
+
+                            </p:row>  
+                        </p:columnGroup>  
+
+                    </p:dataTable>
+
+
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

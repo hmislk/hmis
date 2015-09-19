@@ -49,6 +49,8 @@ public class SheduleController implements Serializable {
     private FeeFacade feeFacade;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
     @Inject
     private SessionController sessionController;
     private Speciality speciality;
@@ -131,11 +133,23 @@ public class SheduleController implements Serializable {
         return scn;
     }
 
+    public ItemFee createOnCallFee() {
+        ItemFee onc = new ItemFee();
+        onc.setName("On-Call Fee");
+        onc.setFeeType(FeeType.OwnInstitution);
+        onc.setFee(0.0);
+        onc.setFfee(0.0);
+        onc.setInstitution(getCurrent().getInstitution());
+        onc.setServiceSession(current);
+        return onc;
+    }
+
     private void createFees() {
         getItemFees().add(createStaffFee());
         getItemFees().add(createHospitalFee());
         getItemFees().add(createAgencyFee());
         getItemFees().add(createScanFee());
+        getItemFees().add(createOnCallFee());
     }
 
     public void makeNull() {
@@ -173,7 +187,7 @@ public class SheduleController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             ////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql,m);
+            suggestions = getStaffFacade().findBySQL(sql, m);
         }
         return suggestions;
     }
@@ -399,7 +413,7 @@ public class SheduleController implements Serializable {
                 i.setCreatedAt(new Date());
                 i.setCreater(sessionController.getLoggedUser());
                 System.err.println("cRE");
-                itemFeeFacade.edit(i);
+                itemFeeFacade.create(i);
             } else {
                 System.err.println("Edit");
                 itemFeeFacade.edit(i);
@@ -448,6 +462,41 @@ public class SheduleController implements Serializable {
 
         prepareAdd();
         getItems();
+    }
+
+    public void createOnCallFeeOldSession() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
+                + " where f.retired=false "
+                + " and f.serviceSession is not null ";
+        List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
+        System.out.println("serviceSessionsAll.size() = " + serviceSessionsAll.size());
+        sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
+                + " where f.retired=false "
+                + " and f.serviceSession is not null "
+                + " and f.feeType=:fType "
+                + " and f.name=:name "
+                + " order by f.id";
+        m.put("name", "On-Call Fee");
+        m.put("fType", FeeType.OwnInstitution);
+        List<ServiceSession> serviceSessions = serviceSessionFacade.findBySQL(sql, m);
+        System.out.println("serviceSessions.size() = " + serviceSessions.size());
+        serviceSessionsAll.removeAll(serviceSessions);
+        System.out.println("After remove serviceSessionsAll.size() = " + serviceSessionsAll.size());
+        for (ServiceSession ss : serviceSessionsAll) {
+            System.out.println("ss = " + ss);
+            ItemFee onc = new ItemFee();
+            onc.setName("On-Call Fee");
+            onc.setFeeType(FeeType.OwnInstitution);
+            onc.setFee(0.0);
+            onc.setFfee(0.0);
+            onc.setInstitution(ss.getInstitution());
+            onc.setServiceSession(ss);
+            onc.setItem(ss);
+            itemFeeFacade.create(onc);
+        }
+
     }
 
     private double calTot() {

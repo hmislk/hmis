@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
@@ -80,6 +81,8 @@ public class BookingController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     ServiceSessionLeaveController serviceSessionLeaveController;
+    @Inject
+    ChannelBillController channelBillController;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -280,7 +283,7 @@ public class BookingController implements Serializable {
         /////////////////////
         serviceSessions = null;
         billSessions = null;
-        sessionStartingDate=null;
+        sessionStartingDate = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -406,28 +409,88 @@ public class BookingController implements Serializable {
         return dbl;
     }
 
-    private double fetchLocalFee(Item item) {
+    private double fetchLocalFee(Item item, PaymentMethod paymentMethod) {
         String jpql;
         Map m = new HashMap();
+        FeeType[] fts = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff};
+        List<FeeType> feeTypes = Arrays.asList(fts);
         jpql = "Select sum(f.fee)"
                 + " from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff, FeeType.OtherInstitution};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+            System.out.println("paymentMethod(if) = " + paymentMethod);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+                System.out.println("paymentMethod(if else is) = " + paymentMethod);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+                System.out.println("paymentMethod(if else else) = " + paymentMethod);
+            }
+        }
         m.put("ses", item);
-        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("paymentMethod = " + paymentMethod);
+        System.out.println("feeTypes = " + feeTypes);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
+
+        if (obj == null) {
+            return 0;
+        }
 
         return obj;
     }
 
-    private double fetchForiegnFee(Item item) {
+    private double fetchForiegnFee(Item item, PaymentMethod paymentMethod) {
         String jpql;
         Map m = new HashMap();
+        FeeType[] fts = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff};
+        List<FeeType> feeTypes = Arrays.asList(fts);
         jpql = "Select sum(f.ffee)"
                 + " from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff, FeeType.OtherInstitution};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+            System.out.println("paymentMethod(if) = " + paymentMethod);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+                System.out.println("paymentMethod(if else is) = " + paymentMethod);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+                System.out.println("paymentMethod(if else else) = " + paymentMethod);
+            }
+        }
         m.put("ses", item);
-        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("paymentMethod = " + paymentMethod);
+        System.out.println("feeTypes = " + feeTypes);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
             return 0;
@@ -449,7 +512,7 @@ public class BookingController implements Serializable {
         return list;
     }
 
-    public void calculateFee(List<ServiceSession> lstSs) {
+    public void calculateFee(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
         for (ServiceSession ss : lstSs) {
             Double[] dbl = fetchFee(ss, FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
@@ -462,13 +525,13 @@ public class BookingController implements Serializable {
 //            System.err.println("2222");
             ss.setTaxFee(dbl[0]);
             ss.setTaxFfee(dbl[1]);
-            ss.setTotalFee(fetchLocalFee(ss));
-            ss.setTotalFfee(fetchForiegnFee(ss));
+            ss.setTotalFee(fetchLocalFee(ss, paymentMethod));
+            ss.setTotalFfee(fetchForiegnFee(ss, paymentMethod));
             ss.setItemFees(fetchFee(ss));
         }
     }
-    
-    public void calculateFeeBooking(List<ServiceSession> lstSs) {
+
+    public void calculateFeeBooking(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
         for (ServiceSession ss : lstSs) {
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
@@ -491,12 +554,12 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession()));
-            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession()));
+            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
+            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession()));
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession()));
+            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
         }
@@ -518,9 +581,9 @@ public class BookingController implements Serializable {
                     + " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
             System.err.println("Fetch Sessions " + tmp.size());
-            calculateFee(tmp);
+            calculateFee(tmp, channelBillController.getPaymentMethod());
             System.err.println("Calling Start");
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp,sessionStartingDate);
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
             generateSessionEvents(serviceSessions);
             System.err.println("Calling End");
         }
@@ -573,7 +636,7 @@ public class BookingController implements Serializable {
             m.put("staff", getStaff());
             m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
-            calculateFee(tmp);
+            calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
             serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }
 
@@ -636,7 +699,6 @@ public class BookingController implements Serializable {
 //        System.out.println("billSessions" + billSessions);
 //
 //    }
-
     public void fillBillSessions() {
         selectedBillSession = null;
 //        selectedServiceSession = ((ServiceSession) event.getObject());
@@ -685,11 +747,11 @@ public class BookingController implements Serializable {
         //absentCount=billSessions.size();
 
     }
-    
+
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
-        ServiceSession ss=getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo()!=tmp.getMaxNo()) {
+        ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
+        if (ss.getMaxNo() != tmp.getMaxNo()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
             System.err.println("***********Edited******");
@@ -885,8 +947,8 @@ public class BookingController implements Serializable {
     }
 
     public Date getSessionStartingDate() {
-        if (sessionStartingDate==null) {
-            sessionStartingDate=new Date();
+        if (sessionStartingDate == null) {
+            sessionStartingDate = new Date();
         }
         return sessionStartingDate;
     }

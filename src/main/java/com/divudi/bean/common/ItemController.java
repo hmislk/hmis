@@ -182,6 +182,10 @@ public class ItemController implements Serializable {
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
     }
+    
+    public void updateItemsFromMasterItems(){
+        
+    }
 
     public void updateItemsAndFees() {
         if (instituion == null) {

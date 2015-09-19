@@ -46,19 +46,11 @@ import javax.inject.Named;
 @SessionScoped
 public class GoodsReturnController implements Serializable {
 
-    private Bill bill;
-    private Bill returnBill;
-    private boolean printPreview;
-    private List<BillItem> billItems;
-    ///////
+    /**
+     * EJBs
+     */
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    private PharmaceuticalItemController pharmaceuticalItemController;
-    @Inject
-    private PharmacyController pharmacyController;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -73,6 +65,25 @@ public class GoodsReturnController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    PharmacyCalculation pharmacyCalculation;
+    @Inject
+    private PharmaceuticalItemController pharmaceuticalItemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SessionController sessionController;
+    /**
+     * Properties
+     */
+    private Bill bill;
+    private Bill returnBill;
+    private boolean printPreview;
+    private List<BillItem> billItems;
+    ///////
 
     public Bill getBill() {
         return bill;
@@ -191,7 +202,7 @@ public class GoodsReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
     }
-    
+
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
 
@@ -278,6 +289,8 @@ public class GoodsReturnController implements Serializable {
         System.err.println("4");
 
         calTotal();
+        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
+        
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;
@@ -344,7 +357,7 @@ public class GoodsReturnController implements Serializable {
         }
 
     }
-    
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -370,7 +383,7 @@ public class GoodsReturnController implements Serializable {
         }
 
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());

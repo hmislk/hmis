@@ -219,6 +219,7 @@ public class EnumController implements Serializable {
             InwardChargeType.Echo,
             InwardChargeType.SyringePump,
             InwardChargeType.ExerciseECG,
+            InwardChargeType.TheaterConsumbale,
             InwardChargeType.OtherCharges};
 
         return b;
@@ -310,6 +311,7 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypes3() {
         BillType[] b = {
             BillType.PharmacyPre,
+            BillType.PharmacyWholesalePre,
             BillType.PharmacyAdjustment,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,
