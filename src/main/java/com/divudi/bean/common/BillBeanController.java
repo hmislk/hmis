@@ -602,15 +602,16 @@ public class BillBeanController implements Serializable {
     }
     
     public List<Object[]> fetchDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
-        String sql = "Select b.referenceBill.toDepartment,sum(b.netValue) "
+        String sql = "Select b.referanceBillItem.bill.toDepartment,sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.referenceBill.billType=:refType "
+                + " and b.referanceBillItem.bill.billType=:refType "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.bill.institution=:ins "
-                + " group by b.referenceBill.toDepartment "
-                + " order by b.referenceBill.toDepartment.name ";
+                + " group by b.referanceBillItem.bill.toDepartment "
+                + " order by b.referanceBillItem.bill.toDepartment.name ";
+        
         HashMap hm = new HashMap();
         hm.put("bType", BillType.PaymentBill);
         hm.put("refType", refBillType);
@@ -774,7 +775,7 @@ public class BillBeanController implements Serializable {
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.referenceBill.billType=:refType "
+                + " and b.referanceBillItem.bill.billType=:refType "
                 + " and b.createdAt between :fromDate and :toDate ";
         HashMap hm = new HashMap();
         hm.put("bType", BillType.PaymentBill);

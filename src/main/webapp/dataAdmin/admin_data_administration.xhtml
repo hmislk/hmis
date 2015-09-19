@@ -54,6 +54,9 @@
                                         return false"/>
                             <p:commandLink ajax="false" action="#{pharmacyCalculation.updatePharmacyPurchaseGrnCancelRefundBilledBills}" 
                                            value="13. Update Pharmacy Purchase Grn Cancel RefundBilled Bills" />
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.addOPDBillFeesToProfessionalCancelBills()}" rendered="false"
+                                           value="14. Add bill fees to professional fee cancel bills OPD"  onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
 
                         </p:panelGrid>
 
