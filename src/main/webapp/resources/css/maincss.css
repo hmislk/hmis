@@ -45,20 +45,24 @@ body {
     border-top-right-radius: 0px !important;
     border-bottom-left-radius: 0px !important;
     border-bottom-right-radius: 0px !important;
-    border-bottom: 1px solid!important;
+    border-bottom: 0px !important;
 }
 
-
-.parent {
-  position: relative;
+.verticalAndHorizontalCentering {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /*display: inline-block;*/
 }
 
-.child {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  /*display: inline-block;*/
+.rightBordrOnly{
+    border-right: 1px solid rgba(0, 0, 0, 0.2)!important;
+    border-left: 0px !important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
 }
 
 @media screen{
@@ -68,18 +72,18 @@ body {
         position: relative; 
         font-size: 150%;
     }
-    
+
     .printOnly{
         display: none;
     }
 }
 
 @media print {
-    
+
     .printOnly{
         display:block;
     }
-    
+
     .myDivToPrint {
         background-color: red;
         height: 100%;

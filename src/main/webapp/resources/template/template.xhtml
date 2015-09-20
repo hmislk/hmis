@@ -29,7 +29,7 @@
         <h:outputStylesheet library="awesome" name="css/font-awesome.css" ></h:outputStylesheet>
         <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
-    
+
     <h:body>
         <div id="panelFullSpread" class="fullSpread ui-widget-content " >
             <p:growl id="publicGrowl" autoUpdate="true"   />
@@ -52,8 +52,8 @@
                                 <h:outputLabel value="#{labels.topic}" />
                             </f:facet>
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
-                                <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" ></p:menuitem>
-                                <p:submenu label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
+                                <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
+                                <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
                                     <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/opd_pre_bill"  actionListener="#{opdPreBillController.prepareNewBill}" value="Bills For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:menuitem>
 
@@ -82,7 +82,7 @@
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Inward"  rendered="#{webUserController.hasPrivilege('Inward')}">
+                                <p:submenu styleClass="rightBordrOnly" label="Inward"  rendered="#{webUserController.hasPrivilege('Inward')}">
                                     <p:submenu label="Admissions" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">                                    
                                         <p:menuitem  ajax="false"  action="/inward/inward_admission" value="Admission" actionListener="#{admissionController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_edit_bht" value="Edit Admission Detail" actionListener="#{bhtEditController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                                
@@ -119,7 +119,7 @@
                                     <p:menuitem  ajax="false"  action="/inward/inward_administration" value="Inward Administration" rendered="#{webUserController.hasPrivilege('InwardAdministration')}" ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
+                                <p:submenu styleClass="rightBordrOnly" label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
                                     <p:submenu label="Lab Billing" rendered="#{webUserController.hasPrivilege('LabCashier')}">
                                         <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('LabCashier')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Search Bills" rendered="#{webUserController.hasPrivilege('LabCasheirBillSearch')}" ></p:menuitem>
@@ -143,7 +143,7 @@
                                     <p:menuitem ajax="false" action="/lab_administration" value="Administration"  ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
+                                <p:submenu styleClass="rightBordrOnly" label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
                                                      value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
@@ -294,7 +294,7 @@
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Theatre" rendered="#{webUserController.hasPrivilege('Theatre')}" >
+                                <p:submenu styleClass="rightBordrOnly" label="Theatre" rendered="#{webUserController.hasPrivilege('Theatre')}" >
                                     <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
                                                  value="Add Surgeries"
                                                  actionListener="#{surgeryBillController.makeNull}"
@@ -390,7 +390,7 @@
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
+                                <p:submenu styleClass="rightBordrOnly" label="Store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
                                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('StoreIssue')}">
                                         <p:menuitem ajax="false" action="/store/store_retail_sale_bht"  value="Inward Billing"
                                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
@@ -448,7 +448,7 @@
                                     <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
+                                <p:submenu styleClass="rightBordrOnly" label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
 
                                     <p:menuitem  ajax="false"  value="Channel Booking"  action="/channel/channel_booking" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingFutureChannelBooking')}" ></p:menuitem>
@@ -476,7 +476,7 @@
                                     <p:menuitem  ajax="false"  value="Management"  action="/channel/management_index"/>
                                 </p:submenu>
 
-                                <p:submenu label="Payments"  rendered="#{webUserController.hasPrivilege('Payment')}">  
+                                <p:submenu styleClass="rightBordrOnly" label="Payments"  rendered="#{webUserController.hasPrivilege('Payment')}">  
 
                                     <p:submenu label="Pay"  rendered="#{webUserController.hasPrivilege('Payment')}">
                                         <p:submenu label="OPD">
@@ -557,7 +557,7 @@
 
 
 
-                                <p:submenu label="HR" rendered="#{webUserController.hasPrivilege('Hr')}" >
+                                <p:submenu styleClass="rightBordrOnly" label="HR" rendered="#{webUserController.hasPrivilege('Hr')}" >
                                     <p:submenu label="Working Time">
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance"  ></p:menuitem>
@@ -585,14 +585,14 @@
                                     <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports"  />
                                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration"  ></p:menuitem>
                                 </p:submenu>
-                                <p:submenu label="EHR"  rendered="#{webUserController.hasPrivilege('Clinical')}">
+                                <p:submenu styleClass="rightBordrOnly" label="EHR"  rendered="#{webUserController.hasPrivilege('Clinical')}">
                                     <p:menuitem ajax="false" action="/clinical/clinical_patient_for_receptionist" value="Patients"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_queue" value="Queue"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_reports_index" value="Reports"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_administration" value="Administration"/>
                                 </p:submenu>
 
-                                <p:submenu label="Reports"  rendered="#{webUserController.hasPrivilege('Reports')}">
+                                <p:submenu styleClass="rightBordrOnly" label="Reports"  rendered="#{webUserController.hasPrivilege('Reports')}">
                                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/revenue_reports/index" value="Revenue Reports"  ></p:menuitem>
@@ -605,12 +605,12 @@
 
                                 </p:submenu>
 
-                                <p:submenu label="User"  >
+                                <p:submenu styleClass="rightBordrOnly" label="User"  >
                                     <p:menuitem  ajax="false"  action="/user_change_password" value="Change Password"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/user_preferances" value="Change Preferances"  ></p:menuitem>
                                 </p:submenu>
 
-                                <p:submenu label="Admin"  rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:submenu styleClass="rightBordrOnly" label="Admin"  rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:menuitem  ajax="false"  action="/admin_manage_users" value="Manage Users" rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/admin_mange_institutions_index" value="Manage Institutions" rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
@@ -659,23 +659,33 @@
 
                                 </p:submenu>
 
-                                <p:submenu id="smSearch" label="Search" rendered="#{webUserController.hasPrivilege('Search')}">
+                                <p:submenu styleClass="rightBordrOnly" id="smSearch" label="Search" rendered="#{webUserController.hasPrivilege('Search')}">
                                     <p:menuitem  ajax="false"  action="/search_all" value="Grand Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
-
                                 </p:submenu>
 
-                                <p:menuitem id="iconLogout" ajax="false" icon="ui-icon-power" action="#{sessionController.logout}" >
 
-                                </p:menuitem>
-
+                                <f:facet name="options">
+                                    <p:inputText style="margin-right:10px" placeholder="Search"/>
+                                    <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />
+                                    <poue:tooltip for="btnLogout" value="df" adjustX="-20" >
+                                        <h:panelGrid columns="3" >
+                                            <h:outputText value="Institution" ></h:outputText>
+                                            <p:spacer width="10" height="1" ></p:spacer>
+                                            <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
+                                            <h:outputText value="Department" ></h:outputText>
+                                            <p:spacer width="10" height="1" ></p:spacer>
+                                            <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                                            <h:outputText value="User" ></h:outputText>
+                                            <p:spacer width="10" height="1" ></p:spacer>
+                                            <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                                        </h:panelGrid>
+                                    </poue:tooltip>
+                                </f:facet>
 
                             </p:menubar>
 
-                            <poue:tooltip for="smSearch" value="df" >
-                                sdfsdf
-                                sdf
-                            </poue:tooltip>
+
 
                         </h:panelGroup>
 
