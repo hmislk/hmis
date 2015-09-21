@@ -62,6 +62,7 @@ public class BookKeepingSummery implements Serializable {
     Date toDate;
     private PaymentMethod paymentMethod;
     Institution institution;
+    Department department;
     Institution loggediInstitution;
     private Institution incomeInstitution;
     @EJB
@@ -520,6 +521,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -1348,6 +1357,111 @@ public class BookKeepingSummery implements Serializable {
 
         }
 
+    }
+
+    private double getBillTotalbyDate(Date date, Institution ins, Department dep, List<BillType> btps,
+            BillClassType billClassType, boolean ref, boolean can) {
+
+        String sql;
+
+        sql = "select sum(b.total) "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fd and :td ";
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+
+        if (ins != null) {
+            sql += " and b.toInstitution=:ins ";
+            m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.toDepartment=:dep ";
+            m.put("dep", dep);
+        }
+
+        if (!btps.isEmpty()) {
+            sql += " and b.billType in :billType ";
+            m.put("billType", btps);
+        }
+
+        if (billClassType != null) {
+            System.out.println("billClassType = " + billClassType);
+            sql += " and b.billClassType=:class ";
+            m.put("class", billClassType);
+        }
+
+        if (can) {
+            System.out.println("cancelled = " + can);
+            sql += " and b.cancelled=false ";
+        }
+
+        if (ref) {
+            System.out.println("refunded = " + ref);
+            sql += " and b.refunded=false ";
+        }
+
+        double value = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return value;
+
+    }
+
+    public void createLabTotalAllReportByDate() {
+
+        bookKeepingSummeryRowsInward = new ArrayList<>();
+        grantTotal = 0;
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        BillType billType[] = {BillType.InwardBill, BillType.OpdBill};
+        List<BillType> btps = Arrays.asList(billType);
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            double billedValue = getBillTotalbyDate(nowDate, institution, department, btps, BillClassType.BilledBill, false, false);;
+
+            double cancelledValue = getBillTotalbyDate(nowDate, institution, department, btps, BillClassType.CancelledBill, false, false);;
+
+            double refundValue = getBillTotalbyDate(nowDate, institution, department, btps, BillClassType.RefundBill, false, false);
+
+            double total = billedValue + (cancelledValue + refundValue);
+
+            BookKeepingSummeryRow billedSummery = new BookKeepingSummeryRow();
+
+//            newRow.setValue1(handOverValue + proTot);
+//            newRow.setValue2(discount);
+//            newRow.setValue3(proTot);
+            billedSummery.setItemName(formattedDate);
+
+            billedSummery.setTotal(total);
+            grantTotal += total;
+
+            if (billedSummery.getTotal() > 0) {
+                System.out.println("adding");
+                bookKeepingSummeryRowsInward.add(billedSummery);
+            }
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
     }
 
     public void createInwardOpdFee() {
