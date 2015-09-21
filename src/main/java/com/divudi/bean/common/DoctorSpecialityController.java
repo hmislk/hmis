@@ -192,7 +192,9 @@ public class DoctorSpecialityController implements Serializable {
 
     public List<DoctorSpeciality> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            String j;
+            j="select s from DoctorSpeciality s where s.retired=false order by s.name";
+            items = getFacade().findBySQL(j);
         }
         return items;
     }

@@ -29,7 +29,7 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -148,7 +148,11 @@ public class DesignationController implements Serializable {
     }
 
     public List<Designation> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select d from Designation d where d.retired=false order by d.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

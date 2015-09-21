@@ -14,7 +14,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
+import javax.inject.Named;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -25,11 +26,11 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class WebUserRoleController implements Serializable {
+public class WebUserRoleController implements Serializable {
 
     @Inject
     SessionController sessionController;
@@ -129,7 +130,11 @@ public  class WebUserRoleController implements Serializable {
     }
 
     public List<WebUserRole> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select r from WebUserRole r where r.retired=false order byr.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

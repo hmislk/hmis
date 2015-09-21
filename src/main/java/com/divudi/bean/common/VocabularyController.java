@@ -27,7 +27,7 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -144,7 +144,11 @@ public class VocabularyController implements Serializable {
     }
 
     public List<Vocabulary> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j ;
+            j="select v from Vocabulary v where v.retired=false order by v.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 
