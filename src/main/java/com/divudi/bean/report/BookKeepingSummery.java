@@ -1342,7 +1342,7 @@ public class BookKeepingSummery implements Serializable {
 
         String sql;
 
-        sql = "select sum(b.total) "
+        sql = "select sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.createdAt between :fd and :td ";
