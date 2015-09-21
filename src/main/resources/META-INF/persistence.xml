@@ -7,7 +7,7 @@
       <property name="javax.persistence.jdbc.url" value="objectdb://localhost/ehr.odb"/>
       <property name="javax.persistence.jdbc.user" value="admin"/>
       <property name="javax.persistence.jdbc.password" value="admin"/>
-      <property name="javax.persistence.schema-generation.database.action" value="create"/>
+      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-database"/>
     </properties>
   </persistence-unit>
 </persistence>
