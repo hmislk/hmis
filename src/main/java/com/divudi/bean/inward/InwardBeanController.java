@@ -1868,7 +1868,9 @@ public class InwardBeanController implements Serializable {
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
         double duration = tif.getDurationHours() * 60;
+        System.out.println("duration = " + duration);
         double overShoot = tif.getOverShootHours() * 60;
+        System.out.println("overShoot = " + overShoot);
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 
@@ -1877,7 +1879,7 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
-
+        System.out.println("consumeTime = " + consumeTime);
         double count = 0;
         double calculation = 0;
 
@@ -1889,11 +1891,17 @@ public class InwardBeanController implements Serializable {
                 //For Room Calculation Hour(For Room Charges)
                 count = (long) (consumeTime / duration);
             }
+            
+            System.out.println("count = " + count);
 
             calculation = (consumeTime - (count * duration));
-            if (overShoot != 0 && overShoot <= (calculation)) {
+            System.out.println("calculation = " + calculation);
+            if ((overShoot != 0 && overShoot <= calculation)||count==0) {
+                System.err.println("count = " + count);
                 count++;
+                System.err.println("count = " + count);
             }
+            System.out.println("count = " + count);
         }
 
         return count;

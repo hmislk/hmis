@@ -116,6 +116,16 @@ public class CashierReportController implements Serializable {
 
     }
 
+    private BillsTotals createRowAgent(BillType billType, String suffix, Bill bill, WebUser webUser) {
+        BillsTotals newB = new BillsTotals();
+        newB.setName(billType.getLabel() + " " + suffix);
+        newB.setCash(calTotalValueOwn(webUser, bill, PaymentMethod.Cash, billType));
+        finalCashTot += newB.getCash();
+
+        return newB;
+
+    }
+
     private BillsTotals createRowWithoutPro(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
@@ -191,7 +201,23 @@ public class CashierReportController implements Serializable {
                 uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
 
             }
+            //channel agent bill cash cancel refund
+            BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 
+            if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
+                billls.add(newC);
+            }
+
+            BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
+
+            if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
+                billls.add(newR);
+            }
+
+            uCash += (newC.getCash() + newR.getCash());
+
+            //
+            
             //Cash In
             BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
 
