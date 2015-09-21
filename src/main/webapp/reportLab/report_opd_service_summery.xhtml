@@ -46,7 +46,8 @@
                                     value="#{serviceSummery.department}" converter="departmentConverter"/>
 
                     <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                    <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
+                    <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">
+                        <f:selectItem itemLabel="Opd and Inward"/>
                         <f:selectItems value="#{enumController.paymentMethods}"  />
                     </p:selectOneMenu>
 
