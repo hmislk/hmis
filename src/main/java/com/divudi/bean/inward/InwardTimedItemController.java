@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -32,7 +32,6 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -42,10 +41,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
 

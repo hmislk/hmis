@@ -11,7 +11,6 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
-import com.divudi.entity.Category;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
@@ -21,10 +20,8 @@ import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -285,7 +282,7 @@ public class InvestigationItemController implements Serializable {
     public void removeItem() {
         current.setRetired(true);
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        current.setRetiredAt(new Date());
         getEjbFacade().edit(getCurrent());
         getItems().remove(getCurrent());
 
@@ -395,7 +392,7 @@ public class InvestigationItemController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");

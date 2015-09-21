@@ -21,15 +21,10 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -40,7 +35,6 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,12 +42,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -168,14 +161,14 @@ public class GrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -519,7 +512,6 @@ public class GrnController implements Serializable {
         Payment p = new Payment();
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -533,7 +525,6 @@ public class GrnController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);

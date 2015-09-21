@@ -8,21 +8,20 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.facade.VocabularyFacade;
 import com.divudi.entity.Vocabulary;
+import com.divudi.facade.VocabularyFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -47,7 +46,7 @@ public class VocabularyController implements Serializable {
         List<Vocabulary> c;
         c = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
-            c = new ArrayList<Vocabulary>();
+            c = new ArrayList<>();
         }
         return c;
     }
@@ -79,7 +78,7 @@ public class VocabularyController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -126,7 +125,7 @@ public class VocabularyController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

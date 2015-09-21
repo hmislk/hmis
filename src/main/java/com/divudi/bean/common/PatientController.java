@@ -7,12 +7,8 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.clinical.ClinicalSearch;
-import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.ByteArrayInputStream;
@@ -25,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -180,7 +175,7 @@ public class PatientController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfull");
@@ -236,7 +231,6 @@ public class PatientController implements Serializable {
                 + " or upper(p.code) like  :q )"
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        System.out.println(sql);
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
         return patientList;

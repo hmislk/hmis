@@ -4,13 +4,13 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.SessionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -39,11 +39,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -115,7 +114,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
         System.out.println("getBill().getBillItems() = " + getBill().getBillItems());
         System.out.println("getBill().getBillItems() = " + getBill().getBillItems().size());
-        System.out.println("getBillItems() = " + getBillItems().size());
 
         for (BillItem bi : getBillItems()) {
             System.err.println("in");
@@ -131,7 +129,6 @@ public class DealorPaymentBillSearch implements Serializable {
             billItemFacede.edit(bi);
             System.out.println("bi = " + bi);
             System.out.println("newBi.getBill = " + newBi.getBill());
-            System.out.println("newBi.getBill.getReferenceBill = " + newBi.getBill().getReferenceBill());
             System.err.println("out");
         }
 
@@ -256,9 +253,9 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
 
         cb.setPaymentMethod(getBill().getPaymentMethod());
@@ -317,7 +314,7 @@ public class DealorPaymentBillSearch implements Serializable {
 //        tmp.setPatient(b.getPatientEncounter().getPatient());
 //        tmp.setPaymentScheme(getCurrent().getPaymentScheme());
 //        tmp.setNetTotal(b.getNetValue());
-//        tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        tmp.setCreatedAt(new Date());
 //        tmp.setCreater(getSessionController().getLoggedUser());
 //        getBillFacade().create(tmp);
 //
@@ -328,7 +325,7 @@ public class DealorPaymentBillSearch implements Serializable {
 //        BillItem temBi = new BillItem();
 //        temBi.setBill(b);
 //        temBi.setNetValue(b.getNetTotal());
-//        temBi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        temBi.setCreatedAt(new Date());
 //        temBi.setCreater(getSessionController().getLoggedUser());
 //        getBillItemFacade().create(temBi);
 //    }
@@ -439,7 +436,7 @@ public class DealorPaymentBillSearch implements Serializable {
             b.invertValue(nB);
             b.setReferenceBill(nB.getReferenceBill());
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             if (b.getId() == null) {
@@ -458,7 +455,7 @@ public class DealorPaymentBillSearch implements Serializable {
             b.invertValue(nB);
             b.setReferenceBill(nB.getReferenceBill());
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             if (b.getId() == null) {
@@ -605,8 +602,6 @@ public class DealorPaymentBillSearch implements Serializable {
         if (getBill() != null && billItems == null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
             billItems = getBillItemFacede().findBySQL(sql);
-//            System.out.println("sql for bill item search is " + sql);
-            System.out.println("results for bill item search is " + billItems.size());
 
         }
         if (billItems == null) {
@@ -741,7 +736,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -753,7 +748,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

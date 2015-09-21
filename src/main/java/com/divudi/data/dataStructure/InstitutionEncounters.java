@@ -4,7 +4,6 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import java.util.List;

@@ -30,7 +30,6 @@ import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +39,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -373,7 +373,6 @@ public class PurchaseReturnController implements Serializable {
         Payment p = new Payment();
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -387,7 +386,6 @@ public class PurchaseReturnController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);

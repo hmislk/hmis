@@ -14,18 +14,18 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.CashTransactionFacade;
 import com.divudi.facade.WebUserFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

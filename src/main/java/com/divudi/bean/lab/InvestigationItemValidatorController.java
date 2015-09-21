@@ -8,15 +8,14 @@ package com.divudi.bean.lab;
 import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.facade.InvestigationItemValidatorFacade;
-import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Named;
 
 /**
  *

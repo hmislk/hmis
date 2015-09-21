@@ -25,11 +25,14 @@
                         <tr>
                             <td>
                                 <h:panelGrid columns="1">
+                                    <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}"  style="min-width: 223px; ">
+                                        <p:ajax event="keyup" update="acSpeciality" process="txtSearch @this" />
+                                    </p:inputText>
                                     <p:selectOneListbox converter="specilityCon" 
                                                         id="acSpeciality" 
                                                         value="#{bookingController.speciality}" 
                                                         style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                                        <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                                        <f:selectItems value="#{doctorSpecialityController.selectedItems}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                                         <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
                                         <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
                                     </p:selectOneListbox>
@@ -169,6 +172,7 @@
                                 <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
                                              value="#{bookingController.billSessions}" var='bs'
                                              selectionMode="single" rowKey="#{bs.id}"
+                                             rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
                                              selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                             listener="#{channelBillController.createBillfees}" />  
@@ -176,9 +180,9 @@
                                     <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
                                     <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                     <p:column headerText="Paid">
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: red;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: red;"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
+                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
@@ -252,15 +256,15 @@
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')}" listener="#{channelBillController.validateAgentBalance()}"/>
-                                <p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')}" />
+                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
+                                <p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete> 
 
                             <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
                             <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <p:tooltip for="agRefLbl" >
+                            <p:tooltip for="agRefLbl agent" >
                                 <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
                                     <p:column>
                                         <f:facet name="header">
@@ -672,6 +676,7 @@
                             <h:panelGroup>
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
+                            <h:inputTextarea value="#{channelBillController.comment}"/>
                             <p:commandButton ajax="false" value="Cancel Agent Bill" 
                                              rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
                                              action="#{channelBillController.cancelAgentPaidBill()}"
@@ -727,6 +732,7 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
+                            <!--<h:inputTextarea value="#{channelBillController.comment}"/>-->
 
                             <p:commandButton ajax="false" value="Refund Agent Bills" 
                                              rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"

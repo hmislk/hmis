@@ -14,21 +14,21 @@ import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
-import com.divudi.facade.AgentsFeesFacade;
 import com.divudi.entity.channel.AgentsFees;
+import com.divudi.facade.AgentsFeesFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

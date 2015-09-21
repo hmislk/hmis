@@ -1279,7 +1279,6 @@ public class HrReportController implements Serializable {
         staffLeavesNoPay = humanResourceBean.fetchStaffLeaveAddedLeaveList(getReportKeyWord().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
         System.err.println("User Leave " + staffLeavesNoPay);
         staffLeaveSystem = humanResourceBean.fetchStaffLeaveSystemList(getReportKeyWord().getStaff(), getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
-        System.err.println("System Leave " + staffLeaveSystem);
 
         calculateWorkedTime();
     }
@@ -1712,7 +1711,6 @@ public class HrReportController implements Serializable {
 
         sql += " order by ss.id ";
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
 
         List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
@@ -1723,11 +1721,6 @@ public class HrReportController implements Serializable {
             System.out.println("ss.extraTimeFromStartRecordVarified = " + ss.getExtraTimeFromStartRecordVarified());
             System.out.println("ss.extraTimeFromEndRecordVarified = " + ss.getExtraTimeFromEndRecordVarified());
             System.out.println("ss.multiplyingFactorOverTime = " + ss.getMultiplyingFactorOverTime());
-            System.out.println("ss.overTimeValuePerSecond = " + ss.getOverTimeValuePerSecond());
-
-            //                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
-//                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified),"
-//                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)
         }
 
     }
@@ -2306,8 +2299,6 @@ public class HrReportController implements Serializable {
             UtilityController.addErrorMessage("Check Date Range .Date range should be within 8 days");
             return;
         }
-        System.err.println(dateCount);
-//        double numOfWeeks = dateCount / 7.0;
 
         List<Staff> staffList = fetchStaff();
         weekDayWorks = new ArrayList<>();
@@ -2319,7 +2310,6 @@ public class HrReportController implements Serializable {
             List<Object[]> list = fetchWorkedTimeByDateOnly(stf); // Added by Buddhika
 
             System.err.println("list = " + list);
-            System.out.println("list size " + list.size());
 
 //            fetchWorkedTimeTemporary(stf); // For Testing
             int i = 0;
@@ -2339,42 +2329,9 @@ public class HrReportController implements Serializable {
                 if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
                     System.out.println("value = " + value);
                     System.out.println("leavedTimeValue = " + leavedTimeValue);
-                    System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin() * 60);
                     if ((ss.getShift().getDurationMin() * 60) < value) {
                         value = ss.getShift().getDurationMin() * 60;
-                        System.out.println("4.b dbl(else) = " + value);
                     }
-                }
-                switch (dayOfWeek) {
-                    case Calendar.SUNDAY:
-                        weekDayWork.setSunDay(value);
-                        weekDayWork.setSunDayExtra(valueExtra);
-                        System.out.println("sunday = ");
-                        break;
-                    case Calendar.MONDAY:
-                        weekDayWork.setMonDay(value);
-                        weekDayWork.setMonDayExtra(valueExtra);
-                        break;
-                    case Calendar.TUESDAY:
-                        weekDayWork.setTuesDay(value);
-                        weekDayWork.setTuesDayExtra(valueExtra);
-                        break;
-                    case Calendar.WEDNESDAY:
-                        weekDayWork.setWednesDay(value);
-                        weekDayWork.setWednesDayExtra(valueExtra);
-                        break;
-                    case Calendar.THURSDAY:
-                        weekDayWork.setThursDay(value);
-                        weekDayWork.setThursDayExtra(valueExtra);
-                        break;
-                    case Calendar.FRIDAY:
-                        weekDayWork.setFriDay(value);
-                        weekDayWork.setFriDayExtra(valueExtra);
-                        break;
-                    case Calendar.SATURDAY:
-                        weekDayWork.setSaturDay(value);
-                        weekDayWork.setSaturDayExtra(valueExtra);
-                        break;
                 }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
@@ -2417,7 +2374,6 @@ public class HrReportController implements Serializable {
         System.out.println("numOfWeeks = " + numOfWeeks);
 
         Date fDate = getSalaryCycle().getWorkedFromDate();
-        System.out.println("fDate = " + fDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fDate);
         frmCal.set(Calendar.HOUR, 0);
@@ -2452,7 +2408,6 @@ public class HrReportController implements Serializable {
             otam.setDateRange(date.toString());
             otam.setDayWorks(createMonthEndWorkTimeReport(frmCal.getTime(), toCal.getTime(), i));
             System.out.println("otam.getDateRange() = " + otam.getDateRange());
-            System.out.println("otam.getDayWorks().size() = " + otam.getDayWorks().size());
             overTimeAllMonths.add(otam);
 
             setSummeryTableForMonth(otam, overTimeAllMonths.size());
@@ -2472,7 +2427,6 @@ public class HrReportController implements Serializable {
 //        double numOfWeeks = dateCount / 7.0;
 
         List<Staff> staffList = fetchStaff(frDate, tDate);
-        System.out.println("staffList = " + staffList.size());
         weekDayWorks = new ArrayList<>();
         for (Staff stf : staffList) {
             WeekDayWork weekDayWork = new WeekDayWork();
@@ -2482,7 +2436,6 @@ public class HrReportController implements Serializable {
             List<Object[]> list = fetchWorkedTimeByDateOnly(stf, frDate, tDate);
 
             System.err.println("list = " + list);
-            System.out.println("list size " + list.size());
 
 //            fetchWorkedTimeTemporary(stf); // For Testing
             int i = 0;
@@ -2502,42 +2455,9 @@ public class HrReportController implements Serializable {
                 if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
                     System.out.println("value = " + value);
                     System.out.println("leavedTimeValue = " + leavedTimeValue);
-                    System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin() * 60);
                     if ((ss.getShift().getDurationMin() * 60) < value) {
                         value = ss.getShift().getDurationMin() * 60;
-                        System.out.println("4.b dbl(else) = " + value);
                     }
-                }
-                switch (dayOfWeek) {
-                    case Calendar.SUNDAY:
-                        weekDayWork.setSunDay(value);
-                        weekDayWork.setSunDayExtra(valueExtra);
-                        System.out.println("sunday = ");
-                        break;
-                    case Calendar.MONDAY:
-                        weekDayWork.setMonDay(value);
-                        weekDayWork.setMonDayExtra(valueExtra);
-                        break;
-                    case Calendar.TUESDAY:
-                        weekDayWork.setTuesDay(value);
-                        weekDayWork.setTuesDayExtra(valueExtra);
-                        break;
-                    case Calendar.WEDNESDAY:
-                        weekDayWork.setWednesDay(value);
-                        weekDayWork.setWednesDayExtra(valueExtra);
-                        break;
-                    case Calendar.THURSDAY:
-                        weekDayWork.setThursDay(value);
-                        weekDayWork.setThursDayExtra(valueExtra);
-                        break;
-                    case Calendar.FRIDAY:
-                        weekDayWork.setFriDay(value);
-                        weekDayWork.setFriDayExtra(valueExtra);
-                        break;
-                    case Calendar.SATURDAY:
-                        weekDayWork.setSaturDay(value);
-                        weekDayWork.setSaturDayExtra(valueExtra);
-                        break;
                 }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
@@ -2626,7 +2546,6 @@ public class HrReportController implements Serializable {
         System.err.println("Create Month End Work Time Report By Salary Generation Method");
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         System.out.println("From Date() = " + getFromDate());
-        System.out.println("To Date() = " + getToDate());
         if (dateCount > 8) {
             UtilityController.addErrorMessage("Check Date Range .Date range should be within 8 days");
             return;
@@ -2637,7 +2556,6 @@ public class HrReportController implements Serializable {
         weekDayWorks = new ArrayList<>();
 
         for (Staff stf : staffList) {
-            System.out.println("Staff Member = " + stf.getPerson().getName() + "(" + stf.getCode() + ")");
             WeekDayWork weekDayWork = new WeekDayWork();
             weekDayWork.setStaff(stf);
 
@@ -2671,37 +2589,6 @@ public class HrReportController implements Serializable {
 
                 Integer dayOfWeek = frmCal.get(Calendar.DAY_OF_WEEK) + 1;
 
-                switch (dayOfWeek) {
-                    case Calendar.SUNDAY:
-                        weekDayWork.setSunDay(value);
-                        weekDayWork.setSunDayExtra(valueExtra);
-                        System.out.println("sunday = ");
-                        break;
-                    case Calendar.MONDAY:
-                        weekDayWork.setMonDay(value);
-                        weekDayWork.setMonDayExtra(valueExtra);
-                        break;
-                    case Calendar.TUESDAY:
-                        weekDayWork.setTuesDay(value);
-                        weekDayWork.setTuesDayExtra(valueExtra);
-                        break;
-                    case Calendar.WEDNESDAY:
-                        weekDayWork.setWednesDay(value);
-                        weekDayWork.setWednesDayExtra(valueExtra);
-                        break;
-                    case Calendar.THURSDAY:
-                        weekDayWork.setThursDay(value);
-                        weekDayWork.setThursDayExtra(valueExtra);
-                        break;
-                    case Calendar.FRIDAY:
-                        weekDayWork.setFriDay(value);
-                        weekDayWork.setFriDayExtra(valueExtra);
-                        break;
-                    case Calendar.SATURDAY:
-                        weekDayWork.setSaturDay(value);
-                        weekDayWork.setSaturDayExtra(valueExtra);
-                        break;
-                }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
                 weekDayWork.setExtraDutyValue(weekDayWork.getExtraDutyValue() + totalExtraDuty);
@@ -2891,7 +2778,6 @@ public class HrReportController implements Serializable {
         Long datRange = commonFunctions.getDayCount(getFromDate(), getToDate());
         Long mul = datRange / 7;
         double maxLimitInSec = mul * finalVariables.getMinimumWorkingHourPerWeek() * 60 * 60;
-        System.err.println("Max Limit " + maxLimitInSec);
         List<StaffShiftAggrgation> list = new ArrayList<>();
 
         for (StaffShiftAggrgation ssa : staffShiftAggrgations) {
@@ -2951,7 +2837,6 @@ public class HrReportController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            System.err.println(ss.getId());
             double valueForOverTime = humanResourceBean.getOverTimeValue(ss.getStaff(), ss.getShiftDate());
             ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
             staffShiftFacade.edit(ss);
@@ -2979,17 +2864,14 @@ public class HrReportController implements Serializable {
 
             System.out.println("ss.getDayType() = " + ss.getDayType());
 
-            System.out.println("dayType out = " + dayType);
 
             ss.setDayType(null);
 
             DayType dtp;
             if (dayType != null || dayType == DayType.DayOff) {
                 dtp = dayType;
-                System.out.println("dayType if = " + dtp);
             } else {
                 dtp = phDateController.getHolidayType(ss.getShiftDate());
-                System.out.println("dayType else = " + dtp);
             }
             //
 
@@ -2999,7 +2881,6 @@ public class HrReportController implements Serializable {
                     ss.setDayType(ss.getShift().getDayType());
                 }
             } else {
-                System.err.println("$$$$ " + dtp + "  " + ++i);
             }
             staffShiftFacade.edit(ss);
         }
@@ -3215,7 +3096,6 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);

@@ -11,7 +11,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
-import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -21,8 +20,8 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
-import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -33,17 +32,14 @@ import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -410,7 +406,7 @@ public class CommonReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -422,7 +418,7 @@ public class CommonReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1220,13 +1216,11 @@ public class CommonReport implements Serializable {
     public void createGRNBillItemForAsset() {
         billItems = new ArrayList<>();
         billItems = createStoreGRNBillItem(DepartmentType.Inventry);
-        System.out.println("billItems Size = " + billItems.size());
     }
 
     public void createGRNBillItemForStore() {
         billItems = new ArrayList<>();
         billItems = createStoreGRNBillItem(DepartmentType.Store);
-        System.out.println("billItems Size = " + billItems.size());
     }
 
     public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
@@ -1249,8 +1243,6 @@ public class CommonReport implements Serializable {
         m.put("dt", dt);
 
         bs = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        //System.out.println("billItems = " + billItems);
-        System.out.println("billItems Size = " + bs.size());
 
         return bs;
     }
@@ -1936,7 +1928,6 @@ public class CommonReport implements Serializable {
         for (BillsTotals bt : list) {
             if (bt != null) {
                 System.err.println("CRDIT " + bt.getCredit());
-                System.err.println("CASH " + bt.getCash());
                 //   System.err.println("Size " + bt.getBills().size());
                 tmp += bt.getCredit();
             }
@@ -2436,7 +2427,7 @@ public class CommonReport implements Serializable {
         getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
         getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(getChannelRefunds().getCash()+calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelRefunds().setCash(getChannelRefunds().getCash()+calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
@@ -3303,6 +3294,9 @@ public class CommonReport implements Serializable {
         list2.add(inwardRefunds);
         list2.add(cashRecieves);
         list2.add(cashRecieveCancel);
+        list2.add(channelBilled);
+        list2.add(channelCancells);
+        list2.add(channelRefunds);
 
         double credit = 0.0;
         double slip = 0;

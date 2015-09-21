@@ -183,13 +183,10 @@ public class BookingController implements Serializable {
                 }
             }
             System.out.println("bs = " + bs);
-            System.out.println("selectedBillSession = " + selectedBillSession);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
-                    System.out.println("serealNo = " + serealNo);
                     if (serealNo == bi.getBillSession().getSerialNo()) {
-                        System.err.println("Equals");
                         alreadyExists = true;
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
                     }
@@ -209,13 +206,10 @@ public class BookingController implements Serializable {
         }
         for (BillSession bs : billSessions) {
             System.out.println("bs = " + bs);
-            System.out.println("selectedBillSession = " + selectedBillSession);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
-                    System.out.println("serealNo = " + serealNo);
                     if (serealNo == bi.getBillSession().getSerialNo()) {
-                        System.err.println("Equals");
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
                         flag = true;
                     }
@@ -267,7 +261,6 @@ public class BookingController implements Serializable {
         for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
             bi.getBillSession().setSerialNo(serealNo);
             System.out.println("bi = " + bi.getBillSession().getSerialNo());
-            System.out.println("serealNo = " + serealNo);
             getBillItemFacade().edit(bi);
         }
 
@@ -426,25 +419,21 @@ public class BookingController implements Serializable {
                     + " and f.name!=:name";
             m.put("name", "On-Call Fee");
             m.put("fts1", feeTypes);
-            System.out.println("paymentMethod(if) = " + paymentMethod);
         } else {
             if (paymentMethod == PaymentMethod.OnCall) {
                 jpql += " and f.feeType in :fts2 ";
                 m.put("fts2", feeTypes);
-                System.out.println("paymentMethod(if else is) = " + paymentMethod);
             } else {
                 jpql += " and f.feeType in :fts3 "
                         + " and f.name!=:name";
                 m.put("name", "On-Call Fee");
                 m.put("fts3", feeTypes);
-                System.out.println("paymentMethod(if else else) = " + paymentMethod);
             }
         }
         m.put("ses", item);
         System.out.println("paymentMethod = " + paymentMethod);
         System.out.println("feeTypes = " + feeTypes);
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -471,25 +460,21 @@ public class BookingController implements Serializable {
                     + " and f.name!=:name";
             m.put("name", "On-Call Fee");
             m.put("fts1", feeTypes);
-            System.out.println("paymentMethod(if) = " + paymentMethod);
         } else {
             if (paymentMethod == PaymentMethod.OnCall) {
                 jpql += " and f.feeType in :fts2 ";
                 m.put("fts2", feeTypes);
-                System.out.println("paymentMethod(if else is) = " + paymentMethod);
             } else {
                 jpql += " and f.feeType in :fts3 "
                         + " and f.name!=:name";
                 m.put("name", "On-Call Fee");
                 m.put("fts3", feeTypes);
-                System.out.println("paymentMethod(if else else) = " + paymentMethod);
             }
         }
         m.put("ses", item);
         System.out.println("paymentMethod = " + paymentMethod);
         System.out.println("feeTypes = " + feeTypes);
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -585,7 +570,6 @@ public class BookingController implements Serializable {
             System.err.println("Calling Start");
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
             generateSessionEvents(serviceSessions);
-            System.err.println("Calling End");
         }
     }
 
@@ -597,10 +581,8 @@ public class BookingController implements Serializable {
             e.setTitle(s.getName());
             e.setStartDate(s.getTransStartTime());
             e.setEndDate(s.getTransEndTime());
-            System.out.println("e = " + e);
             eventModel.addEvent(e);
         }
-        System.out.println("eventModel = " + eventModel);
     }
 
     public void onEventSelect(SelectEvent selectEvent) {
@@ -719,7 +701,6 @@ public class BookingController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        System.out.println("billSessions.size() = " + billSessions.size());
 
     }
 
@@ -754,7 +735,6 @@ public class BookingController implements Serializable {
         if (ss.getMaxNo() != tmp.getMaxNo()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
-            System.err.println("***********Edited******");
         }
         getServiceSessionFacade().edit(tmp);
     }

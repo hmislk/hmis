@@ -7,8 +7,8 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  *
@@ -106,7 +106,7 @@ public class CommonFunctionsController {
             now.add(Calendar.YEAR, -years);
             return now.getTime();
         } catch (Exception e) {
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
         }
     }
 
@@ -133,7 +133,7 @@ public class CommonFunctionsController {
 
             return now.getTime();
         } catch (Exception e) {
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
         }
     }
 
@@ -144,7 +144,7 @@ public class CommonFunctionsController {
             now.add(Calendar.MONTH, -month);
             return now.getTime();
         } catch (Exception e) {
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
         }
     }
 

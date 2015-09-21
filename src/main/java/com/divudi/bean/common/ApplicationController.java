@@ -11,8 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  *
@@ -87,7 +87,6 @@ public class ApplicationController {
 //            }
 //            getSessionControllers().add(sc);
         } catch (Exception e) {
-            System.out.println("Error in addToLogins of Application controller." + e.getMessage());
         }
     }
 

@@ -16,7 +16,6 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,6 +26,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -80,7 +80,6 @@ public class ServiceSessionLeaveController implements Serializable {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("suggestions.size() = " + suggestions.size());
 
         return suggestions;
     }
@@ -127,7 +126,6 @@ public class ServiceSessionLeaveController implements Serializable {
     }
 
     public void removeLeaveAndActiveServiceSession(ServiceSessionLeave ssl) {
-        System.out.println("ssl.getRetireComments() = " + ssl.getRetireComments());
         if (ssl.getRetireComments() == null || ssl.getRetireComments().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Remove Comment.");
             return;
@@ -174,7 +172,6 @@ public class ServiceSessionLeaveController implements Serializable {
         getSelectedServiceSession().setDeactivated(true);
         getServiceSessionFacade().edit(selectedServiceSession);
         System.out.println("selectedServiceSession = " + selectedServiceSession);
-        System.out.println("selectedServiceSession.isDeactivated = " + selectedServiceSession.isDeactivated());
 
         //create servicesession Leave
         getCurrent().setCreatedAt(new Date());

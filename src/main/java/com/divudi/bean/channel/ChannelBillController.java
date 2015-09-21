@@ -8,7 +8,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -55,7 +54,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -94,6 +92,7 @@ public class ChannelBillController implements Serializable {
     PaymentScheme paymentScheme;
     double creditLimit;
     boolean activeCreditLimitPannel = false;
+    String comment;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -162,7 +161,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(getBillSession());
         bs.setBill(bill);
         bs.setBillItem(billItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
 
         getBillSessionFacade().create(bs);
@@ -226,11 +225,10 @@ public class ChannelBillController implements Serializable {
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
-        System.out.println("Creater paid" + getSessionController().getLoggedUser().getWebUserPerson().getName());
 
         getBillFacade().create(temp);
 
@@ -240,7 +238,7 @@ public class ChannelBillController implements Serializable {
     private BillItem savePaidBillItem(Bill b) {
         BillItem bi = new BillItem();
         bi.copy(billSession.getBillItem());
-        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
         bi.setBill(b);
         getBillItemFacade().create(bi);
@@ -320,6 +318,7 @@ public class ChannelBillController implements Serializable {
         }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
+        comment=null;
     }
 
     public void refundAgentBill() {
@@ -344,6 +343,7 @@ public class ChannelBillController implements Serializable {
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
 
         refundPaymentMethod = null;
+        comment=null;
     }
 
     public void refundCreditPaidBill() {
@@ -368,7 +368,6 @@ public class ChannelBillController implements Serializable {
 
         if (getBillSession().getBill().getBillFees() != null) {
 
-            System.out.println("getBillSession().getBill().getBillFees() = " + getBillSession().getBill().getBillFees().size());
 
             for (BillFee bf : getBillSession().getBill().getBillFees()) {
 
@@ -376,7 +375,6 @@ public class ChannelBillController implements Serializable {
                     continue;
                 }
 
-                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
 
                 switch (bf.getFee().getFeeType()) {
                     case OtherInstitution:
@@ -417,6 +415,7 @@ public class ChannelBillController implements Serializable {
 
         refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
+        comment=null;
 
     }
 
@@ -424,14 +423,12 @@ public class ChannelBillController implements Serializable {
         calRefundTotal();
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
-            System.out.println("paid bill set");
             bill.setPaidBill(bill);
             billFacade.edit(bill);
         }
 
         if (bill.getPaidBill() == null) {
             System.out.println("bill = " + bill);
-            System.out.println("paid bill = " + bill.getPaidBill());
             return;
         }
 
@@ -494,7 +491,6 @@ public class ChannelBillController implements Serializable {
     public void createBillfees(SelectEvent event) {
         BillSession bs = ((BillSession) event.getObject());
         System.err.println("LISTED");
-        System.err.println("BIS " + bs);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select bf From BillFee bf where bf.retired=false"
@@ -562,6 +558,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Doctor Payment has paid");
             return true;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return true;
+        }
         return false;
     }
 
@@ -571,7 +571,7 @@ public class ChannelBillController implements Serializable {
         }
 
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
-
+        comment=null;
     }
 
     public void cancelAgentPaidBill() {
@@ -613,10 +613,15 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Select Payment Method");
             return;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
 
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         cancelPaymentMethod = null;
+        comment=null;
     }
 
     public void cancelCreditPaidBill() {
@@ -649,9 +654,14 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Cancelled");
             return;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
 
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        comment=null;
 
     }
 
@@ -661,7 +671,6 @@ public class ChannelBillController implements Serializable {
         }
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
-            System.out.println("paid bill set");
             bill.setPaidBill(bill);
             billFacade.edit(bill);
         }
@@ -669,7 +678,6 @@ public class ChannelBillController implements Serializable {
         //dr. buddhika said
         if (bill.getPaidBill() == null) {
             System.out.println("bill = " + bill);
-            System.out.println("paid bill = " + bill.getPaidBill());
             return;
         }
 
@@ -728,7 +736,7 @@ public class ChannelBillController implements Serializable {
 //        b.setBill(can);
 //
 //        b.setNetValue(0 - bi.getNetValue());
-//        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        b.setCreatedAt(new Date());
 //        b.setCreater(getSessionController().getLoggedUser());
 //
 //        getBillItemFacade().create(b);
@@ -741,7 +749,7 @@ public class ChannelBillController implements Serializable {
         b.setBill(can);
         b.copy(bi);
         b.invertValue(bi);
-        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        b.setCreatedAt(new Date());
         b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
@@ -757,7 +765,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(billSession);
         bs.setBill(can);
         bs.setBillItem(canBillItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
 
@@ -772,7 +780,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(billSession);
         bs.setBill(bill);
         bs.setBillItem(billItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
 
@@ -788,12 +796,13 @@ public class ChannelBillController implements Serializable {
         cb.copy(bill);
         cb.invertValue(bill);
         cb.setBilledBill(bill);
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
+        cb.setComments(comment);
 
 //        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
         String insId = generateBillNumberInsId(cb);
@@ -825,7 +834,7 @@ public class ChannelBillController implements Serializable {
             bf.setBill(can);
             bf.setBillItem(bt);
 
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
@@ -878,7 +887,6 @@ public class ChannelBillController implements Serializable {
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
         for (BillFee bf : billFees) {
-            System.err.println("Change Val " + bf.getTmpChangedValue());
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
                 newBf.copy(bf);
@@ -999,7 +1007,6 @@ public class ChannelBillController implements Serializable {
 
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
-        System.out.println("ins.getBallance() after " + ins.getBallance());
 
     }
 
@@ -1109,7 +1116,6 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         System.out.println("patientTabId = " + patientTabId);
-        System.out.println("getPatientTabId = " + getPatientTabId());
         if (patientTabId.equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
                 errorText = "Can not bill without Patient.";
@@ -1209,7 +1215,6 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         System.out.println("patientTabId = " + patientTabId);
-        System.out.println("getPatientTabId = " + getPatientTabId());
 
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
@@ -1234,9 +1239,9 @@ public class ChannelBillController implements Serializable {
         switch (getPatientTabId()) {
             case "tabNewPt":
                 getNewPatient().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().getPerson().setCreatedAt(new Date());
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
@@ -1247,7 +1252,7 @@ public class ChannelBillController implements Serializable {
 
 //    private BillItem saveBilledItem(Bill b) {
 //        BillItem bi = new BillItem();
-//        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        bi.setCreatedAt(new Date());
 //        bi.setCreater(getSessionController().getLoggedUser());
 //        bi.setBill(b);
 //        bi.setAgentRefNo(agentRefNo);
@@ -1322,7 +1327,6 @@ public class ChannelBillController implements Serializable {
 
 //        bs.setPresent(true);
         System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession() = " + getbookingController().getSelectedServiceSession().getOriginatingSession());
-        System.out.println("getbookingController().getSelectedServiceSession() = " + getbookingController().getSelectedServiceSession());
 
         bs.setServiceSession(getbookingController().getSelectedServiceSession());
 //        bs.setServiceSession(getbookingController().getSelectedServiceSession().getOriginatingSession());
@@ -1435,7 +1439,6 @@ public class ChannelBillController implements Serializable {
 //            }
             billFeeFacade.create(bf);
             billFeeList.add(bf);
-            System.out.println("billFees = " + billFeeList);
         }
         bill.setDiscount(tmpDiscount);
         bill.setNetTotal(tmpTotal);
@@ -1448,7 +1451,6 @@ public class ChannelBillController implements Serializable {
         billItem.setDiscount(tmpDiscount);
         billItem.setNetValue(tmpTotal);
         System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
-        System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
         getBillItemFacade().edit(billItem);
 
 //        if (paymentMethod != PaymentMethod.Agent) {
@@ -1467,7 +1469,6 @@ public class ChannelBillController implements Serializable {
                 agentFee = ifl.getFee();
                 System.out.println("agentFee = " + agentFee);
                 agentFfee = ifl.getFfee();
-                System.out.println("agentFfee = " + agentFfee);
 
                 ifl.setFee(0.0);
                 ifl.setFfee(0.0);
@@ -1481,7 +1482,6 @@ public class ChannelBillController implements Serializable {
                 agentFee += ifl.getFee();
                 agentFfee += ifl.getFfee();
                 System.out.println("2.agentFee = " + agentFee);
-                System.out.println("2.agentFfee = " + agentFfee);
 
                 ifl.setFee(agentFee);
                 ifl.setFfee(agentFfee);
@@ -1559,21 +1559,18 @@ public class ChannelBillController implements Serializable {
             bill.setPaidAt(new Date());
         }
 
-        bill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+        bill.setCreatedAt(new Date());
         bill.setCreater(getSessionController().getLoggedUser());
         System.out.println("Creater Bill" + getSessionController().getLoggedUser().getWebUserPerson().getName());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setInstitution(sessionController.getInstitution());
         if (getbookingController() != null) {
-            System.out.println("getbookingController()" + getbookingController());
 
             if (getbookingController().getSelectedServiceSession() != null) {
-                System.out.println("getbookingController().getSelectedServiceSession()" + getbookingController().getSelectedServiceSession());
 
                 if (getbookingController().getSelectedServiceSession().getDepartment() != null) {
-                    System.out.println("getbookingController().getSelectedServiceSession().getDepartment()" + getbookingController().getSelectedServiceSession().getDepartment());
                 }
             }
         }
@@ -1581,7 +1578,6 @@ public class ChannelBillController implements Serializable {
         bill.setToDepartment(getbookingController().getSelectedServiceSession().getDepartment());
         bill.setToInstitution(getbookingController().getSelectedServiceSession().getInstitution());
 
-        System.out.println("Billtype" + bill.getBillType());
 
         getBillFacade().create(bill);
 
@@ -1589,7 +1585,6 @@ public class ChannelBillController implements Serializable {
             System.out.println("paidBill 1= " + bill.getPaidBill());
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
-            System.out.println("paidBill 2= " + bill.getPaidBill());
         }
 
         return bill;
@@ -1670,7 +1665,33 @@ public class ChannelBillController implements Serializable {
         List<BillType> bts = Arrays.asList(billTypes);
 
         String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
-        System.out.println("insId = " + insId);
+        return insId;
+    }
+    
+    private String generateBillNumberDeptId(Bill bill) {
+        String suffix = "";
+        BillClassType billClassType = null;
+        if (bill instanceof BilledBill) {
+            suffix = "CHANN";
+            billClassType = BillClassType.BilledBill;
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix = "CHANNCAN";
+            billClassType = BillClassType.CancelledBill;
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix = "CHANNREF";
+            billClassType = BillClassType.RefundBill;
+        }
+
+        System.out.println("billClassType = " + billClassType);
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         return insId;
     }
 
@@ -1789,7 +1810,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public String getPatientTabId() {
-        System.out.println("Getting Tab Id : " + patientTabId);
         return patientTabId;
     }
 
@@ -1797,7 +1817,6 @@ public class ChannelBillController implements Serializable {
         this.patientTabId = patientTabId;
         System.out.println("Setting Tab Id : " + patientTabId);
         System.out.println("this.patientTabId = " + this.patientTabId);
-        System.out.println("getPatientTabId() = " + getPatientTabId());
     }
 
     public boolean isForiegn() {
@@ -1809,7 +1828,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public void validateAgentBalance() {
-        System.out.println("inside");
         fetchRecentChannelBooks(institution);
         activeCreditLimitPannel = false;
 
@@ -1849,7 +1867,6 @@ public class ChannelBillController implements Serializable {
         m.put("ins", ins);
         
         List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findBySQL(sql, m,5);
-        System.out.println("agentReferenceBooks.size() = " + agentReferenceBooks.size());
         if (agentReferenceBooks.size()>0) {
             ins.setAgentReferenceBooks(agentReferenceBooks);
         }
@@ -2115,6 +2132,14 @@ public class ChannelBillController implements Serializable {
 
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

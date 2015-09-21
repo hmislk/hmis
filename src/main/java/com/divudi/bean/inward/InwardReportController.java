@@ -7,7 +7,6 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import static com.divudi.data.BillClassType.CancelledBill;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
@@ -31,7 +30,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -160,10 +158,8 @@ public class InwardReportController implements Serializable {
         System.out.println("discharged = " + discharged);
         if (discharged != null) {
             if (discharged) {
-                System.err.println("discharged True");
                 sql += " and b.discharged=true ";
             } else {
-                System.err.println("discharged False");
                 sql += " and b.discharged=false ";
             }
         }
@@ -171,10 +167,8 @@ public class InwardReportController implements Serializable {
         if (finalized != null) {
             if (finalized) {
                 sql += " and b.paymentFinalized=true ";
-                System.err.println("finalized True");
             } else {
                 sql += " and b.paymentFinalized=false ";
-                System.err.println("finalized False");
             }
         }
 
@@ -185,7 +179,6 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        System.out.println("patientEncounters.size() = " + patientEncounters.size());
         calTtoal();
     }
 
