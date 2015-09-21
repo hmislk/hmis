@@ -94,6 +94,7 @@ public class ChannelBillController implements Serializable {
     PaymentScheme paymentScheme;
     double creditLimit;
     boolean activeCreditLimitPannel = false;
+    String comment;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -320,6 +321,7 @@ public class ChannelBillController implements Serializable {
         }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
+        comment=null;
     }
 
     public void refundAgentBill() {
@@ -344,6 +346,7 @@ public class ChannelBillController implements Serializable {
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
 
         refundPaymentMethod = null;
+        comment=null;
     }
 
     public void refundCreditPaidBill() {
@@ -417,6 +420,7 @@ public class ChannelBillController implements Serializable {
 
         refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
+        comment=null;
 
     }
 
@@ -562,6 +566,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Doctor Payment has paid");
             return true;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return true;
+        }
         return false;
     }
 
@@ -571,7 +579,7 @@ public class ChannelBillController implements Serializable {
         }
 
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
-
+        comment=null;
     }
 
     public void cancelAgentPaidBill() {
@@ -613,10 +621,15 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Select Payment Method");
             return;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
 
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         cancelPaymentMethod = null;
+        comment=null;
     }
 
     public void cancelCreditPaidBill() {
@@ -649,9 +662,14 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Cancelled");
             return;
         }
+        if (getComment() == null || getComment().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
 
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        comment=null;
 
     }
 
@@ -794,6 +812,7 @@ public class ChannelBillController implements Serializable {
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
+        cb.setComments(comment);
 
 //        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
         String insId = generateBillNumberInsId(cb);
@@ -1673,6 +1692,34 @@ public class ChannelBillController implements Serializable {
         System.out.println("insId = " + insId);
         return insId;
     }
+    
+    private String generateBillNumberDeptId(Bill bill) {
+        String suffix = "";
+        BillClassType billClassType = null;
+        if (bill instanceof BilledBill) {
+            suffix = "CHANN";
+            billClassType = BillClassType.BilledBill;
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix = "CHANNCAN";
+            billClassType = BillClassType.CancelledBill;
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix = "CHANNREF";
+            billClassType = BillClassType.RefundBill;
+        }
+
+        System.out.println("billClassType = " + billClassType);
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
+        System.out.println("insId = " + insId);
+        return insId;
+    }
 
     public List<BillFee> getBillFee() {
 
@@ -2115,6 +2162,14 @@ public class ChannelBillController implements Serializable {
 
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

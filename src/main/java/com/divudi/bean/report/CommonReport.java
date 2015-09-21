@@ -2436,7 +2436,7 @@ public class CommonReport implements Serializable {
         getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
         getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(getChannelRefunds().getCash()+calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+        getChannelRefunds().setCash(getChannelRefunds().getCash()+calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
         getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
@@ -3303,6 +3303,9 @@ public class CommonReport implements Serializable {
         list2.add(inwardRefunds);
         list2.add(cashRecieves);
         list2.add(cashRecieveCancel);
+        list2.add(channelBilled);
+        list2.add(channelCancells);
+        list2.add(channelRefunds);
 
         double credit = 0.0;
         double slip = 0;
