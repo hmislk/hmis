@@ -38,7 +38,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -385,7 +384,7 @@ public class AdmissionController implements Serializable {
 
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
-            getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -427,7 +426,7 @@ public class AdmissionController implements Serializable {
             UtilityController.addSuccessMessage("No Patient Data Found");
         } else {
             getCurrent().setDischarged(Boolean.TRUE);
-            getCurrent().setDateOfDischarge(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setDateOfDischarge(new Date());
             getEjbFacade().edit(current);
         }
 
@@ -669,9 +668,9 @@ public class AdmissionController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-            //      getCurrent().setDateOfAdmission(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            //      getCurrent().setDateOfAdmission(new Date());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Patient Admitted Succesfully");
         }

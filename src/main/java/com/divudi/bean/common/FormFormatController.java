@@ -7,28 +7,25 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
 import com.divudi.bean.hr.HrReportController;
-import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Category;
-import java.util.TimeZone;
-import com.divudi.facade.FormFormatFacade;
 import com.divudi.entity.FormFormat;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.facade.CommonReportItemFacade;
+import com.divudi.facade.FormFormatFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -153,7 +150,7 @@ public class FormFormatController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -200,7 +197,7 @@ public class FormFormatController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

@@ -56,7 +56,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -1657,7 +1656,7 @@ public class InwardBeanController implements Serializable {
             additional = new Fee();
             additional.setName("Additional");
             additional.setFeeType(FeeType.Additional);
-            additional.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            additional.setCreatedAt(new Date());
             if (additional.getId() == null) {
                 getFeeFacade().create(additional);
             }
@@ -1754,7 +1753,7 @@ public class InwardBeanController implements Serializable {
 
             billtItemFee.setBillItem(billItem);
             billtItemFee.setFee(issueFee);
-            billtItemFee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            billtItemFee.setCreatedAt(new Date());
             billtItemFee.setInstitution(institution);
 //            getBillFeeFacade().create(billFee);
         }
@@ -1772,7 +1771,7 @@ public class InwardBeanController implements Serializable {
             issue = new Fee();
             issue.setName("Issue");
             issue.setFeeType(FeeType.Issue);
-            issue.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            issue.setCreatedAt(new Date());
 
             if (issue.getId() == null) {
                 getFeeFacade().create(issue);

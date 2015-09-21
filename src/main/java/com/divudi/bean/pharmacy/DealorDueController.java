@@ -6,7 +6,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.table.String1Value5;

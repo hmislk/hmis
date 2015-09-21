@@ -4,7 +4,6 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.entity.Department;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;

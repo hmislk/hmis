@@ -28,12 +28,10 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -279,7 +277,7 @@ public class ChannellingFeeController implements Serializable {
         }
         fee.setItem(session);
         if (fee.getId() == null || fee.getId() == 0) {
-            fee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fee.setCreatedAt(new Date());
             fee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(fee);
             UtilityController.addSuccessMessage("Fee Added");
@@ -307,7 +305,7 @@ public class ChannellingFeeController implements Serializable {
     public void delete() {
         if (removingFee != null) {
             removingFee.setRetired(true);
-            removingFee.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            removingFee.setRetiredAt(new Date());
             removingFee.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(removingFee);
             UtilityController.addSuccessMessage("Deleted Successfull");

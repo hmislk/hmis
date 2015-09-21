@@ -11,14 +11,14 @@ import com.divudi.entity.Item;
 import com.divudi.entity.clinical.FavouriteItem;
 import com.divudi.facade.FavouriteItemFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

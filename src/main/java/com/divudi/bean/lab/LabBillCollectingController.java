@@ -7,20 +7,18 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
-
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.facade.BillFacade;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -37,6 +35,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
@@ -44,21 +43,19 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -178,10 +175,10 @@ public class LabBillCollectingController implements Serializable {
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
             getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().setCreatedAt(new Date());
 
             getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().getPerson().setCreatedAt(new Date());
 
             getPersonFacade().create(getNewPatient().getPerson());
             getPatientFacade().create(getNewPatient());
@@ -390,7 +387,7 @@ public class LabBillCollectingController implements Serializable {
 
     private BillItem saveBillItem(Bill b, BillEntry e) {
         //   BillItem temBi = e.getBillItem();
-        e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(getSessionController().getLoggedUser());
         //  e.getBillItem().setDeptId(e.getBillItem().getItem().getDepartment().getId());
         e.getBillItem().setBill(b);
@@ -407,7 +404,7 @@ public class LabBillCollectingController implements Serializable {
         List<BillItem> billItems = new ArrayList<>();
         for (BillEntry e : getLstBillEntries()) {
             // BillItem temBi = e.getBillItem();
-            e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            e.getBillItem().setCreatedAt(new Date());
             e.getBillItem().setCreater(getSessionController().getLoggedUser());
             e.getBillItem().setBill(b);
             getBillItemFacade().create(e.getBillItem());
@@ -456,13 +453,13 @@ public class LabBillCollectingController implements Serializable {
         temp.setBank(chequeBank);
         temp.setChequeRefNo(chequeRefNo);
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 //        temp.setPatientEncounter(patientEncounter);
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));
         temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));

@@ -5,7 +5,6 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.data.BillType;
 import com.divudi.entity.WebUser;
 import java.util.List;
 

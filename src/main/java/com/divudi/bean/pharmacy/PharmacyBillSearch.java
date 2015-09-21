@@ -4,21 +4,21 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.store.StoreBillSearch;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.bean.store.StoreBillSearch;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.ejb.StaffBean;
@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -869,7 +868,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setPaymentScheme(getBill().getPaymentScheme());
         cb.setPaymentMethod(getBill().getPaymentMethod());
         cb.setBalance(0.0);
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
 
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -893,7 +892,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setPaymentMethod(paymentMethod);
         cb.setPaymentScheme(getBill().getPaymentScheme());
         cb.setBalance(0.0);
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
 
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -928,7 +927,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -977,7 +976,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1038,7 +1037,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1088,7 +1087,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1145,7 +1144,7 @@ public class PharmacyBillSearch implements Serializable {
 
             b.setReferanceBillItem(nB);
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1195,7 +1194,7 @@ public class PharmacyBillSearch implements Serializable {
 
             b.setReferanceBillItem(nB);
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1249,7 +1248,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1290,7 +1289,7 @@ public class PharmacyBillSearch implements Serializable {
                 b.setReferanceBillItem(nB);
             }
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1348,7 +1347,7 @@ public class PharmacyBillSearch implements Serializable {
             bf.setFeeValue(0 - nB.getFeeValue());
             bf.setSettleValue(0 - nB.getSettleValue());
 
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
@@ -1388,7 +1387,7 @@ public class PharmacyBillSearch implements Serializable {
             b.invertValue(nB.getBillItem());
 
             b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1431,7 +1430,7 @@ public class PharmacyBillSearch implements Serializable {
             b.invertValue(nB.getBillItem());
 
             b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1487,7 +1486,7 @@ public class PharmacyBillSearch implements Serializable {
             b.invertValue(nB.getBillItem());
             b.setTransBillItem(nB.getBillItem());
             b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -1536,7 +1535,7 @@ public class PharmacyBillSearch implements Serializable {
 //            b.invertValue(nB.getBillItem());
 //
 //            b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
-//            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            b.setCreatedAt(new Date());
 //            b.setCreater(getSessionController().getLoggedUser());
 //
 //            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
@@ -2234,7 +2233,7 @@ public class PharmacyBillSearch implements Serializable {
             bf.setBillItem(bt);
             bf.setFeeValue(0 - nB.getFeeValue());
             bf.setFeeGrossValue(0 - nB.getFeeGrossValue());
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             if (bf.getId() == null) {
@@ -2828,7 +2827,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2841,7 +2840,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

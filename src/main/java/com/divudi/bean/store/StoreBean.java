@@ -5,12 +5,12 @@
 package com.divudi.bean.store;
 
 import com.divudi.data.BillClassType;
-import com.divudi.ejb.*;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBatchQty;
 import com.divudi.data.StockQty;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;

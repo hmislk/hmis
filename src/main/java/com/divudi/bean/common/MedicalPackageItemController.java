@@ -7,33 +7,29 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
-import java.util.TimeZone;
 import com.divudi.entity.Item;
-import com.divudi.entity.MedicalPackageFee;
 import com.divudi.entity.MedicalPackage;
-import com.divudi.facade.MedicalPackageItemFacade;
+import com.divudi.entity.MedicalPackageFee;
 import com.divudi.entity.MedicalPackageItem;
 import com.divudi.entity.Service;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.ItemFacade;
-import com.divudi.facade.MedicalPackageFeeFacade;
-
 import com.divudi.facade.MedicalPackageFacade;
-
+import com.divudi.facade.MedicalPackageFeeFacade;
+import com.divudi.facade.MedicalPackageItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -102,7 +98,7 @@ public class MedicalPackageItemController implements Serializable {
         for (MedicalPackageFee f : getCharges()) {
             f.setItem(getCurrent().getItem());
             if (f.getId() == null || f.getId() == 0) {
-                f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                f.setCreatedAt(new Date());
                 f.setCreater(getSessionController().getLoggedUser());
                 getMedicalPackageFeeFacade().create(f);
             } else {
@@ -132,7 +128,7 @@ public class MedicalPackageItemController implements Serializable {
                 getCurrentFee().getId();
                 getCurrentFee().setRetired(true);
                 getCurrentFee().setRetirer(getSessionController().getLoggedUser());
-                getCurrentFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getCurrentFee().setRetiredAt(new Date());
                 getMedicalPackageFeeFacade().edit(getCurrentFee()); // Flag as retired, so that will never appearing when calling from database
                 getCharges().remove(getCurrentFee());
             }
@@ -182,7 +178,7 @@ public class MedicalPackageItemController implements Serializable {
 
         pi.setPackege(getCurrentMedicalPackage());
         pi.setItem(getCurrentItem());
-        pi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
         getFacade().create(pi);
         UtilityController.addSuccessMessage("Added");
@@ -201,7 +197,7 @@ public class MedicalPackageItemController implements Serializable {
 
         getCurrent().setRetired(true);
         getCurrent().setRetirer(getSessionController().getLoggedUser());
-        getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
         UtilityController.addSuccessMessage("Item Removed");
         recreateModel();
@@ -317,7 +313,7 @@ public class MedicalPackageItemController implements Serializable {
 
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -335,7 +331,7 @@ public class MedicalPackageItemController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -405,7 +401,7 @@ public class MedicalPackageItemController implements Serializable {
             getCurrentFee().setItem(getCurrent().getItem());
         }
         if (getCurrentFee().getId() == null || getCurrentFee().getId() == 0) {
-            getCurrentFee().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrentFee().setCreatedAt(new Date());
             getCurrentFee().setCreater(getSessionController().getLoggedUser());
             getMedicalPackageFeeFacade().create(getCurrentFee());
         } else {

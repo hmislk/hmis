@@ -18,13 +18,13 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Appointment;
-import com.divudi.facade.BillFacade;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.facade.AppointmentFacade;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
@@ -32,19 +32,17 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
 
@@ -132,10 +130,10 @@ public class AppointmentController implements Serializable {
     private Patient savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
             getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().setCreatedAt(new Date());
 
             getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().getPerson().setCreatedAt(new Date());
 
             getPersonFacade().create(getNewPatient().getPerson());
             getPatientFacade().create(getNewPatient());
@@ -189,13 +187,13 @@ public class AppointmentController implements Serializable {
 
         getBillBean().setPaymentMethodData(getCurrentBill(), getCurrentBill().getPaymentMethod(), getPaymentMethodData());
 
-        getCurrentBill().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrentBill().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrentBill().setBillDate(new Date());
+        getCurrentBill().setBillTime(new Date());
         //   getCurrentBill().setPatient(tmpPatient);
 //        temp.setPatientEncounter(patientEncounter);
         //   temp.setPaymentScheme(getPaymentScheme());
 
-        getCurrentBill().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrentBill().setCreatedAt(new Date());
         getCurrentBill().setCreater(sessionController.getLoggedUser());
         getFacade().create(getCurrentBill());
         //return getCurrentBill();

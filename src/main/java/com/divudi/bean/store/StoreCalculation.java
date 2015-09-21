@@ -5,9 +5,9 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
-import com.divudi.ejb.*;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -41,7 +41,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Lob;
 import javax.persistence.TemporalType;
 
 /**

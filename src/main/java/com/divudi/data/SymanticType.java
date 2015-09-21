@@ -4,9 +4,6 @@
  */
 package com.divudi.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public enum SymanticType {
 
     Symantic,

@@ -27,11 +27,11 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

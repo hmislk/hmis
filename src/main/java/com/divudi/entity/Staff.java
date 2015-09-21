@@ -4,24 +4,21 @@
  */
 package com.divudi.entity;
 
-import com.divudi.entity.hr.BankAccount;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.SalaryPaymentFrequency;
 import com.divudi.data.hr.SalaryPaymentMethod;
-import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.Designation;
+import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.ShiftPreference;
 import com.divudi.entity.hr.StaffCategory;
-
 import com.divudi.entity.hr.StaffEmployment;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;

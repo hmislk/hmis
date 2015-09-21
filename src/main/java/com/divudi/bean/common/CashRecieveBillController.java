@@ -4,8 +4,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -23,16 +23,15 @@ import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -418,10 +417,10 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setComments(comment);
 
-        getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
 
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setNetTotal(getCurrent().getNetTotal());
@@ -509,7 +508,7 @@ public class CashRecieveBillController implements Serializable {
         tmp.setInstitution(sessionController.getInstitution());
         tmp.setDepartment(sessionController.getDepartment());
         tmp.setNetTotal(b.getNetValue());
-        tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
 
 //        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -533,14 +532,14 @@ public class CashRecieveBillController implements Serializable {
         BillItem temBi = new BillItem();
         temBi.setBill(b);
         temBi.setNetValue(b.getNetTotal());
-        temBi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
         getBillItemFacade().create(temBi);
     }
 
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
-            tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());
@@ -553,7 +552,7 @@ public class CashRecieveBillController implements Serializable {
 
     private void saveBillItemBht() {
         for (BillItem tmp : getBillItems()) {
-            tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());

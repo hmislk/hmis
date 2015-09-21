@@ -3,26 +3,24 @@ package com.divudi.bean.common;
 import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.AgentHistory;
-import java.util.TimeZone;
-import com.divudi.facade.InstitutionFacade;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -257,7 +255,7 @@ public class InstitutionController implements Serializable {
                     return;
                 }
             }
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -377,7 +375,7 @@ public class InstitutionController implements Serializable {
 
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
-            getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Deleted Successfully");

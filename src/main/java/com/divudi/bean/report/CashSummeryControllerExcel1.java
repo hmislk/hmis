@@ -4,23 +4,23 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.AdmissionTypeBills;
 import com.divudi.data.dataStructure.BillsItems;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.DepartmentPayment;
 import com.divudi.data.dataStructure.ItemWithFee;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.AdmissionTypeBills;
+import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String1Value3;
-import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String6;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -36,18 +36,16 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -546,14 +544,14 @@ public class CashSummeryControllerExcel1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }

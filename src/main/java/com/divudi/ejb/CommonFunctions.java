@@ -1,13 +1,11 @@
 package com.divudi.ejb;
 
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
 import java.util.Calendar;
 import java.util.Date;
-import javax.ejb.Singleton;
 import java.util.TimeZone;
+import javax.ejb.Singleton;
 
 /**
  *
@@ -142,7 +140,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }
@@ -172,7 +170,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }
@@ -190,7 +188,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }

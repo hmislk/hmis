@@ -5,11 +5,6 @@
  */
 package com.divudi.bean.common;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.faces.FacesException;
-import javax.annotation.Resource;
-import javax.transaction.UserTransaction;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.util.PagingInfo;
 import com.divudi.data.PersonInstitutionType;
@@ -22,13 +17,17 @@ import com.divudi.entity.Staff;
 import com.divudi.facade.PersonInstitutionFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.FacesException;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -37,6 +36,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.transaction.UserTransaction;
 
 /**
  *

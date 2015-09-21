@@ -11,7 +11,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
-import com.divudi.data.table.String2Value1;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -43,7 +42,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -2384,7 +2382,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2395,7 +2393,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2804,7 +2802,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDatePaid() {
         if (fromDatePaid == null) {
-            fromDatePaid = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDatePaid = getCommonFunctions().getStartOfDay(new Date());
         }
 
         return fromDatePaid;
@@ -2816,7 +2814,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDatePaid() {
         if (toDatePaid == null) {
-            toDatePaid = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDatePaid = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDatePaid;
     }

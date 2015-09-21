@@ -7,31 +7,26 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
-import com.divudi.data.dataStructure.PrivilageNode;
 import com.divudi.data.Privileges;
+import com.divudi.data.dataStructure.PrivilageNode;
 import com.divudi.entity.WebUser;
-import java.util.TimeZone;
-import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.entity.WebUserPrivilege;
+import com.divudi.facade.WebUserPrivilegeFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import javax.inject.Named;
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.faces.component.UIComponent;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
-//package org.primefaces.examples.view;  
-
-import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-
 import org.primefaces.model.TreeNode;
 
 //import org.primefaces.examples.domain.Document;  
@@ -474,7 +469,7 @@ public class UserPrivilageController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

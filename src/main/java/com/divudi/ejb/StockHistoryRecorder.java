@@ -9,7 +9,6 @@ import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.DepartmentFacade;

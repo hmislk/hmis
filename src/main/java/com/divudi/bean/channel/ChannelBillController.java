@@ -8,7 +8,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -55,7 +54,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -162,7 +160,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(getBillSession());
         bs.setBill(bill);
         bs.setBillItem(billItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
 
         getBillSessionFacade().create(bs);
@@ -226,9 +224,9 @@ public class ChannelBillController implements Serializable {
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         System.out.println("Creater paid" + getSessionController().getLoggedUser().getWebUserPerson().getName());
 
@@ -240,7 +238,7 @@ public class ChannelBillController implements Serializable {
     private BillItem savePaidBillItem(Bill b) {
         BillItem bi = new BillItem();
         bi.copy(billSession.getBillItem());
-        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
         bi.setBill(b);
         getBillItemFacade().create(bi);
@@ -728,7 +726,7 @@ public class ChannelBillController implements Serializable {
 //        b.setBill(can);
 //
 //        b.setNetValue(0 - bi.getNetValue());
-//        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        b.setCreatedAt(new Date());
 //        b.setCreater(getSessionController().getLoggedUser());
 //
 //        getBillItemFacade().create(b);
@@ -741,7 +739,7 @@ public class ChannelBillController implements Serializable {
         b.setBill(can);
         b.copy(bi);
         b.invertValue(bi);
-        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        b.setCreatedAt(new Date());
         b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
@@ -757,7 +755,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(billSession);
         bs.setBill(can);
         bs.setBillItem(canBillItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
 
@@ -772,7 +770,7 @@ public class ChannelBillController implements Serializable {
         bs.copy(billSession);
         bs.setBill(bill);
         bs.setBillItem(billItem);
-        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
 
@@ -788,9 +786,9 @@ public class ChannelBillController implements Serializable {
         cb.copy(bill);
         cb.invertValue(bill);
         cb.setBilledBill(bill);
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
@@ -825,7 +823,7 @@ public class ChannelBillController implements Serializable {
             bf.setBill(can);
             bf.setBillItem(bt);
 
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
@@ -1234,9 +1232,9 @@ public class ChannelBillController implements Serializable {
         switch (getPatientTabId()) {
             case "tabNewPt":
                 getNewPatient().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().getPerson().setCreatedAt(new Date());
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
@@ -1247,7 +1245,7 @@ public class ChannelBillController implements Serializable {
 
 //    private BillItem saveBilledItem(Bill b) {
 //        BillItem bi = new BillItem();
-//        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        bi.setCreatedAt(new Date());
 //        bi.setCreater(getSessionController().getLoggedUser());
 //        bi.setBill(b);
 //        bi.setAgentRefNo(agentRefNo);
@@ -1559,9 +1557,9 @@ public class ChannelBillController implements Serializable {
             bill.setPaidAt(new Date());
         }
 
-        bill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+        bill.setCreatedAt(new Date());
         bill.setCreater(getSessionController().getLoggedUser());
         System.out.println("Creater Bill" + getSessionController().getLoggedUser().getWebUserPerson().getName());
         bill.setDepartment(getSessionController().getDepartment());

@@ -20,10 +20,8 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
-import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
-import com.divudi.facade.StaffFacade;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffDesignation;
@@ -39,24 +37,24 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
@@ -845,7 +843,7 @@ public class StaffController implements Serializable {
             } else {
 
                 current.setRetired(true);
-                current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                current.setRetiredAt(new Date());
                 current.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(current);
                 UtilityController.addSuccessMessage("Deleted Successfully");
@@ -904,7 +902,7 @@ public class StaffController implements Serializable {
             current.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(current.getPerson());
 
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("New Staff Created");

@@ -3,8 +3,6 @@
  * and open the template in the editor.
  */
 package com.divudi.ejb;
-
-import java.util.TimeZone;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.entity.Patient;
@@ -24,11 +22,11 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
@@ -60,7 +58,7 @@ public class PatientReportBean {
         r = getPrFacade().findFirstBySQL(sql);
         if (r == null) {
             r = new PatientReport();
-            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreatedAt(new Date());
             r.setItem(pi.getInvestigation());
             r.setPatientInvestigation(pi);
             getPrFacade().create(r);
@@ -77,7 +75,7 @@ public class PatientReportBean {
             return null;
         }
         r = new PatientReport();
-        r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        r.setCreatedAt(new Date());
         r.setItem(ix);
         r.setPatientInvestigation(pi);
         getPrFacade().create(r);
