@@ -19,6 +19,7 @@ import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.UserPreferenceFacade;
@@ -54,10 +55,31 @@ import javax.servlet.http.HttpSessionListener;
 @SessionScoped
 public class SessionController implements Serializable, HttpSessionListener {
 
+    /**
+     * EJBs
+     */
     @EJB
     private WebUserDepartmentFacade webUserDepartmentFacade;
     @EJB
     UserPreferenceFacade userPreferenceFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+    @EJB
+    DepartmentFacade departmentFacade;
+    @EJB
+    ApplicationEjb applicationEjb;
+
+    /**
+     * Controllers
+     */
+    @Inject
+    SecurityController securityController;
+    @Inject
+    ApplicationController applicationController;
+
+    /**
+     * Properties
+     */
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
     private UserPreference institutionPreference;
@@ -67,14 +89,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     String primeTheme;
     String defLocale;
     private List<Privileges> privilegeses;
-    @Inject
-    SecurityController securityController;
-    @Inject
-    SessionController sessionController;
     Department department;
+    List<Department> departments;
     Institution institution;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
+
     boolean paginator;
     WebUser webUser;
 
@@ -128,7 +146,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         Map m = new HashMap();
         jpql = "select p from UserPreference p where p.department=:dep order by p.id";
         m.put("dep", department);
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql,m);
+        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql, m);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
             currentPreference.setDepartment(department);
@@ -141,7 +159,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void updateUserPreferences() {
         if (institutionPreference != null) {
             if (institutionPreference.getId() == null || institutionPreference.getId() == 0) {
-                userPreference.setInstitution(sessionController.getInstitution());
+                userPreference.setInstitution(institution);
                 userPreferenceFacade.create(institutionPreference);
                 JsfUtil.addSuccessMessage("Preferences Saved");
             } else {
@@ -318,6 +336,17 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
+    public String loginActionWithoutDepartment() {
+        department = null;
+        institution = null;
+        if (loginWithoutDepartment()) {
+            return "/index.xhtml";
+        } else {
+            UtilityController.addErrorMessage("Login Failure. Please try again");
+            return "";
+        }
+    }
+
     private boolean login() {
 
         getApplicationEjb().recordAppStart();
@@ -352,6 +381,40 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return false;
             }
             return checkUsers();
+        }
+    }
+
+    private boolean loginWithoutDepartment() {
+
+        getApplicationEjb().recordAppStart();
+
+        if (userName.trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a username");
+            return false;
+        }
+
+        if (false) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(2015, 05, 17, 23, 59, 59);//2015/june/17/23:00:00
+            calendar.set(Calendar.MILLISECOND, 999);
+
+            Date expired = calendar.getTime();
+            System.out.println("expired = " + expired);
+            Date nowDate = new Date();
+            System.out.println("nowDate = " + nowDate);
+
+            if (nowDate.after(expired)) {
+                UtilityController.addErrorMessage("Your Application has Expired");
+                return false;
+            }
+        }
+        // password
+        if (isFirstVisit()) {
+            prepareFirstVisit();
+            return true;
+        } else {
+
+            return checkUsersWithoutDepartment();
         }
     }
 
@@ -575,17 +638,138 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
+    private boolean checkUsersWithoutDepartment() {
+        String temSQL;
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
+        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        for (WebUser u : allUsers) {
+            if (getSecurityController().decrypt(u.getName()).equalsIgnoreCase(userName)) {
+                if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
+                    departments = listLoggableDepts(u);
+                    System.out.println("departments = " + departments);
+                    if (departments.isEmpty()) {
+                        UtilityController.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
+                        return false;
+                    }
+
+                    boolean f = false;
+
+                    for (Department d : departments) {
+                        if (d.equals(u.getDepartment())) {
+                            f = true;
+                        }
+                    }
+
+                    if (f) {
+                        List<Department> tds = new ArrayList<>();
+                        tds.add(u.getDepartment());
+                        for (Department d : departments) {
+                            if (!d.equals(u.getDepartment())) {
+                                tds.add(d);
+                            }
+                        }
+                        departments = tds;
+                    }
+
+                    getFacede().edit(u);
+                    setLoggedUser(u);
+                    setLogged(Boolean.TRUE);
+                    setActivated(u.isActivated());
+                    setRole(u.getRole());
+
+                    String sql;
+
+                    UserPreference uf;
+                    sql = "select p from UserPreference p where p.webUser=:u ";
+                    Map m = new HashMap();
+                    m.put("u", u);
+                    uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    if (uf == null) {
+                        uf = new UserPreference();
+                        uf.setWebUser(u);
+                        getUserPreferenceFacade().create(uf);
+                    }
+                    setUserPreference(uf);
+
+                    if (departments.size() == 1) {
+                        department = departments.get(0);
+                        selectDepartment();
+                        UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
+                    } else {
+                        UtilityController.addSuccessMessage("Logged successfully. Please select a department.");
+                    }
+                    if (getApplicationController().isLogged(u) != null) {
+                        UtilityController.addErrorMessage("This user is already logged.");
+                    }
+
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String selectDepartment() {
+        if (loggedUser == null) {
+            System.out.println("logged user is null");
+            return "/index";
+        }
+        System.out.println("loggedUser = " + loggedUser.getWebUserPerson().getName());
+        System.out.println("department = " + department.getName());
+        loggedUser.setDepartment(department);
+        loggedUser.setInstitution(department.getInstitution());
+        getFacede().edit(loggedUser);
+        String sql;
+        Map m;
+
+        UserPreference insPre;
+        sql = "select p from UserPreference p where p.department =:dep order by p.id";
+        m = new HashMap();
+        m.put("dep", department);
+        insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+
+        if (insPre == null) {
+            sql = "select p from UserPreference p where p.institution =:ins order by p.id ";
+            m = new HashMap();
+            m.put("ins", institution);
+            insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+            if (insPre == null) {
+                sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
+                insPre = getUserPreferenceFacade().findFirstBySQL(sql);
+            }
+            if (insPre == null) {
+                insPre = new UserPreference();
+                insPre.setWebUser(null);
+                insPre.setDepartment(null);
+                insPre.setInstitution(null);
+                getUserPreferenceFacade().create(insPre);
+            }
+        }
+        setInstitutionPreference(insPre);
+        recordLogin();
+        return "/index";
+    }
+
     private boolean canLogToDept(WebUser e, Department d) {
         String sql;
         sql = "select wd from WebUserDepartment wd where wd.retired=false and wd.webUser.id=" + e.getId() + " and wd.department.id = " + d.getId();
         return !getWebUserDepartmentFacade().findBySQL(sql).isEmpty();
     }
 
-    @Inject
-    ApplicationController applicationController;
-
-    @EJB
-    ApplicationEjb applicationEjb;
+    private List<Department> listLoggableDepts(WebUser e) {
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        sql = "select wd.department "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.name";
+        return departmentFacade.findBySQL(sql, m);
+    }
 
     public ApplicationEjb getApplicationEjb() {
         return applicationEjb;
@@ -999,6 +1183,17 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+    }
+
+    public List<Department> getDepartments() {
+        if (departments == null) {
+            departments = listLoggableDepts(webUser);
+        }
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
 
 }

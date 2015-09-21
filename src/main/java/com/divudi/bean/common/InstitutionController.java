@@ -396,7 +396,10 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            String j;
+            j="select i from Institution i where i.retired=false order by i.name";
+            System.out.println("j = " + j);
+            items = getFacade().findBySQL(j);
         }
         return items;
     }

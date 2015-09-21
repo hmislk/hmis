@@ -71,7 +71,13 @@ public class DepartmentController implements Serializable {
 
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
-            searchItems = getFacade().findAll(true);
+            String sql = "Select d from Department d where d.retired=false order by d.name";
+            searchItems = getFacade().findBySQL(sql);
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
         } else {
             String sql = "Select d from Department d where d.retired=false and upper(d.name) like :dn order by d.name";
             Map m = new HashMap();

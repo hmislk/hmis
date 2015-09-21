@@ -135,7 +135,11 @@ public class ServiceCategoryController implements Serializable {
     }
 
     public List<ServiceCategory> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select c from ServiceCategory c where c.retired=false order by c.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

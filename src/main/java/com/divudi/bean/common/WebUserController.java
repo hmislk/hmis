@@ -310,21 +310,21 @@ public class WebUserController implements Serializable {
         return ejbFacade;
     }
 
-    public WebUser searchItem(String itemName, boolean createNewIfNotPresent) {
-        WebUser searchedItem = null;
-        List<WebUser> temItems;
-        temItems = getFacade().findAll("name", itemName, true);
-        if (temItems.size() > 0) {
-            searchedItem = (WebUser) temItems.get(0);
-        } else if (createNewIfNotPresent) {
-            searchedItem = new WebUser();
-            searchedItem.setName(itemName);
-            searchedItem.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            searchedItem.setCreater(sessionController.loggedUser);
-            getFacade().create(searchedItem);
-        }
-        return searchedItem;
-    }
+//    public WebUser searchItem(String itemName, boolean createNewIfNotPresent) {
+//        WebUser searchedItem = null;
+//        List<WebUser> temItems;
+//        temItems = getFacade().findAll("name", itemName, true);
+//        if (temItems.size() > 0) {
+//            searchedItem = (WebUser) temItems.get(0);
+//        } else if (createNewIfNotPresent) {
+//            searchedItem = new WebUser();
+//            searchedItem.setName(itemName);
+//            searchedItem.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            searchedItem.setCreater(sessionController.loggedUser);
+//            getFacade().create(searchedItem);
+//        }
+//        return searchedItem;
+//    }
 
     private void recreateModel() {
         items = null;
@@ -353,7 +353,9 @@ public class WebUserController implements Serializable {
 
     public Boolean userNameAvailable(String userName) {
         boolean available = false;
-        List<WebUser> allUsers = getFacade().findAll("name", true);
+        String j;
+        j="select w from WebUser w where w.retired=false";
+        List<WebUser> allUsers = getFacade().findBySQL(j);
         if (allUsers == null) {
             return false;
         }
