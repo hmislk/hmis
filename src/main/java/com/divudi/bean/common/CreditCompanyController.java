@@ -40,7 +40,7 @@ public class CreditCompanyController implements Serializable {
     private Institution current;
     Item service;
     Category category;
-    
+
     private List<Institution> items = null;
     List<Institution> institutions;
     String selectText = "";
@@ -105,8 +105,6 @@ public class CreditCompanyController implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
-    
-    
 
     private void recreateModel() {
         items = null;
@@ -126,13 +124,13 @@ public class CreditCompanyController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    public void fillCreditCompany(){
-        
-        String sql="select i from Institution i "
-                    + "where i.retired=false " ;
-        institutions=getEjbFacade().findBySQL(sql);
-        
+
+    public void fillCreditCompany() {
+
+        String sql = "select i from Institution i "
+                + "where i.retired=false ";
+        institutions = getEjbFacade().findBySQL(sql);
+
     }
 
     public void setSelectText(String selectText) {
@@ -192,11 +190,9 @@ public class CreditCompanyController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Institution>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

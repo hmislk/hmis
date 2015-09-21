@@ -487,40 +487,6 @@ public class UserPrivilageController implements Serializable {
     }
     private TreeNode tmpNode;
 
-//    public List<WebUserPrivilege> getItems2() {
-//        // items = getFacade().findAll("name", true);
-//        if (getCurrentWebUser() == null) {
-//            return new ArrayList<WebUserPrivilege>();
-//        }
-//
-//        String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " order by i.webUser.webUserPerson.name";
-//        items = getEjbFacade().findBySQL(sql);
-//        if (items == null) {
-//            items = new ArrayList<WebUserPrivilege>();
-//        }
-//        for (TreeNode n : root.getChildren()) {
-//            n.setSelected(false);
-//        }
-//        for (TreeNode n : root.getChildren()) {
-//            ////System.out.println("n is " + n);
-//            for (TreeNode n1 : n.getChildren()) {
-//                Privileges p;
-//                ////System.out.println("n1 is " + n1);
-//                //
-//                try {
-//                    if (n1 instanceof PrivilageNode) {
-//                        p = ((PrivilageNode) n1).getP();
-//                        markTreeNode(p, n1);
-//                    } else {
-//                        ////System.out.println("type of p is ");
-//                    }
-//                } catch (Exception e) {
-//                    ////System.out.println("exception e is " + e.getMessage());
-//                }
-//            }
-//        }
-//        return items;
-//    }
     private void unselectNode() {
         for (TreeNode n : root.getChildren()) {
             n.setSelected(false);

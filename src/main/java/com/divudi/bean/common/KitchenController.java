@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
+
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.facade.DepartmentFacade;
@@ -16,19 +17,17 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class KitchenController implements Serializable {
+public class KitchenController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -51,8 +50,6 @@ public  class KitchenController implements Serializable {
     }
 
     // Need new Enum Department type
-    
-    
     public void setSelectedItems(List<Department> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -104,8 +101,8 @@ public  class KitchenController implements Serializable {
     }
 
     public Department getCurrent() {
-        if(current==null){
-            current=new Department();
+        if (current == null) {
+            current = new Department();
             current.setDepartmentType(DepartmentType.Kitchen);
         }
         return current;
@@ -137,55 +134,12 @@ public  class KitchenController implements Serializable {
     }
 
     public List<Department> getItems() {
-       // items = getFacade().findAll("name", true);
-        String sql="SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen order by i.name";
-        items=getEjbFacade().findBySQL(sql);
-        if(items==null){
-            items=new ArrayList<Department>();
+        if (items == null) {
+            String j = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen order by i.name";
+            items = getEjbFacade().findBySQL(j);
         }
         return items;
     }
 
-    /**
-     *
-     */
-    @FacesConverter(forClass = Department.class)
-    public static class DepartmentControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            KitchenController controller = (KitchenController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "kitchenController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Department) {
-                Department o = (Department) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + KitchenController.class.getName());
-            }
-        }
-    }
+    
 }

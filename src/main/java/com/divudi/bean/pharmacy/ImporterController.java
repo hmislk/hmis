@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -24,7 +25,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -125,11 +126,9 @@ public class ImporterController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Importer order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Institution>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Importer order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

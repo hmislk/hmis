@@ -308,21 +308,6 @@ public class WebUserController implements Serializable {
         return ejbFacade;
     }
 
-//    public WebUser searchItem(String itemName, boolean createNewIfNotPresent) {
-//        WebUser searchedItem = null;
-//        List<WebUser> temItems;
-//        temItems = getFacade().findAll("name", itemName, true);
-//        if (temItems.size() > 0) {
-//            searchedItem = (WebUser) temItems.get(0);
-//        } else if (createNewIfNotPresent) {
-//            searchedItem = new WebUser();
-//            searchedItem.setName(itemName);
-//            searchedItem.setCreatedAt(new Date());
-//            searchedItem.setCreater(sessionController.loggedUser);
-//            getFacade().create(searchedItem);
-//        }
-//        return searchedItem;
-//    }
 
     private void recreateModel() {
         items = null;

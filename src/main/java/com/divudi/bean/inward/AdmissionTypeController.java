@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.AdmissionType;
@@ -46,8 +47,6 @@ public class AdmissionTypeController implements Serializable {
         selectedItems = getFacade().findBySQL("select c from AdmissionType c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-
- 
 
     public void prepareAdd() {
         current = new AdmissionType();
@@ -136,7 +135,14 @@ public class AdmissionTypeController implements Serializable {
     }
 
     public List<AdmissionType> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select t "
+                    + " from AdmissionType t "
+                    + " where t.retired=false "
+                    + " order by t.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

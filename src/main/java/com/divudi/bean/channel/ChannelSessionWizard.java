@@ -232,18 +232,11 @@ public class ChannelSessionWizard implements Serializable {
         List<ServiceSession> items;
         String sql;
         HashMap hm = new HashMap();
-//        if (currentStaff == null) {
-//            // items = getFacade().findAll("name", true);
-//            items = new ArrayList<>();
-//        } else {
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and s.staff=:stf ";
         hm.put("stf", currentStaff);
-//        hm.put("class", ServiceSessionLeave.class);
         items = getServiceSessionFacade().findBySQL(sql, hm);
-//        }
-
         return items;
     }
 

@@ -130,7 +130,12 @@ public class StoreInventryAmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            String j;
+            j="select a "
+                    + " from Amp a "
+                    + " where a.retired=false "
+                    + " order by a.name";
+            items = getFacade().findBySQL(j);
         }
         return items;
     }

@@ -13,6 +13,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
@@ -121,7 +122,14 @@ public class PersonRelationshipController implements Serializable {
     }
 
     public List<PersonRelationship> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select r "
+                    + " from PersonRelationship r "
+                    + " where r.retired=false "
+                    + " order by r.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

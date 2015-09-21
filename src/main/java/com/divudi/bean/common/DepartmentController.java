@@ -104,8 +104,6 @@ public class DepartmentController implements Serializable {
             hm.put("ins", getInstitution());
             items = getFacade().findBySQL(sql, hm);
         }
-
-        //items = getFacade().findAll("name", true);
         return items;
     }
 

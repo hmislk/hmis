@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.VtmsVmps;
@@ -17,7 +18,8 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,11 +27,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class VtmInVmpController implements Serializable {
+public class VtmInVmpController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -58,7 +60,6 @@ public  class VtmInVmpController implements Serializable {
     }
 
     public void saveSelected() {
-       
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -126,7 +127,14 @@ public  class VtmInVmpController implements Serializable {
     }
 
     public List<VtmsVmps> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select v "
+                    + " from VtmsVmps v "
+                    + " where v.retired=false "
+                    + " order by v.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

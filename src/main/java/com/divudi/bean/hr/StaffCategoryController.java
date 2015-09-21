@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.hr;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.hr.StaffCategory;
@@ -27,7 +28,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -146,7 +147,14 @@ public class StaffCategoryController implements Serializable {
     }
 
     public List<StaffCategory> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select c "
+                    + " from StaffCategory c "
+                    + " where c.retired=false "
+                    + " order by c.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

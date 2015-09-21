@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
+
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.Stock;
@@ -21,18 +22,20 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class StoreController implements Serializable {
+public class StoreController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -57,8 +60,6 @@ public  class StoreController implements Serializable {
     }
 
     // Need new Enum Department type
-    
-    
     public void setSelectedItems(List<Department> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -85,16 +86,16 @@ public  class StoreController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public List<Stock> completeAllStocks(String qry) {
         List<Stock> items;
         String sql;
         double d = 0.0;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("dtp1", DepartmentType.Store); 
+        m.put("dtp1", DepartmentType.Store);
         m.put("stk", d);
-        
+
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d "
                 + " and i.itemBatch.item.departmentType=:dtp1"
@@ -134,15 +135,13 @@ public  class StoreController implements Serializable {
     public void setStockFacade(StockFacade stockFacade) {
         this.stockFacade = stockFacade;
     }
-    
-    
 
     public StoreController() {
     }
 
     public Department getCurrent() {
-        if(current==null){
-            current=new Department();
+        if (current == null) {
+            current = new Department();
             current.setDepartmentType(DepartmentType.Store);
         }
         return current;
@@ -174,11 +173,9 @@ public  class StoreController implements Serializable {
     }
 
     public List<Department> getItems() {
-       // items = getFacade().findAll("name", true);
-        String sql="SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store order by i.name";
-        items=getEjbFacade().findBySQL(sql);
-        if(items==null){
-            items=new ArrayList<Department>();
+        if (items == null) {
+            String sql = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

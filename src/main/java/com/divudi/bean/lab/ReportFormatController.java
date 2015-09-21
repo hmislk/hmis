@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.ReportFormat;
@@ -23,7 +24,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -131,11 +132,9 @@ public class ReportFormatController implements Serializable {
     }
 
     public List<ReportFormat> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM ReportFormat i where i.retired=false order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<ReportFormat>();
+            String sql = "SELECT i FROM ReportFormat i where i.retired=false order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

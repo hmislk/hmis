@@ -48,7 +48,7 @@ public class MembershipSchemeController implements Serializable {
     String selectText = "";
 
     public MembershipScheme fetchPatientMembershipScheme(Patient patient) {
-         MembershipScheme membershipScheme=null;
+        MembershipScheme membershipScheme = null;
         if (patient != null
                 && patient.getPerson() != null) {
 
@@ -69,7 +69,7 @@ public class MembershipSchemeController implements Serializable {
             }
 
         }
-        
+
         return membershipScheme;
     }
 
@@ -147,8 +147,8 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public MembershipScheme getCurrent() {
-        if(current==null){
-            current=new MembershipScheme();
+        if (current == null) {
+            current = new MembershipScheme();
         }
         return current;
     }
@@ -179,7 +179,14 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select s "
+                    + " from MembershipScheme s "
+                    + " where s.retired=false "
+                    + " order by s.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

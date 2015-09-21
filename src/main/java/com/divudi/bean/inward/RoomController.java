@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.Room;
@@ -135,11 +136,9 @@ public class RoomController implements Serializable {
     }
 
     public List<Room> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Room i where i.retired=false  order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Room>();
+            String sql = "SELECT i FROM Room i where i.retired=false  order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

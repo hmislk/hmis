@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -45,7 +46,6 @@ public class ManufacturerController implements Serializable {
     String selectText = "";
     List<Institution> institutionList = null;
 
-    
     public List<Institution> completeManu(String qry) {
         if (qry != null) {
             institutionList = getFacade().findBySQL("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
@@ -141,11 +141,9 @@ public class ManufacturerController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Manufacturer order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Institution>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Manufacturer order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

@@ -151,20 +151,11 @@ public class AgencyController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
-        ////System.out.println("sql = " + sql);
         return items;
     }
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
+
 }

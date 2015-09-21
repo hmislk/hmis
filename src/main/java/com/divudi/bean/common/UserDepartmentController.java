@@ -160,21 +160,14 @@ public  class UserDepartmentController implements Serializable {
     }
 
     public List<WebUserDepartment> getItems() {
-        // items = getFacade().findAll("name", true);
-        ////System.out.println("11");
         if (selectedUser == null) {
-            items = new ArrayList<WebUserDepartment>();
-            ////System.out.println("22");
+            items = new ArrayList<>();
             return items;
         }
-
         String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
         items = getEjbFacade().findBySQL(sql);
-        ////System.out.println("33");
-
         if (items == null) {
-            items = new ArrayList<WebUserDepartment>();
-            ////System.out.println("44");
+            items = new ArrayList<>();
         }
         return items;
     }

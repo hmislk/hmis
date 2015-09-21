@@ -204,20 +204,6 @@ public class StoreItemExcelManager implements Serializable {
         this.sessionController = sessionController;
     }
 
-//    public void removeDuplicateAmpps() {
-//        List<Ampp> temAmpps = getAmppFacade().findAll(true);
-//        for (Ampp ampp : temAmpps) {
-//            for (Ampp dup : temAmpps) {
-//                if (ampp.getName().equals(dup.getName())) {
-//                    if (ampp.isRetired() == false && dup.isRetired() == false) {
-//                        dup.setRetired(true);
-//                        getAmppFacade().edit(dup);
-//
-//                    }
-//                }
-//            }
-//        }
-//    }
     @EJB
     private BillFacade billFacade;
 
@@ -1924,13 +1910,7 @@ public class StoreItemExcelManager implements Serializable {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 
-//    public List<Ampp> getAmpps() {
-//        return getAmppFacade().findAll();
-//    }
-//
-//    public void setAmpps(List<Ampp> ampps) {
-//        this.ampps = ampps;
-//    }
+
     public List<Amp> getAmps() {
         return getAmpFacade().findAll();
     }

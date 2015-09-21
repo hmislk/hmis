@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -16,13 +17,14 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author www.divudi.com
  */
 @Named
 @SessionScoped
-public class CollectingCentreController implements Serializable{
+public class CollectingCentreController implements Serializable {
 
     /**
      * Creates a new instance of CollectingCentreController
@@ -145,11 +147,9 @@ public class CollectingCentreController implements Serializable{
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Institution>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

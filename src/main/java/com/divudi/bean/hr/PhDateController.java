@@ -91,12 +91,12 @@ public class PhDateController implements Serializable {
                 + " Where d.retired=false "
                 + " and d.phDate between :fd and :td "
                 + " order by d.phDate ";
-        
+
         m.put("fd", frDate);
         m.put("td", toDate);
-        
-        phDates=getFacade().findBySQL(sql, m);
-        
+
+        phDates = getFacade().findBySQL(sql, m);
+
     }
 
     public DayType getHolidayType(Date d) {
@@ -187,7 +187,14 @@ public class PhDateController implements Serializable {
     }
 
     public List<PhDate> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select j "
+                    + " from PhDate j "
+                    + " where j.retired=false "
+                    + " order by j.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

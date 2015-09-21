@@ -328,12 +328,9 @@ public class StaffLeaveEntitleController implements Serializable {
                 + " order by c.staff.codeInterger ";
 
         selectedAllItems = getFacade().findBySQL(sql, hm);
-        //System.out.println("sql = " + sql);
-        //System.out.println("hm = " + hm);
     }
 
     public List<StaffLeaveEntitle> getItems() {
-//        items = getFacade().findAll("name", true);
         return items;
     }
 

@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.RoomCategory;
@@ -17,7 +18,8 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
@@ -26,11 +28,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class RoomCategoryController implements Serializable {
+public class RoomCategoryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -102,7 +104,7 @@ public  class RoomCategoryController implements Serializable {
     }
 
     public RoomCategory getCurrent() {
-        if(current==null){
+        if (current == null) {
             current = new RoomCategory();
         }
         return current;
@@ -134,25 +136,24 @@ public  class RoomCategoryController implements Serializable {
     }
 
     public List<RoomCategory> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM RoomCategory i where i.retired=false  order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<RoomCategory>();
+            String sql = "SELECT i FROM RoomCategory i where i.retired=false  order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }
-    
-     public List<RoomCategory> completeRoomCategory(String qry) {
+
+    public List<RoomCategory> completeRoomCategory(String qry) {
         String sql;
         sql = "select c from RoomCategory c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
         return getFacade().findBySQL(sql);
     }
+
     /**
      *
      */
-    
-     @FacesConverter(forClass = RoomCategory.class)
+
+    @FacesConverter(forClass = RoomCategory.class)
     public static class RoomCategoryControllerConverter implements Converter {
 
         @Override

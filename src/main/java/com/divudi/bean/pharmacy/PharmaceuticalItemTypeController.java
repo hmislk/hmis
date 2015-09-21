@@ -132,6 +132,7 @@ public class PharmaceuticalItemTypeController implements Serializable {
     }
 
     public List<PharmaceuticalItemType> getItems() {
+        
         items = getFacade().findAll("name", true);
         return items;
     }

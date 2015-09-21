@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -32,7 +33,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -59,11 +60,11 @@ public class VmpController implements Serializable {
     @EJB
     VtmsVmpsFacade vivFacade;
     List<VtmsVmps> vivs;
-    
+
     List<Vmp> vmpList;
 
     public List<Vmp> completeVmp(String query) {
-        
+
         String sql;
         if (query == null) {
             vmpList = new ArrayList<Vmp>();
@@ -107,7 +108,7 @@ public class VmpController implements Serializable {
             return true;
         }
 //        TODO:Message
-        if (current == null) {            
+        if (current == null) {
             return true;
         }
         if (addingVtmInVmp.getStrength() == 0.0) {
@@ -134,14 +135,10 @@ public class VmpController implements Serializable {
         saveVmp();
         getAddingVtmInVmp().setVmp(current);
         getVivFacade().create(getAddingVtmInVmp());
-        
+
         UtilityController.addSuccessMessage("Added");
 
         addingVtmInVmp = null;
-
-
-
-
 
     }
 
@@ -263,13 +260,10 @@ public class VmpController implements Serializable {
                 String f = w.get(4);
                 ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
-
                 Vmp tix = new Vmp();
                 tix.setCode(code);
                 tix.setName(ix);
                 tix.setDepartment(null);
-
-
 
             } catch (Exception e) {
             }
@@ -367,7 +361,14 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select v "
+                    + " from Vmp v "
+                    + " where v.retired=false "
+                    + " order by v.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

@@ -133,7 +133,14 @@ public class AreaController implements Serializable {
     }
 
     public List<Area> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select a "
+                    + " from Area a "
+                    + " where a.retired=false "
+                    + " orrder by a.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

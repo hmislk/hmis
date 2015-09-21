@@ -835,19 +835,6 @@ public class InwardProfessionalBillController implements Serializable {
         return ejbFacade;
     }
 
-    public List<Bill> getItems() {
-        //items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Bill i where i.retired=false and i.billType=:btp ";
-        HashMap hm = new HashMap();
-        hm.put("btp", BillType.OpdBill);
-        items = getEjbFacade().findBySQL(sql);
-        if (items == null) {
-            items = new ArrayList<Bill>();
-        }
-        return items;
-
-    }
-
     public void removeBillItem() {
         //TODO: Need to add Logic
         ////System.out.println(getIndex());

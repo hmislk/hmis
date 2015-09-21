@@ -699,7 +699,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+//        getItems();
         current = null;
         getCurrent();
     }
@@ -708,10 +708,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         return billFacade;
     }
 
-    public List<Bill> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;

@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.hr.HrReportController;
 import com.divudi.entity.Category;
 import com.divudi.entity.FormFormat;
@@ -64,9 +65,9 @@ public class FormFormatController implements Serializable {
         }
         String j;
         Map m = new HashMap();
-        
+
         j = "select s from Staff s where s.retired=false ";
-        
+
 //        if(hrReportController.getReportKeyWord().getDepartment()!=null){
 //            j+= " and s.workingDepartment =:dep ";
 //            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
@@ -76,9 +77,8 @@ public class FormFormatController implements Serializable {
 //            j+= " and s.workingDepartment.institution =:ins ";
 //            m.put("ins", hrReportController.getReportKeyWord().getInstitution());
 //        }
-        
-        j+= " order by s.person.name ";
-        
+        j += " order by s.person.name ";
+
         staffes = staffFacade.findBySQL(j);
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
@@ -94,8 +94,6 @@ public class FormFormatController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-    
-    
 
     public Category getFormCategory() {
         return formCategory;
@@ -121,8 +119,6 @@ public class FormFormatController implements Serializable {
         this.formItems = formItems;
     }
 
-    
-    
     public List<FormFormat> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from FormFormat c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -215,15 +211,12 @@ public class FormFormatController implements Serializable {
     }
 
     public List<FormFormat> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }
-    /**
-     *
-     */
+    
+    
 }

@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.PatientRoom;
@@ -71,7 +72,6 @@ public class PatientRoomController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -82,7 +82,6 @@ public class PatientRoomController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -121,7 +120,6 @@ public class PatientRoomController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -132,7 +130,6 @@ public class PatientRoomController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
         current = null;
         getCurrent();
     }
@@ -142,11 +139,9 @@ public class PatientRoomController implements Serializable {
     }
 
     public List<PatientRoom> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<PatientRoom>();
+            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

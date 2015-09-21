@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.store;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -137,14 +138,12 @@ public class StoreDealorController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType =:tp"
-                + " order by i.name";
-        HashMap hm = new HashMap();
-        hm.put("tp", InstitutionType.StoreDealor);
-        items = getEjbFacade().findBySQL(sql, hm);
         if (items == null) {
-            items = new ArrayList<>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType =:tp"
+                    + " order by i.name";
+            HashMap hm = new HashMap();
+            hm.put("tp", InstitutionType.StoreDealor);
+            items = getEjbFacade().findBySQL(sql, hm);
         }
         return items;
     }
