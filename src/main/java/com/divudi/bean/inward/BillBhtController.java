@@ -247,7 +247,6 @@ public class BillBhtController implements Serializable {
         System.err.println("1 " + bill);
         System.err.println("2 " + billItem);
         System.err.println("3 " + billEntry);
-        System.err.println("4 " + billFees);
 
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
@@ -306,7 +305,6 @@ public class BillBhtController implements Serializable {
             BilledBill temp = new BilledBill();
             //   System.err.println("2");
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
-            System.err.println("1");
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
@@ -316,7 +314,6 @@ public class BillBhtController implements Serializable {
             //System.err.println("5");
             getBills().add(b);
         } else {
-            System.err.println("2");
             putToBills(matrixDepartment);
         }
 
@@ -546,7 +543,6 @@ public class BillBhtController implements Serializable {
             bItem.setQty(1.0);
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            System.err.println("Add To Bill");
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);
@@ -600,7 +596,6 @@ public class BillBhtController implements Serializable {
             bItem.setQty(1.0);
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            System.err.println("Add To Bill");
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);

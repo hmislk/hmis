@@ -496,7 +496,6 @@ public class StoreController1 implements Serializable {
             dayCount = lValue / (1000 * 60 * 60 * 24);
         }
 
-        System.err.println("Day Count " + dayCount);
         createStockAverage(dayCount);
 
     }
@@ -513,7 +512,6 @@ public class StoreController1 implements Serializable {
             monthCount = lValue / (1000 * 60 * 60 * 24 * 30);
         }
 
-        System.err.println("Month Count " + monthCount);
         createStockAverage(Math.abs(monthCount));
 
     }

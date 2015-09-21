@@ -156,7 +156,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createFinalSummery() {
-        System.err.println("createFinalSummery");
         finalSumery = new ArrayList<>();
         String1Value1 dd;
         dd = new String1Value1();
@@ -207,7 +206,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCollections2Hos() {
-        System.err.println("createCollections2Hos");
         collections2Hos = new ArrayList<>();
         String1Value1 dd;
         dd = new String1Value1();
@@ -223,7 +221,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createInwardProfessions() {
-        System.err.println("createInwardProfessions");
         inwardProfTot = 0.0;
         inwardProfessions = new ArrayList<>();
 
@@ -232,7 +229,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
             AdmissionTypeBills admB = new AdmissionTypeBills();
             admB.setAdmissionType(at);
             admB.setTotal(getInwardProfTot(at));
-            System.err.println("2 " + admB.getTotal());
             inwardProfTot += admB.getTotal();
 
             if (admB.getTotal() != 0) {
@@ -247,7 +243,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createPharmacySale() {
-        System.err.println("createPharmacySale");
         pharmacySales = new ArrayList<>();
         pharmacyTotal = 0;
 
@@ -270,7 +265,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createOtherInstituion() {
-        System.err.println("createOtherInstituion");
         otherHospitalTotal = 0;
         otherProfessionalTotal = 0;
         otherInstitution = new ArrayList<>();
@@ -313,21 +307,18 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCardBill() {
-        System.err.println("createCardBill");
         cardTot = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         cardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
 
     }
 
     private void createSlipBill() {
-        System.err.println("createSlipBill");
         slipTot = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
 
     }
 
     private void createChequeBill() {
-        System.err.println("createChequeBill");
         chequeTot = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
 
@@ -386,7 +377,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCreditCompanyCollection() {
-        System.err.println("createCreditCompanyCollection");
         creditCompanyTotal = 0.0;
         creditCompanyCollections = new ArrayList<>();
         List<Bill> tmp = getBillBean().fetchBills(BillType.CashRecieveBill, getFromDate(), getToDate(), getInstitution());
@@ -403,7 +393,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createAgentCollection() {
-        System.err.println("createAgentCollection");
         agentCollectionTot = 0.0;
 
         agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
@@ -522,7 +511,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     public void createDepartmentPayment() {
-        System.err.println("createDepartmentPayment");
         doctorPaymentTot = 0.0;
 
         List<Department> depList = getDepartmentList();
@@ -640,11 +628,9 @@ public class CashSummeryControllerExcel1 implements Serializable {
 //    }
 
     public void createOPdCategoryTable() {
-        System.err.println("createOPdCategoryTable");
         string1Value2s = new ArrayList<>();
         for (Category cat : getBillBean().fetchBilledOpdCategory(fromDate, toDate, institution)) {
             System.err.println("Cat " + cat.getName() + " TIME " + new Date());
-            System.err.println("##################");
             for (Item i : getBillBean().fetchBilledOpdItem(cat, fromDate, toDate, institution)) {
                 //   System.err.println("Item " + i.getName() + " TIME " + new Date());
                 double count = getBillBean().calBilledItemCount(i, getFromDate(), getToDate(), getInstitution());

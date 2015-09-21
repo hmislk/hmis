@@ -80,7 +80,6 @@ public class ServiceSessionLeaveController implements Serializable {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("suggestions.size() = " + suggestions.size());
 
         return suggestions;
     }
@@ -127,7 +126,6 @@ public class ServiceSessionLeaveController implements Serializable {
     }
 
     public void removeLeaveAndActiveServiceSession(ServiceSessionLeave ssl) {
-        System.out.println("ssl.getRetireComments() = " + ssl.getRetireComments());
         if (ssl.getRetireComments() == null || ssl.getRetireComments().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Remove Comment.");
             return;
@@ -174,7 +172,6 @@ public class ServiceSessionLeaveController implements Serializable {
         getSelectedServiceSession().setDeactivated(true);
         getServiceSessionFacade().edit(selectedServiceSession);
         System.out.println("selectedServiceSession = " + selectedServiceSession);
-        System.out.println("selectedServiceSession.isDeactivated = " + selectedServiceSession.isDeactivated());
 
         //create servicesession Leave
         getCurrent().setCreatedAt(new Date());

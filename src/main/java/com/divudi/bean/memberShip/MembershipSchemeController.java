@@ -65,7 +65,6 @@ public class MembershipSchemeController implements Serializable {
                 if (((fromDate.before(new Date()) && toDate.after(new Date())))
                         || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
                     membershipScheme = patient.getPerson().getMembershipScheme();
-                    System.err.println("MEM " + membershipScheme);
                 }
             }
 

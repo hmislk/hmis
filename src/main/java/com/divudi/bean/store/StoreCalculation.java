@@ -189,7 +189,6 @@ public class StoreCalculation {
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
-        System.err.println("GETTING Billed QTY " + value);
         return value;
     }
 
@@ -205,7 +204,6 @@ public class StoreCalculation {
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
-        System.err.println("GETTING Cancelled TOTAL QTY " + value);
         return value;
     }
 
@@ -292,7 +290,6 @@ public class StoreCalculation {
 
         System.err.println("GRN " + grns);
         System.err.println("GRN Return " + grnReturn);
-        System.err.println("Net " + netQty);
 
         return netQty;
     }
@@ -383,7 +380,6 @@ public class StoreCalculation {
         poQty = po.getQtyInUnit();
         remains = poQty - calQty(po);
 
-        System.err.println("REMAIN " + remains);
         return remains;
 
     }

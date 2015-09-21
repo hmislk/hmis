@@ -200,7 +200,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         System.out.println("to = " + to);
         System.out.println("staffShift.getShiftDate() = " + staffShift.getShiftDate());
         System.out.println("staffShift.getStaff() = " + staffShift.getStaff());
-        System.out.println("staffShift.getId() = " + staffShift.getId());
 
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }
@@ -256,7 +255,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         System.out.println("to = " + to);
         System.out.println("staffShift.getShiftDate() = " + staffShift.getShiftDate());
         System.out.println("staffShift.getStaff() = " + staffShift.getStaff());
-        System.out.println("staffShift.getId() = " + staffShift.getId());
 
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }
@@ -541,7 +539,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         System.out.println("sql = " + sql);
 
         LeaveForm lf = leaveFormFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("lf = " + lf);
         return lf != null ? (LeaveFormSystem) lf : null;
 
     }
@@ -574,7 +571,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         System.out.println("sql = " + sql);
 
         StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("staffLeave = " + staffLeave);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
@@ -589,7 +585,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         System.out.println("sql = " + sql);
 
         StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("staffLeave = " + staffLeave);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
@@ -599,7 +594,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.calLeaveTime();
         System.out.println("ss.getLeavedTime(add) = " + ss.getLeavedTime());
         System.out.println("ss.getLeavedTimeOther(add) = " + ss.getLeavedTimeOther());
-        System.out.println("ss.getLeavedTimeNoPay(add) = " + ss.getLeavedTimeNoPay());
         ss.setLeaveForm(form);
         ss.setLeaveType(leaveType);
         ss.setAutoLeave(true);

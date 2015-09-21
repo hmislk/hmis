@@ -231,7 +231,6 @@ public class PatientController implements Serializable {
                 + " or upper(p.code) like  :q )"
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        System.out.println(sql);
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
         return patientList;

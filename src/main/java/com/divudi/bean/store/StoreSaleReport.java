@@ -162,7 +162,6 @@ public class StoreSaleReport implements Serializable {
         Date td = getCommonFunctions().getEndOfDay(date);
 
         System.err.println("From " + fd);
-        System.err.println("To " + td);
 
         Map m = new HashMap();
         m.put("fd", fd);

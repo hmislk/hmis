@@ -88,7 +88,6 @@ public class WebUserController implements Serializable {
             try {
                 getFacade().edit(s);
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
         }
         itemsToRemove = null;

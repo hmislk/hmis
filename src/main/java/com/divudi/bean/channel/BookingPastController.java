@@ -254,13 +254,10 @@ public class BookingPastController implements Serializable {
                 }
             }
             System.out.println("bs = " + bs);
-            System.out.println("selectedBillSession = " + selectedBillSession);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
-                    System.out.println("serealNo = " + serialNo);
                     if (serialNo == bi.getBillSession().getSerialNo()) {
-                        System.err.println("Equals");
                         alreadyExists = true;
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
                     }
@@ -280,13 +277,10 @@ public class BookingPastController implements Serializable {
         }
         for (BillSession bs : billSessions) {
             System.out.println("bs = " + bs);
-            System.out.println("selectedBillSession = " + selectedBillSession);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
-                    System.out.println("serealNo = " + serialNo);
                     if (serialNo == bi.getBillSession().getSerialNo()) {
-                        System.err.println("Equals");
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
                         flag = true;
                     }
@@ -309,7 +303,6 @@ public class BookingPastController implements Serializable {
         for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
             bi.getBillSession().setSerialNo(serialNo);
             System.out.println("bi = " + bi.getBillSession().getSerialNo());
-            System.out.println("serealNo = " + serialNo);
             getBillItemFacade().edit(bi);
         }
 
@@ -342,7 +335,6 @@ public class BookingPastController implements Serializable {
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getDate());
-        System.out.println("getSelectedServiceSession()" + getSelectedServiceSession());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
     }
@@ -364,7 +356,6 @@ public class BookingPastController implements Serializable {
             Calendar c = Calendar.getInstance();
             c.setTime(getDate());
             int wd = c.get(Calendar.DAY_OF_WEEK);
-            System.out.println("wd = " + wd);
             sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
             serviceSessions = getServiceSessionFacade().findBySQL(sql);
         }
@@ -384,7 +375,6 @@ public class BookingPastController implements Serializable {
             ss.setProfessionalFfee(dbl[1]);
             System.err.println("1111");
             dbl = fetchFee(ss, FeeType.Tax);
-            System.err.println("2222");
             ss.setTaxFee(dbl[0]);
             ss.setTaxFfee(dbl[1]);
             ss.setTotalFee(fetchLocalFee(ss));
@@ -432,7 +422,6 @@ public class BookingPastController implements Serializable {
                 + " and f.item=:ses ";
         m.put("ses", item);
         List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Fetch Fess " + list);
         return list;
     }
 
@@ -456,7 +445,6 @@ public class BookingPastController implements Serializable {
         }
 
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
-        System.err.println("Fetch Fee Values " + dbl);
         return dbl;
     }
 

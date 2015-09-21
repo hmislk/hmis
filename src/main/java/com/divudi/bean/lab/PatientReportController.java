@@ -168,7 +168,6 @@ public class PatientReportController implements Serializable {
     }
 
     private double findPtReportItemVal(InvestigationItem ii) {
-        System.err.println("finding report item val");
         if (currentPatientReport == null) {
             UtilityController.addErrorMessage("No Report to calculate");
             return 0;
@@ -619,7 +618,6 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        System.err.println("creating a new microbiology report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();

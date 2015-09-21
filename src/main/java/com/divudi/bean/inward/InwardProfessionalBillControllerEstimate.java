@@ -123,7 +123,6 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
         if (getProEncounterComponent() != null && getProEncounterComponent().getBillFee() != null && getProEncounterComponent().getBillFee().getSpeciality() != null) {
             sql += " and c.speciality=:sp";
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
-            System.err.println("SSS " + getProEncounterComponent().getBillFee().getSpeciality());
         }
         sql += " and (upper(c.person.name) like :q "
                 + " or upper(c.code) like :q )"

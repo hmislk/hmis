@@ -599,7 +599,6 @@ public class StaffController implements Serializable {
         hm.put("sp", speciality);
         ss = getFacade().findBySQL(sql, hm);
 
-        System.err.println("Staff List Size " + ss.size());
 
         return ss;
     }

@@ -261,7 +261,6 @@ public class PharmacyController implements Serializable {
             BillItem bi = new BillItem();
             bi.getNetValue();
             bi.getPharmaceuticalBillItem().getQty();
-            System.out.println("bi = " + bi.getDeptId());
         }
 
         String sql;
@@ -836,7 +835,6 @@ public class PharmacyController implements Serializable {
             dayCount = lValue / (1000 * 60 * 60 * 24);
         }
 
-        System.err.println("Day Count " + dayCount);
         createStockAverage(dayCount);
 
     }
@@ -869,7 +867,6 @@ public class PharmacyController implements Serializable {
             monthCount = lValue / (1000 * 60 * 60 * 24 * 30);
         }
 
-        System.err.println("Month Count " + monthCount);
         createStockAverage(Math.abs(monthCount));
 
     }

@@ -547,7 +547,6 @@ public class StoreGrnController implements Serializable {
             billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
 
-        System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
 
         //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
@@ -981,14 +980,12 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addChildItemListener(BillItem bi) {
-        System.err.println("Add Child " + bi.getId());
         currentBillItem = null;
         parentBillItem = bi;
     }
 
     public void addDetailItemListener(BillItem bi) {
         System.err.println("Add Detasils " + bi.getId());
-        System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
 
         parentBillItem = null;
         currentBillItem = null;
@@ -1014,14 +1011,11 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addItem() {
-        System.err.println("****");
         if (getCurrentBillItem().getItem() == null) {
-            System.err.println("11");
             UtilityController.addErrorMessage("Please Select Item");
             return;
         }
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            System.err.println("22");
             UtilityController.addErrorMessage("Please Select Category");
             return;
         }

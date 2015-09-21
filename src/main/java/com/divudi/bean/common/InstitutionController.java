@@ -284,7 +284,6 @@ public class InstitutionController implements Serializable {
         System.out.println("current.getAllowedCredit() = " + current.getAllowedCredit());
         double scl = i.getStandardCreditLimit();
         System.out.println("scl = " + scl);
-        System.out.println("current.getStandardCreditLimit() = " + current.getStandardCreditLimit());
 
         if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
             UtilityController.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
@@ -304,7 +303,6 @@ public class InstitutionController implements Serializable {
         if (current.getStandardCreditLimit() != scl) {
             System.err.println("Update Standard Credit Limit");
             System.out.println("scl = " + scl);
-            System.out.println("current.getStandardCreditLimit() = " + current.getStandardCreditLimit());
             createAgentCreditLimitUpdateHistory(current,scl , current.getStandardCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Standard Credit Limit");
             System.err.println("Update Standard Credit Limit");
             UtilityController.addSuccessMessage("Standard Credit Limit Updated");
@@ -313,7 +311,6 @@ public class InstitutionController implements Serializable {
         if (current.getAllowedCredit() != acl) {
             System.err.println("Update Allowed Credit Limit");
             System.out.println("acl = " + acl);
-            System.out.println("current.getAllowedCredit() = " + current.getAllowedCredit());
             createAgentCreditLimitUpdateHistory(current,acl , current.getAllowedCredit(), HistoryType.AgentBalanceUpdateBill,"Allowed Credit Limit");
             System.err.println("Update Allowed Credit Limit");
             UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
@@ -322,7 +319,6 @@ public class InstitutionController implements Serializable {
         if (current.getMaxCreditLimit() != mcl) {
             System.err.println("Update Max Credit Limit");
             System.out.println("mcl = " + mcl);
-            System.out.println("current.getMaxCreditLimit() = " + current.getMaxCreditLimit());
             createAgentCreditLimitUpdateHistory(current,mcl , current.getMaxCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Max Credit Limit");
             System.err.println("Update Max Credit Limit");
             UtilityController.addSuccessMessage("Max Credit Limit Updated");
@@ -396,7 +392,6 @@ public class InstitutionController implements Serializable {
         if (items == null) {
             String j;
             j="select i from Institution i where i.retired=false order by i.name";
-            System.out.println("j = " + j);
             items = getFacade().findBySQL(j);
         }
         return items;

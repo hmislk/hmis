@@ -2948,7 +2948,6 @@ public class SearchController implements Serializable {
         temMap.put("refType", BillType.OpdBill);
 
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("billItems.size() = " + billItems.size());
 
     }
 
@@ -3565,7 +3564,6 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
-        System.out.println("aceptPaymentBills = " + aceptPaymentBills);
     }
 
     public void createOpdBathcBillPreTablePaidOnly() {
@@ -3591,7 +3589,6 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
-        System.out.println("aceptPaymentBills = " + aceptPaymentBills);
     }
 
     public void createOpdBathcBillPreTableNotPaidOly() {
@@ -3647,7 +3644,6 @@ public class SearchController implements Serializable {
         System.out.println("aceptPaymentBills = " + aceptPaymentBills);
         abs.removeAll(pbs);
         aceptPaymentBills.addAll(abs);
-        System.out.println("aceptPaymentBills = " + aceptPaymentBills);
     }
 
     public void createOpdPreTable() {
@@ -4366,7 +4362,6 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("class", BilledBill.class);
 
-        System.err.println("Sql " + sql);
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         //System.out.println("billItems = " + billItems);
 
@@ -4422,7 +4417,6 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("class", BilledBill.class);
 
-        System.err.println("Sql " + sql);
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         //System.out.println("billItems = " + billItems);
 

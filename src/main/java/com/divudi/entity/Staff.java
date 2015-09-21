@@ -215,7 +215,6 @@ public class Staff implements Serializable {
             codeInterger = Integer.parseInt(code);
 
         } catch (Exception e) {
-            System.err.println(e.getMessage());
         }
 
     }

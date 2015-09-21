@@ -182,7 +182,6 @@ public class PharmacySaleController3 implements Serializable {
     }
 
     public void searchPatientListener() {
-        System.err.println("1");
         //  createPaymentSchemeItems();
         calculateAllRates();
     }
@@ -495,7 +494,6 @@ public class PharmacySaleController3 implements Serializable {
     }
 
     public void resetAll() {
-        System.err.println("RESET ");
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
@@ -637,7 +635,6 @@ public class PharmacySaleController3 implements Serializable {
         }
         getBillItem();
         bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-        System.err.println("Rate " + bi.getRate());
         bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  ////System.err.println("Discount "+bi.getDiscount());
         bi.setNetRate(bi.getRate() - bi.getDiscount());
@@ -1199,7 +1196,6 @@ public class PharmacySaleController3 implements Serializable {
         Payment p = new Payment();
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1213,7 +1209,6 @@ public class PharmacySaleController3 implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
@@ -1370,7 +1365,6 @@ public class PharmacySaleController3 implements Serializable {
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
             System.err.println("List Item " + bItem.getPharmaceuticalBillItem().getStock());
-            System.err.println("CUrrent " + getBillItem().getPharmaceuticalBillItem().getStock());
             if (bItem.getPharmaceuticalBillItem().getStock().equals(getBillItem().getPharmaceuticalBillItem().getStock())) {
                 return true;
             }
@@ -1646,7 +1640,6 @@ public class PharmacySaleController3 implements Serializable {
             System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
-            System.err.println("dr = " + dr);
             return dr;
 
         }
@@ -1663,7 +1656,6 @@ public class PharmacySaleController3 implements Serializable {
             System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
-            System.err.println("dr = " + dr);
 
             return dr;
 
@@ -1676,7 +1668,6 @@ public class PharmacySaleController3 implements Serializable {
             System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
-            System.err.println("dr = " + dr);
 
             return dr;
         }

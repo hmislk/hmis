@@ -399,7 +399,6 @@ public class BillSearch implements Serializable {
             if (rbi != null) {
                 System.err.println("rbi = " + rbi.getId());
                 System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
-                System.out.println("rbi.getBill().getDeptId() = " + rbi.getBill().getDeptId());
                 System.err.println("rbi = " + rbi.getId());
                 UtilityController.addErrorMessage("This Bill Item Already Refunded");
                 return false;
@@ -651,7 +650,6 @@ public class BillSearch implements Serializable {
             System.out.println("getOpdPreSettleController().calBillPaidValue(rb) = " + getOpdPreSettleController().calBillPaidValue(rb));
             System.out.println("1p.getPaidValue() = " + p.getPaidValue());
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
-            System.out.println("2p.getPaidValue() = " + p.getPaidValue());
             paymentFacade.edit(p);
 
             calculateRefundBillFees(rb);
@@ -827,7 +825,6 @@ public class BillSearch implements Serializable {
             getBillItemFacede().edit(bi);
             System.out.println("bi.getRefunded() = " + bi.getRefunded());
             BillItem bbb = getBillItemFacade().find(bi.getId());
-            System.out.println("bbb.getRefunded() = " + bbb.getRefunded());
 
             String sql = "Select bf From BillFee bf where "
                     + " bf.retired=false and bf.billItem.id=" + bi.getId();
@@ -856,7 +853,6 @@ public class BillSearch implements Serializable {
             getBillItemFacede().edit(bi);
             System.out.println("bi.getRefunded() = " + bi.getRefunded());
             BillItem bbb = getBillItemFacade().find(bi.getId());
-            System.out.println("bbb.getRefunded() = " + bbb.getRefunded());
 
             String sql = "Select bf From BillFee bf where "
                     + " bf.retired=false and bf.billItem.id=" + bi.getId();
@@ -1401,8 +1397,6 @@ public class BillSearch implements Serializable {
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-////////////////////////
-            System.out.println("tmp = " + tmp.size());
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
@@ -1614,8 +1608,6 @@ public class BillSearch implements Serializable {
     private BillController billController;
 
     public void setBill(Bill bill) {
-        //recreateModel();
-        System.err.println("Bill " + bill);
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();
         createBillItems();
@@ -2072,7 +2064,6 @@ public class BillSearch implements Serializable {
     public void setBillSearch(Bill bill) {
 
         recreateModel();
-        System.err.println("Bill " + bill);
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();

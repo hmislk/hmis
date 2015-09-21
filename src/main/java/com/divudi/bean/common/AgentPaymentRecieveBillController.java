@@ -215,7 +215,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
         
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
-        System.out.println("ins.getBallance() after " + ins.getBallance());
         
     }
     

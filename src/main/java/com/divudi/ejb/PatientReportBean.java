@@ -236,10 +236,8 @@ public class PatientReportBean {
                 getPtRivFacade().create(val);
 
                 ptReport.getPatientReportItemValues().add(val);
-                System.err.println("sss: " + val);
             }
         }
-        System.err.println("items :" + ptReport.getPatientReportItemValues());
     }
 
     public void addMicrobiologyReportItemValuesForReport(PatientReport ptReport) {
@@ -300,14 +298,12 @@ public class PatientReportBean {
             hm.put("inv", ii);
 
             val = getPtRivFacade().findFirstBySQL(sql, hm);
-            System.err.println("ID " + val);
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
                 val.setInvestigationItem((InvestigationItem) ii);
                 val.setPatient(ptReport.getPatientInvestigation().getPatient());
                 val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
-                System.err.println("Repor " + ptReport);
                 val.setPatientReport(ptReport);
 
                 //Added by Safrin

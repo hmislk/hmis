@@ -87,7 +87,6 @@ public class ApplicationController {
 //            }
 //            getSessionControllers().add(sc);
         } catch (Exception e) {
-            System.out.println("Error in addToLogins of Application controller." + e.getMessage());
         }
     }
 

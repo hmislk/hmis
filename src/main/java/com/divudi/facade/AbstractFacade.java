@@ -354,7 +354,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }
@@ -921,7 +920,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }

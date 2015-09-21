@@ -456,7 +456,6 @@ public class PatientInvestigationController implements Serializable {
 
         System.out.println("running the sending sms.");
         if (bill == null) {
-            System.out.println("pr is null ");
         }
         String url = "http://www.textit.biz/sendmsg/index.php";
         HttpResponse<String> stringResponse;
@@ -474,9 +473,7 @@ public class PatientInvestigationController implements Serializable {
         if(sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071")||sendingNo.contains("072")||
                 sendingNo.contains("075")||sendingNo.contains("078")){
-            System.err.println("sending no is " + sendingNo);
         }else{
-            System.err.println("sending no is " + sendingNo + ". Returning as number is not valid");
             return;
         }
         
@@ -501,10 +498,8 @@ public class PatientInvestigationController implements Serializable {
                     .field("to", sendingNo)
                     .field("text", messageBody)
                     .asString();
-            System.out.println("stringResponse = " + stringResponse);
 
         } catch (Exception ex) {
-            System.out.println("ex = " + ex);
             return;
         }
 
@@ -537,7 +532,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("sms after saving " + sms);
 
         
-        System.out.println("Sending Sms Completed. ");
         
         UtilityController.addSuccessMessage("Sms send");
 

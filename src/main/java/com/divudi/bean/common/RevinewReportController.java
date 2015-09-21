@@ -292,12 +292,10 @@ public class RevinewReportController implements Serializable {
         for (Department dep : departments) {
 
             List<BillsTotals> bts = new ArrayList<>();
-            System.out.println("dep" + dep.getName());
 
             userBilledBills = getOpdPreBillReportController().createBillsTotals(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment(), dep);
             if (userBilledBills.getCash() != 0 || userBilledBills.getCard() != 0 || userBilledBills.getAgent() != 0 || userBilledBills.getCheque() != 0
                     || userBilledBills.getSlip() != 0 || userBilledBills.getCredit() != 0) {
-                System.out.println("userBilledBills.getCash()" + userBilledBills.getCash());
                 userBilledBillsList.add(userBilledBills);
                 bts.add(userBilledBills);
             }
@@ -305,7 +303,6 @@ public class RevinewReportController implements Serializable {
             userCancellededBills = getOpdPreBillReportController().createBillsTotals(new CancelledBill(), BillType.OpdBill, getWebUser(), getDepartment(), dep);
             if (userCancellededBills.getCash() != 0 || userCancellededBills.getCard() != 0 || userCancellededBills.getAgent() != 0 || userCancellededBills.getCheque() != 0
                     || userCancellededBills.getSlip() != 0 || userCancellededBills.getCredit() != 0) {
-                System.out.println("userCancellededBills.getCash()" + userCancellededBills.getCash());
                 userCancellededBillsList.add(userCancellededBills);
                 bts.add(userCancellededBills);
             }
@@ -313,7 +310,6 @@ public class RevinewReportController implements Serializable {
             userRefundedBills = getOpdPreBillReportController().createBillsTotals(new RefundBill(), BillType.OpdBill, getWebUser(), getDepartment(), dep);
             if (userRefundedBills.getCash() != 0 || userRefundedBills.getCard() != 0 || userRefundedBills.getAgent() != 0 || userRefundedBills.getCheque() != 0
                     || userRefundedBills.getSlip() != 0 || userRefundedBills.getCredit() != 0) {
-                System.out.println("userRefundedBills.getCash()" + userRefundedBills.getCash());
                 userRefundedBillsList.add(userRefundedBills);
                 bts.add(userRefundedBills);
             }
@@ -321,7 +317,6 @@ public class RevinewReportController implements Serializable {
             userBilledBillsPharmacy = getOpdPreBillReportController().createBillsTotals(new BilledBill(), BillType.PharmacySale, getWebUser(), getDepartment(), dep);
             if (userBilledBillsPharmacy.getCash() != 0 || userBilledBillsPharmacy.getCard() != 0 || userBilledBillsPharmacy.getAgent() != 0 || userBilledBillsPharmacy.getCheque() != 0
                     || userBilledBillsPharmacy.getSlip() != 0 || userBilledBillsPharmacy.getCredit() != 0) {
-                System.out.println("userBilledBillsPharmacy.getCash()" + userBilledBillsPharmacy.getCash());
                 userBilledBillsPharmacyList.add(userBilledBillsPharmacy);
                 bts.add(userBilledBillsPharmacy);
             }
@@ -329,7 +324,6 @@ public class RevinewReportController implements Serializable {
             userCancellededBillsPharmacy = getOpdPreBillReportController().createBillsTotals(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment(), dep);
             if (userCancellededBillsPharmacy.getCash() != 0 || userCancellededBillsPharmacy.getCard() != 0 || userCancellededBillsPharmacy.getAgent() != 0 || userCancellededBillsPharmacy.getCheque() != 0
                     || userCancellededBillsPharmacy.getSlip() != 0 || userCancellededBillsPharmacy.getCredit() != 0) {
-                System.out.println("userCancellededBillsPharmacy.getCash()" + userCancellededBillsPharmacy.getCash());
                 userCancellededBillsPharmacyList.add(userCancellededBillsPharmacy);
                 bts.add(userCancellededBillsPharmacy);
             }
@@ -337,7 +331,6 @@ public class RevinewReportController implements Serializable {
             userRefundedBillsPharmacy = getOpdPreBillReportController().createBillsTotals(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment(), dep);
             if (userRefundedBillsPharmacy.getCash() != 0 || userRefundedBillsPharmacy.getCard() != 0 || userRefundedBillsPharmacy.getAgent() != 0 || userRefundedBillsPharmacy.getCheque() != 0
                     || userRefundedBillsPharmacy.getSlip() != 0 || userRefundedBillsPharmacy.getCredit() != 0) {
-                System.out.println("userRefundedBillsPharmacy.getCash()" + userRefundedBillsPharmacy.getCash());
                 userRefundedBillsPharmacyList.add(userRefundedBillsPharmacy);
                 bts.add(userRefundedBillsPharmacy);
             }

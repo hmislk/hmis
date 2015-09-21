@@ -642,7 +642,6 @@ public class AdmissionController implements Serializable {
         addPatient();
         addGuardian();
         addPatientRoom();
-        System.out.println("BHT No = " + current.getBhtNo());
         getFacade().edit(current);
         current = new Admission();
         patientRoom = new PatientRoom();
@@ -687,7 +686,6 @@ public class AdmissionController implements Serializable {
         }
 
         if (appointmentFee != 0) {
-            System.err.println("Appoint ");
             getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);

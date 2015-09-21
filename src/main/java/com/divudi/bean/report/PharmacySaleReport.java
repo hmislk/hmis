@@ -1024,7 +1024,6 @@ public class PharmacySaleReport implements Serializable {
         Date td = getCommonFunctions().getEndOfDay(date);
 
         System.err.println("From " + fd);
-        System.err.println("To " + td);
 
         Map m = new HashMap();
         m.put("fd", fd);
@@ -2299,7 +2298,6 @@ public class PharmacySaleReport implements Serializable {
 //            it.remove(); // avoids a ConcurrentModificationException
         }
 
-        System.err.println(listRow);
 
         billedSummery.setBills(listRow);
 
@@ -2328,7 +2326,6 @@ public class PharmacySaleReport implements Serializable {
         ///pharmacy whole sale
         List<String1Value3> listRowWholeSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacyWholeSale));
 
-        System.err.println(listRowWholeSale);
 
         billedWholeSaleSummery.setBills(listRowWholeSale);
 
@@ -2351,7 +2348,6 @@ public class PharmacySaleReport implements Serializable {
             Double value = (Double) obj[2];
             System.out.println("value = " + value);
             System.out.println("billClassType = " + billClassType);
-            System.out.println("value = " + value);
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             String formattedDate = df.format(date);
@@ -2388,7 +2384,6 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String1Value3) pairs.getValue());
             //it.remove(); // avoids a ConcurrentModificationException
         }
@@ -3939,7 +3934,6 @@ public class PharmacySaleReport implements Serializable {
 //            it.remove(); // avoids a ConcurrentModificationException
         }
 
-        System.err.println(listRow);
 
         billedPaymentSummery.setBills(listRow);
 
@@ -4002,7 +3996,6 @@ public class PharmacySaleReport implements Serializable {
 //            it.remove(); // avoids a ConcurrentModificationException
         }
 
-        System.err.println(listRow);
 
         billedPaymentSummery.setBills(listRow);
 
@@ -4437,7 +4430,6 @@ public class PharmacySaleReport implements Serializable {
 
     public void addSaleValueByDepartmentPaymentSchemeP(List<PaymentSchemeSummery> schemeSummerys, PaymentScheme ps, BillType billType) {
         PaymentSchemeSummery pss = new PaymentSchemeSummery();
-        System.out.println("ps = " + ps);
         if (ps == null) {
             pss.setPaymentScheme("Scheme Not Selected");
         } else {
@@ -4873,14 +4865,12 @@ public class PharmacySaleReport implements Serializable {
             DistributerWithDestributorItem dwdi=new DistributerWithDestributorItem();
             System.out.println("distributor = " + distributor.getName());
             List<ItemsDistributors> list=getAllDealorItems(distributor);
-            System.out.println("list.size() = " + list.size());
             if (list.size()>0) {
                 dwdi.setDistributor(distributor);
                 dwdi.setItemsDistributors(list);
                 distributerWithDestributorItems.add(dwdi);
             }
         }
-        System.out.println("distributerWithDestributorItems.size() = " + distributerWithDestributorItems.size());
     }
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
@@ -4924,7 +4914,6 @@ public class PharmacySaleReport implements Serializable {
                 //System.out.println("****Add****");
                 items.add(i);
             }
-            System.err.println("out");
         }
         //System.out.println("items = " + items.size());
 
@@ -4932,13 +4921,11 @@ public class PharmacySaleReport implements Serializable {
     
     public void createItemWithMultipleDistributor(){
         createItemListOneItemHasGreterThanOneDistributorOther();
-        System.out.println("items.size() = " + items.size());
         itemsWithDistributers=new ArrayList<>();
         for (Item i : items) {
             ItemsWithDistributer iwd=new ItemsWithDistributer();
             List<Institution>is=getItemDealors(i);
             System.out.println("i.getName() = " + i.getName());
-            System.out.println("is.size() = " + is.size());
             if (is.size()>0) {
                 iwd.setItem(i);
                 iwd.setInstitutions(is);

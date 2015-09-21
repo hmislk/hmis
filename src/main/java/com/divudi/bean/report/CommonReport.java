@@ -1216,13 +1216,11 @@ public class CommonReport implements Serializable {
     public void createGRNBillItemForAsset() {
         billItems = new ArrayList<>();
         billItems = createStoreGRNBillItem(DepartmentType.Inventry);
-        System.out.println("billItems Size = " + billItems.size());
     }
 
     public void createGRNBillItemForStore() {
         billItems = new ArrayList<>();
         billItems = createStoreGRNBillItem(DepartmentType.Store);
-        System.out.println("billItems Size = " + billItems.size());
     }
 
     public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
@@ -1245,8 +1243,6 @@ public class CommonReport implements Serializable {
         m.put("dt", dt);
 
         bs = getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        //System.out.println("billItems = " + billItems);
-        System.out.println("billItems Size = " + bs.size());
 
         return bs;
     }
@@ -1932,7 +1928,6 @@ public class CommonReport implements Serializable {
         for (BillsTotals bt : list) {
             if (bt != null) {
                 System.err.println("CRDIT " + bt.getCredit());
-                System.err.println("CASH " + bt.getCash());
                 //   System.err.println("Size " + bt.getBills().size());
                 tmp += bt.getCredit();
             }

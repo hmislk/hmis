@@ -301,11 +301,9 @@ public class BillController implements Serializable {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
             List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
-            System.out.println("billFees = " + billFees.size());
 
             calculateBillfeePayments(billFees, p);
         }
-        System.out.println("calBillPaidValue(opdBill) = " + calBillPaidValue(opdBill));
         opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
         opdBill.setCashPaid(calBillPaidValue(opdBill));
         opdBill.setNetTotal(calBillPaidValue(opdBill));
@@ -378,7 +376,6 @@ public class BillController implements Serializable {
     }
 
     public void searchPatientListener() {
-        System.err.println("1");
         //   createPaymentSchemeItems();
         calTotals();
     }
@@ -429,7 +426,6 @@ public class BillController implements Serializable {
         this.strTenderedValue = strTenderedValue;
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
-            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
             ////System.out.println("Error in converting tendered value. \n " + e.getMessage());
         }
@@ -893,7 +889,6 @@ public class BillController implements Serializable {
             getBillFacade().edit(myBill);
             
             getBillBean().calculateBillItems(myBill, tmp);
-            System.err.println("myBill.getNetTotal() = " + myBill.getNetTotal());
             createPaymentsForBills(myBill, tmp);
             
             bills.add(myBill);
@@ -1018,7 +1013,6 @@ public class BillController implements Serializable {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
             if (be.getBillItem().getBillSession() != null) {
-                System.err.println("IN");
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
             }
         }
@@ -1495,7 +1489,6 @@ public class BillController implements Serializable {
         }
 
         if (toStaff != null) {
-            System.err.println("Inside");
             paymentScheme = null;
             creditCompany = null;
         }
@@ -1672,7 +1665,6 @@ public class BillController implements Serializable {
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         System.out.println("bill.getBalance() = " + bill.getBalance());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1686,7 +1678,6 @@ public class BillController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
@@ -1707,12 +1698,10 @@ public class BillController implements Serializable {
             System.err.println("Bill For In");
             System.out.println("dbl = " + dbl);
             System.out.println("reminingCashPaid = " + reminingCashPaid);
-            System.out.println("cashPaid = " + cashPaid);
 
             if ((reminingCashPaid != 0.0) || !getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
-                System.err.println("BillItem For Out");
 
             }
 
@@ -1725,11 +1714,9 @@ public class BillController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
-            System.out.println("reminingCashPaid = " + reminingCashPaid);
 
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()||getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 System.err.println("IF In");
-                System.out.println("Math.abs((bf.getFeeValue()-bf.getSettleValue())) = " + Math.abs((bf.getFeeValue() - bf.getSettleValue())));
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -1743,7 +1730,6 @@ public class BillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                         System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.out.println("Out If reminingCashPaid = " + reminingCashPaid);
                         System.err.println("out");
                     } else {
                         System.err.println("IN");
@@ -1754,7 +1740,6 @@ public class BillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
                         System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.out.println("In O reminingCashPaid = " + reminingCashPaid);
                         System.err.println("OUT");
                     }
                 }
@@ -1764,7 +1749,6 @@ public class BillController implements Serializable {
                 bf.setSettleValue(bf.getFeeValue());
                 setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
                 getBillFeeFacade().edit(bf);
-                System.err.println("Else Out");
             }
             System.err.println("BillFee For Out");
         }
@@ -1849,7 +1833,6 @@ public class BillController implements Serializable {
     public void changeListener() {
         System.err.println("Change Listen 1 ");
         calTotals();
-        System.err.println("Change Listen 2 ");
     }
 
     public String getPatientTabId() {

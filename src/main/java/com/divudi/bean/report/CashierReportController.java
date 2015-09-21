@@ -133,7 +133,6 @@ public class CashierReportController implements Serializable {
         System.out.println("newB.getCard() = " + newB.getCard());
         finalCardTot += newB.getCard();
         newB.setCash(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cash, billType));
-        System.out.println("newB.getCash = " + newB.getCash());
         finalCashTot += newB.getCash();
         newB.setCheque(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cheque, billType));
         finalChequeTot += newB.getCheque();
@@ -250,7 +249,6 @@ public class CashierReportController implements Serializable {
             BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
 
             if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                System.err.println("New Out ");
                 billls.add(newOut);
             }
 
@@ -303,7 +301,6 @@ public class CashierReportController implements Serializable {
             newSum.setSlip(uSlip);
 
             if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                System.err.println("SUNN ");
                 billls.add(newSum);
             }
 
@@ -526,7 +523,6 @@ public class CashierReportController implements Serializable {
 
         double dbl = getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("Cash " + dbl);
         return dbl;
 
     }

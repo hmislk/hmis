@@ -318,7 +318,6 @@ public class FingerPrintRecordController implements Serializable {
                 key = Long.valueOf(value);
             } catch (NumberFormatException e) {
                 key = 0l;
-                System.err.println(e.getMessage());
             }
 
             return key;

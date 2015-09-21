@@ -57,9 +57,7 @@ public class BillItemController implements Serializable {
         }
         for (BillItem bi : items) {
             System.err.println("PASs " + id);
-            System.err.println("BIB " + bi.getSearialNo());
             if (id.equals(bi.getSearialNo())) {
-                System.err.println("******");
                 return bi;
             }
         }
@@ -90,12 +88,10 @@ public class BillItemController implements Serializable {
         }
 
         java.lang.Integer getKey(String value) {
-            System.err.println("Args From Context "+value);
             java.lang.Integer key = null;
             try {
                 key = Integer.valueOf(value);
             } catch (NumberFormatException e) {
-                System.err.println("e" + e.getMessage());
             }
 
             return key;

@@ -746,7 +746,6 @@ public class StoreIssueController_ implements Serializable {
         bi.setDiscount(0.0);
         System.err.println("Discount " + bi.getDiscount());
         bi.setNetRate(bi.getRate() - bi.getDiscount());
-        System.err.println("Net " + bi.getNetRate());
     }
 
     public double calculateBillItemAdditionToPurchaseRate(BillItem bi) {
@@ -780,7 +779,6 @@ public class StoreIssueController_ implements Serializable {
         System.err.println("tdp = " + tdp);
         double dr;
         dr = (tr * tdp) / 100;
-        System.err.println("dr = " + dr);
 
         if (bi.getItem().isDiscountAllowed()) {
             return dr;

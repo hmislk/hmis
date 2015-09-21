@@ -92,7 +92,6 @@ public class PaysheetComponentController implements Serializable {
         PaysheetComponent tmp = getEjbFacade().findFirstBySQL(sql, hm);
 
         if (tmp != null) {
-            System.err.println("Name " + tmp.getName());
 
             return true;
         } else {

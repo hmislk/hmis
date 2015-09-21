@@ -634,7 +634,6 @@ public class BillPackageMedicalController implements Serializable {
         for (BillItem bi : billItm) {
             tot += bi.getNetValue();
             System.out.println("total = " + total);
-            System.out.println("bi.getNetValue() = " + bi.getNetValue());
         }
 
         return tot;

@@ -68,7 +68,6 @@ public class StoreGoodsReturnController implements Serializable {
 
     public void setBill(Bill bill) {
         makeNull();
-        System.err.println("Bill " + bill);
         this.bill = bill;
         generateBillComponent();
         getReturnBill().setToInstitution(bill.getFromInstitution());
@@ -207,7 +206,6 @@ public class StoreGoodsReturnController implements Serializable {
         saveReturnBill();
         System.err.println("3");
         saveComponent();
-        System.err.println("4");
 
         calTotal();
         getBillFacade().edit(getReturnBill());
@@ -232,7 +230,6 @@ public class StoreGoodsReturnController implements Serializable {
     }
 
     private void generateBillComponent() {
-        System.err.println("Generate ");
         billItems = null;
         for (PharmaceuticalBillItem grnPh : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
             BillItem bi = new BillItem();
@@ -269,7 +266,6 @@ public class StoreGoodsReturnController implements Serializable {
 //            bi.setTmpSuggession(suggessions);
             bi.setPharmaceuticalBillItem(retPh);
 
-            System.err.println("Add " + bi);
 
             getBillItems().add(bi);
 

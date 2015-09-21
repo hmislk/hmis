@@ -364,7 +364,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             Date expired = calendar.getTime();
             System.out.println("expired = " + expired);
             Date nowDate = new Date();
-            System.out.println("nowDate = " + nowDate);
 
             if (nowDate.after(expired)) {
                 UtilityController.addErrorMessage("Your Application has Expired");
@@ -401,7 +400,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             Date expired = calendar.getTime();
             System.out.println("expired = " + expired);
             Date nowDate = new Date();
-            System.out.println("nowDate = " + nowDate);
 
             if (nowDate.after(expired)) {
                 UtilityController.addErrorMessage("Your Application has Expired");
@@ -594,7 +592,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     System.out.println("1");
                     System.out.println("sql = " + sql);
                     System.out.println("m = " + m);
-                    System.out.println("insPre = " + insPre);
 
                     if (insPre == null) {
 
@@ -605,7 +602,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                         System.out.println("2");
                         System.out.println("sql = " + sql);
                         System.out.println("m = " + m);
-                        System.out.println("insPre = " + insPre);
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
@@ -613,7 +609,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                             System.out.println("3");
                             System.out.println("sql = " + sql);
                             System.out.println("m = " + m);
-                            System.out.println("insPre = " + insPre);
 
                         }
 
@@ -646,7 +641,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             if (getSecurityController().decrypt(u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
                     departments = listLoggableDepts(u);
-                    System.out.println("departments = " + departments);
                     if (departments.isEmpty()) {
                         UtilityController.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
                         return false;
@@ -711,11 +705,9 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String selectDepartment() {
         if (loggedUser == null) {
-            System.out.println("logged user is null");
             return "/index";
         }
         System.out.println("loggedUser = " + loggedUser.getWebUserPerson().getName());
-        System.out.println("department = " + department.getName());
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);

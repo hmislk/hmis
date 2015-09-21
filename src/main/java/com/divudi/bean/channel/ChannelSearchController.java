@@ -404,7 +404,6 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void setBill(Bill bill) {
-        System.err.println("Bill " + bill);
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();
         createBillItems();

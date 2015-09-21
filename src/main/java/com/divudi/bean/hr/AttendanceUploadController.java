@@ -295,7 +295,6 @@ public class AttendanceUploadController implements Serializable {
                     // System.err.println(" 1 str = " + str);
                     date = formatter.parse(str);
                 } catch (ParseException e) {
-                    System.err.println("error in parsing");
                     continue;
                 }
 

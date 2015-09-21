@@ -87,7 +87,6 @@ public class DealorDueController implements Serializable {
     private void setValues(Institution inst, String1Value5 dataTable5Value, List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
 
         List<Bill> lst = getCreditBean().getBills(inst, billTypesBilled);
-        System.err.println("Institution Ins " + inst.getName());
         for (Bill b : lst) {
             double rt = getCreditBean().getGrnReturnValue(b, billTypesReturned);
 
@@ -102,7 +101,6 @@ public class DealorDueController implements Serializable {
             System.err.println("NetTotal " + b.getNetTotal());
             System.err.println("Return  " + b.getTmpReturnTotal());
             System.err.println("Paid " + b.getPaidAmount());
-            System.err.println("Final " + finalValue);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -175,14 +173,10 @@ public class DealorDueController implements Serializable {
                     newIns.setTotal(newIns.getTotal() + b.getNetTotal());
                     newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
 
-                    //    System.err.println("Net Total " + b.getNetTotal());
-                    //     System.err.println("Paid " + b.getPaidAmount());
-                    System.err.println("Return " + b.getTmpReturnTotal());
                 }
             }
 
             double finalValue = (newIns.getPaidTotal() + newIns.getTotal() + newIns.getReturned());
-            System.err.println("Final Value " + finalValue);
             if (finalValue != 0 && finalValue < 0.1) {
                 items.add(newIns);
             }
@@ -227,7 +221,6 @@ public class DealorDueController implements Serializable {
         list.addAll(getCreditBean().getDealorFromReturnBills(billTypesReturned));
 
         setIns.addAll(list);
-        System.err.println("size " + setIns.size());
 
         dealorCreditAge = new ArrayList<>();
         for (Institution ins : setIns) {

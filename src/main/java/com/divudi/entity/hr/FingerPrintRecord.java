@@ -170,8 +170,6 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   //System.out.println(pattern + " " + output);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-
         }
 
         if (comments != null) {

@@ -260,7 +260,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("ltp", leaveType);
         hm.put("frm", frm);
         StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("stf = " + stf);
 
         return stf;
 

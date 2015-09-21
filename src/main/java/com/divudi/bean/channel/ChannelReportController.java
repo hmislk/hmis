@@ -1956,7 +1956,6 @@ public class ChannelReportController implements Serializable {
             System.out.println("bs = " + bs.isAbsent());
             bs.setAbsent(true);
             billSessionFacade.edit(bs);
-            System.out.println("bs = " + bs.isAbsent());
             UtilityController.addSuccessMessage("Marked Succesful");
         }
     }
@@ -2278,7 +2277,6 @@ public class ChannelReportController implements Serializable {
         agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("agentHistorys.size() = " + agentHistorys.size());
 
     }
 

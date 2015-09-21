@@ -336,7 +336,6 @@ public class OpdPreBillController implements Serializable {
     }
 
     public void searchPatientListener() {
-        System.err.println("1");
         //   createPaymentSchemeItems();
         calTotals();
     }
@@ -674,7 +673,6 @@ public class OpdPreBillController implements Serializable {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
             if (be.getBillItem().getBillSession() != null) {
-                System.err.println("IN");
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
             }
         }
@@ -1154,7 +1152,6 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (toStaff != null) {
-            System.err.println("Inside");
             paymentScheme = null;
             creditCompany = null;
         }
@@ -1376,7 +1373,6 @@ public class OpdPreBillController implements Serializable {
     public void changeListener() {
         System.err.println("Change Listen 1 ");
         calTotals();
-        System.err.println("Change Listen 2 ");
     }
 
     public String getPatientTabId() {

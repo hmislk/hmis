@@ -61,12 +61,9 @@ public class CommonFunctions {
         Date endOfDay = getEndOfDay(firstDate);
 
         System.err.println("Start " + startOfDay);
-        System.err.println("End " + endOfDay);
         if (startOfDay.before(secondDate) && endOfDay.after(secondDate)) {
-            System.err.println("True");
             return true;
         } else {
-            System.err.println("False");
             return false;
         }
     }
@@ -122,7 +119,6 @@ public class CommonFunctions {
 
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
-        System.err.println(frm + " : " + to + " DAY COUNT " + inDays);
         return inDays;
 
     }

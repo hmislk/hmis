@@ -114,7 +114,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
         System.out.println("getBill().getBillItems() = " + getBill().getBillItems());
         System.out.println("getBill().getBillItems() = " + getBill().getBillItems().size());
-        System.out.println("getBillItems() = " + getBillItems().size());
 
         for (BillItem bi : getBillItems()) {
             System.err.println("in");
@@ -130,7 +129,6 @@ public class DealorPaymentBillSearch implements Serializable {
             billItemFacede.edit(bi);
             System.out.println("bi = " + bi);
             System.out.println("newBi.getBill = " + newBi.getBill());
-            System.out.println("newBi.getBill.getReferenceBill = " + newBi.getBill().getReferenceBill());
             System.err.println("out");
         }
 
@@ -604,8 +602,6 @@ public class DealorPaymentBillSearch implements Serializable {
         if (getBill() != null && billItems == null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
             billItems = getBillItemFacede().findBySQL(sql);
-//            System.out.println("sql for bill item search is " + sql);
-            System.out.println("results for bill item search is " + billItems.size());
 
         }
         if (billItems == null) {

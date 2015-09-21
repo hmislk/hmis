@@ -659,7 +659,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf from BillFee bf where bf.retired=false and  bf.billItem=:bt";
                 hm = new HashMap();
@@ -725,7 +724,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         Speciality speciality = specialityFacade.findFirstBySQL(sql);
 
         for (Staff staff : fetchStaff()) {
-            System.err.println("Staff " + staff);
             staff.setSpeciality(speciality);
             staffFacade.edit(staff);
         }
@@ -735,7 +733,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         for (BillItem bi : inwardBean.fetchBillItem1(BillType.PharmacyBhtPre)) {
             System.err.println("Id " + bi.getId());
             System.err.println("Gross " + bi.getGrossValue());
-            System.err.println("Net " + bi.getNetValue());
             bi.setGrossValue(bi.getNetValue());
             billItemFacade.edit(bi);
         }
@@ -768,7 +765,6 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         disValue = updateIssueBillFees(discountPercent, patientEncounter, billType);
 
-        System.err.println("Calculated Discount  " + disValue);
 
     }
 
@@ -942,7 +938,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf "
                         + " from BillFee bf"
@@ -965,7 +960,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                         billFeeFacade.edit(billFee);
                     }
                 } else {
-                    System.err.println("Added ");
                     billItems.add(b);
                 }
 
@@ -1000,7 +994,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf "
                         + " from BillFee bf"

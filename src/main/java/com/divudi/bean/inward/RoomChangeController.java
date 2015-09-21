@@ -115,7 +115,6 @@ public class RoomChangeController implements Serializable {
         }
         
         
-        System.out.println("pR.getNextRoom() = " + pR.getNextRoom());
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
             UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");

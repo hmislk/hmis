@@ -327,7 +327,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
         System.err.println("Value " + value);
-        System.err.println("Worked Days " + workedDays);
         if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
             return value;
         } else {
@@ -335,7 +334,6 @@ public class StaffSalaryAdvanceController implements Serializable {
             System.err.println("DBL 1 " + dbl);
             dbl = dbl * workedDays;
 
-            System.err.println("DBL 2 " + dbl);
             return dbl;
         }
 
@@ -349,7 +347,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
         System.err.println("Value " + value);
-        System.err.println("Worked Days " + workedDays);
         if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
             return value * (percentage / 100);
         } else {
@@ -357,7 +354,6 @@ public class StaffSalaryAdvanceController implements Serializable {
             System.err.println("DBL 1 " + dbl);
             dbl = dbl * workedDays * (percentage / 100);
 
-            System.err.println("DBL 2 " + dbl);
             return dbl;
         }
 
@@ -383,7 +379,6 @@ public class StaffSalaryAdvanceController implements Serializable {
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
-        System.err.println("BASIC " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
@@ -412,7 +407,6 @@ public class StaffSalaryAdvanceController implements Serializable {
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
-        System.err.println("Performance " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
@@ -636,7 +630,6 @@ public class StaffSalaryAdvanceController implements Serializable {
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
-        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
         return count;
     }
@@ -902,7 +895,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     public void deleteSalaryComponent(StaffSalary staffSalary) {
         if (staffSalary.getId() == null) {
-            System.err.println("RETURE 1");
             return;
         }
 
@@ -925,7 +917,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 
             }
 
-            System.err.println("Return 2");
             updateStaffShiftRedo(staffSalary.getStaff(),
                     staffSalary.getSalaryCycle().getSalaryAdvanceFromDate(),
                     staffSalary.getSalaryCycle().getSalaryAdvanceToDate());

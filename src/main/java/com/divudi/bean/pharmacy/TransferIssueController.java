@@ -143,7 +143,6 @@ public class TransferIssueController implements Serializable {
 
             double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
 
-            System.err.println("Issueable Qty " + issuableQty);
 
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
 
@@ -172,7 +171,6 @@ public class TransferIssueController implements Serializable {
                 PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
                 phItem.setBillItem(bItem);
                 phItem.setQtyInUnit((double) sq.getQty());
-                System.err.println("Pharmac Item QTY " + phItem.getQtyInUnit());
                 phItem.setFreeQtyInUnit(i.getFreeQtyInUnit());
                 phItem.setPurchaseRateInUnit((double) sq.getStock().getItemBatch().getPurcahseRate());
                 phItem.setRetailRateInUnit((double) sq.getStock().getItemBatch().getRetailsaleRate());
@@ -316,7 +314,6 @@ public class TransferIssueController implements Serializable {
     private double calTotal() {
         double value = 0;
         int serialNo = 0;
-        System.out.println("preference"+sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate());
 
         if (sessionController.getInstitutionPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getIssuedBill().getBillItems()) {

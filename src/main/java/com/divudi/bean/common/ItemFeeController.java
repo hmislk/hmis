@@ -73,7 +73,6 @@ public class ItemFeeController implements Serializable {
     }
 
     public List<Department> getInstitutionDepatrments() {
-        System.out.println("inside = ");
         List<Department> d;
         ////System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
@@ -87,7 +86,6 @@ public class ItemFeeController implements Serializable {
     }
     
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
-        System.out.println("inside = ");
         List<Department> d;
         ////System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {

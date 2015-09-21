@@ -833,8 +833,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -881,8 +879,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -921,8 +917,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1015,8 +1009,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1063,8 +1055,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 

@@ -91,7 +91,6 @@ public class GoodsReturnController implements Serializable {
 
     public void setBill(Bill bill) {
         makeNull();
-        System.err.println("Bill " + bill);
         this.bill = bill;
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         generateBillComponent();
@@ -286,7 +285,6 @@ public class GoodsReturnController implements Serializable {
         System.err.println("3");
 //        saveComponent();
         saveComponent(p);
-        System.err.println("4");
 
         calTotal();
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
@@ -313,7 +311,6 @@ public class GoodsReturnController implements Serializable {
     }
 
     private void generateBillComponent() {
-        System.err.println("Generate ");
         billItems = null;
         for (PharmaceuticalBillItem grnPh : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
             BillItem bi = new BillItem();
@@ -350,7 +347,6 @@ public class GoodsReturnController implements Serializable {
 //            bi.setTmpSuggession(suggessions);
             bi.setPharmaceuticalBillItem(retPh);
 
-            System.err.println("Add " + bi);
 
             getBillItems().add(bi);
 
@@ -362,7 +358,6 @@ public class GoodsReturnController implements Serializable {
         Payment p = new Payment();
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -376,7 +371,6 @@ public class GoodsReturnController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);

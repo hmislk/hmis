@@ -1229,7 +1229,6 @@ public class InwardSearch implements Serializable {
     }
 
     public void setBillActionListener(String id) {
-        System.err.println("Billed Id " + id);
         setBill(bill);
     }
 

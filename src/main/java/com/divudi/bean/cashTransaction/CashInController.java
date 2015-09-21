@@ -163,7 +163,6 @@ public class CashInController implements Serializable {
 
     public void calTotal() {
         double dbl = getCashTransactionBean().calTotal(getBill().getCashTransaction());
-        System.err.println("Cal Total " + dbl);
         getBill().getCashTransaction().setCashValue(dbl);
     }
 

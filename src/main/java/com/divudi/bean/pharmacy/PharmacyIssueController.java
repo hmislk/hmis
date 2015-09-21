@@ -813,7 +813,6 @@ public class PharmacyIssueController implements Serializable {
         System.err.println("tdp = " + tdp);
         double dr;
         dr = (tr * tdp) / 100;
-        System.err.println("dr = " + dr);
 
 //        if (bi.getItem().isDiscountAllowed()) {
         return dr;

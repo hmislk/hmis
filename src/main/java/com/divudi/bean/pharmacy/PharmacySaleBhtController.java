@@ -354,7 +354,6 @@ public class PharmacySaleBhtController implements Serializable {
         m.put("depTp", DepartmentType.Store);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            System.err.println("1");
             sql = "select i from Stock i"
                     + " where i.stock >:s"
                     + " and i.department=:d "
@@ -365,7 +364,6 @@ public class PharmacySaleBhtController implements Serializable {
                     + " or upper(i.itemBatch.item.barcode) like :n )  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            System.err.println("2");
             sql = "select i from Stock i "
                     + " where i.stock >:s "
                     + " and i.department=:d"
@@ -376,7 +374,6 @@ public class PharmacySaleBhtController implements Serializable {
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         items = getStockFacade().findBySQL(sql, m, 20);
-        System.err.println("size " + items.size());
         itemsWithoutStocks = completeRetailSaleItems(qry);
         ////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;

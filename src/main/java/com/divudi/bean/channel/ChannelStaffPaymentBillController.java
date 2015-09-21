@@ -229,7 +229,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
         }
-        System.out.println(sql);
         suggestions = getStaffFacade().findBySQL(sql, m);
 
         return suggestions;
@@ -336,7 +335,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         System.out.println("hm = " + hm);
         System.out.println("sql = " + sql);
-        System.out.println("dueBillFees = " + dueBillFees.size());
 
     }
 
@@ -485,7 +483,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("class", ServiceSession.class);
         System.out.println("currentStaff = " + currentStaff);
         serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
-        System.out.println("serviceSessionList = " + serviceSessionList.size());
     }
 
     private Bill createPaymentBill() {

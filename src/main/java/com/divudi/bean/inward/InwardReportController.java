@@ -158,10 +158,8 @@ public class InwardReportController implements Serializable {
         System.out.println("discharged = " + discharged);
         if (discharged != null) {
             if (discharged) {
-                System.err.println("discharged True");
                 sql += " and b.discharged=true ";
             } else {
-                System.err.println("discharged False");
                 sql += " and b.discharged=false ";
             }
         }
@@ -169,10 +167,8 @@ public class InwardReportController implements Serializable {
         if (finalized != null) {
             if (finalized) {
                 sql += " and b.paymentFinalized=true ";
-                System.err.println("finalized True");
             } else {
                 sql += " and b.paymentFinalized=false ";
-                System.err.println("finalized False");
             }
         }
 
@@ -183,7 +179,6 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        System.out.println("patientEncounters.size() = " + patientEncounters.size());
         calTtoal();
     }
 

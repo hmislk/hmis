@@ -608,7 +608,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("**************************** List 1 :  " + list.size());
         return list;
 
     }
@@ -627,7 +626,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("**************************** List BillFee  1 : " + list.size());
         return list;
 
     }
@@ -646,7 +644,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("****************************** BillItems 2 : " + list.size());
         return list;
 
     }
@@ -665,7 +662,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("****************************** BillFee 2 : " + list.size());
         return list;
 
     }
@@ -684,7 +680,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("******************************** BillItems 3 : " + list.size());
         return list;
 
     }
@@ -703,7 +698,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("******************************** BillFee 3 : " + list.size());
         return list;
 
     }
@@ -1457,7 +1451,6 @@ public class InwardBeanController implements Serializable {
 
         System.err.println("Mill " + patientRoom);
         System.err.println("Pre " + previousRoom);
-        System.err.println("new " + newRoomFacilityCharge);
         if (patientRoom == null) {
             return null;
         }
@@ -1499,7 +1492,6 @@ public class InwardBeanController implements Serializable {
 
         System.err.println("Mill " + patientRoom);
 
-        System.err.println("new " + newRoomFacilityCharge);
         if (patientRoom == null) {
             return null;
         }
@@ -1879,7 +1871,6 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
-        System.out.println("consumeTime = " + consumeTime);
         double count = 0;
         double calculation = 0;
 
@@ -1899,9 +1890,7 @@ public class InwardBeanController implements Serializable {
             if ((overShoot != 0 && overShoot <= calculation)||count==0) {
                 System.err.println("count = " + count);
                 count++;
-                System.err.println("count = " + count);
             }
-            System.out.println("count = " + count);
         }
 
         return count;

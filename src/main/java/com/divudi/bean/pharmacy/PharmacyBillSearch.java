@@ -438,7 +438,6 @@ public class PharmacyBillSearch implements Serializable {
             System.err.println("Qty " + b.getPharmaceuticalBillItem().getQtyInUnit());
             System.err.println("Pur " + b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
-            System.err.println("Total " + tmp2);
             tmp += tmp2;
         }
 
@@ -454,7 +453,6 @@ public class PharmacyBillSearch implements Serializable {
                 continue;
             }
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            System.err.println("Total " + tmp2);
             tmp += tmp2;
         }
 
@@ -465,13 +463,11 @@ public class PharmacyBillSearch implements Serializable {
 
     public void calTotalSaleRate(Bill bill) {
         double tmp = 0;
-        System.out.println("bill = " + bill);
         for (BillItem b : bill.getBillItems()) {
             if (b.getPharmaceuticalBillItem() == null) {
                 continue;
             }
             double tmp2 = (b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getRetailRate());
-            System.err.println("sale Total " + tmp2);
             tmp += tmp2;
         }
 
@@ -749,7 +745,6 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
         System.out.println("getBill().getBillType() = " + getBill().getBillType());
-        System.out.println("getBill().getBillClass() = " + getBill().getBillClass());
         if (getBill().getBillType() == BillType.PharmacyPre) {
             if (checkSaleReturn(getBill())) {
                 UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
@@ -759,7 +754,6 @@ public class PharmacyBillSearch implements Serializable {
 
         if (getBill().getBillType() == BillType.PharmacySale) {
             System.out.println("getBill().getReferenceBill() = " + getBill().getReferenceBill().getInsId());
-            System.out.println("getBill().getReferenceBill().getBillType() = " + getBill().getReferenceBill().getBillType());
             if (checkSaleReturn(getBill().getReferenceBill())) {
                 UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
                 return true;
@@ -1014,7 +1008,6 @@ public class PharmacyBillSearch implements Serializable {
             //create BillFeePayments For cancel
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmpC = " + tmpC);
             calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
 
@@ -1124,7 +1117,6 @@ public class PharmacyBillSearch implements Serializable {
             //create BillFeePayments For cancel
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmpC = " + tmpC);
             calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
             getBillItemFacede().edit(b);
@@ -1320,7 +1312,6 @@ public class PharmacyBillSearch implements Serializable {
             //create BillFeePayments For cancel
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmpC = " + tmpC);
             calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
 
@@ -1358,7 +1349,6 @@ public class PharmacyBillSearch implements Serializable {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
             System.out.println("bf = " + bf);
-            System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
             setBillFeePaymentAndPayment(bf, p);
             System.err.println("BillFee For Out");
         }
@@ -1459,7 +1449,6 @@ public class PharmacyBillSearch implements Serializable {
             //create BillFeePayments For cancel
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
             List<BillFee> tmpC = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmpC = " + tmpC);
             calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
 
@@ -1968,7 +1957,6 @@ public class PharmacyBillSearch implements Serializable {
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()) > stockQty) {
             System.err.println("Check Item : " + pharmaceuticalBillItem.getBillItem().getItem());
             System.err.println("Item Qty : " + pharmaceuticalBillItem.getQtyInUnit());
-            System.err.println("Check Item : " + stockQty);
             return true;
         } else {
             return false;

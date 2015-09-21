@@ -303,7 +303,6 @@ public class ReportsStock implements Serializable {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
             System.err.println("Stock History " + b.getStockHistory().getStockQty());
-            System.err.println("Department " + b.getBillItem().getBill().getDepartment().getName());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -424,7 +423,6 @@ public class ReportsStock implements Serializable {
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
                     System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
                     System.err.println("History " + curHistory);
-                    System.err.println("######");
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
@@ -548,7 +546,6 @@ public class ReportsStock implements Serializable {
         System.out.println("bis.size() before removing = " + bis.size());
         System.out.println("sis.size() before removing " + sis.size());
         sis.removeAll(bis);
-        System.out.println("sis.size() after removing " + sis.size());
         items = new ArrayList<>(sis);
 
         Collections.sort(items);

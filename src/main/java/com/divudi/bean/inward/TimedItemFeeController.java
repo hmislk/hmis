@@ -145,7 +145,6 @@ public class TimedItemFeeController implements Serializable {
         tif.setCreater(getSessionController().getLoggedUser());
         System.out.println("tif.getFee() = " + tif.getFee());
         getTimedItemFeeFacade().edit(tif);
-        System.out.println("tif.getFee() = " + tif.getFee());
         JsfUtil.addSuccessMessage("Fee Updated");
         currentIx.setTotal(calTot());
         getEjbFacade().edit(currentIx);

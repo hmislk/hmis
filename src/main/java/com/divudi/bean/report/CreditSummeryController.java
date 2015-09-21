@@ -289,7 +289,6 @@ public class CreditSummeryController implements Serializable {
         temMap.put("credit", getInstitution());
         List<Bill> list = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println(list);
         return list;
         //     return tmp;
     }

@@ -76,10 +76,8 @@ public class UserStockController implements Serializable {
 //        System.err.println("3 Stock " + fetchedStock.getStock());
 //        System.err.println("4 Net Update Qty " + netUpdate);
         if (netUpdate > fetchedStock.getStock()) {
-            System.err.println("FALSE");
             return false;
         } else {
-            System.err.println("TRUE");
             return true;
         }
     }
@@ -123,10 +121,8 @@ public class UserStockController implements Serializable {
             userStockContainer.setCreatedAt(new Date());
 
             getUserStockContainerFacade().create(userStockContainer);
-            System.err.println("3");
         }
 
-        System.err.println("END SAVE USER STOCK CONTAINER");
         return userStockContainer;
 
     }
@@ -145,7 +141,6 @@ public class UserStockController implements Serializable {
         } else {
             getUserStockFacade().edit(us);
         }
-        System.err.println("3");
         userStockContainer.getUserStocks().add(us);
 
         return us;
