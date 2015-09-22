@@ -2849,21 +2849,33 @@ public class CommonReport implements Serializable {
         getPurchaseBilled().setBills(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, getDepartment()));
         getPurchaseBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Cash, getDepartment()));
         getPurchaseBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Credit, getDepartment()));
+        
+        getPurchaseBilled().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Cash, getDepartment()));
+        getPurchaseBilled().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Credit, getDepartment()));
 
         //Purchase Cancelled Bill
         getPurchaseCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, getDepartment()));
         getPurchaseCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Cash, getDepartment()));
         getPurchaseCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Credit, getDepartment()));
+        
+        getPurchaseCancelled().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Cash, getDepartment()));
+        getPurchaseCancelled().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PharmacyPurchaseBill, PaymentMethod.Credit, getDepartment()));
 
         //Purchase Refunded Bill
         getPurchaseReturn().setBills(getBills(new BilledBill(), BillType.PurchaseReturn, getDepartment()));
         getPurchaseReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+        
+        getPurchaseReturn().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+        getPurchaseReturn().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
         //Purchase Refunded Bill Cancel
         getPurchaseReturnCancel().setBills(getBills(new CancelledBill(), BillType.PurchaseReturn, getDepartment()));
         getPurchaseReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+        
+        getPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+        getPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
     }
 
