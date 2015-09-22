@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.PharmaceuticalItemType;
@@ -29,7 +30,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -132,19 +133,26 @@ public class PharmaceuticalItemTypeController implements Serializable {
     }
 
     public List<PharmaceuticalItemType> getItems() {
-        
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j = "select t "
+                    + " from PharmaceuticalItemType t "
+                    + " where t.retired=false "
+                    + " order by t.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
-    
-     List<PharmaceuticalItemType> pharmaceuticalItemTypeList = null;
-     public List<PharmaceuticalItemType> completeCategory(String qry) {
-        
+
+    List<PharmaceuticalItemType> pharmaceuticalItemTypeList = null;
+
+    public List<PharmaceuticalItemType> completeCategory(String qry) {
+
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         if (qry != null) {
             pharmaceuticalItemTypeList = getFacade().findBySQL("select c from PharmaceuticalItemType c where "
-                    + " c.retired=false and (upper(c.name) like :n) order by c.name",m,20);
+                    + " c.retired=false and (upper(c.name) like :n) order by c.name", m, 20);
             ////System.out.println("a size is " + a.size());
         }
         if (pharmaceuticalItemTypeList == null) {
@@ -195,8 +203,8 @@ public class PharmaceuticalItemTypeController implements Serializable {
             }
         }
     }
-    
-     @FacesConverter("phCategory")
+
+    @FacesConverter("phCategory")
     public static class PharmaceuticalItemTypeConverter implements Converter {
 
         @Override

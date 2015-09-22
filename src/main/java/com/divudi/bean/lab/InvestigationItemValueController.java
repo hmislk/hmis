@@ -119,7 +119,6 @@ public class InvestigationItemValueController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -165,7 +164,6 @@ public class InvestigationItemValueController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
         current = null;
         getCurrent();
     }
@@ -174,10 +172,6 @@ public class InvestigationItemValueController implements Serializable {
         return ejbFacade;
     }
 
-    public List<InvestigationItemValue> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
 
     /**
      *
