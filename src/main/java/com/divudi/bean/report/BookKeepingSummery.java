@@ -1342,7 +1342,7 @@ public class BookKeepingSummery implements Serializable {
 
         String sql;
 
-        sql = "select sum(b.netTotal) "
+        sql = "select sum(b.total) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.createdAt between :fd and :td ";
@@ -1551,7 +1551,7 @@ public class BookKeepingSummery implements Serializable {
             bkr.setItemName(item.getName());
 
             if (obj[0] != null) {
-                System.out.println("ob[1]" + obj[0]);
+                System.out.println("ob[0]" + obj[0]);
                 double feeTotal = (double) obj[0];
                 bkr.setReagentFee(feeTotal);
 //                totalRegentFee += feeTotal;
