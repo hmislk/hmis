@@ -93,7 +93,7 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText ==null || selectText.trim().equals("") ) {
             selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");

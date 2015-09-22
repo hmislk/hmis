@@ -4,7 +4,9 @@
  */
 package com.divudi.entity;
 
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -24,6 +26,8 @@ public class ServiceSession extends Item implements Serializable {
 
     @Transient
     String dayString;
+    @Transient
+    String sessionText;
 
     Integer sessionWeekday;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -49,7 +53,7 @@ public class ServiceSession extends Item implements Serializable {
     Date startingTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date endingTime;
-    
+
     boolean refundable = false;
     int displayCount;
     double displayPercent;
@@ -61,7 +65,7 @@ public class ServiceSession extends Item implements Serializable {
     long advanceAppointmentPeriod = 10;
     int advanceAPpointmentPeriodUnit = Calendar.DATE;
     boolean showAppointmentTime = true;
-    
+
     //Deactivate Properties(Doctor Leave)
     boolean deactivated;
     String deactivateComment;
@@ -72,7 +76,7 @@ public class ServiceSession extends Item implements Serializable {
     int transDisplayCountWithoutCancelRefund;
     @Transient
     int transCreditBillCount;
-    
+
     @Transient
     int transRowNumber;
 
@@ -242,7 +246,7 @@ public class ServiceSession extends Item implements Serializable {
         Calendar start = Calendar.getInstance();
         System.out.println("sessionAt = " + sessionAt);
         System.out.println("startingTime = " + startingTime);
-        if (sessionAt == null || startingTime ==null) {
+        if (sessionAt == null || startingTime == null) {
             return null;
         }
         st.setTime(sessionAt);
@@ -258,7 +262,7 @@ public class ServiceSession extends Item implements Serializable {
         Calendar st = Calendar.getInstance();
         Calendar ending = Calendar.getInstance();
         System.out.println("sessionAt = " + sessionAt);
-        if (sessionAt == null || getEndingTime()==null) {
+        if (sessionAt == null || getEndingTime() == null) {
             return null;
         }
         st.setTime(sessionAt);
@@ -315,10 +319,10 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public Date getEndingTime() {
-        if(endingTime==null){
-            if(startingTime==null){
-                endingTime =null;
-            }else{
+        if (endingTime == null) {
+            if (startingTime == null) {
+                endingTime = null;
+            } else {
                 Calendar e = Calendar.getInstance();
                 e.setTime(startingTime);
                 e.add(Calendar.HOUR, 2);
@@ -371,5 +375,37 @@ public class ServiceSession extends Item implements Serializable {
     public void setDeactivateComment(String deactivateComment) {
         this.deactivateComment = deactivateComment;
     }
-    
+
+    public String getSessionText() {
+        sessionText = "";
+        ServiceSession ses = this;
+        SimpleDateFormat dt1;
+        if (!ses.deactivated) {
+            dt1 = new SimpleDateFormat("E");
+            sessionText += dt1.format(ses.getSessionDate());
+            sessionText += " &nbsp;&nbsp;";
+            dt1 = new SimpleDateFormat("MMM/dd");
+            sessionText += dt1.format(ses.getSessionDate());
+            sessionText += " &nbsp;&nbsp;";
+            dt1 = new SimpleDateFormat("hh:mm a");
+            sessionText += dt1.format(ses.getStartingTime());
+            sessionText += " &nbsp;&nbsp;";
+            sessionText += CommonFunctions.round(ses.totalFee);
+            sessionText += " &nbsp;&nbsp;";
+            sessionText += "<font color='green'>";
+            sessionText += ses.getTransDisplayCountWithoutCancelRefund();
+            sessionText += "</font>";
+            sessionText += CommonFunctions.round(ses.totalFee);
+            if(ses.getMaxNo()!=0){
+                
+            }
+                
+        }
+    return sessionText ;
+}
+
+public void setSessionText(String sessionText) {
+        this.sessionText = sessionText;
+    }
+
 }
