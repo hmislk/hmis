@@ -16,19 +16,23 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.inward.Admission;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
@@ -52,32 +56,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class SearchController implements Serializable {
 
-    private SearchKeyword searchKeyword;
-    Date fromDate;
-    Date toDate;
-    private int maxResult = 50;
-    private BillType billType;
-    private PaymentMethod paymentMethod;
-
-    ////////////
-    private List<Bill> bills;
-    private List<Bill> selectedBills;
-    List<Bill> aceptPaymentBills;
-    private List<BillFee> billFees;
-    private List<BillFee> billFeesDone;
-    private List<BillItem> billItems;
-    private List<PatientInvestigation> patientInvestigations;
-    private List<PatientInvestigation> patientInvestigationsSigle;
-    Bill cancellingIssueBill;
-    Bill bill;
-    ////////////
-    Speciality speciality;
-    Staff staff;
-    Item item;
-    double dueTotal;
-    double doneTotal;
-    double netTotal;
-    ////////////
+    /**
+     * EJBs
+     */
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -88,19 +69,113 @@ public class SearchController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
-    private BillBeanController billBean;
     @EJB
     private PharmacyBean pharmacyBean;
-    ServiceSession selectedServiceSession;
-    Staff currentStaff;
-    List<BillItem> billItem;
-    //////////
+    @EJB
+    BillSessionFacade billSessionFacade;
+
+    /**
+     * Inject
+     */
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
     @Inject
     TransferController transferController;
+
+    /**
+     * Properties
+     */
+    private SearchKeyword searchKeyword;
+    Date fromDate;
+    Date toDate;
+    private int maxResult = 50;
+    private BillType billType;
+    private PaymentMethod paymentMethod;
+    private List<Bill> bills;
+    private List<Bill> selectedBills;
+    List<Bill> aceptPaymentBills;
+    private List<BillFee> billFees;
+    private List<BillFee> billFeesDone;
+    private List<BillItem> billItems;
+    private List<PatientInvestigation> patientInvestigations;
+    private List<PatientInvestigation> patientInvestigationsSigle;
+    Bill cancellingIssueBill;
+    Bill bill;
+    Speciality speciality;
+    Staff staff;
+    Item item;
+    double dueTotal;
+    double doneTotal;
+    double netTotal;
+    ServiceSession selectedServiceSession;
+    Staff currentStaff;
+    List<BillItem> billItem;
     List<PatientInvestigation> userPatientInvestigations;
+
+    String menuBarSearchText;
+    boolean channelingPanelVisible;
+    boolean pharmacyPanelVisible;
+    boolean opdPanelVisible;
+    boolean inwardPanelVisible;
+    boolean labPanelVisile;
+    boolean patientPanelVisible;
+
+    List<Bill> channellingBills;
+    List<BillSession> billSessions;
+    List<Bill> opdBills;
+    List<Bill> pharmacyBills;
+    List<Admission> admissions;
+    List<PatientInvestigation> pis;
+    List<Patient> patients;
+
+    BillSession selectedBillSession;
+
+    public String menuBarSearch() {
+        JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
+        return "/index";
+    }
+
+    public void fillBillSessions() {
+        selectedBillSession = null;
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        if (false) {
+            BillSession bs = new BillSession();
+            bs.getBill().getInsId();
+            bs.getBill().getDeptId();
+            bs.getBill().getReferralNumber();
+            bs.getReferenceBillSession().getBill().getInsId();
+            bs.getReferenceBillSession().getBill().getDeptId();
+            bs.getReferenceBillSession().getBill().getReferralNumber();
+            bs.getBill().getReferenceBill().getInsId();
+            bs.getBill().getReferenceBill().getDeptId();
+            bs.getBill().getReferenceBill().getReferralNumber();
+        }
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and ("
+                + "    lower(bs.bill.insId) like :txt "
+                + " or lower(bs.bill.deptId) like :txt "
+                + " or lower(bs.bill.referralNumber) like :txt "
+                + " or lower(bs.referenceBillSession.bill.insId) like :txt "
+                + " or lower(bs.referenceBillSession.bill.deptId) like :txt "
+                + " or lower(bs.referenceBillSession.bill.referralNumber) like :txt "
+                + " or lower(bs.bill.referenceBill.insId) like :txt "
+                + " or lower(bs.bill.referenceBill.deptId) like :txt "
+                + " or lower(bs.bill.referenceBill.referralNumber) like :txt "
+                + " )"
+                + " order by bs.sessionDate, bs.serialNo ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("txt", "%" + menuBarSearchText.toLowerCase().trim() + "%");
+        billSessions = billSessionFacade.findBySQL(sql, hh, TemporalType.DATE);
+
+    }
 
     public void makeListNull() {
         maxResult = 50;
@@ -862,7 +937,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void listReturnBills(BillType bt, Class bc) {
 
         Map m = new HashMap();
@@ -2895,7 +2970,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createPaymentTableAll() {
         billItems = null;
         HashMap temMap = new HashMap();
@@ -4589,7 +4664,7 @@ public class SearchController implements Serializable {
                 + " and type(bi.bill)=:class "
                 + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fromDate and :toDate ";
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(bi.paidForBillFee.bill.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -4599,7 +4674,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(bi.paidForBillFee.bill.insId) like :billNo or upper(bi.paidForBillFee.bill.deptId) like :billNo )";
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().trim().equals("")) {
             sql += " and  (upper(bi.bill.insId) like :insId )";
             m.put("insId", "%" + getSearchKeyword().getInsId().trim().toUpperCase() + "%");
@@ -4619,7 +4694,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(bi.paidForBillFee.feeValue) like :total )";
             m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-        
+
         sql += " order by bi.bill.createdAt desc  ";
 
         m.put("fromDate", getFromDate());
@@ -4627,8 +4702,8 @@ public class SearchController implements Serializable {
         m.put("bt", BillType.PaymentBill);
         m.put("bts", bts);
         m.put("class", BilledBill.class);
-        
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP,50);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -4697,7 +4772,7 @@ public class SearchController implements Serializable {
             sql += " and bs.serviceSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (upper(b.bill.patient.person.name) like :patientName )";
             hm.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -4722,7 +4797,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.staff.person.name) like :staff )";
             hm.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
-        
+
         sql += " order by b.speciality.name ";
 
         //hm.put("ins", sessionController.getInstitution());
@@ -5776,4 +5851,126 @@ public class SearchController implements Serializable {
         this.aceptPaymentBills = aceptPaymentBills;
     }
 
+    public String getMenuBarSearchText() {
+        return menuBarSearchText;
+    }
+
+    public void setMenuBarSearchText(String menuBarSearchText) {
+        this.menuBarSearchText = menuBarSearchText;
+    }
+
+    public boolean isChannelingPanelVisible() {
+        return channelingPanelVisible;
+    }
+
+    public void setChannelingPanelVisible(boolean channelingPanelVisible) {
+        this.channelingPanelVisible = channelingPanelVisible;
+    }
+
+    public boolean isPharmacyPanelVisible() {
+        return pharmacyPanelVisible;
+    }
+
+    public void setPharmacyPanelVisible(boolean pharmacyPanelVisible) {
+        this.pharmacyPanelVisible = pharmacyPanelVisible;
+    }
+
+    public boolean isOpdPanelVisible() {
+        return opdPanelVisible;
+    }
+
+    public void setOpdPanelVisible(boolean opdPanelVisible) {
+        this.opdPanelVisible = opdPanelVisible;
+    }
+
+    public boolean isInwardPanelVisible() {
+        return inwardPanelVisible;
+    }
+
+    public void setInwardPanelVisible(boolean inwardPanelVisible) {
+        this.inwardPanelVisible = inwardPanelVisible;
+    }
+
+    public boolean isLabPanelVisile() {
+        return labPanelVisile;
+    }
+
+    public void setLabPanelVisile(boolean labPanelVisile) {
+        this.labPanelVisile = labPanelVisile;
+    }
+
+    public boolean isPatientPanelVisible() {
+        return patientPanelVisible;
+    }
+
+    public void setPatientPanelVisible(boolean patientPanelVisible) {
+        this.patientPanelVisible = patientPanelVisible;
+    }
+
+    public List<Bill> getChannellingBills() {
+        return channellingBills;
+    }
+
+    public void setChannellingBills(List<Bill> channellingBills) {
+        this.channellingBills = channellingBills;
+    }
+
+    public List<Bill> getOpdBills() {
+        return opdBills;
+    }
+
+    public void setOpdBills(List<Bill> opdBills) {
+        this.opdBills = opdBills;
+    }
+
+    public List<Bill> getPharmacyBills() {
+        return pharmacyBills;
+    }
+
+    public void setPharmacyBills(List<Bill> pharmacyBills) {
+        this.pharmacyBills = pharmacyBills;
+    }
+
+    public List<Admission> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Admission> admissions) {
+        this.admissions = admissions;
+    }
+
+    public List<PatientInvestigation> getPis() {
+        return pis;
+    }
+
+    public void setPis(List<PatientInvestigation> pis) {
+        this.pis = pis;
+    }
+
+    public List<Patient> getPatients() {
+        return patients;
+    }
+
+    public void setPatients(List<Patient> patients) {
+        this.patients = patients;
+    }
+
+    public List<BillSession> getBillSessions() {
+        return billSessions;
+    }
+
+    public void setBillSessions(List<BillSession> billSessions) {
+        this.billSessions = billSessions;
+    }
+
+    public BillSession getSelectedBillSession() {
+        return selectedBillSession;
+    }
+
+    public void setSelectedBillSession(BillSession selectedBillSession) {
+        this.selectedBillSession = selectedBillSession;
+    }
+
+    
+    
 }

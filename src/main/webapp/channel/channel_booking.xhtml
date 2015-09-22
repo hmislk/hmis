@@ -174,9 +174,7 @@
                                              selectionMode="single" rowKey="#{bs.id}"
                                              rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
                                              selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
-                                            listener="#{channelBillController.createBillfees}" />  
-
+                                    
                                     <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
                                     <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                     <p:column headerText="Paid">

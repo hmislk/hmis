@@ -11,7 +11,54 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-               
+                <p:panelGrid columns="4"  >
+                    <p:panel header="Channelling" rendered="#{searchController.channelingPanelVisible}" >
+                        <h:panelGroup >
+                            <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                                <tr>
+                                    <th>
+                                        <p:outputLabel value="Bookings" ></p:outputLabel>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
+                                                     value="#{searchController.billSessions}" var='bs'
+                                                     selectionMode="single" rowKey="#{bs.id}"
+                                                     rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
+                                                     selection="#{searchController.selectedBillSession}" scrollable="true" scrollHeight="275">
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                                                    listener="#{bookingController.createBillfees}" />  
+
+                                            <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
+                                            <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                            <p:column headerText="Paid">
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
+                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
+                                            </p:column>
+                                            <p:column headerText="C/R">
+                                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                            </p:column>   
+                                            <p:column headerText="Agent">
+                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
+                                            </p:column> 
+                                            <p:column headerText="P/A">                           
+                                                <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                            </p:column> 
+                                        </p:dataTable>    
+                                    </td>
+                                </tr>
+                            </table>
+                        </h:panelGroup>
+                    </p:panel>
+
+                </p:panelGrid>
 
 
 
