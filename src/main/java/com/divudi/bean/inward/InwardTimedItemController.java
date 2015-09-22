@@ -285,6 +285,16 @@ public class InwardTimedItemController implements Serializable {
         if (generalChecking()) {
             return;
         }
+        if (bf.getPatientItem().getToTime() != null) {
+            if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
+                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                return;
+            }
+            if (bf.getPatientItem().getToTime().getTime()==bf.getPatientItem().getFromTime().getTime()) {
+                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                return;
+            }
+        }
 
         double value = savePatientItem(bf.getPatientItem());
         bf.setFeeValue(value);
@@ -545,6 +555,10 @@ public class InwardTimedItemController implements Serializable {
         if (pic.getToTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
                 UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                return;
+            }
+            if (pic.getToTime().getTime()==pic.getFromTime().getTime()) {
+                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
         }
