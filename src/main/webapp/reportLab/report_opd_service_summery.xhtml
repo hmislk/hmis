@@ -19,11 +19,11 @@
                 
                 <h:panelGrid columns="2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  " >
+                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy " >
+                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
 
                     <h:outputLabel value="Service Name"/>
@@ -46,7 +46,8 @@
                                     value="#{serviceSummery.department}" converter="departmentConverter"/>
 
                     <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                    <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
+                    <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">
+                        <f:selectItem itemLabel="Opd and Inward"/>
                         <f:selectItems value="#{enumController.paymentMethods}"  />
                     </p:selectOneMenu>
 

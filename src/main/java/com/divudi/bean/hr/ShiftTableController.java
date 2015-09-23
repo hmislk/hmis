@@ -85,31 +85,30 @@ public class ShiftTableController implements Serializable {
     PhDateController phDateController;
 
     public void fetchAndSetDayType(StaffShift ss) {
-//        DayType dayType=ss.getDayType();
-
-        System.out.println("ss.getDayType() = " + ss.getDayType());
-
-        ss.setDayType(null);
-        if (ss.getShift() != null) {
-            ss.setDayType(ss.getShift().getDayType());
-            System.out.println("ss.getDayType()(ss.getShift().getDayType()) = " + ss.getDayType());
-        }
+        DayType dayType=ss.getDayType();
         
-        if (ss.getDayType()==null) {
-            DayType dtp=phDateController.getHolidayType(ss.getShiftDate());
-            ss.setDayType(dtp);
-            System.out.println("ss.getDayType()(phDateController.getHolidayType(ss.getShiftDate()) = " + ss.getDayType());
+        System.out.println("ss.getDayType() = " + ss.getDayType());
+        
+        
+        ss.setDayType(null);
+        
+        DayType dtp;
+        if (dayType != null || dayType == DayType.DayOff) {
+             dtp= dayType;
+        }else{            
+            dtp= phDateController.getHolidayType(ss.getShiftDate());
         }
 
-//        if (ss.getDayType() == null) {
-//            if (ss.getShift() != null) {
-//                ss.setDayType(ss.getShift().getDayType());
-//            }
-//        }
+        
+        ss.setDayType(dtp);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
     }
 
     private void saveStaffShift() {
-        System.out.println("Save Shift 1");
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
 //                if (ss.getShift() == null) {
@@ -138,19 +137,16 @@ public class ShiftTableController implements Serializable {
             for (StaffShift ss : st.getStaffShift()) {
 
                 if (ss.getId() != null) {
-                    System.out.println("ss.getId() = " + ss.getId());
                     boolean flag = false;
                     StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
                     if (fetchStaffShift.getRoster() != null && ss.getRoster() != null) {
                         if (!fetchStaffShift.getRoster().equals(ss.getRoster())) {
-                            System.out.println("Roster true");
                             flag = true;
                         }
                     }
 
                     if (fetchStaffShift.getStaff() != null && ss.getStaff() != null) {
                         if (!fetchStaffShift.getStaff().equals(ss.getStaff())) {
-                            System.out.println("Staff True");
                             flag = true;
                         }
                     }
@@ -158,13 +154,11 @@ public class ShiftTableController implements Serializable {
                         if (!fetchStaffShift.getShift().equals(ss.getShift())) {
                             System.out.println("Shift true");
                             System.out.println("fetchStaffShift.fetchStaffShift.getShift().getId() = " + fetchStaffShift.getShift().getId());
-                            System.out.println("ss.getShift().getId() = " + ss.getShift().getId());
                             flag = true;
                         }
                     }
 
                     if (flag) {
-                        System.out.println("Flag Inside Save Staff Shift History");
                         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
                         staffShiftHistory.setStaffShift(ss);
                         staffShiftHistory.setCreatedAt(new Date());
@@ -191,7 +185,7 @@ public class ShiftTableController implements Serializable {
 
         saveStaffShift();
         saveStaffShift();
-
+        
     }
 
     public void createShiftTable() {
@@ -462,9 +456,7 @@ public class ShiftTableController implements Serializable {
             for (Staff staff : staffs) {
                 System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
-                System.out.println("ss.size() = " + ss.size());
                 if (ss == null) {
-                    System.out.println("ss null = ");
                     for (int i = 0; i < roster.getShiftPerDay(); i++) {
                         StaffShift newStaffShift = new StaffShift();
                         newStaffShift.setStaff(staff);
@@ -480,7 +472,6 @@ public class ShiftTableController implements Serializable {
                             summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
                             summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
                             a++;
-                            System.out.println("a = " + a);
                         } else {
                             StaffShift sss = new StaffShift();
                             sss.setTransShiftTime(0);
@@ -492,7 +483,6 @@ public class ShiftTableController implements Serializable {
                 } else {
                     for (StaffShift s : ss) {
                         System.out.println("s.getShift().getName() = " + s.getShift().getName());
-                        System.out.println("s.getShift().getDurationMin() = " + s.getShift().getDurationMin());
                         if (s.getShift().getDurationMin() > 0) {
                             System.out.println("s.getTransWorkTime() = " + s.getTransWorkTime());
                             s.setTransWorkTime(fetchWorkTime(staff, nowDate));
@@ -505,17 +495,13 @@ public class ShiftTableController implements Serializable {
                                 summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
                                 summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
                                 a++;
-                                System.out.println("a = " + a);
                             } else {
-                                System.out.println("b = " + b);
                                 StaffShift sss = new StaffShift();
                                 sss.setTransShiftTime(s.getShift().getDurationMin());
                                 sss.setTransWorkTime(s.getTransWorkTime());
                                 summeryTable.getStaffShift().add(sss);
                             }
-                            System.out.println("fetchWorkTime(staff, nowDate) = " + fetchWorkTime(staff, nowDate));
                         } else {
-                            System.out.println("else");
                             if (b) {
                                 System.out.println("b = " + b);
                                 System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
@@ -525,9 +511,7 @@ public class ShiftTableController implements Serializable {
                                 summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
                                 summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
                                 a++;
-                                System.out.println("a = " + a);
                             } else {
-                                System.out.println("b = " + b);
                                 StaffShift sss = new StaffShift();
                                 sss.setTransShiftTime(s.getShift().getDurationMin());
                                 sss.setTransWorkTime(s.getTransWorkTime());
@@ -539,13 +523,10 @@ public class ShiftTableController implements Serializable {
                     System.out.println("roster.getShiftPerDay() = " + roster.getShiftPerDay());
                     System.out.println("ss.size() = " + ss.size());
                     int ballance = roster.getShiftPerDay() - ss.size();
-                    System.out.println("ballance = " + ballance);
                     if (ballance <= 0) {
-                        System.err.println("Continue");
                         continue;
                     }
                     for (int i = 0; i < ballance; i++) {
-                        System.out.println("add new");
                         StaffShift newStaffShift = new StaffShift();
                         newStaffShift.setStaff(staff);
                         newStaffShift.setShiftDate(nowDate);
@@ -560,9 +541,7 @@ public class ShiftTableController implements Serializable {
                             summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
                             summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
                             a++;
-                            System.out.println("a = " + a);
                         } else {
-                            System.out.println("b = " + b);
                             StaffShift sss = new StaffShift();
                             sss.setTransShiftTime(0);
                             sss.setTransWorkTime(0);
@@ -639,14 +618,11 @@ public class ShiftTableController implements Serializable {
         if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
             System.out.println("value = " + value);
             System.out.println("leavedTimeValue = " + leavedTimeValue);
-            System.out.println("ss.getShift().getDurationMin()*60 = " + ss.getShift().getDurationMin() * 60);
             if ((ss.getShift().getDurationMin() * 60) < value) {
                 value = ss.getShift().getDurationMin() * 60;
-                System.out.println("4.b dbl(else) = " + value);
             }
         }
 
-        System.err.println("Staff " + staff.getCodeInterger() + " : Value : " + value);
 
         return value;
 
@@ -720,12 +696,10 @@ public class ShiftTableController implements Serializable {
             for (Staff s : staffs) {
                 List<StaffShift> ss = humanResourceBean.fetchStaffShift(nowDate, s);
                 if (ss.size() > 2) {
-                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                     System.err.println("ss.size() = " + ss.size());
                     System.err.println("nowDate = " + nowDate);
                     i++;
                     for (StaffShift sss : ss) {
-                        System.out.println("sss.getShift().getName() = " + sss.getShift().getName());
                     }
                 }
             }
@@ -735,7 +709,6 @@ public class ShiftTableController implements Serializable {
             c.add(Calendar.DATE, 1);
             nowDate = c.getTime();
         }
-        System.out.println("i(end) = " + i);
     }
 
     public void makeTableNull() {

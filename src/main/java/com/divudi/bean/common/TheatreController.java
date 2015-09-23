@@ -7,31 +7,31 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-import java.util.TimeZone;
+
 import com.divudi.data.DepartmentType;
-import com.divudi.facade.DepartmentFacade;
 import com.divudi.entity.Department;
+import com.divudi.facade.DepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class TheatreController implements Serializable {
+public class TheatreController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -54,8 +54,6 @@ public  class TheatreController implements Serializable {
     }
 
     // Need new Enum Department type
-    
-    
     public void setSelectedItems(List<Department> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -74,7 +72,7 @@ public  class TheatreController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -107,8 +105,8 @@ public  class TheatreController implements Serializable {
     }
 
     public Department getCurrent() {
-        if(current==null){
-            current=new Department();
+        if (current == null) {
+            current = new Department();
             current.setDepartmentType(DepartmentType.Theatre);
         }
         return current;
@@ -122,7 +120,7 @@ public  class TheatreController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -140,11 +138,9 @@ public  class TheatreController implements Serializable {
     }
 
     public List<Department> getItems() {
-       // items = getFacade().findAll("name", true);
-        String sql="SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre order by i.name";
-        items=getEjbFacade().findBySQL(sql);
-        if(items==null){
-            items=new ArrayList<Department>();
+        if (items == null) {
+            String sql = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

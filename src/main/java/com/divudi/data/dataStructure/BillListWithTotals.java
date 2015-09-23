@@ -20,6 +20,17 @@ public class BillListWithTotals {
     Double discount;
     Double cancelledTotal;
     Double refundTotal;
+    Double saleValueTotal;
+
+    public Double getSaleValueTotal() {
+        return saleValueTotal;
+    }
+
+    public void setSaleValueTotal(Double saleValueTotal) {
+        this.saleValueTotal = saleValueTotal;
+    }
+    
+    
 
     public Double getCancelledTotal() {
         return cancelledTotal;

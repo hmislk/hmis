@@ -9,10 +9,8 @@ import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.ReportItem;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import javax.persistence.Column;
@@ -172,8 +170,6 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   //System.out.println(pattern + " " + output);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-
         }
 
         if (comments != null) {

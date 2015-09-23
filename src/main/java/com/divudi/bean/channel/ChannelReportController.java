@@ -39,8 +39,6 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -1956,7 +1956,6 @@ public class ChannelReportController implements Serializable {
             System.out.println("bs = " + bs.isAbsent());
             bs.setAbsent(true);
             billSessionFacade.edit(bs);
-            System.out.println("bs = " + bs.isAbsent());
             UtilityController.addSuccessMessage("Marked Succesful");
         }
     }
@@ -2278,7 +2277,6 @@ public class ChannelReportController implements Serializable {
         agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("agentHistorys.size() = " + agentHistorys.size());
 
     }
 

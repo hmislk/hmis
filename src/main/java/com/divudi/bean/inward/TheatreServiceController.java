@@ -7,45 +7,40 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
-import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.dataStructure.ServiceFee;
 import com.divudi.data.SessionNumberType;
-import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.dataStructure.ServiceFee;
+import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
-import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InwardServiceFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceCategoryFacade;
-import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.ServiceSubCategoryFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.TheatreServiceFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -269,7 +264,7 @@ public class TheatreServiceController implements Serializable {
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             ////System.out.println("4");
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getTheatreServiceFacade().create(getCurrent());
             if (billedAs == false) {
@@ -324,14 +319,14 @@ public class TheatreServiceController implements Serializable {
 
         for (ItemFee it : getFees(current)) {
             it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetiredAt(new Date());
             it.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(it);
         }
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getTheatreServiceFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

@@ -27,17 +27,15 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -291,7 +289,6 @@ public class CreditSummeryController implements Serializable {
         temMap.put("credit", getInstitution());
         List<Bill> list = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println(list);
         return list;
         //     return tmp;
     }
@@ -377,7 +374,7 @@ public class CreditSummeryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
 
         return fromDate;
@@ -389,7 +386,7 @@ public class CreditSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }

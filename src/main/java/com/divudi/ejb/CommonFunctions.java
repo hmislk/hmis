@@ -1,13 +1,11 @@
 package com.divudi.ejb;
 
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
 import java.util.Calendar;
 import java.util.Date;
-import javax.ejb.Singleton;
 import java.util.TimeZone;
+import javax.ejb.Singleton;
 
 /**
  *
@@ -63,12 +61,9 @@ public class CommonFunctions {
         Date endOfDay = getEndOfDay(firstDate);
 
         System.err.println("Start " + startOfDay);
-        System.err.println("End " + endOfDay);
         if (startOfDay.before(secondDate) && endOfDay.after(secondDate)) {
-            System.err.println("True");
             return true;
         } else {
-            System.err.println("False");
             return false;
         }
     }
@@ -124,7 +119,6 @@ public class CommonFunctions {
 
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
-        System.err.println(frm + " : " + to + " DAY COUNT " + inDays);
         return inDays;
 
     }
@@ -142,7 +136,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }
@@ -172,7 +166,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }
@@ -190,7 +184,7 @@ public class CommonFunctions {
             return now.getTime();
         } catch (Exception e) {
             ////System.out.println("Error is " + e.getMessage());
-            return Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime();
+            return new Date();
 
         }
     }

@@ -11,8 +11,8 @@ import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -26,8 +26,6 @@ import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.StockFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -833,8 +833,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -881,8 +879,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -921,8 +917,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1015,8 +1009,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1063,8 +1055,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1528,7 +1518,7 @@ public class ReportsTransfer implements Serializable {
 
     public BillType[] getBillTypes() {
         if (billTypes == null) {
-            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre};
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre, BillType.PharmacyWholesalePre };
         }
         return billTypes;
     }

@@ -6,7 +6,6 @@
 package com.divudi.ejb;
 
 import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;

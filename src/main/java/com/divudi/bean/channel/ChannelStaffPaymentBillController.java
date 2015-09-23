@@ -32,15 +32,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -96,6 +95,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     Speciality speciality;
     private ServiceSession selectedServiceSession;
     boolean considerDate = false;
+    BillFee billFee;
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -229,7 +229,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
         }
-        System.out.println(sql);
         suggestions = getStaffFacade().findBySQL(sql, m);
 
         return suggestions;
@@ -334,6 +333,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
 
     }
 
@@ -482,7 +483,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("class", ServiceSession.class);
         System.out.println("currentStaff = " + currentStaff);
         serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
-        System.out.println("serviceSessionList = " + serviceSessionList.size());
     }
 
     private Bill createPaymentBill() {
@@ -691,7 +691,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -699,7 +699,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+//        getItems();
         current = null;
         getCurrent();
     }
@@ -708,10 +708,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         return billFacade;
     }
 
-    public List<Bill> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -732,7 +728,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public Date getToDate() {
         //Dont Remove Comments if u want ask Safrin
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -745,7 +741,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public Date getFromDate() {
         //Dont Remove Comments if u want ask Safrin
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -887,6 +883,19 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setConsiderDate(boolean considerDate) {
         this.considerDate = considerDate;
+    }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        if (billFee!=null) {
+            setSpeciality(billFee.getSpeciality());
+            setCurrentStaff(billFee.getStaff());
+            calculateDueFees();
+        }
+        this.billFee = billFee;
     }
 
     /**

@@ -23,6 +23,8 @@ public class BillsTotals {
     private double grnNetTotalWithExpenses;
     private double slip;
     private double agent;
+    double saleCash;
+    double saleCredit;
     private boolean bold;
     //private BillType billType;
 
@@ -148,6 +150,24 @@ public class BillsTotals {
     public void setAgent(double agent) {
         this.agent = agent;
     }
+
+    public double getSaleCash() {
+        return saleCash;
+    }
+
+    public void setSaleCash(double saleCash) {
+        this.saleCash = saleCash;
+    }
+
+    public double getSaleCredit() {
+        return saleCredit;
+    }
+
+    public void setSaleCredit(double saleCredit) {
+        this.saleCredit = saleCredit;
+    }
+    
+    
 
    
    
