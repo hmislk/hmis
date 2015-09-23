@@ -4,10 +4,9 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
@@ -18,55 +17,54 @@
 
                     <h:form>
 
-                        <p:panel >
-                            <p:wizard widgetVar="wiz"
-                                      flowListener="#{webUserController.onFlowProcess}" style="width: 600px; min-height: 300px;">
-                                <p:tab id="tabPerson" title="Personal Details">
-                                    <p:panel >
-                                        <h:panelGrid columns="2" >
-                                            <h:outputText value="Name" ></h:outputText>
-                                            <p:inputText autocomplete="off" required="true" value="#{webUserController.current.webUserPerson.name}" ></p:inputText>
-                                            <h:outputText value="Address" ></h:outputText>
-                                            <p:inputText autocomplete="off" required="true" value="#{webUserController.current.webUserPerson.address}" ></p:inputText>
-                                            <h:outputText value="Mobile" ></h:outputText>
-                                            <p:inputMask mask="999-9999999" required="true" value="#{webUserController.current.webUserPerson.mobile}" ></p:inputMask>
-                                            <h:outputText value="Speciality" ></h:outputText>                                            
-                                            <autocomplete:completeSpeciality value="#{webUserController.speciality}"/>
-                                        </h:panelGrid>
+                        <h:panelGrid columns="1" style="top: 0px; bottom: 0px; width: 100%; height: 100%; margin: 0 auto; border: 1px solid red; text-align: center;" >
 
-                                    </p:panel>
-                                </p:tab>
-                                <p:tab id="tabUser" title="User Details">
-                                    <p:panel >
-                                        <h:panelGrid columns="2" >
-                                            <h:outputText value="User Name"   ></h:outputText>
-                                            <p:inputText autocomplete="off" required="true" maxlength="50" value="#{webUserController.current.name }" ></p:inputText>
-                                            <h:outputText value="Password" ></h:outputText>
-                                            <p:password feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />
+                            <p:panel header="Add New User" style="left:0px; right: 0px; top: 0px; bottom: 0px; margin: auto; display: inline-block;" >
+                                
+                                <h:panelGrid columns="2" style="text-align: left;" >
+                                    <h:outputText value="Name" ></h:outputText>
+                                    <p:inputText autocomplete="off"
+                                                 required="true" 
+                                                 value="#{webUserController.current.webUserPerson.name}"
+                                                 requiredMessage="Please enter a username"></p:inputText>
+                                    <h:outputText value="Address" ></h:outputText>
+                                    <p:inputText autocomplete="off" 
+                                                 required="true" 
+                                                 value="#{webUserController.current.webUserPerson.address}"
+                                                 requiredMessage="Please enter an address."></p:inputText>
+                                    <h:outputText value="Mobile" ></h:outputText>
+                                    <p:inputMask mask="999-9999999" required="true"
+                                                 value="#{webUserController.current.webUserPerson.mobile}"
+                                                 requiredMessage="Plase enter a phone number"></p:inputMask>
+                                    <h:outputText value="Speciality" ></h:outputText>                                            
+                                    <autocomplete:completeSpeciality value="#{webUserController.speciality}"/>
 
-                                            <h:outputText value="Institution" ></h:outputText>
-                                            <p:selectOneMenu  value="#{webUserController.current.institution}" id="ins"  >
-                                                <f:selectItem itemLabel="Please select an institutie"/>
-                                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                <f:ajax  execute="ins" event="change"/>                                                
-                                            </p:selectOneMenu>
+                                    <h:outputText value="User Name"   ></h:outputText>
+                                    <p:inputText autocomplete="off" required="true" maxlength="50" value="#{webUserController.current.name }" ></p:inputText>
 
-                                            <h:outputLabel value="Code" ></h:outputLabel>
-                                            <p:inputText autocomplete="off" required="true" value="#{webUserController.current.code}" maxlength="10" ></p:inputText>
+                                    <h:outputText value="Password" ></h:outputText>
+                                    <p:password id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />
 
-                                            
-                                            <p:commandButton id="btnCreateUser" value="Create User" action="staff_login" actionListener="#{webUserController.saveNewUser()}" ajax="false" onclick="onSubmitButton();" >
-                                             </p:commandButton>
-                                            <p:defaultCommand target="btnCreateUser"/>
-                                        </h:panelGrid>
+                                    <h:outputText value="Re-enter password" ></h:outputText>
+                                    <p:password id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />
 
-                                    </p:panel>
-                                </p:tab>
 
-                              
+                                    <h:outputText value="Institution" ></h:outputText>
+                                    <autocomplete:institution value="#{webUserController.current.institution}" ></autocomplete:institution>
 
-                            </p:wizard>
-                        </p:panel>
+
+                                    <h:outputLabel value="Code" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" required="true" value="#{webUserController.current.code}" maxlength="10" ></p:inputText>
+
+
+                                    <p:commandButton id="btnCreateUser" value="Create User" action="staff_login" actionListener="#{webUserController.saveNewUser()}" ajax="false" onclick="onSubmitButton();" >
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnCreateUser"/>
+                                </h:panelGrid>
+
+                            </p:panel>
+
+                        </h:panelGrid>
 
                     </h:form>
                 </h:panelGroup>
@@ -75,5 +73,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

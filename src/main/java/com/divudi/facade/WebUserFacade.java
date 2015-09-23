@@ -4,10 +4,10 @@
  */
 package com.divudi.facade;
 
+import com.divudi.entity.WebUser;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import com.divudi.entity.WebUser;
 
 /**
  *

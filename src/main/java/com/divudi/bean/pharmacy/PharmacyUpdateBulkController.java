@@ -12,12 +12,12 @@ import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *

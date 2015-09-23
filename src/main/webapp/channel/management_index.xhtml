@@ -3,7 +3,6 @@
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel">
 
@@ -17,6 +16,7 @@
                     <p:panel header="Institutions" >
                         <p:panelGrid columns="1" >
                             <p:commandButton value="Agencies" action="/channel/institutions" ajax="false" ></p:commandButton>
+                            <p:commandButton value="Agenciey Credit Limit Update" action="/channel/institutions_udate_credit_limit" ajax="false" ></p:commandButton>
                         </p:panelGrid>
                     </p:panel>
 

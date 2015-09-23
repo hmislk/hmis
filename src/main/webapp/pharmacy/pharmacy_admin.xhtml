@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html">
 
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -93,7 +93,6 @@
                                 <h:panelGrid columns="1" >
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Discard Categories" action="pharmacy_discard_category" ></p:commandButton>
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Adjustment Categories" action="pharmacy_adjustment_category" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" rendered="false" ajax="false" value="Items Categories" action="pharmacy_items_categories" ></p:commandButton>
                                 </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="6) Error Checking" styleClass="alignTop" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
@@ -139,5 +138,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -63,11 +63,18 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="PO Value">
+                    <p:column headerText="PO Value" style="text-align: right;">
                         <h:outputLabel value="#{i.bill.referenceBill.netTotal}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column headerText="PO Value(Sale)" style="text-align: right;">
+                        <h:outputLabel value="#{i.bill.referenceBill.saleValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column headerText="Dealer Name">
                         <h:outputLabel value="#{i.bill.fromInstitution.name}">
                             <f:convertNumber pattern="#,##0.00" />
@@ -78,12 +85,12 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Free Quantity">
+                    <p:column headerText="Free Quantity" style="text-align: right;">
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.freeQty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Order Quantity">
+                    <p:column headerText="Order Quantity" style="text-align: right;">
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>

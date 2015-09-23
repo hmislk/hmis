@@ -7,32 +7,28 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
 import com.divudi.entity.Staff;
-import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -135,7 +131,7 @@ public class ServiceFeeController implements Serializable {
         }
         currentFee.setItem(currentIx);
         if (currentFee.getId() == null || currentFee.getId() == 0) {
-            currentFee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(currentFee);
             UtilityController.addSuccessMessage("Fee Added");
@@ -197,7 +193,7 @@ public class ServiceFeeController implements Serializable {
     public void edit(ItemFee itemFee) {
 
         itemFee.setEditer(getSessionController().getLoggedUser());
-        itemFee.setEditedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        itemFee.setEditedAt(new Date());
 
         itemFeeFacade.edit(itemFee);
 
@@ -221,7 +217,7 @@ public class ServiceFeeController implements Serializable {
         } else {
             getRemovedItemFee().setRetired(true);
             getRemovedItemFee().setRetirer(getSessionController().getLoggedUser());
-            getRemovedItemFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getRemovedItemFee().setRetiredAt(new Date());
             getItemFeeFacade().edit(getRemovedItemFee()); // Flag as retired, so that will never appearing when calling from database
 
             currentIx.setTotal(calTot());
@@ -237,7 +233,7 @@ public class ServiceFeeController implements Serializable {
 
         if (currentIx != null) {
             currentIx.setRetired(true);
-            currentIx.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
             UtilityController.addSuccessMessage("Deleted Successfully");

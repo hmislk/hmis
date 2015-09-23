@@ -175,7 +175,6 @@ public class BillEjb implements Serializable {
             temMap.put("idep", itemDepartment);
         }
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -234,7 +233,6 @@ public class BillEjb implements Serializable {
             temMap.put("ics", ics);
         }
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -314,7 +312,6 @@ public class BillEjb implements Serializable {
         //System.out.println("r = " + r);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("r.getBills().size() = " + r.getBills().size());
         //System.out.println("r = " + r);
         r.setBills(bills);
 
@@ -324,7 +321,7 @@ public class BillEjb implements Serializable {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
-                if (r.getSaleValueTotal() != null) {
+                if (r.getSaleValueTotal() == null) {
                     r.setSaleValueTotal(0.0);
                 }
                 r.setSaleValueTotal(r.getSaleValueTotal() + b.getSaleValue());

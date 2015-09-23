@@ -11,10 +11,10 @@ import com.divudi.data.BillType;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Patient;
-import com.divudi.entity.Staff;
-import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
+import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.EncounterComponentFacade;
@@ -23,9 +23,9 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

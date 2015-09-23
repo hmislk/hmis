@@ -6,7 +6,6 @@ package com.divudi.entity;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
-
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 

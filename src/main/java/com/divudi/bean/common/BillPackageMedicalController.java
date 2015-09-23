@@ -50,7 +50,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,15 +57,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
@@ -240,10 +238,10 @@ public class BillPackageMedicalController implements Serializable {
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
             getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().setCreatedAt(new Date());
 
             getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().getPerson().setCreatedAt(new Date());
 
             getPersonFacade().create(getNewPatient().getPerson());
             getPatientFacade().create(getNewPatient());
@@ -393,13 +391,13 @@ public class BillPackageMedicalController implements Serializable {
 
         getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 //        temp.setPatientEncounter(patientEncounter);
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
         temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
@@ -636,7 +634,6 @@ public class BillPackageMedicalController implements Serializable {
         for (BillItem bi : billItm) {
             tot += bi.getNetValue();
             System.out.println("total = " + total);
-            System.out.println("bi.getNetValue() = " + bi.getNetValue());
         }
 
         return tot;
