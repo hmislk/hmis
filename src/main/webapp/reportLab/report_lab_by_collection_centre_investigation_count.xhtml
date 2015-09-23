@@ -87,6 +87,9 @@
                     <p:column headerText="Count" style="text-align: center" sortBy="#{c.count}">
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
+                    <p:column headerText="Total Value" style="text-align: center" sortBy="#{c.count}">
+                        <h:outputLabel value="#{c.total}" />
+                    </p:column>
                     <p:columnGroup type="footer">  
                         <p:row>                              
                             <p:column footerText="Total" colspan="1" style="text-align:left"/>
@@ -96,7 +99,14 @@
 
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>                             
+                            </p:column>
+                            <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal2}">
+
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column> 
                         </p:row>  
                     </p:columnGroup> 
 

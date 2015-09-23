@@ -9,6 +9,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -300,7 +301,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 
     }
-
+    
     public StaffPaySheetComponentAllPerformancePercentageController() {
     }
 

@@ -68,7 +68,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     DepartmentFacade departmentFacade;
     @EJB
     ApplicationEjb applicationEjb;
-
+    @EJB
+    PersonFacade personFacade;
+    @EJB
+    WebUserFacade webUserFacade;
     /**
      * Controllers
      */
@@ -707,7 +710,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (loggedUser == null) {
             return "/index";
         }
+        if (loggedUser.getWebUserPerson() == null) {
+            Person p = new Person();
+            p.setName(loggedUser.getName());
+            personFacade.create(p);
+            loggedUser.setWebUserPerson(p);
+            webUserFacade.edit(loggedUser);
+        }
         System.out.println("loggedUser = " + loggedUser.getWebUserPerson().getName());
+
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
