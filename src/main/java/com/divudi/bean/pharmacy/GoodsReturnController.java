@@ -65,11 +65,11 @@ public class GoodsReturnController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
-    @EJB
-    PharmacyCalculation pharmacyCalculation;
     /**
      * Controllers
      */
+    @Inject
+    PharmacyCalculation pharmacyCalculation;
     @Inject
     private PharmaceuticalItemController pharmaceuticalItemController;
     @Inject
