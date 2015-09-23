@@ -85,30 +85,27 @@ public class ShiftTableController implements Serializable {
     PhDateController phDateController;
 
     public void fetchAndSetDayType(StaffShift ss) {
-        DayType dayType=ss.getDayType();
-        
+//        DayType dayType=ss.getDayType();
+
         System.out.println("ss.getDayType() = " + ss.getDayType());
-        
-        System.out.println("dayType out = " + dayType);
-        
+
         ss.setDayType(null);
+        if (ss.getShift() != null) {
+            ss.setDayType(ss.getShift().getDayType());
+            System.out.println("ss.getDayType()(ss.getShift().getDayType()) = " + ss.getDayType());
+        }
         
-        DayType dtp;
-        if (dayType != null || dayType == DayType.DayOff) {
-             dtp= dayType;
-             System.out.println("dayType if = " + dtp);
-        }else{            
-            dtp= phDateController.getHolidayType(ss.getShiftDate());
-            System.out.println("dayType else = " + dtp);
+        if (ss.getDayType()==null) {
+            DayType dtp=phDateController.getHolidayType(ss.getShiftDate());
+            ss.setDayType(dtp);
+            System.out.println("ss.getDayType()(phDateController.getHolidayType(ss.getShiftDate()) = " + ss.getDayType());
         }
 
-        
-        ss.setDayType(dtp);
-        if (ss.getDayType() == null) {
-            if (ss.getShift() != null) {
-                ss.setDayType(ss.getShift().getDayType());
-            }
-        }
+//        if (ss.getDayType() == null) {
+//            if (ss.getShift() != null) {
+//                ss.setDayType(ss.getShift().getDayType());
+//            }
+//        }
     }
 
     private void saveStaffShift() {
@@ -194,7 +191,7 @@ public class ShiftTableController implements Serializable {
 
         saveStaffShift();
         saveStaffShift();
-        
+
     }
 
     public void createShiftTable() {

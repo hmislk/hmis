@@ -935,17 +935,15 @@ public class StaffAdditionalFormController implements Serializable {
         if (errorCheckShiftDayOff()) {
             return;
         }
-        
+
         StaffShift staffShift = staffShiftFacade.find(currentAdditionalForm.getStaffShift().getId());
-        
+
         System.out.println("staffShift = " + staffShift);
-        
+
         System.out.println("staffShift.getDayType() = " + staffShift.getDayType());
-        
+
         System.out.println("currentAdditionalForm.getStaffShift().getDayType() = " + currentAdditionalForm.getStaffShift().getDayType());
-        
-        
-        
+
         System.out.println("currentAdditionalForm.getStaffShift().getDayType() = " + currentAdditionalForm.getStaffShift().getDayType());
 
         Shift shift = null;
@@ -955,23 +953,27 @@ public class StaffAdditionalFormController implements Serializable {
             return;
         }
         DayType dayType;
-        if (currentAdditionalForm.getStaffShift().getDayType() != null || currentAdditionalForm.getStaffShift().getDayType() == DayType.DayOff 
+        if (currentAdditionalForm.getStaffShift().getDayType() != null || currentAdditionalForm.getStaffShift().getDayType() == DayType.DayOff
                 || currentAdditionalForm.getStaffShift().getShift().isHalfShift()) {
-             dayType= currentAdditionalForm.getStaffShift().getDayType();
-             System.out.println("currentAdditionalForm.getStaffShift().getShift().isHalfShift() = " + currentAdditionalForm.getStaffShift().getShift().isHalfShift());
-             System.out.println("currentAdditionalForm.getStaffShift().getShift().getName() = " + currentAdditionalForm.getStaffShift().getShift().getName());
-             System.out.println("dayType if = " + dayType);
-        }else{            
-            dayType= phDateController.getHolidayType(date);
+            dayType = currentAdditionalForm.getStaffShift().getDayType();
+            System.out.println("currentAdditionalForm.getStaffShift().getShift().isHalfShift() = " + currentAdditionalForm.getStaffShift().getShift().isHalfShift());
+            System.out.println("currentAdditionalForm.getStaffShift().getShift().getName() = " + currentAdditionalForm.getStaffShift().getShift().getName());
+            System.out.println("dayType if = " + dayType);
+        } else {
+            dayType = phDateController.getHolidayType(date);
             System.out.println("dayType else = " + dayType);
         }
+        shift = currentAdditionalForm.getStaffShift().getShift();
         
-        if(dayType==DayType.Poya && currentAdditionalForm.getStaffShift().getShift()!=null){
-            shift=currentAdditionalForm.getStaffShift().getShift();
-        }else{
+        if (shift == null) {
             shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
         }
-        
+
+//        if(dayType==DayType.Poya && currentAdditionalForm.getStaffShift().getShift()!=null){
+//            shift=currentAdditionalForm.getStaffShift().getShift();
+//        }else{
+//            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
+//        }
         currentAdditionalForm.setTimes(Times.All);
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
@@ -1098,7 +1100,7 @@ public class StaffAdditionalFormController implements Serializable {
         if (dayType == null || roster == null) {
             return null;
         }
-        
+
         String sql = "select s from  Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs"
@@ -1124,12 +1126,12 @@ public class StaffAdditionalFormController implements Serializable {
 //        System.out.println("sh.getName() = " + sh.getShift().getName());
         return sh;
     }
-    
+
     private Shift fetchShift(Roster roster, DayType dayType, Staff staff) {
         if (dayType == null || roster == null) {
             return null;
         }
-        
+
         String sql = "select s from  Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs"

@@ -2915,24 +2915,27 @@ public class HumanResourceBean {
         }
 
         double dbl = 0;
+        System.out.println("calculateExtraWorkTimeValue - list.size() = " + list.size());
         for (StaffShift ss : list) {
-            dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified() + ss.getExtraTimeCompleteRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
-            //System.out.println("if outside");
-            //System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
-            //System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
-            //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
-            //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
 
             if (dayType == DayType.Extra) {
                 dbl += roundOff(ss.getExtraTimeCompleteRecordVarified() * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
-
-                System.out.println("getExtraTimeCompleteRecordVarified" + ss.getExtraTimeCompleteRecordVarified());
-                System.out.println("getMultiplyingFactorOverTime" + ss.getMultiplyingFactorOverTime());
-                System.out.println("getOverTimeValuePerSecond" + ss.getOverTimeValuePerSecond());
+                System.err.println("Extra");
+                System.out.println("getExtraTimeCompleteRecordVarified = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("getMultiplyingFactorOverTime = " + ss.getMultiplyingFactorOverTime());
+                System.out.println("getOverTimeValuePerSecond = " + ss.getOverTimeValuePerSecond());
 
                 //System.out.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
                 //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getExtraTimeCompleteRecordVarified());
                 //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getExtraTimeCompleteRecordVarified());
+            } else {
+                dbl += roundOff((ss.getExtraTimeFromStartRecordVarified() + ss.getExtraTimeFromEndRecordVarified() + ss.getExtraTimeCompleteRecordVarified()) * ss.getMultiplyingFactorOverTime() * ss.getOverTimeValuePerSecond());
+                System.err.println("Not Extra");
+                System.out.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("ss.getExtraTimeFromEndRecordVarified() = " + ss.getExtraTimeFromEndRecordVarified());
+                System.out.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
+                System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getMultiplyingFactorOverTime());
+                System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getOverTimeValuePerSecond());
             }
 
 //            if( dayType==DayType.DayOff){
@@ -2940,7 +2943,7 @@ public class HumanResourceBean {
 //            }
         }
 
-//        System.err.println(">>>>>>>>>>> " + dbl);
+        System.err.println(">>>>>>>>>>> " + dbl);
         return dbl;
     }
 
@@ -3019,6 +3022,19 @@ public class HumanResourceBean {
         System.out.println("sql(calculateExtraWorkMinute)  = " + sql);
 
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+        //
+        String s = "select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.additionalForm.retired=false "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
+        List<StaffShift> ssss = staffShiftFacade.findBySQL(s, hm, TemporalType.DATE);
+        System.out.println("ssss = " + ssss);
+        System.out.println("ssss.size() = " + ssss.size());
+        //
+
         if (timeSecond != null) {
             return (timeSecond.longValue() / 60);
         } else {
@@ -3112,7 +3128,7 @@ public class HumanResourceBean {
                 + " and ss.extraTimeFromEndRecordVarified=:d "
                 + " and ss.extraTimeCompleteRecordVarified=:d "
                 + " and ss.staff=:stf ";
-        
+
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
