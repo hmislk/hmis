@@ -7,7 +7,6 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -24,12 +23,11 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.FeeFacade;
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
+import java.util.Date;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -122,10 +120,10 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
 
-        getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
         getCurrent().setNetTotal(getCurrent().getTotal());
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getCurrent().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));
@@ -142,7 +140,7 @@ public class InwardAdditionalChargeController implements Serializable {
         temBi.setInwardChargeType(inwardChargeType);
         temBi.setGrossValue(getCurrent().getTotal());
         temBi.setNetValue(getCurrent().getTotal());
-        temBi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
 
         if (temBi.getId() == null) {
@@ -163,7 +161,7 @@ public class InwardAdditionalChargeController implements Serializable {
         bf.setBill(getCurrent());
         bf.setFee(additional);
         bf.setBillItem(bt);
-        bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bf.setCreatedAt(new Date());
         bf.setCreater(getSessionController().getLoggedUser());
         bf.setFeeGrossValue(getCurrent().getTotal());
         bf.setFeeValue(getCurrent().getTotal());

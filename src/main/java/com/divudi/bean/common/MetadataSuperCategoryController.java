@@ -8,29 +8,26 @@
  */
 package com.divudi.bean.common;
 
-import java.util.TimeZone;
-import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
 import com.divudi.entity.MetadataCategory;
-import com.divudi.facade.CategoryFacade;
 import com.divudi.entity.MetadataSuperCategory;
+import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.MetadataSuperCategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -115,7 +112,7 @@ public class MetadataSuperCategoryController implements Serializable {
     public void removeItem() {
         current.setRetired(true);
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        current.setRetiredAt(new Date());
         getEjbFacade().edit(getCurrent());
         getItems().remove(getCurrent());
     }
@@ -143,7 +140,7 @@ public class MetadataSuperCategoryController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");

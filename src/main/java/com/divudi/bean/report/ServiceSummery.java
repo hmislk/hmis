@@ -31,9 +31,9 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +43,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -590,13 +591,13 @@ public class ServiceSummery implements Serializable {
 
     }
 
-    private List<BillItem> getBillItem(BillType billType, Item item, Department department, PaymentMethod paymentMethod, boolean discharged) {
+    private List<BillItem> getBillItem(List<BillType> billTypes, Item item, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bi FROM BillItem bi "
                 + " where  bi.bill.institution=:ins "
-                + " and  bi.bill.billType= :bTp  ";
+                ;
 
         if (item != null) {
             sql += " and bi.item=:itm ";
@@ -618,11 +619,16 @@ public class ServiceSummery implements Serializable {
         } else {
             sql += " and  bi.bill.createdAt between :fromDate and :toDate ";
         }
+        
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bTp  ";
+            temMap.put("bTp", billTypes);
+        }
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bTp", billType);
+        
 
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -768,9 +774,12 @@ public class ServiceSummery implements Serializable {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
+        
+        BillType billType[]={BillType.OpdBill,BillType.InwardBill};
+        List<BillType> bts=Arrays.asList(billType);
 
         serviceSummery = new ArrayList<>();
-        for (BillItem i : getBillItem(BillType.OpdBill, service, department, paymentMethod, false)) {
+        for (BillItem i : getBillItem(bts, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
             bi.setReagentFee(calFee(i, FeeType.Chemical));
@@ -1263,7 +1272,6 @@ public class ServiceSummery implements Serializable {
 
     private List<BillItem> calBillItems(BillType billType, boolean discharged) {
         if (getCategory() instanceof ServiceSubCategory) {
-            System.out.println("ServiceSubCategory");
             return getBillItemByCategory(category, billType, discharged);
         }
 
@@ -1271,20 +1279,16 @@ public class ServiceSummery implements Serializable {
             System.out.println("ServiceCategory");
             getServiceSubCategoryController().setParentCategory(getCategory());
             List<ServiceSubCategory> subCategorys = getServiceSubCategoryController().getItems();
-            System.out.println("subCategorys = " + subCategorys);
             if (subCategorys.isEmpty()) {
-                System.out.println("if = ");
                 return getBillItemByCategory(getCategory(), billType, discharged);
             } else {
                 Set<BillItem> setBillItem = new HashSet<>();
                 for (ServiceSubCategory ssc : subCategorys) {
-                    System.out.println("getBillItemByCategory(ssc, billType, discharged) = " + getBillItemByCategory(ssc, billType, discharged));
                     setBillItem.addAll(getBillItemByCategory(ssc, billType, discharged));
                 }
                 System.out.println("setBillItem = " + setBillItem);
                 List<BillItem> tmpBillItems = new ArrayList<>();
                 tmpBillItems.addAll(setBillItem);
-                System.out.println("tmpBillItems = " + tmpBillItems);
                 return tmpBillItems;
             }
         }
@@ -1329,7 +1333,6 @@ public class ServiceSummery implements Serializable {
         temMap.put("cat", cat);
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("BILL " + tmp);
         return tmp;
 
     }

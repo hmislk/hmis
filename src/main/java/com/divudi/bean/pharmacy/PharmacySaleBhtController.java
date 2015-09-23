@@ -5,24 +5,23 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.PharmacyBean;
-
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -53,18 +52,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.inject.Named;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.enterprise.context.SessionScoped;
-;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
-/**
- *
- * @author Buddhika
- */
 
 
 @Named
@@ -360,7 +354,6 @@ public class PharmacySaleBhtController implements Serializable {
         m.put("depTp", DepartmentType.Store);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            System.err.println("1");
             sql = "select i from Stock i"
                     + " where i.stock >:s"
                     + " and i.department=:d "
@@ -371,7 +364,6 @@ public class PharmacySaleBhtController implements Serializable {
                     + " or upper(i.itemBatch.item.barcode) like :n )  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            System.err.println("2");
             sql = "select i from Stock i "
                     + " where i.stock >:s "
                     + " and i.department=:d"
@@ -382,7 +374,6 @@ public class PharmacySaleBhtController implements Serializable {
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         items = getStockFacade().findBySQL(sql, m, 20);
-        System.err.println("size " + items.size());
         itemsWithoutStocks = completeRetailSaleItems(qry);
         ////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;

@@ -116,9 +116,9 @@
                                             </h:dataTable>
 
                                             <div class="ratesPrinting" >
-                                                <h:dataTable value="#{cc.attrs.billController.billItems}" var="bip1"  >
+                                                <h:dataTable value="#{cc.attrs.billController.billItems}" var="bip1"  styleClass="itemsPrinting">
                                                     <h:column>
-                                                        <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                                        <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px; font-size: 12px!important" >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </h:column>

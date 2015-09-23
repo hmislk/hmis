@@ -37,7 +37,6 @@ public class FinalVariables {
         maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
         //System.out.println("maxRowNumber = " + maxRowNumber);
         if (maxRowNumber == 0) {
-            System.out.println("maxRowNumber" + maxRowNumber);
             return 14;
         }
         return maxRowNumber;
@@ -50,7 +49,6 @@ public class FinalVariables {
             maxRowNumber = ss.getMaxTableRows();
             //System.out.println("maxRowNumber = " + maxRowNumber);
             if (maxRowNumber == 0) {
-                System.out.println("maxRowNumber" + maxRowNumber);
                 return 14;
             }
             return maxRowNumber;
@@ -73,7 +71,6 @@ public class FinalVariables {
         if (maxRowNumber<14) {
             maxRowNumber=14;
         }
-        System.out.println("maxRowNumber = " + maxRowNumber);
         return maxRowNumber;
     }
 

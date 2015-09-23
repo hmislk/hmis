@@ -1,8 +1,6 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.Category;
 import com.divudi.entity.pharmacy.ConsumableCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.ConsumableCategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.facade.util.JsfUtil.PersistAction;
@@ -11,17 +9,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 @Named("consumableCategoryController")

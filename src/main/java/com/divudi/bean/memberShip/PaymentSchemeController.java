@@ -7,30 +7,28 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.memberShip;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import java.util.TimeZone;
-import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.memberShip.AllowedPaymentMethod;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
+import com.divudi.facade.PaymentSchemeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -183,7 +181,7 @@ public class PaymentSchemeController implements Serializable {
             getFacade().edit(paymentScheme);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            paymentScheme.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setCreatedAt(new Date());
             paymentScheme.setCreater(getSessionController().getLoggedUser());
             getFacade().create(paymentScheme);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -204,7 +202,7 @@ public class PaymentSchemeController implements Serializable {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrentAllowedPaymentMethod().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrentAllowedPaymentMethod().setCreatedAt(new Date());
             getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
             getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -255,7 +253,7 @@ public class PaymentSchemeController implements Serializable {
 
         if (paymentScheme != null) {
             paymentScheme.setRetired(true);
-            paymentScheme.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setRetiredAt(new Date());
             paymentScheme.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(paymentScheme);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -273,6 +271,9 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
+        if(items==null){
+            createPaymentSchemes();
+        }
         return items;
     }
 

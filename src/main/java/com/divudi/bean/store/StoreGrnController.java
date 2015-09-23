@@ -31,7 +31,6 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,10 +39,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -156,14 +155,14 @@ public class StoreGrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -548,7 +547,6 @@ public class StoreGrnController implements Serializable {
             billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
 
-        System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
 
         //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
@@ -982,14 +980,12 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addChildItemListener(BillItem bi) {
-        System.err.println("Add Child " + bi.getId());
         currentBillItem = null;
         parentBillItem = bi;
     }
 
     public void addDetailItemListener(BillItem bi) {
         System.err.println("Add Detasils " + bi.getId());
-        System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
 
         parentBillItem = null;
         currentBillItem = null;
@@ -1015,14 +1011,11 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addItem() {
-        System.err.println("****");
         if (getCurrentBillItem().getItem() == null) {
-            System.err.println("11");
             UtilityController.addErrorMessage("Please Select Item");
             return;
         }
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            System.err.println("22");
             UtilityController.addErrorMessage("Please Select Category");
             return;
         }

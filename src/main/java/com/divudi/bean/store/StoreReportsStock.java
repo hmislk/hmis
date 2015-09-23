@@ -5,8 +5,8 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
@@ -29,8 +29,6 @@ import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -312,7 +312,6 @@ public class StoreReportsStock implements Serializable {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
             System.err.println("Stock History " + b.getStockHistory().getStockQty());
-            System.err.println("Department " + b.getBillItem().getBill().getDepartment().getName());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -433,7 +432,6 @@ public class StoreReportsStock implements Serializable {
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
                     System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
                     System.err.println("History " + curHistory);
-                    System.err.println("######");
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {

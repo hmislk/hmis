@@ -18,7 +18,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.PatientRoom;
@@ -31,20 +30,16 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -664,7 +659,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf from BillFee bf where bf.retired=false and  bf.billItem=:bt";
                 hm = new HashMap();
@@ -730,7 +724,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         Speciality speciality = specialityFacade.findFirstBySQL(sql);
 
         for (Staff staff : fetchStaff()) {
-            System.err.println("Staff " + staff);
             staff.setSpeciality(speciality);
             staffFacade.edit(staff);
         }
@@ -740,7 +733,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         for (BillItem bi : inwardBean.fetchBillItem1(BillType.PharmacyBhtPre)) {
             System.err.println("Id " + bi.getId());
             System.err.println("Gross " + bi.getGrossValue());
-            System.err.println("Net " + bi.getNetValue());
             bi.setGrossValue(bi.getNetValue());
             billItemFacade.edit(bi);
         }
@@ -773,7 +765,6 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         disValue = updateIssueBillFees(discountPercent, patientEncounter, billType);
 
-        System.err.println("Calculated Discount  " + disValue);
 
     }
 
@@ -947,7 +938,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf "
                         + " from BillFee bf"
@@ -970,7 +960,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                         billFeeFacade.edit(billFee);
                     }
                 } else {
-                    System.err.println("Added ");
                     billItems.add(b);
                 }
 
@@ -1005,7 +994,6 @@ public class BhtSummeryFinalizedController implements Serializable {
                 i++;
                 System.err.println("**** " + i);
                 System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
-                System.err.println("BillItem " + b);
 
                 sql = "Select bf "
                         + " from BillFee bf"
@@ -1157,7 +1145,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1168,7 +1156,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

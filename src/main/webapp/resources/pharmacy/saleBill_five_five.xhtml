@@ -65,14 +65,14 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Bht No" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value="Bht No" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}" style="font-size: 15px; font-weight: bold;"></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}" style="font-size: 15px; font-weight: bold;"></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}" style="font-size: 15px; font-weight: bold;"></h:outputLabel>
                         </td>
 
                     </tr>
@@ -354,10 +354,10 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
+                            <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -367,10 +367,10 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
+                            <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 15px; font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

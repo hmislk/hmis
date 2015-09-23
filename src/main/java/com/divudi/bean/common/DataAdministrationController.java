@@ -13,12 +13,10 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
-import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillEntryFacade;
 import com.divudi.facade.BillFacade;
@@ -35,7 +33,7 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,6 +78,8 @@ public class DataAdministrationController {
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     SessionController sessionController;
+    @Inject
+    BillSearch billSearch;
     @EJB
     ItemFacade itemFacade;
 
@@ -87,7 +87,7 @@ public class DataAdministrationController {
     CategoryFacade categoryFacade;
     @EJB
     ItemBatchFacade itemBatchFacade;
-    
+
     List<Bill> bills;
     List<Bill> selectedBills;
 
@@ -140,21 +140,20 @@ public class DataAdministrationController {
             categoryFacade.edit(c);
         }
     }
-    
+
     @Inject
     InvestigationController investigationController;
 
-    public void addInstitutionToInvestigationsWithoutInstitution(){
+    public void addInstitutionToInvestigationsWithoutInstitution() {
         List<Investigation> lst = investigationController.getItems();
-        for(Investigation ix:lst){
-            if(ix.getInstitution()==null){
+        for (Investigation ix : lst) {
+            if (ix.getInstitution() == null) {
                 ix.setInstitution(ix.getDepartment().getInstitution());
-                System.out.println("ix = " + ix);
                 itemFacade.edit(ix);
             }
         }
     }
-    
+
     public void detectWholeSaleBills() {
         String sql;
         Map m = new HashMap();
@@ -209,14 +208,94 @@ public class DataAdministrationController {
             //System.out.println("\tDep Number = " + b.getDeptId() + newLine);
             //System.out.println("\tBill Date = " + b.getCreatedAt() + newLine);
             //System.out.println("\tValue = " + b.getNetTotal() + newLine);
-
             //System.out.println("Cancelled Bill Details " + newLine);
             //System.out.println("\tIns Number = " + cb.getInsId() + newLine);
             //System.out.println("\tDep Number = " + cb.getDeptId() + newLine);
             //System.out.println("\tBill Date = " + cb.getCreatedAt() + newLine);
             //System.out.println("\tValue = " + cb.getNetTotal() + newLine);
-
             i++;
+        }
+    }
+
+    public void addOPDBillFeesToProfessionalCancelBills() {
+        List<Bill> bills;
+        String s;
+        Map m = new HashMap();
+
+        s = "select distinct(b.cancelledBill) from BillItem bi join bi.bill b where "
+                + " type(b) =:bct "
+                + " and b.billType=:bt "
+                + " and bi.referenceBill.billType=:rbt "
+                + " and b.cancelledBill is not null "
+                + " order by b.id ";
+
+        m.put("bct", BilledBill.class);
+        m.put("bt", BillType.PaymentBill);
+        m.put("rbt", BillType.OpdBill);
+
+//        bills = billFacade.findBySQL(s, m);
+        bills = billFacade.findBySQL(s, m, 10);
+        for (Bill cb : bills) {
+            System.out.println("cb = " + cb);
+            System.out.println("cb.insId() = " + cb.getInsId());
+            System.out.println("cb.deptId() = " + cb.getDeptId());
+            for (BillItem bi : cb.getBillItems()) {
+                System.err.println("**************");
+                System.out.println("bi = " + bi);
+                System.out.println("bi.getRetiredAt() = " + bi.getRetiredAt());
+                System.out.println("bi.isRetired() = " + bi.isRetired());
+                System.out.println("bi.getBill().getBillType() = " + bi.getBill().getBillType());
+                System.out.println("bi.getReferenceBill() = " + bi.getReferenceBill());
+                if (bi.getReferanceBillItem()!=null) {
+                    if (bi.getReferanceBillItem().getBill()!=null) {
+                    }else{
+                    }
+                }else{
+                }
+                if (bi.getReferenceBill() != null) {
+                }
+                System.out.println("bi.getReferenceBill().getDepartment().getName() = " + bi.getReferenceBill().getDepartment().getName());
+                System.out.println("bi.getBill().getInstitution().getName() = " + bi.getBill().getInstitution().getName());
+                System.err.println("**************");
+                String sql;
+                sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+                List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+                if (tmp.size() > 0) {
+                    System.err.println("Bill Fee Alreday Created");
+                } else {
+                    sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
+                    BillItem billItem = getBillItemFacade().findFirstBySQL(sql);
+                    System.out.println("billItem = " + billItem);
+                    sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
+                    tmp = getBillFeeFacade().findBySQL(sql);
+                    if (tmp.size() > 0) {
+                        billSearch.cancelBillFee(cb, bi, tmp);
+                    } else {
+                        saveBillFee(billItem);
+                        sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
+                        tmp = getBillFeeFacade().findBySQL(sql);
+                        billSearch.cancelBillFee(cb, bi, tmp);
+                    }
+                }
+            }
+        }
+    }
+
+    public void saveBillFee(BillItem bi) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(Calendar.getInstance().getTime());
+        bf.setCreater(bi.getCreater());
+        bf.setBillItem(bi);
+        bf.setPatienEncounter(bi.getBill().getPatientEncounter());
+        bf.setPatient(bi.getBill().getPatient());
+        bf.setFeeValue(0 - bi.getNetValue());
+        bf.setFeeGrossValue(0 - bi.getGrossValue());
+        bf.setSettleValue(0 - bi.getNetValue());
+        bf.setCreatedAt(new Date());
+        bf.setBill(bi.getBill());
+
+        if (bf.getId() == null) {
+            getBillFeeFacade().create(bf);
         }
     }
 
@@ -272,7 +351,6 @@ public class DataAdministrationController {
                 //System.out.println("bi.getNetValue() = " + bi.getNetValue());
                 //System.out.println("bi.getQty() = " + bi.getQty());
                 //System.out.println("bi.getNetValue() = " + bi.getNetValue());
-
                 bi.setRate((double) fetchPharmacyuticalBillitem(bi));
                 //System.out.println("Rate" + fetchPharmacyuticalBillitem(bi));
                 //System.out.println("getRate" + bi.getRate());
@@ -308,9 +386,9 @@ public class DataAdministrationController {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, m);
 
     }
-    
+
     public void createInwardServiceBillWithPaymentmethord() {
-        bills=new ArrayList<>();
+        bills = new ArrayList<>();
         String sql;
         Map temMap = new HashMap();
         sql = "select b from Bill b where "
@@ -321,17 +399,14 @@ public class DataAdministrationController {
         temMap.put("billType", BillType.InwardBill);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("bills.size() = " + bills.size());
     }
-    
+
     public void updateInwardServiceBillWithPaymentmethord() {
-        if (selectedBills.isEmpty()||selectedBills==null) {
+        if (selectedBills.isEmpty() || selectedBills == null) {
             JsfUtil.addErrorMessage("Nothing To Update");
             return;
         }
-        System.out.println("bills.size() = " + selectedBills.size());
         for (Bill b : selectedBills) {
-            System.out.println("b.getPaymentMethod() = " + b.getPaymentMethod());
             b.setPaymentMethod(null);
             getBillFacade().edit(b);
             System.err.println("canged");
