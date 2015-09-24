@@ -6,16 +6,16 @@
 package com.divudi.bean.lab;
 
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.InvestigationValidaterComponent;
+import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.facade.InvestigationItemValidatorFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

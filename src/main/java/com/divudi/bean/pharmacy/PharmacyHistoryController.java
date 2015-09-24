@@ -7,8 +7,8 @@
 package com.divudi.bean.pharmacy;
 
 import javax.ejb.Schedule;
-import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  *

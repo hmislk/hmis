@@ -9,12 +9,14 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
@@ -22,14 +24,16 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,14 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.data.dataStructure.PharmacyStockRow;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.ItemFacade;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  *
@@ -303,7 +303,6 @@ public class ReportsStock implements Serializable {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
             System.err.println("Stock History " + b.getStockHistory().getStockQty());
-            System.err.println("Department " + b.getBillItem().getBill().getDepartment().getName());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -424,7 +423,6 @@ public class ReportsStock implements Serializable {
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
                     System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
                     System.err.println("History " + curHistory);
-                    System.err.println("######");
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
@@ -548,7 +546,6 @@ public class ReportsStock implements Serializable {
         System.out.println("bis.size() before removing = " + bis.size());
         System.out.println("sis.size() before removing " + sis.size());
         sis.removeAll(bis);
-        System.out.println("sis.size() after removing " + sis.size());
         items = new ArrayList<>(sis);
 
         Collections.sort(items);

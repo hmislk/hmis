@@ -5,11 +5,9 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.entity.Staff;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity

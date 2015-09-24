@@ -56,7 +56,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -609,7 +608,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("**************************** List 1 :  " + list.size());
         return list;
 
     }
@@ -628,7 +626,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("**************************** List BillFee  1 : " + list.size());
         return list;
 
     }
@@ -647,7 +644,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("****************************** BillItems 2 : " + list.size());
         return list;
 
     }
@@ -666,7 +662,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("****************************** BillFee 2 : " + list.size());
         return list;
 
     }
@@ -685,7 +680,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
-        System.err.println("******************************** BillItems 3 : " + list.size());
         return list;
 
     }
@@ -704,7 +698,6 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
 
         List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
-        System.err.println("******************************** BillFee 3 : " + list.size());
         return list;
 
     }
@@ -1458,7 +1451,6 @@ public class InwardBeanController implements Serializable {
 
         System.err.println("Mill " + patientRoom);
         System.err.println("Pre " + previousRoom);
-        System.err.println("new " + newRoomFacilityCharge);
         if (patientRoom == null) {
             return null;
         }
@@ -1500,7 +1492,6 @@ public class InwardBeanController implements Serializable {
 
         System.err.println("Mill " + patientRoom);
 
-        System.err.println("new " + newRoomFacilityCharge);
         if (patientRoom == null) {
             return null;
         }
@@ -1657,7 +1648,7 @@ public class InwardBeanController implements Serializable {
             additional = new Fee();
             additional.setName("Additional");
             additional.setFeeType(FeeType.Additional);
-            additional.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            additional.setCreatedAt(new Date());
             if (additional.getId() == null) {
                 getFeeFacade().create(additional);
             }
@@ -1754,7 +1745,7 @@ public class InwardBeanController implements Serializable {
 
             billtItemFee.setBillItem(billItem);
             billtItemFee.setFee(issueFee);
-            billtItemFee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            billtItemFee.setCreatedAt(new Date());
             billtItemFee.setInstitution(institution);
 //            getBillFeeFacade().create(billFee);
         }
@@ -1772,7 +1763,7 @@ public class InwardBeanController implements Serializable {
             issue = new Fee();
             issue.setName("Issue");
             issue.setFeeType(FeeType.Issue);
-            issue.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            issue.setCreatedAt(new Date());
 
             if (issue.getId() == null) {
                 getFeeFacade().create(issue);
@@ -1880,7 +1871,6 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
-        System.out.println("consumeTime = " + consumeTime);
         double count = 0;
         double calculation = 0;
 
@@ -1900,9 +1890,7 @@ public class InwardBeanController implements Serializable {
             if ((overShoot != 0 && overShoot <= calculation)||count==0) {
                 System.err.println("count = " + count);
                 count++;
-                System.err.println("count = " + count);
             }
-            System.out.println("count = " + count);
         }
 
         return count;

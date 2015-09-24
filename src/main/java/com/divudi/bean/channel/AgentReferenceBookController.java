@@ -156,10 +156,8 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete(Empty)");
             return;
         }
-        System.err.println("selectedList.size()" + selectedList.size());
         for (AgentReferenceBook rb : selectedList) {
             System.out.println("rb = " + rb.getBookNumber());
-            System.out.println("rb.getInstitution().getName() = " + rb.getInstitution().getName());
             rb.setRetired(true);
             rb.setRetireComments("Bulk Delete");
             rb.setDeactivate(true);
@@ -252,7 +250,6 @@ public class AgentReferenceBookController implements Serializable {
 
         List<AgentHistory> ahs = agentHistoryFacade.findBySQL(sql, m);
 
-        System.err.println("ahs = " + ahs.size());
 
         if (ahs.isEmpty()) {
             return false;

@@ -9,20 +9,19 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
-import com.divudi.facade.StaffFacade;
 import com.divudi.entity.Staff;
+import com.divudi.facade.StaffFacade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;

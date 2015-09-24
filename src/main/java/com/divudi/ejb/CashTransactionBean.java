@@ -6,9 +6,9 @@
 package com.divudi.ejb;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.CashTransactionFacade;
 import com.divudi.facade.CashTransactionHistoryFacade;

@@ -48,6 +48,14 @@ body {
     border-bottom: 0px !important;
 }
 
+.verticalAndHorizontalCenteringLarge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /*display: inline-block;*/
+}
+
 .verticalAndHorizontalCentering {
     position: absolute;
     top: 30%;
@@ -1006,4 +1014,9 @@ table.standardTable td {
     white-space: nowrap;
     text-wrap: avoid;
     overflow: hidden;
+}
+
+.noBorderGrid1.ui-panelgrid>*>tr,
+.noBorderGrid1.ui-panelgrid .ui-panelgrid-cell {
+    border: none;
 }

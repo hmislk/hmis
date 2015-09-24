@@ -11,12 +11,11 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

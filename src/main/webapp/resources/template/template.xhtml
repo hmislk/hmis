@@ -51,6 +51,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="#{labels.topic}" />
                             </f:facet>
+
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
                                 <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
                                 <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
@@ -666,7 +667,14 @@
 
 
                                 <f:facet name="options">
-                                    <p:inputText style="margin-right:10px" placeholder="Search"/>
+                                    <p:remoteCommand name="menubarSearch" action="#{searchController.menuBarSearch()}"/>
+                                    <p:inputText style="margin-right:10px" placeholder="Search"
+                                                 id="txtMenuBar"  
+                                                 value="#{searchController.menuBarSearchText}"
+                                                 onkeypress="if (event.keyCode == 13) {
+                                                             menubarSearch();
+                                                             return false;
+                                                         }"/>
                                     <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />
                                     <poue:tooltip for="btnLogout" value="df" adjustX="-20" >
                                         <h:panelGrid columns="3" >
@@ -728,8 +736,8 @@
                     </div>
                 </h:panelGroup>
 
-                
-               
+
+
 
                 <p:panel rendered ="#{sessionController.logged and sessionController.department eq null}" 
                          styleClass="verticalAndHorizontalCentering">
@@ -745,12 +753,12 @@
                                                    itemValue="#{dept}" >
                                     </f:selectItems>
                                 </p:selectOneMenu>
-                                
+
                                 <p:spacer height="1" width="30" ></p:spacer>
                                 <p:spacer height="1" width="30" ></p:spacer>
                                 <p:commandButton ajax="false"
-                                    value="Select"
-                                    action="#{sessionController.selectDepartment()}" />
+                                                 value="Select"
+                                                 action="#{sessionController.selectDepartment()}" />
                             </h:panelGrid>
                         </p:panel>
                     </h:form>

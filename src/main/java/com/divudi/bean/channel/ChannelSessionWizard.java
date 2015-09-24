@@ -20,18 +20,16 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.FlowEvent;
 
 /**
@@ -87,7 +85,7 @@ public class ChannelSessionWizard implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getServiceSessionFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -114,7 +112,7 @@ public class ChannelSessionWizard implements Serializable {
             getServiceSessionFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getServiceSessionFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -234,18 +232,11 @@ public class ChannelSessionWizard implements Serializable {
         List<ServiceSession> items;
         String sql;
         HashMap hm = new HashMap();
-//        if (currentStaff == null) {
-//            // items = getFacade().findAll("name", true);
-//            items = new ArrayList<>();
-//        } else {
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and s.staff=:stf ";
         hm.put("stf", currentStaff);
-//        hm.put("class", ServiceSessionLeave.class);
         items = getServiceSessionFacade().findBySQL(sql, hm);
-//        }
-
         return items;
     }
 
@@ -364,8 +355,6 @@ public class ChannelSessionWizard implements Serializable {
         System.err.println(event.getNewStep());
         System.err.println(event.getOldStep());
         System.err.println(event.getPhaseId().toString());
-        System.err.println(event.getSource());
-        //System.out.println(phase);
 
         switch (event.getNewStep()) {
             case "speciality":

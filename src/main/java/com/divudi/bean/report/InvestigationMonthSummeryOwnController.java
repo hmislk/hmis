@@ -6,8 +6,8 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -33,10 +33,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -162,7 +162,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
-        if(items==null){
+        if (items == null) {
             createInvestigationMonthEndSummeryCounts();
         }
         return items;
@@ -196,6 +196,15 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     private long countTotal;
+    double itemValue;
+
+    public double getItemValue() {
+        return itemValue;
+    }
+
+    public void setItemValue(double itemValue) {
+        this.itemValue = itemValue;
+    }
 
     List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
 
@@ -357,15 +366,20 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     public void createItemList3() {
         itemsLab = new ArrayList<>();
         countTotal = 0;
+        itemValue = 0;
         for (Item w : getInvestigations3()) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInvestigation(w);
             long temCoint = calculateInvestigationBilledCount(w);
             temp.setCount(temCoint);
             countTotal += temCoint;
-            if (temp.getCount() != 0) {
+            double tempTotal = calculateInvestigationBilledValue(w);
+            temp.setTotal(tempTotal);
+            itemValue += tempTotal;
+            if (temp.getCount() != 0 || temp.getTotal() != 0) {
                 itemsLab.add(temp);
             }
+            
         }
 //        countTotal = 0;
 //
@@ -540,6 +554,22 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
+    private double getTotalValue(Bill bill, Item item) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select sum(bi.total) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
+                + " and type(bi.bill)=:billClass and bi.bill.collectingCentre=:col "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", item);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bType", BillType.LabBill);
+        temMap.put("col", getCreditCompany());
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     private long getCount(Bill bill) {
         String sql;
         Map temMap = new HashMap();
@@ -672,6 +702,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         long billed = getCount3(new BilledBill(), w);
         long cancelled = getCount3(new CancelledBill(), w);
         long refunded = getCount3(new RefundBill(), w);
+        return billed - (cancelled + refunded);
+    }
+
+    private double calculateInvestigationBilledValue(Item w) {
+        double billed = getTotalValue(new BilledBill(), w);
+        double cancelled = getTotalValue(new CancelledBill(), w);
+        double refunded = getTotalValue(new RefundBill(), w);
         return billed - (cancelled + refunded);
     }
 

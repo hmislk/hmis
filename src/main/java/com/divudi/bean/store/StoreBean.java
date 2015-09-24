@@ -5,12 +5,12 @@
 package com.divudi.bean.store;
 
 import com.divudi.data.BillClassType;
-import com.divudi.ejb.*;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBatchQty;
 import com.divudi.data.StockQty;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -147,13 +147,10 @@ public class StoreBean {
 
         System.err.println("2 Qty " + qty);
         System.err.println("3 Stock " + fetchedStock.getStock());
-        System.err.println("4 Net Update Qty " + netUpdate);
 
         if (netUpdate > fetchedStock.getStock()) {
-            System.err.println("FALSE");
             return false;
         } else {
-            System.err.println("TRUE");
             return true;
         }
     }
@@ -168,10 +165,8 @@ public class StoreBean {
             userStockContainer.setCreatedAt(new Date());
 
             getUserStockContainerFacade().create(userStockContainer);
-            System.err.println("3");
         }
 
-        System.err.println("END SAVE USER STOCK CONTAINER");
         return userStockContainer;
 
     }
@@ -190,7 +185,6 @@ public class StoreBean {
         } else {
             getUserStockFacade().edit(us);
         }
-        System.err.println("3");
         userStockContainer.getUserStocks().add(us);
 
         return us;
@@ -389,7 +383,6 @@ public class StoreBean {
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
 
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
-        System.err.println("LIST " + list.size());
 
         bill.setForwardReferenceBill(preBill);
         getBillFacade().edit(bill);
@@ -406,7 +399,6 @@ public class StoreBean {
         }
         Bill preBill = createPreBillForIssueCancel(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
-        System.err.println("LIST " + list.size());
 
         bill.setForwardReferenceBill(preBill);
         getBillFacade().edit(bill);
@@ -512,7 +504,6 @@ public class StoreBean {
         hm.put("batch", batch);
         hm.put("stf", staff);
         double vl = getStockFacade().findAggregateDbl(sql);
-        System.err.println("Return Value " + vl);
         return vl;
     }
 
@@ -738,7 +729,6 @@ public class StoreBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
-        System.err.println("5");
         if (s.getStock() < qty) {
             return false;
         }
@@ -845,15 +835,11 @@ public class StoreBean {
         List<Stock> stocks = getStockFacade().findBySQL(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
-        System.err.println("To Add Qty : " + toAddQty);
         for (Stock s : stocks) {
             if (s.getStock() >= toAddQty) {
-                // //   deductFromStock(s.getItemBatch(), toAddQty, department);
-                System.err.println("Stock Qty 1 : " + s.getStock());
                 list.add(new StockQty(s, toAddQty));
                 break;
             } else {
-                System.err.println("Stock Qty 2 : " + s.getStock());
                 toAddQty = toAddQty - s.getStock();
                 list.add(new StockQty(s, s.getStock()));
                 // //     deductFromStock(s.getItemBatch(), s.getStock(), department);
@@ -990,22 +976,18 @@ public class StoreBean {
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().edit(phItem);
 
-        System.err.println("Histry Saved " + sh.getStockQty());
     }
 
     public void addToStockHistoryInitial(PharmaceuticalBillItem phItem, Stock stock, Department d) {
         if (phItem == null) {
-            System.err.println("H1");
             return;
         }
 
         if (phItem.getBillItem() == null) {
-            System.err.println("H2");
             return;
         }
 
         if (phItem.getBillItem().getItem() == null) {
-            System.err.println("H3");
             return;
         }
 
@@ -1016,10 +998,8 @@ public class StoreBean {
         m.put("pbi", phItem);
         sh = getStockHistoryFacade().findFirstBySQL(sql, m);
         if (sh == null) {
-            System.err.println("H4");
             sh = new StockHistory();
         } else {
-            System.err.println("H5");
             return;
         }
 
@@ -1048,7 +1028,6 @@ public class StoreBean {
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().edit(phItem);
 
-        System.err.println("Histry Saved " + sh.getStockQty());
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Staff staff) {

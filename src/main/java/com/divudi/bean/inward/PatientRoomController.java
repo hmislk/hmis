@@ -10,21 +10,20 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import java.util.TimeZone;
-import com.divudi.facade.PatientRoomFacade;
 import com.divudi.entity.inward.PatientRoom;
+import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -73,18 +72,16 @@ public class PatientRoomController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -123,10 +120,9 @@ public class PatientRoomController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -134,7 +130,6 @@ public class PatientRoomController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
         current = null;
         getCurrent();
     }
@@ -144,11 +139,9 @@ public class PatientRoomController implements Serializable {
     }
 
     public List<PatientRoom> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<PatientRoom>();
+            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

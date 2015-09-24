@@ -34,15 +34,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
 
@@ -112,7 +107,7 @@ public class StaffPaymentBillController implements Serializable {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
             billComponents = getBillComponentFacade().findBySQL(sql);
             if (billComponents == null) {
-                billComponents = new ArrayList<BillComponent>();
+                billComponents = new ArrayList<>();
             }
         }
         return billComponents;
@@ -126,7 +121,7 @@ public class StaffPaymentBillController implements Serializable {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
                 billFees = getBillFeeFacade().findBySQL(sql);
                 if (billFees == null) {
-                    billFees = new ArrayList<BillFee>();
+                    billFees = new ArrayList<>();
                 }
             }
         }
@@ -180,8 +175,8 @@ public class StaffPaymentBillController implements Serializable {
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
         currentStaff = null;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
+        dueBillFees = new ArrayList<>();
+        payingBillFees = new ArrayList<>();
         totalPaying = 0.0;
         totalDue = 0.0;
 
@@ -243,7 +238,7 @@ public class StaffPaymentBillController implements Serializable {
 
     public void calculateDueFees() {
         if (currentStaff == null || currentStaff.getId() == null) {
-            dueBillFees = new ArrayList<BillFee>();
+            dueBillFees = new ArrayList<>();
         } else {
             String sql;
             HashMap h = new HashMap();
@@ -526,10 +521,9 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -537,7 +531,7 @@ public class StaffPaymentBillController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+//        getItems();
         current = null;
         getCurrent();
     }
@@ -548,7 +542,6 @@ public class StaffPaymentBillController implements Serializable {
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         System.out.println("bill.getBalance() = " + bill.getBalance());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -562,7 +555,6 @@ public class StaffPaymentBillController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
@@ -608,11 +600,6 @@ public class StaffPaymentBillController implements Serializable {
         return billFacade;
     }
 
-    public List<Bill> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
@@ -631,7 +618,7 @@ public class StaffPaymentBillController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -643,7 +630,7 @@ public class StaffPaymentBillController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -805,47 +792,5 @@ public class StaffPaymentBillController implements Serializable {
         this.BillFeePaymentFacade = BillFeePaymentFacade;
     }
 
-    /**
-     *
-     */
-    @FacesConverter(forClass = BilledBill.class)
-    public static class StaffPaymentBillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffPaymentBillController controller = (StaffPaymentBillController) facesContext.getApplication().getELResolver().
-                    //getValue(facesContext.getELContext(), null, "billController");
-                    getValue(facesContext.getELContext(), null, "staffPaymentBillController");
-            return controller.billFacade.find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof BilledBill) {
-                BilledBill o = (BilledBill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffPaymentBillController.class.getName());
-            }
-        }
-    }
+    
 }

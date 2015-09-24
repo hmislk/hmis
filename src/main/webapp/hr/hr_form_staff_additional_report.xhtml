@@ -67,21 +67,29 @@
                                 <h:outputLabel value="Additional Working Shift Sheet"/>
                             </f:facet>
 
-                            <p:column headerText="Form ID" sortBy="#{add.id}">
+                            <p:column headerText="Form ID" sortBy="#{add.id}" rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Form id"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.id}" ></p:outputLabel>
                             </p:column>
+                            
+                            <p:column headerText="Staff shift ID" sortBy="#{add.staffShift.id}" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff shift
+                                                   id"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.id}" ></p:outputLabel>
+                            </p:column>
 
-                            <p:column headerText="Retired" sortBy="#{add.id}">
+                            <p:column headerText="Retired" sortBy="#{add.id}" rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retired"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.retired}" ></p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Form Number" sortBy="#{add.code}">
+                            <p:column headerText="Form Number" sortBy="#{add.code}" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Form Number"/>
                                 </f:facet>
@@ -116,6 +124,55 @@
                                     <h:outputLabel value="Roster"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.staffShift.roster.name}" ></p:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Shift Date" sortBy="#{add.staffShift.shiftDate}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Shift Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.shiftDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd" />
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="S"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.retired}" >
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="S"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.additionalForm.retired}" >
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="S"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.additionalForm.id}" >
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="S"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.staff.person.name}" >
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="S"/>
+                                </f:facet>
+                                <p:outputLabel value="#{add.staffShift.dayType}" >
+                                </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Shift Start">
@@ -262,14 +319,14 @@
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Retired">
+                            <p:column headerText="Retired" rendered="false">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retired"/>
                                 </f:facet>
                                 <p:selectBooleanCheckbox value="#{add.retired}" />
                             </p:column>
 
-                            <p:column>
+                            <p:column rendered="false">
                                 <p:commandButton ajax="false" value="Update"
                                                  action="#{staffAdditionalFormController.update(add)}"/>
                             </p:column>

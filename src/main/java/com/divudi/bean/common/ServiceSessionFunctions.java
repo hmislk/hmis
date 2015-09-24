@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -162,34 +162,6 @@ public class ServiceSessionFunctions {
             bs.setSerialNo(count.intValue() + 1);
         } else {
             bs.setSerialNo(1);
-        }
-        switch (i.getSessionNumberType()) {
-            case ByCategory:
-                //   //System.out.println("by cat");
-                if (i.getCategory().getParentCategory() == null) {
-                    //   //System.out.println("by cat only ");
-                    bs.setCategory(i.getCategory());
-//                    bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
-                } else {
-                    //   //System.out.println("by parent cat");
-                    bs.setCategory(i.getCategory().getParentCategory());
-//                    bs.setSerialNo(getIdByCat(i.getCategory().getParentCategory(), bi.getSessionDate()) + 1);
-                }
-                break;
-            case BySubCategory:
-                System.err.println("By Sub Category");
-                bs.setCategory(i.getCategory());
-//                bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
-                break;
-            case ByItem:
-                System.err.println("By Item");
-//                bs.setSerialNo(getIdByItem(i, bi.getSessionDate()) + 1);
-                break;
-            case ByBill:
-                System.err.println("Bill");
-                break;
-            default:
-                bs = null;
         }
 //        if (bs != null) {
 //            getBillSessionFacade().create(bs);

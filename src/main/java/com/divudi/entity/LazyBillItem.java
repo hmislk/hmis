@@ -5,12 +5,8 @@
  */
 package com.divudi.entity;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.primefaces.model.LazyDataModel;
-import org.primefaces.model.SortOrder;
 
 public class LazyBillItem extends LazyDataModel<BillItem> {
 

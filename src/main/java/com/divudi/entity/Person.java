@@ -7,10 +7,10 @@
  */
 package com.divudi.entity;
 
-import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -106,47 +106,14 @@ public class Person implements Serializable {
     }
 
     public String getNameWithTitle() {
-        String temT = "";
-        Title t;
-        if (getName() != null) {
-            t = getTitle();
-            if (t == Title.Baby) {
-                temT = "Baby ";
-            } else if (t == Title.Dr) {
-                temT = "Dr. ";
-            } else if (t == Title.DrMiss) {
-                temT = "Dr(Miss). ";
-            } else if (t == Title.DrMrs) {
-                temT = "Dr(Mrs). ";
-            } else if (t == Title.DrMs) {
-                temT = "Dr(Ms). ";
-            } else if (t == Title.Hon) {
-                temT = "Hon. ";
-            } else if (t == Title.Master) {
-                temT = "Master. ";
-            } else if (t == Title.Miss) {
-                temT = "Miss. ";
-            } else if (t == Title.Mr) {
-                temT = "Mr. ";
-            } else if (t == Title.Mrs) {
-                temT = "Mrs. ";
-            } else if (t == Title.Ms) {
-                temT = "Ms. ";
-            } else if (t == Title.Prof) {
-                temT = "Prof. ";
-            } else if (t == Title.Rev) {
-                temT = "Rev. ";
-            } else if (t == Title.RtHon) {
-                temT = "Rt. Hon. ";
-            } else if (t == Title.RtRev) {
-                temT = "Rt. Rev. ";
-            } else {
-                temT = "";
-            }
-
-            nameWithTitle = temT + getName();
+        String temT;
+        Title t = getTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
         }
-
+        nameWithTitle = temT + getName();
         return nameWithTitle;
     }
 

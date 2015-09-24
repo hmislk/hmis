@@ -27,12 +27,9 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -201,7 +198,6 @@ public class ItemController implements Serializable {
             return;
         }
 
-        System.out.println("selectedItemFeeList = " + selectedItemFeeList);
 
         for (ItemFee fee : selectedItemFeeList) {
             if (fee.getDepartment() != null) {
@@ -714,17 +710,14 @@ public class ItemController implements Serializable {
         List<Item> suggestions = new ArrayList<>();
 
         if (category == null) {
-            System.err.println("1");
             suggestions = fetchInwardItems(query);
         } else if (category instanceof ServiceCategory) {
-            System.err.println("2");
             suggestions = fetchInwardItems(query, category);
             getServiceSubCategoryController().setParentCategory(category);
             for (ServiceSubCategory ssc : getServiceSubCategoryController().getItems()) {
                 suggestions.addAll(fetchInwardItems(query, ssc));
             }
         } else {
-            System.err.println("3");
             suggestions = fetchInwardItems(query, category);
         }
 
@@ -819,10 +812,7 @@ public class ItemController implements Serializable {
                 //System.out.println("i = " + i.getInstitution().getName());
                 i.setInstitution(null);
                 getFacade().edit(i);
-                System.err.println("Null");
             }
-            //System.out.println("i = " + i.getInstitution());
-            System.err.println("********");
         }
     }
 
@@ -850,7 +840,6 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         //System.out.println(sql);
         items = getFacade().findBySQL(sql, m);
-        System.err.println("items" + items.size());
         return items;
     }
 
@@ -883,7 +872,6 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         //System.out.println(sql);
         itemFees = getItemFeeFacade().findBySQL(sql, m);
-        System.err.println("itemFees" + itemFees.size());
         return itemFees;
     }
 
@@ -1038,7 +1026,7 @@ public class ItemController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

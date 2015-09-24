@@ -7,12 +7,12 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.table.String1Value5;
-import com.divudi.data.table.String1Value1;
+import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
+import com.divudi.data.table.String1Value1;
+import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -21,21 +21,16 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.bean.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -138,7 +133,6 @@ public class CashierReportController implements Serializable {
         System.out.println("newB.getCard() = " + newB.getCard());
         finalCardTot += newB.getCard();
         newB.setCash(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cash, billType));
-        System.out.println("newB.getCash = " + newB.getCash());
         finalCashTot += newB.getCash();
         newB.setCheque(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cheque, billType));
         finalChequeTot += newB.getCheque();
@@ -255,7 +249,6 @@ public class CashierReportController implements Serializable {
             BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
 
             if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                System.err.println("New Out ");
                 billls.add(newOut);
             }
 
@@ -308,7 +301,6 @@ public class CashierReportController implements Serializable {
             newSum.setSlip(uSlip);
 
             if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                System.err.println("SUNN ");
                 billls.add(newSum);
             }
 
@@ -531,7 +523,6 @@ public class CashierReportController implements Serializable {
 
         double dbl = getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("Cash " + dbl);
         return dbl;
 
     }
@@ -844,7 +835,7 @@ public class CashierReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunction().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunction().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -857,7 +848,7 @@ public class CashierReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunction().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunction().getEndOfDay(new Date());
         }
         return toDate;
     }

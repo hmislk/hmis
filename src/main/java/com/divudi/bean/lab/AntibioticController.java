@@ -8,44 +8,52 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.lab.Antibiotic;
-import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.AntibioticFacade;
+import com.divudi.facade.SpecialityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class AntibioticController implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+public class AntibioticController implements Serializable {
+    /**
+     * EJBs
+     */
     @EJB
     private AntibioticFacade ejbFacade;
     @EJB
     private SpecialityFacade specialityFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
     @Inject
     private BillBeanController billBean;
+    /**
+     * Properties
+     */
+    private static final long serialVersionUID = 1L;
     List<Antibiotic> selectedItems;
     private Antibiotic current;
     private List<Antibiotic> items = null;
@@ -58,10 +66,9 @@ public  class AntibioticController implements Serializable {
         List<Antibiotic> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<Antibiotic>();
+            suggestions = new ArrayList<>();
         } else {
             sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -116,7 +123,6 @@ public  class AntibioticController implements Serializable {
     }
 
     public String getBulkText() {
-
         return bulkText;
     }
 
@@ -125,13 +131,11 @@ public  class AntibioticController implements Serializable {
     }
 
     public List<Antibiotic> getSelectedItems() {
-         
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Antibiotic c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
             selectedItems = getFacade().findBySQL(sql);
-            
         }
         return selectedItems;
     }
@@ -149,15 +153,10 @@ public  class AntibioticController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                ////System.out.println(code + " " + ix + " " + ic + " " + f);
-
-
                 Antibiotic tix = new Antibiotic();
                 tix.setCode(code);
                 tix.setName(ix);
                 tix.setDepartment(null);
-
-
 
             } catch (Exception e) {
             }
@@ -190,7 +189,7 @@ public  class AntibioticController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             if (billedAs == false) {
@@ -239,16 +238,8 @@ public  class AntibioticController implements Serializable {
     public void setCurrent(Antibiotic current) {
         this.current = current;
         if (current != null) {
-            if (current.getBilledAs() == current) {
-                billedAs = false;
-            } else {
-                billedAs = true;
-            }
-            if (current.getReportedAs() == current) {
-                reportedAs = false;
-            } else {
-                reportedAs = true;
-            }
+            billedAs = current.getBilledAs() != current;
+            reportedAs = current.getReportedAs() != current;
         }
     }
 
@@ -256,7 +247,8 @@ public  class AntibioticController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -272,21 +264,15 @@ public  class AntibioticController implements Serializable {
     private AntibioticFacade getFacade() {
         return ejbFacade;
     }
-    
+
     public List<Antibiotic> getItems() {
-        String sql;
-        
-        sql = "select an from Antibiotic an where an.retired=false order by an.name";
-        
-        items=getFacade().findBySQL(sql);
-        
+        if (items == null) {
+            String j;
+            j = "select an from Antibiotic an where an.retired=false order by an.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
-
-//    public List<Antibiotic> getItems() {
-//        items = getFacade().findAll("name", true);
-//        return items;
-//    }
 
     public SpecialityFacade getSpecialityFacade() {
         return specialityFacade;
@@ -299,7 +285,6 @@ public  class AntibioticController implements Serializable {
     /**
      *
      */
-   
     @FacesConverter("antibiotic")
     public static class AntibioticControllerConverter implements Converter {
 

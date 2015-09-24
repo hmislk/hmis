@@ -7,16 +7,15 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
@@ -28,13 +27,12 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -134,8 +132,8 @@ public class InwardRefundController implements Serializable {
     private void saveBill() {
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setBillType(BillType.InwardPaymentBill);
-        getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         // getCurrent().setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
@@ -146,7 +144,7 @@ public class InwardRefundController implements Serializable {
 
         getCurrent().setTotal(0 - dbl);
         getCurrent().setNetTotal(0 - dbl);
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
         if (getCurrent().getId() == null) {
@@ -160,7 +158,7 @@ public class InwardRefundController implements Serializable {
         temBi.setBill(getCurrent());
         temBi.setGrossValue(0 - getCurrent().getTotal());
         temBi.setNetValue(0 - getCurrent().getTotal());
-        temBi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
 
         if (temBi.getId() == null) {
@@ -175,7 +173,7 @@ public class InwardRefundController implements Serializable {
         BillFee bf = new BillFee();
         bf.setBill(getCurrent());
         bf.setBillItem(bt);
-        bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bf.setCreatedAt(new Date());
         bf.setCreater(getSessionController().getLoggedUser());
         bf.setFeeGrossValue(0 - getCurrent().getTotal());
         bf.setFeeValue(0 - getCurrent().getTotal());

@@ -4,13 +4,13 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.SurgeryBillType;
@@ -26,7 +26,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -47,7 +46,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -378,7 +376,7 @@ public class InwardSearch implements Serializable {
 
             bC.setBill(can);
             bC.setBillItem(bt);
-            bC.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bC.setCreatedAt(new Date());
             bC.setCreater(getSessionController().getLoggedUser());
 
             if (bC.getId() == null) {
@@ -715,10 +713,10 @@ public class InwardSearch implements Serializable {
 
             long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
 
-            if (Math.abs(dayCount) > 3) {
-                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
-                return;
-            }
+//            if (Math.abs(dayCount) > 3) {
+//                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+//                return;
+//            }
             if (getBill().isCancelled()) {
                 UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
@@ -847,9 +845,9 @@ public class InwardSearch implements Serializable {
         cb.setBilledBill(getBill());
 
         ////////////
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setComments(comment);
         cb.setPaymentMethod(paymentMethod);
@@ -869,9 +867,9 @@ public class InwardSearch implements Serializable {
         cb.invertQty();
         cb.copy(getBill());
         cb.setRefundedBill(getBill());
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setPaymentMethod(getPaymentMethod());
         cb.setComments(comment);
@@ -1001,7 +999,7 @@ public class InwardSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             if (b.getId() == null) {
@@ -1098,7 +1096,7 @@ public class InwardSearch implements Serializable {
 
             bf.setBill(can);
             bf.setBillItem(bt);
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             if (bf.getId() == null) {
@@ -1124,7 +1122,7 @@ public class InwardSearch implements Serializable {
             b.setQty(1.0);
             b.setRate(nB.getRate());
 
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             b.setPaidForBillFee(nB.getPaidForBillFee());
@@ -1150,7 +1148,7 @@ public class InwardSearch implements Serializable {
 
             bf.setBill(can);
             bf.setBillItem(bt);
-            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
             if (bf.getId() == null) {
@@ -1231,7 +1229,6 @@ public class InwardSearch implements Serializable {
     }
 
     public void setBillActionListener(String id) {
-        System.err.println("Billed Id " + id);
         setBill(bill);
     }
 
@@ -1372,7 +1369,7 @@ public class InwardSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1384,7 +1381,7 @@ public class InwardSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

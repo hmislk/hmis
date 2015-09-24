@@ -126,7 +126,6 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("pe", patientEncounter);
 
         Object obj[] = patientRoomFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
-        System.err.println("OBJ " + obj);
         if (obj == null) {
             Double[] dbl = new Double[14];
             dbl[0] = 0.0;
@@ -230,7 +229,6 @@ public class InwardReportControllerBht implements Serializable {
     public void createDoctorPaymentInward() {
         professionals = new ArrayList<>();
         List<Object[]> list = fetchDoctorPaymentInwardModified();
-        System.err.println("Professional " + list);
         for (Object[] obj : list) {
             Speciality speciality = (Speciality) obj[0];
             double dbl = (Double) obj[1];
