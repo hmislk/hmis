@@ -512,7 +512,7 @@ public class ReportItem implements Serializable {
                 + "position:" + cssPosition + "; vertical-align: " + cssVerticalAlign + ";"
                 + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
                 + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
-                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
+                + "font-weight: " + cssFontWeight + ";border-radius: " + cssBorderRadius + ";";
 
         //TODO (Later) to add cssHeight, font styles, etc, Now 12
         return cssStyle;

@@ -316,6 +316,11 @@ public class AmpController implements Serializable {
         return ampList;
     }
 
+    
+    public void prepareAddNewVmp(){
+        addingVtmInVmp = new VtmsVmps();
+    }
+    
     public List<Amp> completeAmpByCode(String qry) {
 
         Map m = new HashMap();
@@ -478,6 +483,8 @@ public class AmpController implements Serializable {
         if (current.getName() == null || current.getName().equals("")) {
             current.setName(createAmpName());
         }
+        
+        current.setDepartmentType(DepartmentType.Pharmacy);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -645,6 +652,10 @@ public class AmpController implements Serializable {
         this.itemSupplierPrices = itemSupplierPrices;
     }
 
+   
+
+    
+    
     /**
      *
      */

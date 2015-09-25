@@ -7,15 +7,18 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillEntryFacade;
@@ -53,7 +56,9 @@ import javax.persistence.TemporalType;
 @Named(value = "dataAdministrationController")
 @ApplicationScoped
 public class DataAdministrationController {
-
+    /**
+     * EJBs
+     */
     @EJB
     PatientInvestigationItemValueFacade patientInvestigationItemValueFacade;
     @EJB
@@ -82,7 +87,6 @@ public class DataAdministrationController {
     BillSearch billSearch;
     @EJB
     ItemFacade itemFacade;
-
     @EJB
     CategoryFacade categoryFacade;
     @EJB
@@ -217,6 +221,21 @@ public class DataAdministrationController {
         }
     }
 
+    public void makeAllAmpsWithNullDepartmentTypeToPharmacyType(){
+        String j = "Select a from Amp a where a.retired=false and a.departmentType is null";
+        List<Item> amps = itemFacade.findBySQL(j);
+        for(Item a:amps){
+            if(a instanceof Amp){
+                Amp amp = (Amp)a;
+                if(amp.getDepartmentType()==null){
+                    System.out.println("amp.getName() = " + amp.getName());
+                    amp.setDepartmentType(DepartmentType.Pharmacy);
+                    itemFacade.edit(amp);
+                }
+            }
+        }
+    }
+    
     public void addOPDBillFeesToProfessionalCancelBills() {
         List<Bill> bills;
         String s;
