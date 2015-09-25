@@ -10,6 +10,7 @@ package com.divudi.bean.memberShip;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
@@ -19,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -46,7 +48,8 @@ public class MembershipSchemeController implements Serializable {
     private MembershipScheme current;
     private List<MembershipScheme> items = null;
     String selectText = "";
-
+    Institution lastInstitution;
+    
     public MembershipScheme fetchPatientMembershipScheme(Patient patient) {
         MembershipScheme membershipScheme = null;
         if (patient != null
@@ -109,7 +112,7 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public void saveSelected() {
-
+        getCurrent().setInstitution(getSessionController().getInstitution());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -179,17 +182,31 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getItems() {
-        if (items == null) {
+        if (items == null || !lastInstitution.equals(sessionController.getInstitution())) {
+            lastInstitution = sessionController.getInstitution();
             String j;
             j="select s "
                     + " from MembershipScheme s "
                     + " where s.retired=false "
+                    + " and s.institution=:ins "
                     + " order by s.name";
-            items = getFacade().findBySQL(j);
+            Map m = new HashMap();
+            m.put("ins", lastInstitution);
+            items = getFacade().findBySQL(j,m);
         }
         return items;
     }
 
+    public Institution getLastInstitution() {
+        return lastInstitution;
+    }
+
+    public void setLastInstitution(Institution lastInstitution) {
+        this.lastInstitution = lastInstitution;
+    }
+
+    
+    
     /**
      *
      */
