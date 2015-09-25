@@ -18,8 +18,8 @@
             <h:form id="form">     
                 <p:panel rendered="#{!billBhtController.printPreview}">
                     <p:commandButton id="btnSettle" value="Settle" 
-                                    action="#{billBhtController.settleBill}" 
-                                   ajax="false" onclick="onSubmitButton();">
+                                     action="#{billBhtController.settleBill}" 
+                                     ajax="false" onclick="onSubmitButton();">
                     </p:commandButton>
                     <p:defaultCommand target="btnSettle"/>
 
@@ -286,153 +286,8 @@
                                 </ui:repeat>  
                             </h:panelGroup>
 
-<!--                            <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{billBhtController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                                <div></div>
-                                <div style="page-break-after: always;">
-                                    <ui:repeat value="#{billBhtController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                            </h:panelGroup>-->
-
                         </h:panelGroup>
-
-
-
                     </h:panelGroup>
-
-                    
-
-
-
-                    <!--                    <div class="nonPrintBlock" >
-                                            <p:commandButton value="Print" ajax="false" action="#" >
-                                                <p:printer target="gpBillPreview" ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >
-                                            </p:commandButton>
-                                            
-                                        </div>
-                                        <div >
-                    
-                    
-                                            <h:panelGroup   id="gpBillPreview"   >
-                    
-                                                <div>
-                    
-                                                    <ui:repeat value="#{billBhtController.bills}" var="bill" >
-                    
-                                                        <div class="fiveinchbillBreak" >
-                    
-                                                            <div >
-                    
-                    
-                                                                <div class="receiptnoPrinting" >
-                                                                    <h:outputLabel value="#{bill.insId}">
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="billdatePrinting" >
-                                                                    <h:outputLabel value="#{bill.billDate}">
-                                                                        <f:convertDateTime pattern="dd/MM/yy"/>
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="paymentPrinting" >
-                                                                    <h:outputLabel value="#{bill.paymentMethod}">
-                                                                        
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="billtimePrinting" >
-                                                                    <h:outputLabel value="#{bill.billTime}"
-                                                                                   >
-                                                                        <f:convertDateTime pattern="hh mm ss a"/>
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="ptnamePrinting" >
-                                                                    <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
-                                                                                   >
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="phonePrinting" >
-                                                                    <h:outputLabel value="#{bill.patient.person.phone}"
-                                                                                   >
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="cashierPrinting" >
-                                                                    <h:outputLabel value="Cashier : #{bill.creater.code}">
-                                                                    </h:outputLabel>
-                                                                </div>
-                    
-                                                                <div class="consultPrinting" >
-                                                                    <h:outputLabel value="#{bill.collectingCentre.name}" />
-                                                                    <h:outputLabel value="#{bill.creditCompany.name}" />
-                                                                </div>
-                    
-                    
-                    
-                                                                <div class="itemsPrinting" >
-                                                                    <h:dataTable value="#{billBhtController.lstBillEntries}" var="bip"   >
-                                                                        <h:column >
-                                                                            <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
-                                                                            </h:outputLabel>
-                                                                            <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
-                                                                                <br/>
-                                                                                <h:outputLabel value="Session No . " ></h:outputLabel>
-                                                                                <h:outputLabel value="#{bip.billItem.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
-                                                                                </h:outputLabel>
-                                                                            </h:panelGroup>
-                                                                        </h:column>
-                                                                        <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" >
-                                                                           
-                                                                            <h:outputLabel  value="#{bip.billItem.grossValue}" 
-                                                                                            rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
-                                                                                            style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton" >
-                                                                                <f:convertNumber pattern="#,##0.00" />
-                                                                            </h:outputLabel>
-                                                                        </h:column>
-                                                                        <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                       
-                                                                            <h:outputLabel  value="#{bip.billItem.marginValue}"
-                                                                                            rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
-                                                                                            style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton" >
-                                                                                <f:convertNumber pattern="#,##0.00" />
-                                                                            </h:outputLabel>
-                                                                        </h:column>
-                                                                        <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                       
-                                                                            <h:outputLabel value="#{bip.billItem.netValue}" 
-                                                                                           rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
-                                                                                            style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton"   >
-                                                                                <f:convertNumber pattern="#,##0.00" />
-                                                                            </h:outputLabel>
-                                                                        </h:column>
-                                                                    </h:dataTable>
-                                                                </div>
-                    
-                    
-                                                            </div>
-                    
-                                                        </div>
-                    
-                                                    </ui:repeat>
-                    
-                                                </div>
-                    
-                    
-                                            </h:panelGroup>
-                    
-                    
-                    
-                    
-                                        </div>-->
                 </h:panelGroup>
             </h:form>
         </h:panelGroup>
