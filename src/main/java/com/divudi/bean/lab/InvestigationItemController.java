@@ -48,7 +48,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -345,6 +344,12 @@ public class InvestigationItemController implements Serializable {
         this.file = file;
     }
 
+    
+    public void convertCssTopToRiTop(){
+        String j="select ri from ReportItem ri where
+        
+    }
+    
     public void upload() {
         if (getCurrentInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation");
@@ -428,7 +433,7 @@ public class InvestigationItemController implements Serializable {
             } catch (IOException io) {
                 System.out.println("IOException");
                 System.out.println(io.getMessage());
-            } catch (JDOMException jdomex) {
+            } catch (Exception jdomex) {
                 System.out.println("JDOM Excepton");
                 System.out.println(jdomex.getMessage());
             }
