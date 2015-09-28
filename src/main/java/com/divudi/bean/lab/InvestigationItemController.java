@@ -20,9 +20,11 @@ import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -71,6 +73,8 @@ public class InvestigationItemController implements Serializable {
     private InvestigationItemFacade ejbFacade;
     @EJB
     InvestigationItemValueFacade iivFacade;
+    @EJB
+    ReportItemFacade riFacade;
     List<InvestigationItem> selectedItems;
     private InvestigationItem current;
     private Investigation currentInvestigation;
@@ -344,12 +348,33 @@ public class InvestigationItemController implements Serializable {
         this.file = file;
     }
 
-    
-    public void convertCssTopToRiTop(){
-        String j="select ri from ReportItem ri where
-        
+    public void convertCssValuesToRiValues() {
+        String j = "select ri from ReportItem ri";
+        List<ReportItem> ris = riFacade.findBySQL(j);
+        for (ReportItem ri : ris) {
+
+            try {
+
+                System.out.println("ri = " + ri);
+                ri.setCssTop(ri.getCssTop().replace("%", ""));
+                ri.setCssLeft(ri.getCssLeft().replace("%", ""));
+                ri.setCssHeight(ri.getCssHeight().replace("%", ""));
+                ri.setCssWidth(ri.getCssWidth().replace("%", ""));
+
+                ri.setRiTop(Integer.valueOf(ri.getCssTop()));
+                ri.setRiLeft(Integer.valueOf(ri.getCssLeft()));
+                ri.setRiHeight(Integer.valueOf(ri.getCssHeight()));
+                ri.setRiWidth(Integer.valueOf(ri.getCssWidth()));
+
+                riFacade.edit(ri);
+
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+            }
+        }
+
     }
-    
+
     public void upload() {
         if (getCurrentInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation");
@@ -380,7 +405,7 @@ public class InvestigationItemController implements Serializable {
                 out.flush();
                 out.close();
                 SAXBuilder builder = new SAXBuilder();
-                File xmlfile = uploadedFile; 
+                File xmlfile = uploadedFile;
                 Document document = (Document) builder.build(xmlfile);
                 Element rootNode = document.getRootElement();
                 List list = rootNode.getChildren("investigation_item");
