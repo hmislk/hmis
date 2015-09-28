@@ -356,19 +356,43 @@ public class InvestigationItemController implements Serializable {
             try {
 
                 System.out.println("ri = " + ri);
+                
                 ri.setCssTop(ri.getCssTop().replace("%", ""));
                 ri.setCssLeft(ri.getCssLeft().replace("%", ""));
                 ri.setCssHeight(ri.getCssHeight().replace("%", ""));
                 ri.setCssWidth(ri.getCssWidth().replace("%", ""));
+                
+                try {
+                    ri.setRiTop(Integer.parseInt(ri.getCssTop()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssTop() = " + ri.getCssTop());
+                }
+                
+                try {
+                    ri.setRiLeft(Integer.parseInt(ri.getCssLeft()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssLeft() = " + ri.getCssLeft());
+                }
+                
+                try {
+                    ri.setRiHeight(Integer.parseInt(ri.getCssHeight()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssHeight() = " + ri.getCssHeight());
+                }
+                
+                try {
+                    ri.setRiWidth(Integer.parseInt(ri.getCssWidth()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
+                }
 
-                ri.setRiTop(Integer.valueOf(ri.getCssTop()));
-                ri.setRiLeft(Integer.valueOf(ri.getCssLeft()));
-                ri.setRiHeight(Integer.valueOf(ri.getCssHeight()));
-                ri.setRiWidth(Integer.valueOf(ri.getCssWidth()));
-
-                if (ri.getHtmltext().trim().equals("")) {
+                System.out.println("ri.getName() = " + ri.getName());
+                System.out.println("ri.getHtmltext() = " + ri.getHtmltext());
+                
+                if (ri.getHtmltext()==null || ri.getHtmltext().trim().equals("")) {
                     ri.setHtmltext(ri.getName());
                 }
+
                 riFacade.edit(ri);
 
             } catch (Exception e) {
