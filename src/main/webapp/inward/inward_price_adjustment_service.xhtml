@@ -88,11 +88,11 @@
                                          filteredValue="#{inwardPriceAdjustmntController.filterItems}"
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
                                 
-                                <p:column>
+
+                                <p:column headerText="ID">
                                     #{a.id}
                                 </p:column>
                                 
-
                                 <p:column filterBy="#{a.department.name}" filterMatchMode="contains" headerText="Department Name" exportable="false">
 
                                     <p:autoComplete forceSelection="true" value="#{a.department}" completeMethod="#{departmentController.completeDept}" 
@@ -110,7 +110,9 @@
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
                                 
-                                <p:column headerText="Payment Method">
+                                <p:column headerText="Payment Method"
+                                          filterMatchMode="contains"
+                                          filterBy="#{a.paymentMethod}">
                                     
                                     <p:outputLabel value="#{a.paymentMethod}"/>
                                 </p:column>
