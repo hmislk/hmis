@@ -108,11 +108,11 @@ public class ReportItem implements Serializable {
     @ManyToOne
     private Category referringCategory;
 
-    int riTop;
-    int riHeight;
-    int riLeft;
-    int riWidth;
-    int riFontSize;
+    double riTop;
+    double riHeight;
+    double riLeft;
+    double riWidth;
+    double riFontSize;
     
     @Lob
     String htmltext;
@@ -736,52 +736,52 @@ public class ReportItem implements Serializable {
         this.referringCategory = referringCategory;
     }
 
-    public int getRiTop() {
+    public double getRiTop() {
         return riTop;
     }
 
-    public void setRiTop(int riTop) {
+    public void setRiTop(double riTop) {
         this.riTop = riTop;
     }
 
-    public int getRiHeight() {
+    public double getRiHeight() {
         if(riHeight==0){
             riHeight=2;
         }
         return riHeight;
     }
 
-    public void setRiHeight(int riHeight) {
+    public void setRiHeight(double riHeight) {
         this.riHeight = riHeight;
     }
 
-    public int getRiLeft() {
+    public double getRiLeft() {
         return riLeft;
     }
 
-    public void setRiLeft(int riLeft) {
+    public void setRiLeft(double riLeft) {
         this.riLeft = riLeft;
     }
 
-    public int getRiWidth() {
+    public double getRiWidth() {
         if(riWidth==0){
             riWidth=30;
         }
         return riWidth;
     }
 
-    public void setRiWidth(int riWidth) {
+    public void setRiWidth(double riWidth) {
         this.riWidth = riWidth;
     }
 
-    public int getRiFontSize() {
+    public double getRiFontSize() {
         if(riFontSize==0){
             riFontSize=12;
         }
         return riFontSize;
     }
 
-    public void setRiFontSize(int riFontSize) {
+    public void setRiFontSize(double riFontSize) {
         this.riFontSize = riFontSize;
     }
 
