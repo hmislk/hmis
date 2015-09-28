@@ -18,7 +18,7 @@
 
                     <p:defaultCommand target="btnAddToQueueAndClear" ></p:defaultCommand>
 
-                    <p:panel header="Manage Patients" styleClass="alignTop" >
+                    <p:panel header="Manage Patients" styleClass="alignTop verticalAndHorizontalCenteringLarge" >
                         <h:panelGrid columns="2" >
 
                             <h:panelGroup>
@@ -172,7 +172,7 @@
                                             <h:panelGrid columns="2" >
                                                 <h:outputLabel value="Title"/>
                                                 <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}"  >
-                                                    <f:selectItems value="#{patientController.titles}"/>
+                                                    <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
                                                 </p:selectOneMenu>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
                                                 <h:outputLabel value="Name"/>
@@ -189,14 +189,14 @@
 
 
                                                 <h:outputLabel value="Membership"/>
-                                                <h:selectOneMenu value="#{patientController.current.person.membershipScheme}"
+                                                <p:selectOneMenu value="#{patientController.current.person.membershipScheme}"
                                                                  >
                                                     <f:selectItem itemLabel="Select Membership Scheme" ></f:selectItem>
                                                     <f:selectItems value="#{membershipSchemeController.items}"
                                                                    var="ms"
                                                                    itemLabel="#{ms.name}"
                                                                    itemValue="#{ms}" ></f:selectItems>
-                                                </h:selectOneMenu>
+                                                </p:selectOneMenu>
 
 
 

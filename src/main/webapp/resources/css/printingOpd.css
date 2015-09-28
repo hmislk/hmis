@@ -679,7 +679,7 @@ font-size: 15px!important;
 }
 
 .amountLabel{
-    font-size: 14px;
+    font-size: 14px!important;
     font-weight: bold;
     position: absolute;
     left: 82%!important;

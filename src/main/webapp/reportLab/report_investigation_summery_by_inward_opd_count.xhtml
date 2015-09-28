@@ -41,7 +41,7 @@
                 <h:panelGrid columns="4" >
                     <p:spacer width="110" height="1"/>
                     <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createInwardOpdFee}"/>
+                                     action="#{bookKeepingSummery.createInwardOpdCount}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -57,7 +57,7 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRowsInward}" var="sr"
+                <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRowsInward}" var="sr"
                              rows="20"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -84,47 +84,20 @@
                         <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Count"
-                              sortBy="#{sr.catCount}" 
-                              filterBy="#{sr.catCount}"
-                              filterMatchMode="contains">
+                    <p:column headerText="Count" style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Count"/>
                         </f:facet>
                         <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{bookKeepingSummery.countTotals}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                <f:convertNumber pattern="#0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-
-                    <p:column headerText="Rate" style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Rate"/>
-                        </f:facet>
-                        <p:outputLabel value="#{sr.reagentFee/sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </p:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Reagent Fee" style="text-align: right;">
-                        <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
-                        <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </p:outputLabel>
-                        <f:facet name="footer">
-                            <p:outputLabel value="#{bookKeepingSummery.totalRegentFee}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </p:outputLabel>
-                        </f:facet>
-                        <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
-
-                    </p:column>
-
-
+                    
                 </p:dataTable>                
-
+                
             </p:panel>
         </h:form>
     </ui:define>

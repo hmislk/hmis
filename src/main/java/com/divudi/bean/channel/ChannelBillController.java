@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -317,7 +318,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Refunded");
             return;
         }
-       if (getCommentR() == null || getCommentR().trim().equals("")) {
+        if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
@@ -511,6 +512,11 @@ public class ChannelBillController implements Serializable {
         listBillFees = billFeeFacade.findBySQL(sql, hm);
         billSession = bs;
 
+        for (BillFee bf : billSession.getBill().getBillFees()) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                bf.setTmpChangedValue(bf.getFeeValue());
+            }
+        }
     }
 
     public BookingController getBookingController() {
@@ -958,23 +964,24 @@ public class ChannelBillController implements Serializable {
             }
         }
     }
-    
+
     public void checkRefundTotal() {
         refundableTotal = 0;
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getTmpChangedValue() != null) {
-                if (bf.getTmpChangedValue()>bf.getFeeValue()) {
+                if (bf.getTmpChangedValue() > bf.getFeeValue()) {
                     bf.setTmpChangedValue(bf.getFeeValue());
                 }
             }
         }
-        
+
         calRefundTotal();
     }
 
     private Bill createRefundBill(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
+        rb.setBilledBill(bill);
         Date bd = Calendar.getInstance().getTime();
         rb.setBillDate(bd);
         rb.setBillTime(bd);

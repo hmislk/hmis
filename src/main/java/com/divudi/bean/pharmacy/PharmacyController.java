@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,10 +90,16 @@ public class PharmacyController implements Serializable {
     private AmpFacade ampFacade;
     ///////////
     private Item pharmacyItem;
-    // private double grantStock;
     private Date fromDate;
     private Date toDate;
     Department department;
+    boolean hasSale;
+    boolean hasWholesale;
+    boolean hasInward;
+    boolean hasIssue;
+    boolean hasTransferOut;
+    boolean hasPurchase;
+    boolean hasTransferIn;
     ////////
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
@@ -155,7 +162,33 @@ public class PharmacyController implements Serializable {
     }
 
     public void createAllItemTransactionSummery() {
-        List<Amp> allAmps = ampController.getItems();
+        hasInward = false;
+        hasIssue = false;
+        hasPurchase = false;
+        hasTransferIn = false;
+        hasSale = false;
+        hasTransferOut = false;
+        hasWholesale = false;
+        String s;
+        s = "select a "
+                + " from BillItem bi join bi.item a "
+                + " where type(a)=:t "
+                + " and bi.bill.billType in :bts "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.department =:dep "
+                + " group by a "
+                + " order by a.name";
+        BillType[] abts = new BillType[]{BillType.PharmacySale, BillType.PharmacyTransferReceive, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnBill, BillType.PharmacyBhtPre, BillType.PharmacyTransferIssue, BillType.PharmacyIssue, BillType.PharmacyWholeSale};
+
+        Map p = new HashMap();
+        p.put("t", Amp.class);
+        p.put("fd", fromDate);
+        p.put("td", toDate);
+        p.put("dep", department);
+        p.put("bts", Arrays.asList(abts));
+
+        List<Amp> allAmps = ampFacade.findBySQL(s, p);
+
         Map<Long, ItemTransactionSummeryRow> m = new HashMap();
 
         for (Amp a : allAmps) {
@@ -172,8 +205,12 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setRetailSaleQty(v.getQuantity());
-                r.setRetailSaleVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasSale = true;
+                }
+
+                r.setRetailSaleQty(Math.abs(v.getQuantity()));
+                r.setRetailSaleVal(Math.abs(v.getValue()));
             }
         }
 
@@ -184,8 +221,13 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setWholeSaleQty(v.getQuantity());
-                r.setWholeSaleVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasWholesale = true;
+                }
+                r.setWholeSaleQty(Math.abs(v.getQuantity()));
+                System.out.println("v.getQuantity() = " + v.getQuantity());
+                r.setWholeSaleVal(Math.abs(v.getValue()));
+                System.out.println("v.getValue() = " + v.getValue());
             }
         }
 
@@ -195,8 +237,11 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setIssueQty(v.getQuantity());
-                r.setIssueVal(v.getValue());
+                r.setIssueQty(Math.abs(v.getQuantity()));
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasIssue = true;
+                }
+                r.setIssueVal(Math.abs(v.getValue()));
             }
         }
 
@@ -206,8 +251,11 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setTransferOutQty(v.getQuantity());
-                r.setTransferOutVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasTransferOut = true;
+                }
+                r.setTransferOutQty(Math.abs(v.getQuantity()));
+                r.setTransferOutVal(Math.abs(v.getValue()));
             }
         }
 
@@ -217,8 +265,11 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setBhtSaleQty(v.getQuantity());
-                r.setBhtSaleVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasInward = true;
+                }
+                r.setBhtSaleQty(Math.abs(v.getQuantity()));
+                r.setBhtSaleVal(Math.abs(v.getValue()));
             }
         }
 
@@ -228,8 +279,11 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setPurchaseQty(v.getQuantity());
-                r.setPurchaseVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasPurchase = true;
+                }
+                r.setPurchaseQty(Math.abs(v.getQuantity()));
+                r.setPurchaseVal(Math.abs(v.getValue()));
             }
         }
 
@@ -239,13 +293,17 @@ public class PharmacyController implements Serializable {
         for (ItemQuantityAndValues v : rs) {
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
-                r.setTransferInQty(v.getQuantity());
-                r.setTransferInVal(v.getValue());
+                if (Math.abs(v.getQuantity()) > 0.0) {
+                    hasTransferIn = true;
+                }
+                r.setTransferInQty(Math.abs(v.getQuantity()));
+                r.setTransferInVal(Math.abs(v.getValue()));
             }
         }
 
 //        System.out.println("m = " + m);
         itemTransactionSummeryRows = new ArrayList<>(m.values());
+        Collections.sort(itemTransactionSummeryRows);
 
     }
 
@@ -1540,8 +1598,7 @@ public class PharmacyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-//            Date date = ;
-            fromDate = getCommonFunctions().getAddedDate(commonFunctions.getStartOfDay(new Date()), -30);
+            fromDate = getCommonFunctions().getStartOfMonth();
         }
         return fromDate;
     }
@@ -1768,6 +1825,62 @@ public class PharmacyController implements Serializable {
 
     public void setItemTransactionSummeryRows(List<ItemTransactionSummeryRow> itemTransactionSummeryRows) {
         this.itemTransactionSummeryRows = itemTransactionSummeryRows;
+    }
+
+    public boolean isHasSale() {
+        return hasSale;
+    }
+
+    public void setHasSale(boolean hasSale) {
+        this.hasSale = hasSale;
+    }
+
+    public boolean isHasWholesale() {
+        return hasWholesale;
+    }
+
+    public void setHasWholesale(boolean hasWholesale) {
+        this.hasWholesale = hasWholesale;
+    }
+
+    public boolean isHasInward() {
+        return hasInward;
+    }
+
+    public void setHasInward(boolean hasInward) {
+        this.hasInward = hasInward;
+    }
+
+    public boolean isHasIssue() {
+        return hasIssue;
+    }
+
+    public void setHasIssue(boolean hasIssue) {
+        this.hasIssue = hasIssue;
+    }
+
+    public boolean isHasTransferOut() {
+        return hasTransferOut;
+    }
+
+    public void setHasTransferOut(boolean hasTransferOut) {
+        this.hasTransferOut = hasTransferOut;
+    }
+
+    public boolean isHasPurchase() {
+        return hasPurchase;
+    }
+
+    public void setHasPurchase(boolean hasPurchase) {
+        this.hasPurchase = hasPurchase;
+    }
+
+    public boolean isHasTransferIn() {
+        return hasTransferIn;
+    }
+
+    public void setHasTransferIn(boolean hasTransferIn) {
+        this.hasTransferIn = hasTransferIn;
     }
 
 }

@@ -12,47 +12,46 @@ import java.util.Date;
  *
  * @author buddhika
  */
-public class ItemTransactionSummeryRow {
-    Item item;
-    Double retailSaleQty;
-    Double wholeSaleQty;
-    Double bhtSaleQty;
-    Double transferOutQty;
-    Double issueQty;
-    Double totalOutQty;
-    Double transferInQty;
-    Double purchaseQty;
-    Double totalInQty;
-    
-    Double retailSaleVal;
-    Double wholeSaleVal;
-    Double issueVal;
-    Double bhtSaleVal;
-    Double transferOutVal;
-    Double totalOutVal;
-    Double transferInVal;
-    Double purchaseVal;
-    Double totalInVal;
-    
-    Double value;
-    Date date;
-    Double quantity;
+public class ItemTransactionSummeryRow implements Comparable<ItemTransactionSummeryRow> {
 
-    public Double getQuantity() {
+    Item item;
+    double retailSaleQty;
+    double wholeSaleQty;
+    double bhtSaleQty;
+    double transferOutQty;
+    double issueQty;
+    double totalOutQty;
+    double transferInQty;
+    double purchaseQty;
+    double totalInQty;
+
+    double retailSaleVal;
+    double wholeSaleVal;
+    double issueVal;
+    double bhtSaleVal;
+    double transferOutVal;
+    double totalOutVal;
+    double transferInVal;
+    double purchaseVal;
+    double totalInVal;
+
+    double value;
+    Date date;
+    double quantity;
+
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
-    
-    
 
-    public Double getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(Double value) {
+    public void setValue(double value) {
         this.value = value;
     }
 
@@ -63,27 +62,23 @@ public class ItemTransactionSummeryRow {
     public void setDate(Date date) {
         this.date = date;
     }
-    
-    
 
-    public Double getIssueQty() {
+    public double getIssueQty() {
         return issueQty;
     }
 
-    public void setIssueQty(Double issueQty) {
+    public void setIssueQty(double issueQty) {
         this.issueQty = issueQty;
     }
 
-    public Double getIssueVal() {
+    public double getIssueVal() {
         return issueVal;
     }
 
-    public void setIssueVal(Double issueVal) {
+    public void setIssueVal(double issueVal) {
         this.issueVal = issueVal;
     }
 
-    
-    
     public Item getItem() {
         return item;
     }
@@ -92,133 +87,143 @@ public class ItemTransactionSummeryRow {
         this.item = item;
     }
 
-    public Double getRetailSaleQty() {
+    public double getRetailSaleQty() {
         return retailSaleQty;
     }
 
-    public void setRetailSaleQty(Double retailSaleQty) {
+    public void setRetailSaleQty(double retailSaleQty) {
         this.retailSaleQty = retailSaleQty;
     }
 
-    public Double getWholeSaleQty() {
+    public double getWholeSaleQty() {
         return wholeSaleQty;
     }
 
-    public void setWholeSaleQty(Double wholeSaleQty) {
+    public void setWholeSaleQty(double wholeSaleQty) {
         this.wholeSaleQty = wholeSaleQty;
     }
 
-    public Double getBhtSaleQty() {
+    public double getBhtSaleQty() {
         return bhtSaleQty;
     }
 
-    public void setBhtSaleQty(Double bhtSaleQty) {
+    public void setBhtSaleQty(double bhtSaleQty) {
         this.bhtSaleQty = bhtSaleQty;
     }
 
-    public Double getTransferOutQty() {
+    public double getTransferOutQty() {
         return transferOutQty;
     }
 
-    public void setTransferOutQty(Double transferOutQty) {
+    public void setTransferOutQty(double transferOutQty) {
         this.transferOutQty = transferOutQty;
     }
 
-    public Double getTotalOutQty() {
+    public double getTotalOutQty() {
         return totalOutQty;
     }
 
-    public void setTotalOutQty(Double totalOutQty) {
+    public void setTotalOutQty(double totalOutQty) {
         this.totalOutQty = totalOutQty;
     }
 
-    public Double getTransferInQty() {
+    public double getTransferInQty() {
         return transferInQty;
     }
 
-    public void setTransferInQty(Double transferInQty) {
+    public void setTransferInQty(double transferInQty) {
         this.transferInQty = transferInQty;
     }
 
-    public Double getPurchaseQty() {
+    public double getPurchaseQty() {
         return purchaseQty;
     }
 
-    public void setPurchaseQty(Double purchaseQty) {
+    public void setPurchaseQty(double purchaseQty) {
         this.purchaseQty = purchaseQty;
     }
 
-    public Double getTotalInQty() {
+    public double getTotalInQty() {
         return totalInQty;
     }
 
-    public void setTotalInQty(Double totalInQty) {
+    public void setTotalInQty(double totalInQty) {
         this.totalInQty = totalInQty;
     }
 
-    public Double getRetailSaleVal() {
+    public double getRetailSaleVal() {
         return retailSaleVal;
     }
 
-    public void setRetailSaleVal(Double retailSaleVal) {
+    public void setRetailSaleVal(double retailSaleVal) {
         this.retailSaleVal = retailSaleVal;
     }
 
-    public Double getWholeSaleVal() {
+    public double getWholeSaleVal() {
         return wholeSaleVal;
     }
 
-    public void setWholeSaleVal(Double wholeSaleVal) {
+    public void setWholeSaleVal(double wholeSaleVal) {
         this.wholeSaleVal = wholeSaleVal;
     }
 
-    public Double getBhtSaleVal() {
+    public double getBhtSaleVal() {
         return bhtSaleVal;
     }
 
-    public void setBhtSaleVal(Double bhtSaleVal) {
+    public void setBhtSaleVal(double bhtSaleVal) {
         this.bhtSaleVal = bhtSaleVal;
     }
 
-    public Double getTransferOutVal() {
+    public double getTransferOutVal() {
         return transferOutVal;
     }
 
-    public void setTransferOutVal(Double transferOutVal) {
+    public void setTransferOutVal(double transferOutVal) {
         this.transferOutVal = transferOutVal;
     }
 
-    public Double getTotalOutVal() {
+    public double getTotalOutVal() {
         return totalOutVal;
     }
 
-    public void setTotalOutVal(Double totalOutVal) {
+    public void setTotalOutVal(double totalOutVal) {
         this.totalOutVal = totalOutVal;
     }
 
-    public Double getTransferInVal() {
+    public double getTransferInVal() {
         return transferInVal;
     }
 
-    public void setTransferInVal(Double transferInVal) {
+    public void setTransferInVal(double transferInVal) {
         this.transferInVal = transferInVal;
     }
 
-    public Double getPurchaseVal() {
+    public double getPurchaseVal() {
         return purchaseVal;
     }
 
-    public void setPurchaseVal(Double purchaseVal) {
+    public void setPurchaseVal(double purchaseVal) {
         this.purchaseVal = purchaseVal;
     }
 
-    public Double getTotalInVal() {
+    public double getTotalInVal() {
         return totalInVal;
     }
 
-    public void setTotalInVal(Double totalInVal) {
+    public void setTotalInVal(double totalInVal) {
         this.totalInVal = totalInVal;
     }
 
-    
+    @Override
+    public int compareTo(ItemTransactionSummeryRow t) {
+        if (item == null) {
+            return 0;
+        }
+        if (t == null || t.item == null) {
+            return 1;
+        }
+        return item.getName().compareTo(t.getItem().getName());
+    }
+
 }

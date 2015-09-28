@@ -138,12 +138,23 @@
                                     <f:facet name="footer">
                                     </f:facet>
                                 </p:column>
-
+                                
                                 <p:column  style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Normal OT Value"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.extraDutyNormalValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column  style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Normal OT Value(C)"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5*ss.extraDutyNormalMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">

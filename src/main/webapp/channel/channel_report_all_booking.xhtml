@@ -110,6 +110,8 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.paymentMethod}" >
                                 </p:outputLabel>
+                                <p:outputLabel value="(#{b.creditCompany.institutionCode})" rendered="#{b.paymentMethod=='Agent'}" >
+                                </p:outputLabel>
                             </p:column>
                             <p:column headerText="Status" >
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>

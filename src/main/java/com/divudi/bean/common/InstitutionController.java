@@ -122,6 +122,10 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
     }
+    
+    public List<Institution> completeCollectingCenter(String qry) {
+        return completeInstitution(qry, InstitutionType.CollectingCentre);
+    }
 
     public List<Institution> completeAgency(String qry) {
         return completeInstitution(qry, InstitutionType.Agency);
@@ -160,6 +164,13 @@ public class InstitutionController implements Serializable {
     public List<Institution> getBanks() {
         if (banks == null) {
             banks = completeInstitution(null, InstitutionType.Bank);
+        }
+        return banks;
+    }
+    
+    public List<Institution> getCollectingCenter() {
+        if (banks == null) {
+            banks = completeInstitution(null, InstitutionType.CollectingCentre);
         }
         return banks;
     }
