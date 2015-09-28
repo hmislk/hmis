@@ -366,6 +366,9 @@ public class InvestigationItemController implements Serializable {
                 ri.setRiHeight(Integer.valueOf(ri.getCssHeight()));
                 ri.setRiWidth(Integer.valueOf(ri.getCssWidth()));
 
+                if (ri.getHtmltext().trim().equals("")) {
+                    ri.setHtmltext(ri.getName());
+                }
                 riFacade.edit(ri);
 
             } catch (Exception e) {
