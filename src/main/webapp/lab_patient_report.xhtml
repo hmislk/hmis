@@ -89,11 +89,6 @@
                                             <ui:repeat id="tblVals" value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                        var="pvv"  
                                                        >
-                                                <tr>
-                                                    <td>
-                                                        #{pvv.investigationItem.ixItemType}
-                                                    </td>
-                                                </tr>
                                                 <h:panelGroup rendered="#{pvv.investigationItem.ixItemType eq 'Value'}"  >
                                                     <tr>
                                                         <td style="min-width: 200px!important;"   >
