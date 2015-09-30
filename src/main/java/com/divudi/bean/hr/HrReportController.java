@@ -39,6 +39,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
@@ -71,6 +72,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.UploadedFile;
 
 /**
@@ -100,7 +102,8 @@ public class HrReportController implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     FormFacade formFacade;
-
+    @EJB
+    InstitutionFacade institutionFacade;
     /**
      *
      * Managed Beans
@@ -133,6 +136,7 @@ public class HrReportController implements Serializable {
     List<FingerPrintRecord> selectedFingerPrintRecords;
     List<OverTimeAllMonth> overTimeAllMonths;
     List<SummeryForMonth> summeryForMonths;
+    List<BankViseSalaryAndOt> bankViseSalaryAndOts;
 
     String backButtonPage;
 
@@ -154,6 +158,11 @@ public class HrReportController implements Serializable {
             return;
         }
         staffSalaryFacade.edit(staffSalary);
+    }
+
+    public void onEdit(RowEditEvent event) {
+        StaffSalary tmp = (StaffSalary) event.getObject();
+        staffSalaryFacade.edit(tmp);
     }
 
     public DayType[] getDayTypesSelected() {
@@ -864,6 +873,11 @@ public class HrReportController implements Serializable {
             hm.put("bk", getReportKeyWord().getBank());
         }
 
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and ss.bankBranch.institution=:insbk ";
+            hm.put("insbk", getReportKeyWord().getInstitutionBank());
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -885,6 +899,66 @@ public class HrReportController implements Serializable {
         }
 
         return sql;
+    }
+
+    public List<Institution> getBanks() {
+        Map m = new HashMap();
+        String sql;
+        sql = "select distinct(ss.bankBranch.institution) from StaffSalary ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl "
+                + " and ss.bankBranch is not null ";
+
+        m.put("scl", getReportKeyWord().getSalaryCycle());
+        System.out.println("institutionFacade.findBySQL(sql, m).size() = " + institutionFacade.findBySQL(sql, m).size());
+
+        return institutionFacade.findBySQL(sql, m);
+    }
+
+    public void createBankSummeryTable() {
+        bankViseSalaryAndOts = new ArrayList<>();
+        System.out.println("staffSalarys.size() = " + staffSalarys.size());
+        totalTransNetSalary = 0.0;
+        totalOverTime = 0.0;
+        for (Institution b : getBanks()) {
+            BankViseSalaryAndOt bvsao = new BankViseSalaryAndOt();
+            bvsao.setBank(b);
+            if (b == null) {
+                continue;
+            }
+            System.out.println("b = " + b);
+            double nettotal = 0.0;
+            double netot = 0.0;
+            for (StaffSalary ss : staffSalarys) {
+                if (ss.getBankBranch() == null) {
+                    continue;
+                }
+                if (ss.getBankBranch().getInstitution() == null) {
+                    continue;
+                }
+                if (ss.getBankBranch().getInstitution().equals(b)) {
+                    System.err.println("ss.getBankBranch().getInstitution().getName() = " + ss.getBankBranch().getInstitution().getName());
+                    System.err.println("b.getName() = " + b.getName());
+                    if (otPayment && netSalary) {
+                        nettotal += ss.getTransNetSalry();
+                        netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                    }else if (!otPayment && netSalary) {
+                        nettotal += ss.getTransNetSalry();
+                    }else if (otPayment && !netSalary) {
+                        netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                    }
+
+                }
+            }
+            bvsao.setNetSalary(nettotal);
+            bvsao.setNetOt(netot);
+            if (bvsao.getBank() != null || (bvsao.getNetSalary() == 0.0 && bvsao.getNetOt() == 0.0)) {
+                bankViseSalaryAndOts.add(bvsao);
+            }
+            totalTransNetSalary += bvsao.getNetSalary();
+            totalOverTime += bvsao.getNetOt();
+        }
+        System.out.println("bankViseSalaryAndOts.size() = " + bankViseSalaryAndOts.size());
     }
 
     public String createStaffSalaryComponentQuary(HashMap hm) {
@@ -914,6 +988,11 @@ public class HrReportController implements Serializable {
             sql += " and ss.staffSalary.staff.bankBranch=:bk ";
             hm.put("bk", getReportKeyWord().getBank());
         }
+        
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and ss.staffPaysheetComponent.bankBranch.institution=:ibk ";
+            hm.put("ibk", getReportKeyWord().getInstitutionBank());
+        }
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staffSalary.department=:dep ";
@@ -936,6 +1015,88 @@ public class HrReportController implements Serializable {
         }
 
         return sql;
+    }
+    
+    public List<Institution> createBanks() {
+        Map hm = new HashMap();
+        String sql = "";
+        sql = "select distinct(ss.staffPaysheetComponent.bankBranch.institution) "
+                + " from StaffSalaryComponant ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl "
+                + " and ss.staffSalary.blocked=false "
+                + " and ss.staffPaysheetComponent.bankBranch is not null "
+                + " and ss.staffPaysheetComponent.bankBranch.institution is not null ";
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staffSalary.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getPaysheetComponent() != null) {
+            sql += " and ss.staffPaysheetComponent.paysheetComponent=:pt ";
+            hm.put("pt", getReportKeyWord().getPaysheetComponent());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staffSalary.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staffSalary.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staffSalary.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        return institutionFacade.findBySQL(sql, hm);
+    }
+    
+    public double createBankTotal(Institution i) {
+        Map hm = new HashMap();
+        String sql = "";
+        sql = "select sum(ss.etfCompanyValue + ss.epfCompanyValue + ss.epfValue + ss.componantValue) "
+                + " from StaffSalaryComponant ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl "
+                + " and ss.staffSalary.blocked=false "
+                + " and ss.staffPaysheetComponent.bankBranch.institution=:i ";
+        hm.put("i", i);
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staffSalary.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getPaysheetComponent() != null) {
+            sql += " and ss.staffPaysheetComponent.paysheetComponent=:pt ";
+            hm.put("pt", getReportKeyWord().getPaysheetComponent());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staffSalary.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staffSalary.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staffSalary.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        return staffSalaryComponantFacade.findDoubleByJpql(sql, hm);
     }
 
     public String createStaffShiftExtraQuary(HashMap hm) {
@@ -2589,7 +2750,6 @@ public class HrReportController implements Serializable {
 
                 Integer dayOfWeek = frmCal.get(Calendar.DAY_OF_WEEK) + 1;
 
-
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
                 weekDayWork.setExtraDutyValue(weekDayWork.getExtraDutyValue() + totalExtraDuty);
                 weekDayWork.setExtraDuty(weekDayWork.getExtraDuty() + valueExtra);
@@ -2864,7 +3024,6 @@ public class HrReportController implements Serializable {
 
             System.out.println("ss.getDayType() = " + ss.getDayType());
 
-
             ss.setDayType(null);
 
             DayType dtp;
@@ -3077,16 +3236,37 @@ public class HrReportController implements Serializable {
         createStaffSalary();
     }
 
+    public void createStaffSalaryNetSalarySummeryByBank() {
+        getReportKeyWord().setBank(null);
+        getReportKeyWord().setInstitutionBank(null);
+        createStaffSalaryNetSalary();
+        createBankSummeryTable();
+    }
+
     public void createStaffSalaryOtPayment() {
         netSalary = false;
         otPayment = true;
         createStaffSalary();
     }
 
+    public void createStaffSalaryOtPaymentSummeryByBank() {
+        getReportKeyWord().setBank(null);
+        getReportKeyWord().setInstitutionBank(null);
+        createStaffSalaryOtPayment();
+        createBankSummeryTable();
+    }
+
     public void createStaffSalaryNetAndOtPayment() {
         netSalary = true;
         otPayment = true;
         createStaffSalary();
+    }
+
+    public void createStaffSalaryNetAndOtPaymentSummeryByBank() {
+        getReportKeyWord().setBank(null);
+        getReportKeyWord().setInstitutionBank(null);
+        createStaffSalaryNetAndOtPayment();
+        createBankSummeryTable();
     }
 
     public void createStaffSalary() {
@@ -3120,7 +3300,7 @@ public class HrReportController implements Serializable {
             if (netSalary && otPayment) {
                 staffSalary.setChequeNumberSalaryAndOverTime(chequeNo);
             } else if (netSalary && !otPayment) {
-                staffSalary.setChequeNumberOverTime(chequeNo);
+                staffSalary.setChequeNumberSalary(chequeNo);
             } else if (!netSalary && otPayment) {
                 staffSalary.setChequeNumberOverTime(chequeNo);
             }
@@ -3140,6 +3320,28 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staffSalary.staff.codeInterger ";
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
 
+    }
+    
+    public void createStaffSalaryComponentSummeryBankVise() {
+        if (getReportKeyWord().getPaysheetComponent()==null) {
+            JsfUtil.addErrorMessage("Please Select Paysheet Component");
+            return;
+        }
+        bankViseSalaryAndOts=new ArrayList<>();
+        totalValue=0.0;
+        for (Institution i : createBanks()) {
+            System.err.println("i = " + i);
+            if (i!=null) {
+                double netTotal=createBankTotal(i);
+                System.out.println("i.getName() = " + i.getName());
+                System.out.println("netTotal = " + netTotal);
+                BankViseSalaryAndOt bvsao=new BankViseSalaryAndOt();
+                bvsao.setBank(i);
+                bvsao.setNetSalary(netTotal);
+                bankViseSalaryAndOts.add(bvsao);
+                totalValue+=netTotal;
+            }
+        }
     }
 
     public List<StaffSalaryComponant> getStaffSalaryComponants() {
@@ -3733,6 +3935,37 @@ public class HrReportController implements Serializable {
     public HrReportController() {
     }
 
+    public class BankViseSalaryAndOt {
+
+        Institution bank;
+        double netSalary;
+        double netOt;
+
+        public Institution getBank() {
+            return bank;
+        }
+
+        public void setBank(Institution bank) {
+            this.bank = bank;
+        }
+
+        public double getNetSalary() {
+            return netSalary;
+        }
+
+        public void setNetSalary(double netSalary) {
+            this.netSalary = netSalary;
+        }
+
+        public double getNetOt() {
+            return netOt;
+        }
+
+        public void setNetOt(double netOt) {
+            this.netOt = netOt;
+        }
+    }
+
     public void makeNull() {
         reportKeyWord = null;
         staffShifts = null;
@@ -4185,6 +4418,14 @@ public class HrReportController implements Serializable {
 
     public void setSummeryForMonths(List<SummeryForMonth> summeryForMonths) {
         this.summeryForMonths = summeryForMonths;
+    }
+
+    public List<BankViseSalaryAndOt> getBankViseSalaryAndOts() {
+        return bankViseSalaryAndOts;
+    }
+
+    public void setBankViseSalaryAndOts(List<BankViseSalaryAndOt> bankViseSalaryAndOts) {
+        this.bankViseSalaryAndOts = bankViseSalaryAndOts;
     }
 
 }

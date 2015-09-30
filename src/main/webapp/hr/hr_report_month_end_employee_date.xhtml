@@ -48,16 +48,28 @@
                         <p:panel id="gpBillPreview" style="font-size: 12px;">                     
                             <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
                                 <f:facet name="header">
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
+                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
                                     <h:outputLabel value="Employee Worked Date Report"/>
                                     <br/>
                                     <h:outputLabel value="#{hrReportController.fromDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
                                     To
-                                    <h:outputLabel value="#{hrReportController.fromDate}">
+                                    <h:outputLabel value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    
+
                                 </f:facet>
                                 <p:column headerText="Staff Code" style="text-align: left;">
                                     <f:facet name="header" >
@@ -137,9 +149,9 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.merhchantileDays}" style="font-size: 12px;"/>
                                 </p:column>
-<!--                                <p:column headerText="Extra Duty Days">
-                                    #{ss.extraDutyDays}
-                                </p:column>-->
+                                <!--                                <p:column headerText="Extra Duty Days">
+                                #{ss.extraDutyDays}
+                            </p:column>-->
 
 
                             </p:dataTable>
