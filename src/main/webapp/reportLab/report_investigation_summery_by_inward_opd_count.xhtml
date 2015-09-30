@@ -8,6 +8,7 @@
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
                 xmlns:lab="http://java.sun.com/jsf/composite/lab" 
                 xmlns:pe="http://primefaces.org/ui/extensions">
+
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form >
@@ -33,14 +34,6 @@
                                     value="#{bookKeepingSummery.institution}"
                                     var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
 
-                    <h:outputLabel value="Select Department"/>
-
-                    <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                    forceSelection="true"
-                                    value="#{bookKeepingSummery.department}"
-                                    var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-
-
 
                     <p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/><p:outputLabel/>
 
@@ -48,7 +41,7 @@
                 <h:panelGrid columns="4" >
                     <p:spacer width="110" height="1"/>
                     <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createLabTotalAllReportByDate}"/>
+                                     action="#{bookKeepingSummery.createInwardOpdCount}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -64,7 +57,7 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRowsInward}" var="sr"
+                <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRowsInward}" var="sr"
                              rows="20"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -81,35 +74,30 @@
                         </h:outputLabel>
                     </f:facet>
 
-                    <p:column headerText="Date" style="text-align: left;">
+                    <p:column headerText="Item/Service" 
+                              sortBy="#{sr.itemName}" 
+                              filterBy="#{sr.itemName}"
+                              filterMatchMode="contains">
                         <f:facet name="header">
-                            <h:outputLabel value="Date"/>
+                            <h:outputLabel value="Item/Service"/>
                         </f:facet>
                         <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
-                        <f:facet name="footer">
-                            <p:outputLabel value="Total">
-                            </p:outputLabel>
-                        </f:facet>
                     </p:column>
 
-                    <p:column headerText="Total" style="text-align: right;">
+                    <p:column headerText="Count" style="text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Total">
-
+                            <h:outputLabel value="Count"/>
+                        </f:facet>
+                        <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.countTotals}">
+                                <f:convertNumber pattern="#0.00"/>
                             </h:outputLabel>
                         </f:facet>
-                        <p:outputLabel value=" #{sr.total}">
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </p:outputLabel>
-                        <f:facet name="footer">
-                            <p:outputLabel value="#{bookKeepingSummery.grantTotal}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </p:outputLabel>
-                        </f:facet>
                     </p:column>
-
+                    
                 </p:dataTable>                
-
+                
             </p:panel>
         </h:form>
     </ui:define>

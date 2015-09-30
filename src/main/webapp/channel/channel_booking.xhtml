@@ -17,7 +17,7 @@
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
-                    <p:dataTable  scrollable="true" scrollHeight="300"
+                    <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
                                   selection="#{bookingController.speciality}"
                                   rowKey="#{spe.id}"
@@ -41,8 +41,8 @@
                                   style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
                                   selectionMode="single" >
                         <p:column headerText="Consultants"
-                            filterBy="#{mys.person.name}" filterMatchMode="contains" 
-                            style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
+                                  filterBy="#{mys.person.name}" filterMatchMode="contains" 
+                                  style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.name}" />
                             <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
                                           showDelay="0" hideDelay="0" 
@@ -147,7 +147,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                    <table style="min-height: 250px;  padding: 2px; margin: auto;position:relative ;">
                         <tr>
                             <th>
                                 <p:outputLabel value="Bookings" ></p:outputLabel>
@@ -163,9 +163,9 @@
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
                                             listener="#{channelBillController.createBillfees}" />  
 
-                                    <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
-                                    <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                                    <p:column headerText="Paid">
+                                    <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
+                                    <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                    <p:column headerText="Paid" style="width: 20px!important;">
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
                                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
@@ -174,14 +174,14 @@
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
                                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                                     </p:column>
-                                    <p:column headerText="C/R">
+                                    <p:column headerText="C/R" style="width: 10px!important;" >
                                         <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                         <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                     </p:column>   
-                                    <p:column headerText="Agent">
+                                    <p:column headerText="Agent" style="width: 5px!important;">
                                         <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
                                     </p:column> 
-                                    <p:column headerText="P/A">                           
+                                    <p:column headerText="P/A" style="width: 10px!important;">                           
                                         <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                                     </p:column> 
                                 </p:dataTable>    
@@ -490,6 +490,16 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                        <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" />
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}">
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
+                                        </p:outputLabel> 
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -533,6 +543,17 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                        <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" />
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}">
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
+                                        </p:outputLabel> 
+
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -717,7 +738,7 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}">
+                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                                             <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
                                             <f:ajax execute="@this" render=":#{p:component('tot')} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
                                         </p:inputText>

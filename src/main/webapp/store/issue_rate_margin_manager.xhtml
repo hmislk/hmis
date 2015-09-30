@@ -51,10 +51,10 @@
                                 rowsPerPageTemplate="5,10,15"
                                 >
 
-                                <p:column headerText="From Department" >
+                                <p:column headerText="From Department" filterBy="#{a.fromDepartment.name}" filterMatchMode="contains" exportable="false">
                                     <au:department value="#{a.fromDepartment}"/>
                                 </p:column>
-                                <p:column headerText="To Department" >
+                                <p:column headerText="To Department" filterBy="#{a.toDepartment.name}" filterMatchMode="contains" exportable="false">
                                     <au:department value="#{a.toDepartment}"/>
                                 </p:column>
                                 

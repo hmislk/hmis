@@ -54,8 +54,13 @@
                                         return false"/>
                             <p:commandLink ajax="false" action="#{pharmacyCalculation.updatePharmacyPurchaseGrnCancelRefundBilledBills}" 
                                            value="13. Update Pharmacy Purchase Grn Cancel RefundBilled Bills" />
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.addOPDBillFeesToProfessionalCancelBills()}" rendered="false"
+                            <p:commandLink ajax="false" action="#{dataAdministrationController.addOPDBillFeesToProfessionalCancelBills()}" rendered="true"
                                            value="14. Add bill fees to professional fee cancel bills OPD"  onclick="if (!confirm('Really want to do that?'))
+                                        return false"/>
+
+                             <p:commandLink ajax="false" 
+                                            action="#{dataAdministrationController.makeAllAmpsWithNullDepartmentTypeToPharmacyType()}" rendered="true"
+                                           value="15. Make All Amps with null department type to Pharmacy Type"  onclick="if (!confirm('Really want to do that?'))
                                         return false"/>
 
                         </p:panelGrid>

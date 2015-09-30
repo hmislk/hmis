@@ -9,13 +9,16 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="data" />
+        <cc:attribute name="agent" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:dataTable id="inward" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
-                <h:outputLabel value="Channel Cancel Bills" />
+                <h:outputLabel value="Channel Cancel Bills" rendered="#{!cc.attrs.agent}"/>
+                <h:outputLabel value="Channel Agency Cancel Bills(Agent Cancel)" rendered="#{cc.attrs.agent}"/>
+                <h:outputLabel value="** Not Consider For Totals **" style="color: red;" rendered="#{cc.attrs.agent}"/>
             </f:facet> 
             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                 <f:facet name="header">  
@@ -56,10 +59,10 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                <h:outputLabel rendered="#{b.paymentMethod=='Credit' or b.paymentMethod=='Agent'}" value="#{b.netTotal}"  >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                <h:outputLabel rendered="#{b.paymentMethod!='Credit' and b.paymentMethod!='Agent'}" value="0.00"/>
 
             </p:column>
             <p:column headerText="C Card" style=" text-align: right" >
