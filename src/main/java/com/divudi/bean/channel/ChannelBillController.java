@@ -920,6 +920,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
+        double hf=0.0;
+        double sf=0.0;
         for (BillFee bf : billFees) {
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
@@ -934,14 +936,19 @@ public class ChannelBillController implements Serializable {
 
                 if (bf.getFee().getFeeType() == FeeType.Staff) {
                     bt.setStaffFee(0 - bf.getTmpChangedValue());
+                    sf+=bt.getStaffFee();
                 }
 
                 if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
                     bt.setHospitalFee(0 - bf.getTmpChangedValue());
+                    hf+=bt.getHospitalFee();
                 }
 
             }
         }
+        b.setHospitalFee(hf);
+        b.setStaffFee(sf);
+        billFacade.edit(b);
 
         billItemFacade.edit(bt);
     }
