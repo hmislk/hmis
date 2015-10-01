@@ -5,7 +5,6 @@
 package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
-import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -26,7 +25,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-//import org.hamcrest.Matchers;
 
 /**
  *

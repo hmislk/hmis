@@ -6,8 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
-
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
@@ -16,7 +15,7 @@
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
 
-                            <p:commandButton ajax="false" value="Cancel" action="channel_payment_staff_bill_cancel" >                           
+                            <p:commandButton ajax="false" value="Cancel" action="channel_payment_staff_bill_cancel" disabled="#{channelSearchController.bill.cancelled eq true}" >                           
                             </p:commandButton>
                         </f:facet>
 
@@ -78,5 +77,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -41,7 +41,7 @@
                             <h:panelGrid columns="1">                            
                                 <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
                                     <f:selectItem itemLabel="Select Discount Scheme"/>
-                                    <f:selectItems value="#{paymentSchemeController.items}" 
+                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
                                             update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
@@ -101,7 +101,8 @@
                                                         <p:selectOneMenu  id="cmbTitle"  
                                                                           value="#{billController.newPatient.person.title}"  >
                                                             <f:selectItem itemLabel="Select Title" />
-                                                            <f:selectItems value="#{billController.title}"/>
+                                                            <f:selectItems value="#{billController.title}" var="i" 
+                                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
                                                         </p:selectOneMenu>
 
                                                     </td>

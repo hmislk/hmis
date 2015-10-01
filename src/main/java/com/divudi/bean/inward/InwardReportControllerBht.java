@@ -126,7 +126,6 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("pe", patientEncounter);
 
         Object obj[] = patientRoomFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
-        System.err.println("OBJ " + obj);
         if (obj == null) {
             Double[] dbl = new Double[14];
             dbl[0] = 0.0;
@@ -230,7 +229,6 @@ public class InwardReportControllerBht implements Serializable {
     public void createDoctorPaymentInward() {
         professionals = new ArrayList<>();
         List<Object[]> list = fetchDoctorPaymentInwardModified();
-        System.err.println("Professional " + list);
         for (Object[] obj : list) {
             Speciality speciality = (Speciality) obj[0];
             double dbl = (Double) obj[1];
@@ -301,6 +299,18 @@ public class InwardReportControllerBht implements Serializable {
 
     @EJB
     BillItemFacade billItemFacade;
+
+    public void updateBillItemAndBill(Bill bill) {
+        bill.setNetTotal(bill.getTotal() - bill.getDiscount());
+        billFacade.edit(bill);
+
+        if (bill.getSingleBillItem()!=null) {
+            bill.getSingleBillItem().setDiscount(bill.getDiscount());
+            bill.getSingleBillItem().setNetValue(bill.getSingleBillItem().getGrossValue() - bill.getSingleBillItem().getDiscount());
+
+            billItemFacade.edit(bill.getSingleBillItem());
+        }
+    }
 
     public void updateBillItem(BillItem billItem) {
         billItem.setNetValue((billItem.getGrossValue() + billItem.getMarginValue()) - billItem.getDiscount());
@@ -563,7 +573,6 @@ public class InwardReportControllerBht implements Serializable {
         List<Object[]> results = billFeeFacade.findAggregates(sql, m);
 
         //System.out.println("results = " + results);
-
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getAdmissionType();
         if (results == null) {
@@ -624,9 +633,8 @@ public class InwardReportControllerBht implements Serializable {
         m.put("bhtno", pe);
 
         paidbyPatientBillList = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
+
         return paidbyPatientBillList;
-        
 
     }
 
@@ -807,25 +815,29 @@ public class InwardReportControllerBht implements Serializable {
     InwardBeanController inwardBeanController;
 
     public double calTotalCreditCompany(List<BillItem> list) {
-       if(list==null)return 0;
-       double dbl=0;
+        if (list == null) {
+            return 0;
+        }
+        double dbl = 0;
         for (BillItem bi : list) {
-           
+
             dbl += bi.getNetValue();
         }
-        
+
         return dbl;
     }
-    
-    public double calPaidbyPatient(List<Bill> lst){
-    
-        if(lst == null)return 0.0;
+
+    public double calPaidbyPatient(List<Bill> lst) {
+
+        if (lst == null) {
+            return 0.0;
+        }
         double dbl = 0.0;
-        for(Bill b : lst){
-            dbl+=b.getNetTotal();        
+        for (Bill b : lst) {
+            dbl += b.getNetTotal();
         }
         return dbl;
-        
+
     }
 
     public void process() {
@@ -836,9 +848,9 @@ public class InwardReportControllerBht implements Serializable {
         createDoctorPaymentInward();
         createTimedService();
         createInwardService();
-        paidbyPatientBillList=createPaidByPatient(getPatientEncounter());
+        paidbyPatientBillList = createPaidByPatient(getPatientEncounter());
         paidbyPatientTotalValue = calPaidbyPatient(paidbyPatientBillList);
-        
+
         creditPayment = createCreditPayment(getPatientEncounter());
         creditPaymentTotalValue = calTotalCreditCompany(creditPayment);
 

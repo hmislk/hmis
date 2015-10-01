@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.pojo;
+package com.divudi.data.clinical;
 
 /**
  *
- * @author Buddhika
+ * @author buddhika
  */
-public class CommonFunctions {
-    
-    
-    
+public enum FavouriteItemType {
+    FavoutireMedicine,
+    FavouriteDiagnosis,
 }

@@ -18,11 +18,9 @@ import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -113,7 +111,7 @@ public class StaffLeaveEntitleController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -192,7 +190,7 @@ public class StaffLeaveEntitleController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -330,12 +328,9 @@ public class StaffLeaveEntitleController implements Serializable {
                 + " order by c.staff.codeInterger ";
 
         selectedAllItems = getFacade().findBySQL(sql, hm);
-        //System.out.println("sql = " + sql);
-        //System.out.println("hm = " + hm);
     }
 
     public List<StaffLeaveEntitle> getItems() {
-//        items = getFacade().findAll("name", true);
         return items;
     }
 

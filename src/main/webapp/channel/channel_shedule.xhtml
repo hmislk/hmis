@@ -176,9 +176,17 @@
                     </p:tabView>  
                     <p:outputLabel value="Session Value"/>
                     <p:outputLabel value="#{sheduleController.current.total}"/>
+                    <h:panelGrid columns="1">
+                        <p:commandButton ajax="false" id="btnSav2" value="Save"  
+                                         action="#{sheduleController.saveSelected}"
+                                         styleClass="buttons" onclick="onSubmitButton();">
+
+                        </p:commandButton>
+                    </h:panelGrid>
                     <p:dataTable value="#{sheduleController.itemFees}" var="i" >
                         <p:column headerText="Name">
-                            <h:inputText value="#{i.name}"/>                            
+<!--                            <h:inputText value="#{i.name}"/>                            -->
+                            <h:outputLabel value="#{i.name}"/> 
                         </p:column>
                         <p:column headerText="Fee Type">
                             #{i.feeType}
@@ -203,6 +211,7 @@
                 </p:panel>
 
             </h:panelGrid>
+            <p:commandButton value="Update On-Call Fees" action="#{sheduleController.createOnCallFeeOldSession()}" ajax="false" />
         </h:form>
     </ui:define>
 

@@ -12,7 +12,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Staff;
-import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftReplace;
 import com.divudi.facade.StaffShiftFacade;
@@ -130,8 +129,6 @@ public class StaffShiftController implements Serializable {
         date = staffShift.getShiftDate();
 //        getReportKeyWord().setRoster(staffShift.getStaff().getRoster());
 
-        System.err.println("Date " + date);
-
     }
 
     public void viewStaffShift(StaffShift sts) {
@@ -162,7 +159,6 @@ public class StaffShiftController implements Serializable {
         hm.put("dt", date);
 //        hm.put("rs", getReportKeyWord().getRoster());
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        System.err.println("Qry " + qry);
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
         return staffShifts;
@@ -172,19 +168,15 @@ public class StaffShiftController implements Serializable {
 
         String sql = "Select s from StaffShift s where s.roster is null order by s.id desc";
         List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql);
-        System.err.println("lststaffShifts = "+lststaffShifts.size());
         for (StaffShift ss : lststaffShifts) {
             if (ss.getRoster() == null) {
                 System.out.println("ss = " + ss);
                 System.out.println("ss.getId()" + ss.getId());
                 System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName());
-                System.out.println("ss.getShiftDate() = " + ss.getShiftDate());
                 if (ss.getStaff().getRoster() != null) {
                     ss.setRoster(ss.getStaff().getRoster());
-                    System.out.println("ss.getStaff().getRoster() = " + ss.getStaff().getRoster());
                     ejbFacade.edit(ss);
                 } else {
-                    System.out.println("ss.getStaff().getRoster() is nnull");
                 }
             }
         }

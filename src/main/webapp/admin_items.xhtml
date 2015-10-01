@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -72,6 +72,11 @@
                                                      value="Create New Items for New Institution" 
                                                      action="/dataAdmin/create_items_for_new_institution" 
                                                      onclick="onSubmitButton();"/>
+                                    <p:commandButton styleClass="linkButton"
+                                                     ajax="false" 
+                                                     value="Update Item Fees" 
+                                                     action="/dataAdmin/bulk_update_itemsFees" 
+                                                     onclick="onSubmitButton();"/>
                                 </h:panelGrid>
                             </p:panel>
 
@@ -83,5 +88,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

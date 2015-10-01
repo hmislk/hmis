@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.VtmsVmps;
 import com.divudi.facade.SpecialityFacade;
@@ -19,23 +19,21 @@ import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -62,11 +60,11 @@ public class VmpController implements Serializable {
     @EJB
     VtmsVmpsFacade vivFacade;
     List<VtmsVmps> vivs;
-    
+
     List<Vmp> vmpList;
 
     public List<Vmp> completeVmp(String query) {
-        
+
         String sql;
         if (query == null) {
             vmpList = new ArrayList<Vmp>();
@@ -110,7 +108,7 @@ public class VmpController implements Serializable {
             return true;
         }
 //        TODO:Message
-        if (current == null) {            
+        if (current == null) {
             return true;
         }
         if (addingVtmInVmp.getStrength() == 0.0) {
@@ -137,14 +135,10 @@ public class VmpController implements Serializable {
         saveVmp();
         getAddingVtmInVmp().setVmp(current);
         getVivFacade().create(getAddingVtmInVmp());
-        
+
         UtilityController.addSuccessMessage("Added");
 
         addingVtmInVmp = null;
-
-
-
-
 
     }
 
@@ -266,13 +260,10 @@ public class VmpController implements Serializable {
                 String f = w.get(4);
                 ////System.out.println(code + " " + ix + " " + ic + " " + f);
 
-
                 Vmp tix = new Vmp();
                 tix.setCode(code);
                 tix.setName(ix);
                 tix.setDepartment(null);
-
-
 
             } catch (Exception e) {
             }
@@ -351,7 +342,7 @@ public class VmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
 
@@ -370,7 +361,14 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select v "
+                    + " from Vmp v "
+                    + " where v.retired=false "
+                    + " order by v.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

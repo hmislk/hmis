@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -43,8 +43,8 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController.fillProfessionalPaymentDone()}" onclick="onSubmitButton();"  ></p:commandButton>
-
+                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}" onclick="onSubmitButton();"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tb1,tb2,tb3" fileName="bht_income_by_categories"  />
                             </p:commandButton>
@@ -268,5 +268,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

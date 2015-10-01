@@ -8,7 +8,7 @@
       xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -50,8 +50,10 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Bank : "/>
+                            <h:outputLabel value="Branch(Bank) : "/>
                             <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}"/>
+                            <h:outputLabel value="Bank : "/>
+                            <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}"/>
                             <h:outputLabel value="Show Blocked"/>
                             <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
                             <h:outputLabel value="Show Hold"/>
@@ -73,12 +75,23 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true">
                                 <f:facet name="header" >
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}"/>
-                                    <br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
+                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
                                 </f:facet>
+                                <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />  
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="EMP No"/>
@@ -104,7 +117,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column>
+                                <p:column styleClass="noPrintButton">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bank Branch"/>
                                     </f:facet>
@@ -116,14 +129,42 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Account No"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.accountNo}"  />
+                                    <p:cellEditor>  
+                                        <f:facet name="output">
+                                            <p:outputLabel value="#{ss.accountNo}"  />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputText id="txtin" value="#{ss.accountNo}" disabled="#{!ss.blocked and !ss.hold}"/>
+                                        </f:facet>
+                                    </p:cellEditor>
+
                                 </p:column>
 
-                                <p:column headerText="Block">
-                                    <p:selectBooleanCheckbox value="#{ss.blocked}" />                                    
+                                <p:column headerText="Block" styleClass="noPrintButton">
+                                    <p:cellEditor>  
+                                        <f:facet name="output">
+                                            <h:outputLabel value="Blocked" rendered="#{ss.blocked}">
+                                            </h:outputLabel>
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:selectBooleanCheckbox value="#{ss.blocked}" >
+                                                <f:ajax event="change" execute="@this" render="txtin"/>
+                                            </p:selectBooleanCheckbox>  
+                                        </f:facet>
+                                    </p:cellEditor>
                                 </p:column>
-                                <p:column headerText="Hold">
-                                    <p:selectBooleanCheckbox value="#{ss.hold}" />                                    
+                                <p:column headerText="Hold" styleClass="noPrintButton">
+                                    <p:cellEditor>  
+                                        <f:facet name="output">
+                                            <h:outputLabel value="Hold" rendered="#{ss.hold}">
+                                            </h:outputLabel>
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:selectBooleanCheckbox value="#{ss.hold}" >
+                                                <f:ajax event="change" execute="@this" render="txtin"/>
+                                            </p:selectBooleanCheckbox>   
+                                        </f:facet>
+                                    </p:cellEditor>
                                 </p:column>
 
                                 <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
@@ -152,12 +193,15 @@
                                         </h:outputLabel>  
                                     </f:facet>
                                 </p:column>
+                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
+                                    <p:rowEditor />  
+                                </p:column>
 
-                                <p:column>
+                                <p:column rendered="false" >
                                     <p:commandButton process="@this" 
-                                                   ajax="false"
+                                                     ajax="false"
                                                      value="Update"  
-                                                    actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
+                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
                                                      onclick="onSubmitButton();">                              
                                     </p:commandButton>                          
                                 </p:column>
@@ -174,5 +218,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

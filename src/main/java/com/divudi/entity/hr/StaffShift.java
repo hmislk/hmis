@@ -6,11 +6,9 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -18,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -416,7 +413,6 @@ public class StaffShift implements Serializable {
         if (leaveType == null) {
             return;
         }
-        System.out.println("shift = " + shift);
         if (shift == null) {
             return;
         }
@@ -616,7 +612,6 @@ public class StaffShift implements Serializable {
         System.out.println("getShiftStartTime() = " + getShiftStartTime());
         System.out.println("getShiftEndTime() = " + getShiftEndTime());
         System.out.println("getStartRecord() = " + getStartRecord());
-        System.out.println("getEndRecord() = " + getEndRecord());
 
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;
@@ -632,7 +627,6 @@ public class StaffShift implements Serializable {
                 extraTimeFromStartRecordLogged = inSecond;
                 System.out.println("1.inSecond = " + inSecond);
                 System.out.println("getStartRecord().getLoggedRecord().getRecordTimeStamp() = " + getStartRecord().getLoggedRecord().getRecordTimeStamp());
-                System.out.println("getShiftStartTime() = " + getShiftStartTime());
             }
         }
 
@@ -649,7 +643,6 @@ public class StaffShift implements Serializable {
                 extraTimeFromEndRecordLogged = inSecond;
                 System.out.println("2.inSecond = " + inSecond);
                 System.out.println("getShiftEndTime() = " + getShiftEndTime());
-                System.out.println("getEndRecord().getLoggedRecord().getRecordTimeStamp() = " + getEndRecord().getLoggedRecord().getRecordTimeStamp());
             }
         }
 
@@ -657,7 +650,6 @@ public class StaffShift implements Serializable {
         extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
             System.out.println("3.getStartRecord().getRecordTimeStamp() = " + getStartRecord().getRecordTimeStamp());
-            System.out.println("3.getShiftStartTime() = " + getShiftStartTime());
             if (getShiftStartTime() != null
                     && getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
@@ -666,7 +658,6 @@ public class StaffShift implements Serializable {
                 extraTimeFromStartRecordVarified = inSecond;
                 System.out.println("3.inSecond = " + inSecond);
                 System.out.println("getStartRecord().getRecordTimeStamp() = " + getStartRecord().getRecordTimeStamp());
-                System.out.println("getShiftStartTime() = " + getShiftStartTime());
             }
         }
 
@@ -674,7 +665,6 @@ public class StaffShift implements Serializable {
         extraTimeFromEndRecordVarified = 0;
         if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
             System.out.println("4.getShiftEndTime() = " + getShiftEndTime());
-            System.out.println("4.getEndRecord().getRecordTimeStamp() = " + getEndRecord().getRecordTimeStamp());
             if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
@@ -682,7 +672,6 @@ public class StaffShift implements Serializable {
                 extraTimeFromEndRecordVarified = inSecond;
                 System.out.println("4.inSecond = " + inSecond);
                 System.out.println("getShiftEndTime() = " + getShiftEndTime());
-                System.out.println("getEndRecord().getRecordTimeStamp() = " + getEndRecord().getRecordTimeStamp());
             }
         }
         System.err.println("Out");

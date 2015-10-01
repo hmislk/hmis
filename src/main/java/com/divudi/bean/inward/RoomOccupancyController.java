@@ -10,14 +10,12 @@ import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
-import org.eclipse.persistence.jpa.JpaHelper;
+import javax.inject.Named;
 
 /**
  *

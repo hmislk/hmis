@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
@@ -39,9 +40,8 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,7 +52,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -96,6 +98,7 @@ public class ChannelReportController implements Serializable {
     Department department;
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
+    List<AgentHistoryWithDate> agentHistoryWithDate;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -113,6 +116,8 @@ public class ChannelReportController implements Serializable {
 
     @EJB
     DepartmentFacade departmentFacade;
+    @EJB
+    CommonFunctions commonFunctions;
 
     public Institution getInstitution() {
         return institution;
@@ -1956,7 +1961,6 @@ public class ChannelReportController implements Serializable {
             System.out.println("bs = " + bs.isAbsent());
             bs.setAbsent(true);
             billSessionFacade.edit(bs);
-            System.out.println("bs = " + bs.isAbsent());
             UtilityController.addSuccessMessage("Marked Succesful");
         }
     }
@@ -2256,29 +2260,75 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAgentHistoryTable() {
+        agentHistorys = new ArrayList<>();
+
+        agentHistorys = createAgentHistory(fromDate, toDate, institution, null);
+
+    }
+
+    public void createAgentHistorySubTable() {
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
         }
+        HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        List<HistoryType> historyTypes = Arrays.asList(ht);
+
+        agentHistoryWithDate = new ArrayList<>();
+        Date nowDate = getFromDate();
+
+        while (nowDate.before(getToDate())) {
+            Date fd = commonFunctions.getStartOfDay(nowDate);
+            Date td = commonFunctions.getEndOfDay(nowDate);
+            System.out.println("td = " + td);
+            System.out.println("fd = " + fd);
+            System.out.println("nowDate = " + nowDate);
+            AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
+            if (createAgentHistory(fd, td, institution, historyTypes).size()>0) {
+                ahwd.setDate(nowDate);
+                ahwd.setAhs(createAgentHistory(fd, td, institution, historyTypes));
+                agentHistoryWithDate.add(ahwd);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            cal.add(Calendar.DATE, 1);
+            nowDate = cal.getTime();
+        }
+
+    }
+
+    public List<AgentHistory> createAgentHistory(Date fd, Date td, Institution i, List<HistoryType> hts) {
         String sql;
         Map m = new HashMap();
-        agentHistorys = new ArrayList<>();
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.retired=false "
-                + " and (ah.bill.fromInstitution=:ins"
-                + " or ah.bill.creditCompany=:ins) "
-                + " and ah.createdAt between :fd and :td "
-                + " order by ah.createdAt ";
+                + " and ah.createdAt between :fd and :td ";
 
-        m.put("ins", institution);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+        if (i != null) {
+            sql += " and (ah.bill.fromInstitution=:ins"
+                    + " or ah.bill.creditCompany=:ins) ";
 
-        agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            m.put("ins", i);
+        }
+
+        if (hts != null) {
+            sql += " and ah.historyType in :hts ";
+
+            m.put("hts", hts);
+        }
+
+        m.put("fd", fd);
+        m.put("td", td);
+
+        sql += " order by ah.createdAt ";
+
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("agentHistorys.size() = " + agentHistorys.size());
+        System.out.println("getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size() = " + getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size());
+
+        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2560,6 +2610,14 @@ public class ChannelReportController implements Serializable {
 
     public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
         this.agentHistoryFacade = agentHistoryFacade;
+    }
+
+    public List<AgentHistoryWithDate> getAgentHistoryWithDate() {
+        return agentHistoryWithDate;
+    }
+
+    public void setAgentHistoryWithDate(List<AgentHistoryWithDate> agentHistoryWithDate) {
+        this.agentHistoryWithDate = agentHistoryWithDate;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
@@ -3014,6 +3072,31 @@ public class ChannelReportController implements Serializable {
             this.refundBillFeeTypeTotal = refundBillFeeTypeTotal;
         }
 
+    }
+
+    public class AgentHistoryWithDate {
+
+        Date date;
+        List<AgentHistory> ahs;
+
+        public AgentHistoryWithDate() {
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
+        }
+
+        public List<AgentHistory> getAhs() {
+            return ahs;
+        }
+
+        public void setAhs(List<AgentHistory> ahs) {
+            this.ahs = ahs;
+        }
     }
 
 }

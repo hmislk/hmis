@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">            
             <ui:define name="content">
                 <h:form>
@@ -66,6 +66,9 @@
                                     <p:panelGrid columns="1" styleClass="alignTop">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
                                        
                                     </p:panelGrid>
                                 </p:panel>
@@ -81,5 +84,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

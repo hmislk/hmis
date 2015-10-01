@@ -6,7 +6,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -20,7 +20,10 @@
                             <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
 
-                            <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false"  onclick="onSubmitButton();">                               
+                            <p:commandButton id="btnRefresh" actionListener="#{loginController.fillLogins()}"
+                                             styleClass="noPrintButton" value="Process"
+                                             ajax="false" 
+                                             onclick="onSubmitButton();">                               
                             </p:commandButton>
                             <p:defaultCommand target="btnRefresh"/>
                             
@@ -89,5 +92,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

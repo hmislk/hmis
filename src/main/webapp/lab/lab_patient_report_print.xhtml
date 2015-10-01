@@ -11,7 +11,7 @@
     <head>
     </head>
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
@@ -33,7 +33,7 @@
 
 
                         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
-                            <div id="divReport"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 150%;">
+                            <div id="divReport"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 120%;">
 
 
 
@@ -180,7 +180,7 @@
                                         <td>
                                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                            #{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
-                                                           style="font-weight: bold;font-size: 20px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
+                                                           style="font-weight: bold;font-size: 16px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
                                         </td>
                                     </tr>
                                     <tr><td><h:outputLabel/></td></tr>
@@ -314,5 +314,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

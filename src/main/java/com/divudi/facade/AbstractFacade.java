@@ -111,9 +111,14 @@ public abstract class AbstractFacade<T> {
 
     public void edit(T entity) {
         getEntityManager().merge(entity);
-        //getEntityManager().flush();
     }
 
+    public void editAndCommit(T entity) {
+        getEntityManager().merge(entity);
+        getEntityManager().getTransaction().commit();
+    }
+
+    
     public void remove(T entity) {
         getEntityManager().remove(getEntityManager().merge(entity));
     }
@@ -349,7 +354,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }
@@ -916,7 +920,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }

@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml" >
 
@@ -49,6 +49,8 @@
                                 <p:panel header="Agent Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Agent History" action="/channel/channel_report_agent_history"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Statement(27)" action="/channel/channel_report_agent_history_1"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Channel Books Report"  action="/channel/channel_report_agent_referece_book" />
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -60,5 +62,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

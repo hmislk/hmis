@@ -7,34 +7,29 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
-import java.util.TimeZone;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
-import com.divudi.entity.Packege;
-import com.divudi.facade.PackageItemFacade;
 import com.divudi.entity.PackageItem;
+import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PackageFeeFacade;
-
+import com.divudi.facade.PackageItemFacade;
 import com.divudi.facade.PackegeFacade;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -103,7 +98,7 @@ public class PackageItemController implements Serializable {
         for (PackageFee f : getCharges()) {
             f.setItem(getCurrent().getItem());
             if (f.getId() == null || f.getId() == 0) {
-                f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                f.setCreatedAt(new Date());
                 f.setCreater(getSessionController().getLoggedUser());
                 getPackageFeeFacade().create(f);
             } else {
@@ -133,7 +128,7 @@ public class PackageItemController implements Serializable {
                 getCurrentFee().getId();
                 getCurrentFee().setRetired(true);
                 getCurrentFee().setRetirer(getSessionController().getLoggedUser());
-                getCurrentFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getCurrentFee().setRetiredAt(new Date());
                 getPackageFeeFacade().edit(getCurrentFee()); // Flag as retired, so that will never appearing when calling from database
                 getCharges().remove(getCurrentFee());
             }
@@ -163,7 +158,7 @@ public class PackageItemController implements Serializable {
 
         pi.setPackege(getCurrentPackege());
         pi.setItem(getCurrentItem());
-        pi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
         getFacade().create(pi);
         UtilityController.addSuccessMessage("Added");
@@ -182,7 +177,7 @@ public class PackageItemController implements Serializable {
 
         getCurrent().setRetired(true);
         getCurrent().setRetirer(getSessionController().getLoggedUser());
-        getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
         UtilityController.addSuccessMessage("Item Removed");
         recreateModel();
@@ -298,7 +293,7 @@ public class PackageItemController implements Serializable {
 
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -316,7 +311,7 @@ public class PackageItemController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -386,7 +381,7 @@ public class PackageItemController implements Serializable {
             getCurrentFee().setItem(getCurrent().getItem());
         }
         if (getCurrentFee().getId() == null || getCurrentFee().getId() == 0) {
-            getCurrentFee().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrentFee().setCreatedAt(new Date());
             getCurrentFee().setCreater(getSessionController().getLoggedUser());
             getPackageFeeFacade().create(getCurrentFee());
         } else {

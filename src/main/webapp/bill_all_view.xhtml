@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
@@ -50,55 +50,56 @@
                                         <h:outputText value="#{billSearch.billSearch.deptId}" />
 
                                         <h:outputText value="Billed bill:" ></h:outputText>
-                                        <h:outputText value="#{billSearch.billSearch.billedBill.id}" />
+                                        <h:outputText value="#{billSearch.billSearch.billedBill.id}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
                                         <h:outputText value="Billed bill No (Ins Id) :" ></h:outputText>
-                                        <p:inputText value="#{billSearch.billSearch.billedBill.insId}" />
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.insId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" />
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
                                         <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
-                                        <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                        <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
                                         <h:outputLabel value="Cancelled" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.cancelled}" ></h:outputLabel>
-
+                                        <h:outputLabel value="Canceled :" ></h:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
 
-                                        <h:outputLabel value="Canceled Bill(Ins Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" ></p:inputText>
+                                        <h:outputLabel value="Canceled Bill(Ins Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
 
-                                        <h:outputLabel value="Canceled Bill(Dept Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" ></p:inputText>
+                                        <h:outputLabel value="Canceled Bill(Dept Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
 
-                                        <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.referenceBill}" />
+                                        <h:outputLabel value="Reference Bill(Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.referenceBill}" rendered="#{billSearch.billSearch.referenceBill ne null}" />
 
-                                        <h:outputLabel value="Reference Bill(Ins Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Reference Bill(Ins Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
 
-                                        <h:outputLabel value="Reference Bill(Dept Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Reference Bill(Dept Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
 
-                                        <h:outputLabel value="Forward ref Bill(Ins Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Forward ref Bill(Ins Id) :" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.insId}" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
 
-                                        <h:outputLabel value="Forward ref Bill(Dept Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Forward ref Bill(Dept Id) :" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Backword ref Bill(Id) :" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.backwardReferenceBill}" />
+                                        <p:inputText value="#{billSearch.billSearch.backwardReferenceBill}"  />
 
-                                        <h:outputLabel value="Backword ref Bill(Ins Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Backword ref Bill(Ins Id) :" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.insId}" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
 
-                                        <h:outputLabel value="Backword ref Bill(Dept Id) :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Backword ref Bill(Dept Id) :" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.createdAt}" >
@@ -465,5 +466,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

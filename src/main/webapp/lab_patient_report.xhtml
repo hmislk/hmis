@@ -10,7 +10,7 @@
     <head>
     </head>
 
-    <body>
+    <h:body>
         <ui:composition template="./resources/template/template.xhtml">
             <ui:define name="content">
 
@@ -172,8 +172,6 @@
                                         </table>
                                     </p:panel>
                                 </h:panelGroup>
-
-
                                 <p:panel header="Dynamic Labels" >
                                     <table >
                                         <ui:repeat id="tblDls" 
@@ -195,7 +193,6 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
-
                                 <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" 
                                          style="#{sessionController.institutionPreference.microBiologyFont ne null? 'font-family: ' + sessionController.institutionPreference.microBiologyFont + ';':''}">
                                     <f:view contentType="text/html">
@@ -256,7 +253,7 @@
 
 
                         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
-                            <div id="divReport"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 150%;">
+                            <div id="divReport"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 120%!important;">
 
 
 
@@ -352,10 +349,10 @@
 
 
                         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}">
-                            <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 150%;
+                            <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 120%;
                                  #{sessionController.institutionPreference.microBiologyFont ne null? 'font-family: ' + sessionController.institutionPreference.microBiologyFont + ';':''}">
                                 <ui:repeat value="#{commonReportItemController.items}" var="myCli" >
-                                    <div style="#{myCli.cssStyle}; position:absolute;">
+                                    <div style="font-size: 16px!important; #{myCli.cssStyle}; position:absolute;">
                                         <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.patient.person.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAge' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.patient.age}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
@@ -404,7 +401,7 @@
                                         <td>
                                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                            #{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
-                                                           style="font-weight: bold;font-size: 20px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
+                                                           style="font-weight: bold;font-size: 16px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
                                         </td>
                                     </tr>
                                     <tr><td>
@@ -529,5 +526,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

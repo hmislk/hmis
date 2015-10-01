@@ -35,12 +35,10 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -432,7 +430,7 @@ public class PatientEncounterController implements Serializable {
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
 
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -446,7 +444,7 @@ public class PatientEncounterController implements Serializable {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
         }
@@ -574,7 +572,7 @@ public class PatientEncounterController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

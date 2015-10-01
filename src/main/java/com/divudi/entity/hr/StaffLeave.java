@@ -6,7 +6,6 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.LeaveType;
-import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;

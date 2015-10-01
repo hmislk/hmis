@@ -5,7 +5,6 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.InterestCalculationType;
-import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -17,7 +16,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**

@@ -5,9 +5,9 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
-import com.divudi.ejb.*;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -41,7 +41,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Lob;
 import javax.persistence.TemporalType;
 
 /**
@@ -190,7 +189,6 @@ public class StoreCalculation {
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
-        System.err.println("GETTING Billed QTY " + value);
         return value;
     }
 
@@ -206,7 +204,6 @@ public class StoreCalculation {
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
-        System.err.println("GETTING Cancelled TOTAL QTY " + value);
         return value;
     }
 
@@ -293,7 +290,6 @@ public class StoreCalculation {
 
         System.err.println("GRN " + grns);
         System.err.println("GRN Return " + grnReturn);
-        System.err.println("Net " + netQty);
 
         return netQty;
     }
@@ -384,7 +380,6 @@ public class StoreCalculation {
         poQty = po.getQtyInUnit();
         remains = poQty - calQty(po);
 
-        System.err.println("REMAIN " + remains);
         return remains;
 
     }

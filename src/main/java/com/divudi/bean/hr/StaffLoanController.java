@@ -22,7 +22,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**

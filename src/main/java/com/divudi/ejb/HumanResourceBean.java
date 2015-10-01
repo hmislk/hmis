@@ -17,7 +17,6 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.HrForm;
-import com.divudi.entity.hr.LeaveFormSystem;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.PhDate;
 import com.divudi.entity.hr.Roster;
@@ -181,10 +180,10 @@ public class HumanResourceBean {
 
     public boolean checkStaff(PaysheetComponent paysheetComponentType, Staff staff, Date frmDate, Date toDate) {
 
-        //System.out.println("paysheetComponent = " + paysheetComponentType);
-        //System.out.println("staff = " + staff);
-        //System.out.println("fromDate = " + frmDate);
-        //System.out.println("toDate = " + toDate);
+        System.out.println("paysheetComponent = " + paysheetComponentType);
+        System.out.println("staff = " + staff);
+        System.out.println("fromDate = " + frmDate);
+        System.out.println("toDate = " + toDate);
         if (frmDate == null) {
             return true;
         }
@@ -230,7 +229,6 @@ public class HumanResourceBean {
         tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (tmp != null && !tmp.isEmpty()) {
-            System.err.println("To Date ");
             return true;
         }
 
@@ -250,7 +248,6 @@ public class HumanResourceBean {
         tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (tmp != null && !tmp.isEmpty()) {
-            System.err.println("From && To Date ");
             return true;
         }
 
@@ -302,7 +299,6 @@ public class HumanResourceBean {
         List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         if (tmp != null && !tmp.isEmpty()) {
-            System.err.println("From Date ");
             return true;
         }
 
@@ -335,7 +331,6 @@ public class HumanResourceBean {
         tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         if (tmp != null && !tmp.isEmpty()) {
-            System.err.println("To Date ");
             return true;
         }
 
@@ -368,7 +363,6 @@ public class HumanResourceBean {
         tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         if (tmp != null && !tmp.isEmpty()) {
-            System.err.println("From && To Date ");
             return true;
         }
 
@@ -656,7 +650,6 @@ public class HumanResourceBean {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         double utilizedLeaveQty = staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-        System.out.println("utilizedLeaveQty = " + utilizedLeaveQty);
         return utilizedLeaveQty;
 
     }
@@ -820,7 +813,6 @@ public class HumanResourceBean {
                 + " order by ss.shiftDate ";
 
         System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
@@ -830,7 +822,6 @@ public class HumanResourceBean {
 
         if (staffLeaveEntitle != null
                 && staffLeaveEntitle.getCount() > fetchStaffLeave(staff, LeaveType.Annual, staffLeaveEntitle.getFromDate(), staffLeaveEntitle.getToDate())) {
-            System.out.println("staffLeaveEntitle.getCount() = " + staffLeaveEntitle.getCount());
 
             return LeaveType.AnnualHalf;
         }
@@ -1029,9 +1020,7 @@ public class HumanResourceBean {
         System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
         System.out.println("tmp.getShift()= " + tmp.getShift().getName());
         if (tmp.getShift().getPreviousShift() != null) {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift().getName());
         } else {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift());
         }
         System.out.println("stf = " + stf);
         if (stf != null) {
@@ -1055,11 +1044,8 @@ public class HumanResourceBean {
         hm.put("preSh", tmp.getShift().getPreviousShift());
         System.out.println("beforDate = " + beforDate);
         if (tmp.getShift().getPreviousShift() != null) {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift().getName());
         } else {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getPreviousShift());
         }
-        System.out.println("getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE); = " + getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE));
         System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
         return getStaffShiftFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
@@ -1252,9 +1238,7 @@ public class HumanResourceBean {
         System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
         System.out.println("tmp.getShift()= " + tmp.getShift().getName());
         if (tmp.getShift().getNextShift() != null) {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift().getName());
         } else {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift());
         }
         System.out.println("stf = " + stf);
 
@@ -1281,11 +1265,8 @@ public class HumanResourceBean {
 
         System.out.println("afterDate = " + afterDate);
         if (tmp.getShift().getNextShift() != null) {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift().getName());
         } else {
-            System.out.println("tmp.getShift().getPreviousShift() = " + tmp.getShift().getNextShift());
         }
-        System.out.println("stf = " + stf);
         System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
 
         return stf;
@@ -1832,7 +1813,6 @@ public class HumanResourceBean {
 
         List<StaffLeave> sls = getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
         for (StaffLeave sl : sls) {
-            System.out.println("sl.getId() = " + sl.getId());
         }
         return sls;
     }
@@ -1852,7 +1832,6 @@ public class HumanResourceBean {
 
         List<StaffLeave> sls = getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
         for (StaffLeave sl : sls) {
-            System.out.println("sl.getId() = " + sl.getId());
         }
         return sls;
     }
@@ -2283,7 +2262,6 @@ public class HumanResourceBean {
             System.err.println("******Basic*******");
             System.err.println("tmp.getStaffPaySheetComponentValue() = " + tmp.getStaffPaySheetComponentValue());
             System.err.println("tmp.getFromDate() = " + tmp.getFromDate());
-            System.out.println("tmp.getToDate() = " + tmp.getToDate());
             System.err.println("******Basic*******");
         }
 
@@ -2669,15 +2647,6 @@ public class HumanResourceBean {
             }
             System.out.println("ss.getShift()" + ss.getShift().getName());
             System.out.println("shift date" + ss.getShiftDate());
-            System.out.println("dbl = " + dbl / (60 * 60));
-
-//            //System.out.println("ss.getId() = " + ss.getId());
-//            System.err.println("Name = " + ss.getShift().getName());
-//            System.err.println("Weekday = " + ss.getDayOfWeek());
-//            System.err.println("Date = " + ss.getShiftDate());
-//            System.err.println("Start = " + ss.getShiftStartTime());
-//            System.err.println("End = " + ss.getShiftEndTime());
-//            //System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60 * 60));
         }
         return dbl;
     }
@@ -2721,7 +2690,6 @@ public class HumanResourceBean {
 
             System.out.println("ss.getId() = " + ss.getId());
             if (ss.getShift() == null) {
-                System.out.println("shift is null");
                 continue;
             }
             System.err.println("Name = " + ss.getShift().getName());
@@ -2736,12 +2704,10 @@ public class HumanResourceBean {
             System.out.println("1. dbl = " + dbl);
             System.out.println("ss.getLeaveType() = " + ss.getLeaveType());
             System.out.println("ss.isConsiderForEarlyOut() = " + ss.isConsiderForEarlyOut());
-            System.out.println("ss.isConsiderForLateIn() = " + ss.isConsiderForLateIn());
 
             if (ss.getLeaveType() == null) {
                 dbl += ss.getWorkedWithinTimeFrameVarified();
                 System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
-                System.out.println("2. dbl = " + dbl);
             } else if ((ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf)
                     && (ss.isConsiderForEarlyOut() || ss.isConsiderForLateIn())) {
 //                
@@ -2752,18 +2718,14 @@ public class HumanResourceBean {
                     System.out.println("ss.getShift().getDurationMin() = " + ss.getShift().getDurationMin());
                     if ((ss.getShift().getDurationMin() * 60) < d) {
                         dbl += ss.getShift().getDurationMin() * 60;
-                        System.out.println("2.4.b dbl(if) = " + dbl);
                     } else {
                         dbl += d;
-                        System.out.println("2.4.b dbl(else) = " + dbl);
                     }
-                    System.out.println("2.4.b dbl = " + dbl);
                 } else {
                     dbl += ss.getWorkedWithinTimeFrameVarified();
                 }
                 //
                 System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
-                System.out.println("2.a dbl = " + dbl); // shell I run ???ok
             } else {
                 if (ss.getLeaveType().isFullDayLeave() && ss.getShift() != null && !ss.getShift().isHalfShift()) {
                     //12 hour shifts adding hours for leave (6 hours(leaveHourFull not shift duration))
@@ -2776,7 +2738,6 @@ public class HumanResourceBean {
                         System.err.println("ss.getLeaveType()" + ss.getLeaveType());
                         dbl += (ss.getShift().getLeaveHourFull() * 60 * 60);
                         System.out.println("ss.getShift().getLeaveHourFull() * 60* 60= " + ss.getShift().getLeaveHourFull() * 60 * 60);
-                        System.out.println("3. dbl = " + dbl);
                     }
                 }
                 //anul half duraion over shift time ask dushan
@@ -2815,7 +2776,6 @@ public class HumanResourceBean {
                     if (staffLeave.size() > 1 && ss.getShift() != null) {
                         dbl += (ss.getShift().getDurationMin() * 60);
                         System.out.println("ss.getShift().getDurationMin() * 60 = " + ss.getShift().getDurationMin() * 60);
-                        System.out.println("4. dbl = " + dbl);
                     } else {
                         if (ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf || ss.getLeaveType() == LeaveType.LieuHalf
                                 || ss.getLeaveType() == LeaveType.DutyLeaveHalf) {
@@ -2825,12 +2785,9 @@ public class HumanResourceBean {
                                 System.out.println("ss.getShift().getDurationMin() = " + ss.getShift().getDurationMin());
                                 if ((ss.getShift().getDurationMin() * 60) < d) {
                                     dbl += ss.getShift().getDurationMin() * 60;
-                                    System.out.println("4.b dbl(else) = " + dbl);
                                 } else {
                                     dbl += d;
-                                    System.out.println("4.b dbl(else) = " + dbl);
                                 }
-                                System.out.println("4.b dbl = " + dbl);
                             } else {
                                 if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() == 0) {
                                     dbl += ss.getShift().getLeaveHourFull();
@@ -2842,11 +2799,9 @@ public class HumanResourceBean {
                     //newly add for No pay half
                     List<StaffLeave> staffLeaveSystem = fetchStaffLeaveSystem(ss.getStaff(), ss.getShiftDate());
                     System.out.println("staffLeave = " + staffLeaveSystem);
-                    System.out.println("staffLeave.size() = " + staffLeaveSystem.size());
                     if (!staffLeaveSystem.isEmpty() && ss.getShift() != null && ss.getLeaveType() == LeaveType.No_Pay_Half) {
                         dbl += (ss.getWorkedWithinTimeFrameVarified());
                         System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
-                        System.out.println("5. dbl = " + dbl);
                     }
                 }
 
@@ -2855,7 +2810,6 @@ public class HumanResourceBean {
                         //NOT or, but AND , now check ok
                         dbl += (ss.getShift().getLeaveHourHalf() * 60);
                         System.out.println("ss.getShift().getLeaveHourHalf() * 60 = " + ss.getShift().getLeaveHourHalf() * 60);
-                        System.out.println("6. dbl = " + dbl);
                     }
                 }
             }
@@ -2928,11 +2882,6 @@ public class HumanResourceBean {
 
                 System.out.println("getExtraTimeCompleteRecordVarified" + ss.getExtraTimeCompleteRecordVarified());
                 System.out.println("getMultiplyingFactorOverTime" + ss.getMultiplyingFactorOverTime());
-                System.out.println("getOverTimeValuePerSecond" + ss.getOverTimeValuePerSecond());
-
-                //System.out.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified());
-                //System.out.println("ss.getMultiplyingFactorOverTime() = " + ss.getExtraTimeCompleteRecordVarified());
-                //System.out.println("ss.getOverTimeValuePerSecond() = " + ss.getExtraTimeCompleteRecordVarified());
             }
 
 //            if( dayType==DayType.DayOff){
@@ -3016,7 +2965,6 @@ public class HumanResourceBean {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 
-        System.out.println("sql(calculateExtraWorkMinute)  = " + sql);
 
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
         if (timeSecond != null) {
@@ -3129,7 +3077,6 @@ public class HumanResourceBean {
             for (StaffShift s : list) {
                 System.out.println("s = " + s);
                 System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
-                System.out.println("s.getShift().getName() = " + s.getShift().getName());
                 dbl += s.getShift().isHalfShift() ? 0.5 : 1;
 
             }
@@ -3199,6 +3146,7 @@ public class HumanResourceBean {
 
         if (list != null) {
             for (StaffShift s : list) {
+                System.out.println("s = " + s);
                 lg += s.getShift().isHalfShift() ? 0.5 : 1;
             }
 

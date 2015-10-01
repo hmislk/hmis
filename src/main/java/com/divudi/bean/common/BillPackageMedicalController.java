@@ -37,6 +37,7 @@ import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -49,7 +50,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,15 +57,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
@@ -101,6 +100,9 @@ public class BillPackageMedicalController implements Serializable {
     private double netTotal;
     private double cashPaid;
     private double cashBalance;
+    double billedBillTotal;
+    double canceledBillTotal;
+    double refundedBillTotal;
     private BillItem currentBillItem;
     //Bill Items
     private List<BillComponent> lstBillComponents;
@@ -127,6 +129,9 @@ public class BillPackageMedicalController implements Serializable {
     //Temprory Variable
     private Patient tmpPatient;
     List<Bill> bills;
+    List<BillItem> billedBillItemLst;
+    List<BillItem> canceledBillItemLst;
+    List<BillItem> refundedBillItemLst;
     @Inject
     private BillSearch billSearch;
     PaymentMethodData paymentMethodData;
@@ -233,10 +238,10 @@ public class BillPackageMedicalController implements Serializable {
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
             getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().setCreatedAt(new Date());
 
             getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getNewPatient().getPerson().setCreatedAt(new Date());
 
             getPersonFacade().create(getNewPatient().getPerson());
             getPatientFacade().create(getNewPatient());
@@ -386,13 +391,13 @@ public class BillPackageMedicalController implements Serializable {
 
         getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 //        temp.setPatientEncounter(patientEncounter);
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
         temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
@@ -552,6 +557,43 @@ public class BillPackageMedicalController implements Serializable {
         }
     }
 
+    public List<BillItem> createBillItems(Item item, Bill bill) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType =:billType "
+                + " and type(b.bill)=:class"
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false "
+                + " and type(b.bill.billPackege)=:class ";
+
+        if (getCurrentBillItem().getItem() != null) {
+            sql += " and b.bill.billPackege=:item ";
+            m.put("item", getCurrentBillItem().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and b.bill.billPackege.forInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (ServiceItem != null) {
+            sql += " and b.item=:item ";
+            m.put("item", ServiceItem);
+        }
+
+        m.put("class", item.getClass());
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+        m.put("class", bill.getClass());
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        return billItems;
+    }
+
     public void createBills() {
         String sql;
         Map m = new HashMap();
@@ -587,12 +629,36 @@ public class BillPackageMedicalController implements Serializable {
         }
     }
 
+    public double getTotal(List<BillItem> billItm) {
+        double tot = 0.0;
+        for (BillItem bi : billItm) {
+            tot += bi.getNetValue();
+            System.out.println("total = " + total);
+        }
+
+        return tot;
+    }
+
     public void createMedicalPackageBillItems() {
         createBillItems(new MedicalPackage());
+
     }
 
     public void createOtherPackageBillItems() {
+        billedBillItemLst = createBillItems(new Packege(), new BilledBill());
+        billedBillTotal = getTotal(billedBillItemLst);
+
+        canceledBillItemLst = createBillItems(new Packege(), new CancelledBill());
+        canceledBillTotal = getTotal(canceledBillItemLst);
+
+        refundedBillItemLst = createBillItems(new Packege(), new RefundBill());
+        refundedBillTotal = getTotal(refundedBillItemLst);
+
+    }
+
+    public void createOtherPackageBillItemsOld() {
         createBillItems(new Packege());
+
     }
 
     public void createOtherPackageBills() {
@@ -727,6 +793,30 @@ public class BillPackageMedicalController implements Serializable {
         this.sessionController = sessionController;
     }
 
+    public List<BillItem> getBilledBillItemLst() {
+        return billedBillItemLst;
+    }
+
+    public void setBilledBillItemLst(List<BillItem> billedBillItemLst) {
+        this.billedBillItemLst = billedBillItemLst;
+    }
+
+    public List<BillItem> getCanceledBillItemLst() {
+        return canceledBillItemLst;
+    }
+
+    public void setCanceledBillItemLst(List<BillItem> canceledBillItemLst) {
+        this.canceledBillItemLst = canceledBillItemLst;
+    }
+
+    public List<BillItem> getRefundedBillItemLst() {
+        return refundedBillItemLst;
+    }
+
+    public void setRefundedBillItemLst(List<BillItem> refundedBillItemLst) {
+        this.refundedBillItemLst = refundedBillItemLst;
+    }
+
     public BillPackageMedicalController() {
     }
 
@@ -858,6 +948,30 @@ public class BillPackageMedicalController implements Serializable {
 
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {
         this.lstBillEntries = lstBillEntries;
+    }
+
+    public double getBilledBillTotal() {
+        return billedBillTotal;
+    }
+
+    public void setBilledBillTotal(double billedBillTotal) {
+        this.billedBillTotal = billedBillTotal;
+    }
+
+    public double getCanceledBillTotal() {
+        return canceledBillTotal;
+    }
+
+    public void setCanceledBillTotal(double canceledBillTotal) {
+        this.canceledBillTotal = canceledBillTotal;
+    }
+
+    public double getRefundedBillTotal() {
+        return refundedBillTotal;
+    }
+
+    public void setRefundedBillTotal(double refundedBillTotal) {
+        this.refundedBillTotal = refundedBillTotal;
     }
 
     public double getTotal() {
