@@ -20,17 +20,17 @@
 
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
                             <br/>
                             <h:outputLabel value="Casheir Summary :"/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                             <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
                             <h:outputLabel value="#{commonReport.fromDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                             <h:outputLabel value="&emsp;&emsp;To :"/>
                             <h:outputLabel value="#{commonReport.toDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
                                              styleClass="noPrintButton" style="float: right;"

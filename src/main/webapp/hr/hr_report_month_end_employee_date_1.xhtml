@@ -20,10 +20,31 @@
                             <h:outputLabel value="Employee Worked Day Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="Salary Cycal" />
+                            <p:selectOneMenu id="advanced" 
+                                             value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                                             converter="salaryCycleConverter"                                      
+                                             effect="fade" var="t" 
+                                             filter="true" 
+                                             filterMatchMode="startsWith"  >
+
+                                <f:selectItem itemLabel="Slect Cycle"/>
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                               var="theme" 
+                                               itemLabel="#{theme.name}" 
+                                               itemValue="#{theme}" ></f:selectItems>
+
+                                <p:column style="width:10%" headerText="Name">
+                                    <h:outputText value="#{t.name}" />
+                                </p:column>
+
+                                <p:column headerText="Year">
+                                    <h:outputText value="#{t.salaryYear}" />
+                                </p:column>
+                                <p:column headerText="Month">
+                                    <h:outputText value="#{t.salaryMonth}" />
+                                </p:column>
+                            </p:selectOneMenu>
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Institution : "/>
@@ -38,7 +59,7 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndReport()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndReportNew()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -48,25 +69,13 @@
                         <p:panel id="gpBillPreview" style="font-size: 12px;">                     
                             <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
                                 <f:facet name="header">
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
-                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
                                     <h:outputLabel value="Employee Worked Date Report"/>
                                     <br/>
                                     <h:outputLabel value="#{hrReportController.fromDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
                                     To
-                                    <h:outputLabel value="#{hrReportController.toDate}">
+                                    <h:outputLabel value="#{hrReportController.fromDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
 

@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Staff Salary Component(Bank Vise)" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Salary Cycle"/>
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                                             var="t">
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                               var="theme" 
+                                               itemLabel="#{theme.name}" 
+                                               itemValue="#{theme}" ></f:selectItems>
+
+                                <p:column style="width:10%" headerText="Name">
+                                    <h:outputText value="#{t.name}" />
+                                </p:column>
+
+                                <p:column headerText="Year">
+                                    <h:outputText value="#{t.salaryYear}" />
+                                </p:column>
+                                <p:column headerText="Month">
+                                    <h:outputText value="#{t.salaryMonth}" />
+                                </p:column>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:outputLabel value="Staff Paysheet Componet : "/>
+                            <hr:completePaySheetComponent value="#{hrReportController.reportKeyWord.paysheetComponent}"/>
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponentSummeryBankVise}"/>
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" >                     
+                            <p:dataTable id="tb1" value="#{hrReportController.bankViseSalaryAndOts}" var="ss" rowIndexVar="i">
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.paysheetComponent.name}"  />
+                                    <br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
+                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
+                                </f:facet>
+                                <p:column headerText="Emp No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{i+1}" >
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Bank Name" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bank Name"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.bank.name}" />
+                                </p:column>
+                                <p:column headerText="Total" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.netSalary}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.totalValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

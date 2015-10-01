@@ -327,6 +327,46 @@ public class StaffBasicController implements Serializable {
             sql += " and s.paysheetComponent=:tp2 ";
             hm.put("tp2", paysheetComponent2);
         }
+        
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and s.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and s.staff.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and s.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and s.bankBranch.institution=:insbk ";
+            hm.put("insbk", getReportKeyWord().getInstitutionBank());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
 
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);

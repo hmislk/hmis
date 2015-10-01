@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Employee Salary Payment To Bank " />
+                            <h:outputLabel value="Employee Salary Bank Vise" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -38,35 +38,21 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Branch(Bank) : "/>
-                            <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}"/>
-                            <h:outputLabel value="Bank : "/>
-                            <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}"/>
                             <h:outputLabel value="Show Blocked"/>
                             <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
                             <h:outputLabel value="Show Hold"/>
                             <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process Net Salary" action="#{hrReportController.createStaffSalaryNetSalary()}"/>
-                        <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPayment()}"/>
-                        <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPayment()}"/>
-
-                        <p:inputText value="#{hrReportController.chequeNo}" id="chq"/>
-                        <p:watermark for="chq" value="Cheque Number"/>
-                        <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
+                        <p:commandButton ajax="false" value="Process Net Salary" action="#{hrReportController.createStaffSalaryNetSalarySummeryByBank()}"/>
+                        <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPaymentSummeryByBank()}"/>
+                        <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPaymentSummeryByBank()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
@@ -75,8 +61,10 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true">
+                            <p:dataTable id="tb1" value="#{hrReportController.bankViseSalaryAndOts}" var="ss"  editable="true" rowIndexVar="i">
                                 <f:facet name="header" >
+                                     <h:outputLabel value="Employee Salary Bank Vise" />
+                                        <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
@@ -91,87 +79,27 @@
                                     </h:panelGroup>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
                                 </f:facet>
-                                <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />  
                                 <p:column>
                                     <f:facet name="header">
-                                        <h:outputLabel value="EMP No"/>
+                                        <h:outputLabel value="No"/>
                                     </f:facet>
 
-                                    <p:outputLabel value="#{ss.staff.code}" >
+                                    <p:outputLabel value="#{i+1}" >
                                     </p:outputLabel>
                                 </p:column>
 
                                 <p:column>
                                     <f:facet name="header">
-                                        <h:outputLabel value="Emp Name"/>
+                                        <h:outputLabel value="Bank Name"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
+                                    <p:outputLabel value="#{ss.bank.name}">
                                     </p:outputLabel>
                                 </p:column>
-
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bank"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.bankBranch.institution.name}">
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column styleClass="noPrintButton">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bank Branch"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.bankBranch.name}">
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Account No"/>
-                                    </f:facet>
-                                    <p:cellEditor>  
-                                        <f:facet name="output">
-                                            <p:outputLabel value="#{ss.accountNo}"  />
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:inputText id="txtin" value="#{ss.accountNo}" disabled="#{!ss.blocked and !ss.hold}"/>
-                                        </f:facet>
-                                    </p:cellEditor>
-
-                                </p:column>
-
-                                <p:column headerText="Block" styleClass="noPrintButton">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">
-                                            <h:outputLabel value="Blocked" rendered="#{ss.blocked}">
-                                            </h:outputLabel>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:selectBooleanCheckbox value="#{ss.blocked}" >
-                                                <f:ajax event="change" execute="@this" render="txtin"/>
-                                            </p:selectBooleanCheckbox>  
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
-                                <p:column headerText="Hold" styleClass="noPrintButton">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">
-                                            <h:outputLabel value="Hold" rendered="#{ss.hold}">
-                                            </h:outputLabel>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:selectBooleanCheckbox value="#{ss.hold}" >
-                                                <f:ajax event="change" execute="@this" render="txtin"/>
-                                            </p:selectBooleanCheckbox>   
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
-
                                 <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Salary"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.transNetSalry}"  >
+                                    <p:outputLabel value="#{ss.netSalary}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -184,7 +112,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Over Time"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  >
+                                    <p:outputLabel value="#{ss.netOt}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -193,20 +121,19 @@
                                         </h:outputLabel>  
                                     </f:facet>
                                 </p:column>
-                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
-                                    <p:rowEditor />  
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.netOt+ss.netSalary}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.totalOverTime+hrReportController.totalTransNetSalary}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>  
+                                    </f:facet>
                                 </p:column>
-
-                                <p:column rendered="false" >
-                                    <p:commandButton process="@this" 
-                                                     ajax="false"
-                                                     value="Update"  
-                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
-                                                     onclick="onSubmitButton();">                              
-                                    </p:commandButton>                          
-                                </p:column>
-
-
                             </p:dataTable>
                         </p:panel>
 

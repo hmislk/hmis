@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Cannel Agent Reperence Book">
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <p:outputLabel value="Agent Name" />
+                        <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
+                                        forceSelection="true"
+                                        completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            <p:column>#{vt.institutionCode}</p:column>
+                            <p:column>#{vt.name}</p:column>
+                        </p:autoComplete>
+
+
+                        <p:commandButton action="#{channelReportController.createAgentHistorySubTable}" value="Fill" ajax="false" ></p:commandButton> 
+                        <h:panelGrid columns="2">
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </h:panelGrid> 
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportController.agentHistoryWithDate}" var="ahwd" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br></br>
+                            <p:outputLabel value="Statement Of Agent Account - " />
+                            <p:outputLabel value="#{channelReportController.institution.institutionCode} -#{channelReportController.institution.name}" />
+                            <br></br>
+                            <p:outputLabel value="From : " />
+                            <p:outputLabel value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd,MMMM yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="  To : " />
+                            <p:outputLabel value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd,MMMM yyyy" />
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Channel Recipt No" />
+                                <p:column headerText="Cus.Inv.N" />
+                                <p:column headerText="App.Date" />
+                                <p:column headerText="Status" />
+                                <p:column headerText="Hos. Fee" />
+                                <p:column headerText="Doc. Fee" />
+                                <p:column headerText="Total" />
+                                <p:column headerText="Bef.Bal" />
+                                <p:column headerText="Trans val." />
+                                <p:column headerText="Aft.Bal" />
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{ahwd.ahs}" var="a" >
+                            <f:facet name="header">
+                                <p:outputLabel value="#{ahwd.date}" >
+                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                </p:outputLabel>
+                            </f:facet>
+                            <p:column>
+                                <p:outputLabel value="#{a.bill.insId} - #{a.bill.deptId}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <p:outputLabel value="#{a.referenceNo}" />
+                            </p:column>
+                            <p:column>
+                                <p:outputLabel value="#{a.bill.singleBillSession.sessionDate}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy " />
+                                </p:outputLabel>
+                                <p:outputLabel value="#{a.bill.singleBillSession.serviceSession.startingTime}" >
+                                    <f:convertDateTime pattern="HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <p:outputLabel value="Deposit"  rendered="#{a.historyType eq 'ChannelDeposit'}"/>
+                                <p:outputLabel value=""  rendered="#{a.historyType ne 'ChannelDeposit'}"/>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.bill.netTotal-a.bill.staffFee}" rendered="#{a.historyType ne 'ChannelDeposit'}" >
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="-" rendered="#{a.historyType eq 'ChannelDeposit'}" />
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.bill.staffFee}" rendered="#{a.historyType ne 'ChannelDeposit'}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="-" rendered="#{a.historyType eq 'ChannelDeposit'}" />
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.beforeBallance}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <p:outputLabel value="#{a.transactionValue}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.beforeBallance+a.transactionValue}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            
+                        </p:subTable>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

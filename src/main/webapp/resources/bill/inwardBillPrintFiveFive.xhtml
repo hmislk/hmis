@@ -25,18 +25,18 @@
 
 
 
-                    <!--                    <div class="headingPrinting">
-                                            <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
-                                            <h:outputLabel value="**Cancelled"  
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
-                    
-                                            <h:outputLabel value="**Refunded" 
-                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
-                    
-                                            <h:outputLabel value="**Duplicate" 
-                                                           rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
- </div>-->
+<!--                    <div class="headingPrinting">
+                        <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
+                        <h:outputLabel value="**Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
+
+                        <h:outputLabel value="**Refunded" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
+
+                        <h:outputLabel value="**Duplicate" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                   cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
+                    </div>-->
 
                     <div class="receiptnoPrintingLabel">
                         <h:outputLabel value="Receipt "/>
@@ -117,7 +117,7 @@
                         </h:outputLabel>
                     </div>
 
-
+                
 
                     <div class="agePrintingLabel">
                         <h:outputLabel value="Age"/>
@@ -177,12 +177,12 @@
                                 <h:outputLabel value="#{bip1.netValue}" style="font-size: 12px!important;"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-
+                                
                                 <f:facet name="footer" class="totalCoop">
-                                    <br/>
-
+                                <br/>
+                                
                                     <h:outputLabel value="#{cc.attrs.bill.netTotal}" styleClass="totalCoop">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                
                                 </f:facet>
                             </h:column>
@@ -240,7 +240,7 @@
                     </div>
 
                     <div class="consult">
-
+                        
                     </div>
 
 
