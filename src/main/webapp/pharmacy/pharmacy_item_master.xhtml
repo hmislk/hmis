@@ -12,14 +12,14 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:panel header="Manage Pharmacy Item" styleClass="alignTop">
+                <p:panel header="Manage Pharmacy Item" styleClass="alignTop verticalAndHorizontalCenteringLarge" >
                     <h:panelGrid id ="gpVeda" columns="2" >
 
 
                         <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
                             <p:panel  styleClass="alignTop" >
                                 <h:panelGrid columns="1" id="gpSelectText" >
-                                    <h:outputLabel value="Search By Name / Code / Barcode"/>
+                                    <h:outputText value="Search By Name / Code / Barcode"/>
                                     <p:autoComplete id="lstSelect1"    value="#{ampController.current}" 
                                                     forceSelection="true"
                                                     style="min-width: 223px" completeMethod="#{ampController.completeAmp}" 
@@ -69,45 +69,49 @@
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText">
 
-                                    <h:panelGrid columns="2">
-                                        <h:outputText  value="Display Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName"  value="#{ampController.current.name}"  />
-                                        <h:outputText  value="Item Code" ></h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{ampController.current.code}"  ></h:inputText>
+                                    <h:panelGrid columns="3">
+                                        <h:outputText  value="Name" ></h:outputText>
+                                        <p:inputText autocomplete="off" id="txtName"  value="#{ampController.current.name}" styleClass="longText"  />
+                                        <h:outputText value="" ></h:outputText>
+
+                                        <h:outputText  value="Code" ></h:outputText>
+                                        <p:inputText autocomplete="off"  value="#{ampController.current.code}"  ></p:inputText>
+                                        <h:outputText value="" ></h:outputText>
+
                                         <h:outputText  value="Bar Code" ></h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{ampController.current.barcode}"  ></h:inputText>
-                                        <h:outputLabel value="Profit Margin"></h:outputLabel>
-                                        <h:inputText autocomplete="off" value="#{ampController.current.profitMargin}"></h:inputText>
+                                        <p:inputText autocomplete="off"  value="#{ampController.current.barcode}"  ></p:inputText>
+                                        <h:outputText value="" ></h:outputText>
+
                                         <h:outputText  value="Manufacturer" ></h:outputText>
                                         <p:autoComplete  completeMethod="#{manufacturerController.completeManu}"
                                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}"
                                                          forceSelection="true" 
                                                          value="#{ampController.current.institution}" ></p:autoComplete>
-                                        <h:outputLabel value="Item Category"/>
+                                        <h:outputText value="" ></h:outputText>
+
+                                        <h:outputLabel value="Category"/>
                                         <p:autoComplete  value="#{ampController.current.category}" 
                                                          forceSelection="true"
                                                          completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         </p:autoComplete>      
+                                        <h:outputText value="" ></h:outputText>
+
                                         <h:outputText  value="Product" ></h:outputText>
                                         <p:autoComplete  converter="vmp" 
                                                          completeMethod="#{vmpController.completeVmp}"
                                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{ampController.current.vmp}" ></p:autoComplete>
-
-                                        <p:commandButton value="Add New Product" 
-                                                         onclick=""></p:commandButton>
-
-
-                                        <p:commandButton id="btnAddVmp" 
-                                                         value="Add New Doctor" 
+                                        <p:commandLink id="btnAddVmp" 
+                                                         value="New" 
                                                          onclick="dlgVmp.show();" 
-                                                         actionListener="#{ampController.prepareAddNewVmp}" 
-                                                         process="btnAddVmp" 
-                                                         update="#{p:component('dlgVmp')}" />  
+                                                         actionListener="#{ampController.prepareAddNewVmp}" />  
+
+
+
+
 
                                     </h:panelGrid>
-
-                                    <p:dialog id="dlgVmp" widgetVar="dlgVmp" modal="true" >
+                                    <p:dialog id="dlgVmp" widgetVar="dlgVmp"  >
 
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Generic Name" ></h:outputLabel>
@@ -120,10 +124,11 @@
                                             <p:inputText autocomplete="off" value="#{ampController.addingVtmInVmp.strength}" ></p:inputText>
                                             <h:outputLabel value="Strength Unit" />                                                    
                                             <p:selectOneMenu value="#{ampController.addingVtmInVmp.strengthUnit}">
+                                                <f:selectItem itemLabel="Select a generic name" ></f:selectItem>
                                                 <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                                            </p:selectOneMenu>                          
-                                            <h:outputLabel value="Type" ></h:outputLabel>
+                                            </p:selectOneMenu>  
 
+                                            <h:outputLabel value="Type" ></h:outputLabel>
                                             <p:autoComplete value="#{ampController.currentVmp.category}"
                                                             forceSelection="true"
                                                             completeMethod="#{pharmaceuticalItemTypeController.completeCategory}" 
@@ -135,8 +140,8 @@
                                             <p:outputLabel value="#{ampController.currentVmp.name}" />
 
                                         </p:panelGrid>
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:component('cmbDoc')}"  actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                                        </p:commandButton>
+
+
                                     </p:dialog>
 
 
