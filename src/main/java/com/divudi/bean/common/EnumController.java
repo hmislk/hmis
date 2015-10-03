@@ -218,6 +218,7 @@ public class EnumController implements Serializable {
             InwardChargeType.Nebulisation,
             InwardChargeType.Echo,
             InwardChargeType.SyringePump,
+            InwardChargeType.TheaterConsumbale,
             InwardChargeType.ExerciseECG,
             InwardChargeType.TheaterConsumbale,
             InwardChargeType.OtherCharges};
