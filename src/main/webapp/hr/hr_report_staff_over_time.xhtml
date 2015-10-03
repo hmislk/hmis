@@ -8,7 +8,7 @@
       xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -69,11 +69,19 @@
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
                                     <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
-
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}">                                        
-                                    </h:outputLabel>
-
-
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <br/>
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
+                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
                                 </f:facet>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header">
@@ -149,7 +157,18 @@
                                     <f:facet name="footer">
                                     </f:facet>
                                 </p:column>
-                                
+
+                                <p:column  style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Normal OT Value(C)"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5*ss.extraDutyNormalMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                    </f:facet>
+                                </p:column>
+
                                 <p:column headerText="Total OT Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total OT"  />
@@ -261,7 +280,15 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
+
                         </p:panel>
 
 
@@ -272,5 +299,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

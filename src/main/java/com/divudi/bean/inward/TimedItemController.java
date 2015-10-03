@@ -7,13 +7,11 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
-import com.divudi.entity.Service;
 import com.divudi.entity.inward.TimedItem;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -21,20 +19,18 @@ import com.divudi.facade.TimedItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -311,7 +307,7 @@ public class TimedItemController implements Serializable {
 //                getCurrent().setReportedAs(getCurrent());
 //            }
             //System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Updated Successfully");
@@ -382,7 +378,7 @@ public class TimedItemController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

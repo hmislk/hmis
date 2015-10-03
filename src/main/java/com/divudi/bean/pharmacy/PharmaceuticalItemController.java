@@ -6,16 +6,16 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PharmaceuticalItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Named;
 
 /**
  *

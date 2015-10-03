@@ -101,7 +101,6 @@ public class StaffAdditionalFormController implements Serializable {
         System.err.println("Starting To ");
 
         getCurrentAdditionalForm().setToTime(getToSystemTimeStamp().getTime());
-        System.err.println("Ending To ");
     }
 
     public void timeSelectListenerFrom() {
@@ -263,7 +262,6 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        System.err.println("SQL " + sql);
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
@@ -288,7 +286,6 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        System.err.println("SQL " + sql);
         hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
@@ -327,7 +324,6 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        System.err.println("SQL " + sql);
         hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
@@ -354,7 +350,6 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        System.err.println("SQL " + sql);
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
@@ -373,7 +368,6 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        System.err.println("SQL " + sql);
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
@@ -658,6 +652,9 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        System.out.println("staffShifts.size() = " + staffShifts.size());
 
     }
 
@@ -946,7 +943,6 @@ public class StaffAdditionalFormController implements Serializable {
         
         
         
-        System.out.println("currentAdditionalForm.getStaffShift().getDayType() = " + currentAdditionalForm.getStaffShift().getDayType());
 
         Shift shift = null;
 
@@ -957,21 +953,25 @@ public class StaffAdditionalFormController implements Serializable {
         DayType dayType;
         if (currentAdditionalForm.getStaffShift().getDayType() != null || currentAdditionalForm.getStaffShift().getDayType() == DayType.DayOff 
                 || currentAdditionalForm.getStaffShift().getShift().isHalfShift()) {
-             dayType= currentAdditionalForm.getStaffShift().getDayType();
+            dayType = currentAdditionalForm.getStaffShift().getDayType();
              System.out.println("currentAdditionalForm.getStaffShift().getShift().isHalfShift() = " + currentAdditionalForm.getStaffShift().getShift().isHalfShift());
              System.out.println("currentAdditionalForm.getStaffShift().getShift().getName() = " + currentAdditionalForm.getStaffShift().getShift().getName());
-             System.out.println("dayType if = " + dayType);
-        }else{            
-            dayType= phDateController.getHolidayType(date);
+            System.out.println("dayType if = " + dayType);
+        } else {
+            dayType = phDateController.getHolidayType(date);
             System.out.println("dayType else = " + dayType);
         }
+        shift = currentAdditionalForm.getStaffShift().getShift();
         
-        if(dayType==DayType.Poya && currentAdditionalForm.getStaffShift().getShift()!=null){
-            shift=currentAdditionalForm.getStaffShift().getShift();
-        }else{
+        if (shift == null) {
             shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
         }
         
+//        if(dayType==DayType.Poya && currentAdditionalForm.getStaffShift().getShift()!=null){
+//            shift=currentAdditionalForm.getStaffShift().getShift();
+//        }else{
+//            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
+//        }
         currentAdditionalForm.setTimes(Times.All);
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
@@ -985,7 +985,6 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftFacade.create(staffShiftExtra);
 
         if (currentAdditionalForm.getStaffShift() != null) {
-            System.out.println("currentAdditionalForm.getStaffShift().getDayType() = " + currentAdditionalForm.getStaffShift().getDayType());
             staffShiftExtra.copy(currentAdditionalForm.getStaffShift());
 
             if (staffShiftExtra.getPreviousStaffShift() != null) {
@@ -1120,7 +1119,6 @@ public class StaffAdditionalFormController implements Serializable {
             sh.setEndingTime(null);
             shiftFacade.create(sh);
         }
-        System.out.println("sh 2 = " + sh);
 //        System.out.println("sh.getName() = " + sh.getShift().getName());
         return sh;
     }
@@ -1153,7 +1151,6 @@ public class StaffAdditionalFormController implements Serializable {
             shiftFacade.create(sh);
         }
         System.out.println("sh 2 = " + sh);
-        System.out.println("sh.getName() = " + sh.getShift().getName());
         return sh;
     }
 

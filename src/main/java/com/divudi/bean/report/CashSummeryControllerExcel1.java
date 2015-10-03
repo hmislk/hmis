@@ -4,23 +4,23 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.AdmissionTypeBills;
 import com.divudi.data.dataStructure.BillsItems;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.DepartmentPayment;
 import com.divudi.data.dataStructure.ItemWithFee;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.AdmissionTypeBills;
+import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String1Value3;
-import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String6;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -36,18 +36,16 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -158,7 +156,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createFinalSummery() {
-        System.err.println("createFinalSummery");
         finalSumery = new ArrayList<>();
         String1Value1 dd;
         dd = new String1Value1();
@@ -209,7 +206,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCollections2Hos() {
-        System.err.println("createCollections2Hos");
         collections2Hos = new ArrayList<>();
         String1Value1 dd;
         dd = new String1Value1();
@@ -225,7 +221,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createInwardProfessions() {
-        System.err.println("createInwardProfessions");
         inwardProfTot = 0.0;
         inwardProfessions = new ArrayList<>();
 
@@ -234,7 +229,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
             AdmissionTypeBills admB = new AdmissionTypeBills();
             admB.setAdmissionType(at);
             admB.setTotal(getInwardProfTot(at));
-            System.err.println("2 " + admB.getTotal());
             inwardProfTot += admB.getTotal();
 
             if (admB.getTotal() != 0) {
@@ -249,7 +243,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createPharmacySale() {
-        System.err.println("createPharmacySale");
         pharmacySales = new ArrayList<>();
         pharmacyTotal = 0;
 
@@ -272,7 +265,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createOtherInstituion() {
-        System.err.println("createOtherInstituion");
         otherHospitalTotal = 0;
         otherProfessionalTotal = 0;
         otherInstitution = new ArrayList<>();
@@ -315,21 +307,18 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCardBill() {
-        System.err.println("createCardBill");
         cardTot = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         cardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
 
     }
 
     private void createSlipBill() {
-        System.err.println("createSlipBill");
         slipTot = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
 
     }
 
     private void createChequeBill() {
-        System.err.println("createChequeBill");
         chequeTot = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
 
@@ -388,7 +377,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createCreditCompanyCollection() {
-        System.err.println("createCreditCompanyCollection");
         creditCompanyTotal = 0.0;
         creditCompanyCollections = new ArrayList<>();
         List<Bill> tmp = getBillBean().fetchBills(BillType.CashRecieveBill, getFromDate(), getToDate(), getInstitution());
@@ -405,7 +393,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     private void createAgentCollection() {
-        System.err.println("createAgentCollection");
         agentCollectionTot = 0.0;
 
         agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
@@ -524,7 +511,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     }
 
     public void createDepartmentPayment() {
-        System.err.println("createDepartmentPayment");
         doctorPaymentTot = 0.0;
 
         List<Department> depList = getDepartmentList();
@@ -546,14 +532,14 @@ public class CashSummeryControllerExcel1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -642,11 +628,9 @@ public class CashSummeryControllerExcel1 implements Serializable {
 //    }
 
     public void createOPdCategoryTable() {
-        System.err.println("createOPdCategoryTable");
         string1Value2s = new ArrayList<>();
         for (Category cat : getBillBean().fetchBilledOpdCategory(fromDate, toDate, institution)) {
             System.err.println("Cat " + cat.getName() + " TIME " + new Date());
-            System.err.println("##################");
             for (Item i : getBillBean().fetchBilledOpdItem(cat, fromDate, toDate, institution)) {
                 //   System.err.println("Item " + i.getName() + " TIME " + new Date());
                 double count = getBillBean().calBilledItemCount(i, getFromDate(), getToDate(), getInstitution());

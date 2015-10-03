@@ -11,23 +11,18 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.SymanticType;
-import com.divudi.facade.ClinicalFindingItemFacade;
 import com.divudi.entity.clinical.ClinicalFindingItem;
+import com.divudi.facade.ClinicalFindingItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -46,9 +41,10 @@ public class TreatementController implements Serializable {
     List<ClinicalFindingItem > selectedItems;
     private ClinicalFindingItem current;
     private List<ClinicalFindingItem> items = null;
+    List<ClinicalFindingItem> insItems =null;
     String selectText = "";
 
-    public List<ClinicalFindingItem> completeDiagnosis(String qry) {
+    public List<ClinicalFindingItem> completeTreatments(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Pharmacologic_Substance);
@@ -74,6 +70,7 @@ public class TreatementController implements Serializable {
 
     public void prepareAdd() {
         current = new ClinicalFindingItem();
+        current.setInstitution(sessionController.getInstitution());
         current.setSymanticType(SymanticType.Pharmacologic_Substance);
         //TODO:
     }
@@ -96,7 +93,7 @@ public class TreatementController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Saved");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Updates");
@@ -143,7 +140,7 @@ public class TreatementController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -171,46 +168,26 @@ public class TreatementController implements Serializable {
         return items;
     }
 
-    /**
-     *
-     */
-    @FacesConverter("diagnosisConverter")
-    public static class DiagnosisConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DiagnosisController controller = (DiagnosisController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "diagnosisController");
-            return controller.getEjbFacade().find(getKey(value));
+    public List<ClinicalFindingItem> getInsItems() {
+        if (insItems == null) {
+            Map m = new HashMap();
+            m.put("t", SymanticType.Pharmacologic_Substance);
+            m.put("ins", sessionController.getInstitution());
+            String sql;
+            sql = "select c "
+                    + " from ClinicalFindingItem c "
+                    + " where c.retired=false "
+                    + " and c.symanticType=:t "
+                    + " and c.institution=:ins "
+                    + " order by c.name";
+            insItems = getFacade().findBySQL(sql, m);
         }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof ClinicalFindingItem) {
-                ClinicalFindingItem o = (ClinicalFindingItem) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DiagnosisController.class.getName());
-            }
-        }
+        return insItems;
     }
+
+    public void setInsItems(List<ClinicalFindingItem> insItems) {
+        this.insItems = insItems;
+    }
+    
+    
 }

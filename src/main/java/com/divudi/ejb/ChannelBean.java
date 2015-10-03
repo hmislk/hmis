@@ -5,6 +5,7 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
@@ -59,6 +60,8 @@ public class ChannelBean {
     SessionController sessionController;
     @Inject
     BookingController bookingController;
+    @Inject
+    ChannelBillController channelBillController;
 
     public ChannelFee getChannelFee(BillSession bs, FeeType feeType) {
         ChannelFee doctorFee = new ChannelFee();
@@ -259,7 +262,6 @@ public class ChannelBean {
 
     private boolean checkLeaveDate(Date date, Staff staff) {
         System.err.println("Leave Staff " + staff);
-        System.err.println("Date " + date);
         String slq = "Select s From ServiceSessionLeave s"
                 + "  Where s.sessionDate=:dt"
                 + "  and s.staff=:st"
@@ -414,12 +416,10 @@ public class ChannelBean {
 
         }
 
-        System.err.println("Created Sessions  " + createdSessions.size());
         for (ServiceSession cs : createdSessions) {
             System.out.println("cs.getId() = " + cs.getId());
             System.out.println("cs.getName() = " + cs.getName());
             System.out.println("cs.getSessionAt() = " + cs.getSessionAt());
-            System.out.println("cs.isTransLeave() = " + cs.isDeactivated());
         }
 
         return createdSessions;
@@ -437,10 +437,8 @@ public class ChannelBean {
         Date nowDate;
         if (d==null) {
             nowDate = Calendar.getInstance().getTime();
-            System.out.println("1.nowDate = " + nowDate);
         }else{
             nowDate=d;
-            System.out.println("2.nowDate = " + nowDate);
         }
         
 
@@ -468,11 +466,9 @@ public class ChannelBean {
                         newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                         System.out.println("newSs 2 = " + newSs);
                         if (newSs == null) {
-                            System.err.println("Cretate New");
                             newSs = createServiceSessionForChannelShedule(ss, nowDate);
                         }
                         System.out.println("newSs 3 = " + newSs);
-                        System.out.println("newSs.getSessionDate() = " + newSs.getSessionDate());
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -501,10 +497,8 @@ public class ChannelBean {
                             newSs = new ServiceSession();
                             System.err.println("Cretate New");
                             newSs = createServiceSessionForChannelShedule(ss, nowDate);
-                            System.out.println("newSs.getOriginatingSession() = " + newSs.getOriginatingSession());
                         }
                         System.out.println("newSs = " + newSs);
-                        System.out.println("newSs.getSessionDate() = " + newSs.getSessionDate());
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
@@ -524,17 +518,9 @@ public class ChannelBean {
             nc.setTime(nowDate);
             nc.add(Calendar.DATE, 1);
             nowDate = nc.getTime();
-            System.out.println("nowDate = " + nowDate);
 
         }
-        getBookingController().calculateFeeBooking(createdSessions);
-        System.err.println("Created Sessions  " + createdSessions.size());
-//        for (ServiceSession cs : createdSessions) {
-//            System.out.println("cs.getId() = " + cs.getId());
-//            System.out.println("cs.getName() = " + cs.getName());
-//            System.out.println("cs.getSessionAt() = " + cs.getSessionAt());
-//            System.err.println("cs.isTransLeave() = " + cs.isDeactivated());
-//        }
+        getBookingController().calculateFeeBooking(createdSessions,channelBillController.getPaymentMethod());
 
         return createdSessions;
     }
@@ -614,7 +600,6 @@ public class ChannelBean {
             sessionNumberGenerator.setName(ss.getStaff().getPerson().getName() + " " + ss.getName());
             sessionNumberGeneratorFacade.create(sessionNumberGenerator);
         }
-        System.out.println("2.sessionNumberGenerator = " + sessionNumberGenerator);
         return sessionNumberGenerator;
     }
 
@@ -650,7 +635,6 @@ public class ChannelBean {
             createdSessions.add(newSs);
 
         }
-        System.err.println("Created Sessions  " + createdSessions);
         return createdSessions;
     }
 

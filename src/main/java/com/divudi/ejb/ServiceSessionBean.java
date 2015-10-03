@@ -8,7 +8,6 @@ import com.divudi.data.BillType;
 import static com.divudi.data.SessionNumberType.ByCategory;
 import static com.divudi.data.SessionNumberType.ByItem;
 import static com.divudi.data.SessionNumberType.BySubCategory;
-import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -18,7 +17,6 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -120,31 +118,6 @@ public class ServiceSessionBean {
         int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
         System.err.println("COUNT " + count);
         bs.setSerialNo(count);
-        switch (i.getSessionNumberType()) {
-            case ByCategory:
-                //   ////System.out.println("by cat");
-                if (i.getCategory().getParentCategory() == null) {
-                    //   ////System.out.println("by cat only ");
-                    bs.setCategory(i.getCategory());
-//                    bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
-                } else {
-                    //   ////System.out.println("by parent cat");
-                    bs.setCategory(i.getCategory().getParentCategory());
-//                    bs.setSerialNo(getIdByCat(i.getCategory().getParentCategory(), bi.getSessionDate()) + 1);
-                }
-                break;
-            case BySubCategory:
-                System.err.println("By Sub Category");
-                bs.setCategory(i.getCategory());
-//                bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
-                break;
-            case ByItem:
-                System.err.println("By Item");
-//                bs.setSerialNo(getIdByItem(i, bi.getSessionDate()) + 1);
-                break;
-            default:
-                bs = null;
-        }
 //        if (bs != null) {
 //            getBillSessionFacade().create(bs);
 //        }

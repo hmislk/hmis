@@ -25,12 +25,10 @@ import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -64,18 +62,18 @@ public class CategoryController implements Serializable {
 
     @Inject
     ItemController itemController;
-    
-    public void fromTransferItemsFromFromCategoryToToCategory(){
-        if(fromCategory==null){
+
+    public void fromTransferItemsFromFromCategoryToToCategory() {
+        if (fromCategory == null) {
             JsfUtil.addErrorMessage("From Category ?");
             return;
         }
-        if(toCategory==null){
+        if (toCategory == null) {
             JsfUtil.addErrorMessage("To Category");
             return;
         }
         List<Item> cis = itemController.getItems(fromCategory);
-        for(Item i:cis){
+        for (Item i : cis) {
             //System.out.println("i.getName() = " + i.getName());
             i.setCategory(toCategory);
             itemController.saveSelected(i);
@@ -97,9 +95,7 @@ public class CategoryController implements Serializable {
     public void setToCategory(Category toCategory) {
         this.toCategory = toCategory;
     }
-    
-    
-    
+
     public List<Category> completeCategory(String qry) {
         List<Category> c;
         c = getFacade().findBySQL("select c from Category c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
@@ -359,7 +355,7 @@ public class CategoryController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -426,7 +422,7 @@ public class CategoryController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -444,7 +440,14 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select c "
+                    + " from Category c "
+                    + " where c.retired=false "
+                    + " order by c.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

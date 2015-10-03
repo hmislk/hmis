@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -93,9 +93,15 @@
                                 </p:panel>
                                 <p:panel header="5) Purchase" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
-                                                     value="1)Purchase Summary" action="pharmacy_report_purchase_detail.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                     value="1)Purchase Bills by Department" action="pharmacy_report_purchase_bills_by_department.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                                      value="2)Purchase Summary By Supplier" action="pharmacy_report_purchase_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+                                    <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                                     value="3)Purchase Summary (Credit / Cash )" action="pharmacy_report_purchase_detail.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                                     value="4)Purchase Summary By Supplier (Credit / Cash)" action="pharmacy_report_purchase_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+
                                 </p:panel>
                                 <p:panel header="8) BHT ISSUE" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
@@ -174,5 +180,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -691,7 +691,6 @@ public class BillNumberGenerator {
         hm.put("tDep", toDepartment);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
 
-        System.err.println("1 " + billNumber);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillType(billType);
@@ -732,7 +731,6 @@ public class BillNumberGenerator {
             }
 
             billNumber.setLastBillNumber(dd);
-            System.err.println("2 " + billNumber.getLastBillNumber());
 
             billNumberFacade.create(billNumber);
         }
@@ -814,7 +812,6 @@ public class BillNumberGenerator {
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
 
-        System.err.println("1 " + billNumber);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillClassType(billClassType);
@@ -853,7 +850,6 @@ public class BillNumberGenerator {
             }
 
             billNumber.setLastBillNumber(dd);
-            System.err.println("2 " + billNumber.getLastBillNumber());
 
             billNumberFacade.create(billNumber);
         }

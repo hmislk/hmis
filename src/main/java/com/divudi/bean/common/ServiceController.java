@@ -9,9 +9,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.FeeType;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.dataStructure.ServiceFee;
 import com.divudi.data.SessionNumberType;
+import com.divudi.data.dataStructure.ServiceFee;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -26,19 +25,17 @@ import com.divudi.facade.SpecialityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -308,7 +305,7 @@ public class ServiceController implements Serializable {
             UtilityController.addSuccessMessage("Saved Old Successfully");
         } else {
             ////System.out.println("4");
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             if (billedAs == false) {
@@ -377,14 +374,14 @@ public class ServiceController implements Serializable {
 
         for (ItemFee it : getFees(current)) {
             it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetiredAt(new Date());
             it.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(it);
         }
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfull");
@@ -400,14 +397,14 @@ public class ServiceController implements Serializable {
 
         for (ItemFee it : getFees(currentInactiveService)) {
             it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetiredAt(new Date());
             it.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(it);
         }
 
         if (currentInactiveService != null) {
             currentInactiveService.setRetired(false);
-            currentInactiveService.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentInactiveService.setRetiredAt(new Date());
             currentInactiveService.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentInactiveService);
             UtilityController.addSuccessMessage("Deleted Successfull");

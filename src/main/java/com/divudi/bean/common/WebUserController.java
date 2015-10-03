@@ -8,35 +8,34 @@
  */
 package com.divudi.bean.common;
 
-import java.util.TimeZone;
 import com.divudi.data.Privileges;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
+import com.divudi.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.FlowEvent;
 
 /**
@@ -89,7 +88,6 @@ public class WebUserController implements Serializable {
             try {
                 getFacade().edit(s);
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
         }
         itemsToRemove = null;
@@ -310,21 +308,6 @@ public class WebUserController implements Serializable {
         return ejbFacade;
     }
 
-    public WebUser searchItem(String itemName, boolean createNewIfNotPresent) {
-        WebUser searchedItem = null;
-        List<WebUser> temItems;
-        temItems = getFacade().findAll("name", itemName, true);
-        if (temItems.size() > 0) {
-            searchedItem = (WebUser) temItems.get(0);
-        } else if (createNewIfNotPresent) {
-            searchedItem = new WebUser();
-            searchedItem.setName(itemName);
-            searchedItem.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            searchedItem.setCreater(sessionController.loggedUser);
-            getFacade().create(searchedItem);
-        }
-        return searchedItem;
-    }
 
     private void recreateModel() {
         items = null;
@@ -353,7 +336,9 @@ public class WebUserController implements Serializable {
 
     public Boolean userNameAvailable(String userName) {
         boolean available = false;
-        List<WebUser> allUsers = getFacade().findAll("name", true);
+        String j;
+        j="select w from WebUser w where w.retired=false";
+        List<WebUser> allUsers = getFacade().findBySQL(j);
         if (allUsers == null) {
             return false;
         }
@@ -385,12 +370,12 @@ public class WebUserController implements Serializable {
         }
         Staff staff = new Staff();
         getCurrent().setActivated(true);
-        getCurrent().setActivatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setActivatedAt(new Date());
         getCurrent().setActivator(getSessionController().getLoggedUser());
 
         ////System.out.println("Start");
         //Save Person
-        getCurrent().getWebUserPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().getWebUserPerson().setCreatedAt(new Date());
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
         getPersonFacade().create(getCurrent().getWebUserPerson());
         ////System.out.println("Person Saved");
@@ -406,7 +391,7 @@ public class WebUserController implements Serializable {
         getCurrent().setDepartment(getDepartment());
         getCurrent().setName(getSecurityController().encrypt(getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(sessionController.loggedUser);
         getCurrent().setStaff(staff);
         getFacade().create(getCurrent());
@@ -416,7 +401,7 @@ public class WebUserController implements Serializable {
 //            WebUserPrivilege pv = new WebUserPrivilege();
 //            pv.setWebUser(current);
 //            pv.setPrivilege(p);
-//            pv.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            pv.setCreatedAt(new Date());
 //            pv.setCreater(getSessionController().getLoggedUser());
 //            getWebUserPrevilageFacade().create(pv);
 //
@@ -483,7 +468,7 @@ public class WebUserController implements Serializable {
     public void delete() {
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(sessionController.loggedUser);
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successful");

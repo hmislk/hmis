@@ -5,8 +5,6 @@
 package com.divudi.entity;
 
 import com.divudi.data.CliantType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;

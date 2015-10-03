@@ -6,26 +6,44 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
 
-                <p:panel header="Theme" style="margin: 2px; padding: 2px; border: 0px;">
+
+
+                <div  >
                     <h:form>
-                        <p:themeSwitcher style="width:165px" id="defaultSwitcher" value="#{themeController.theme}">
-                            <f:selectItem itemLabel="Choose Theme" itemValue="" />
-                            <f:selectItems value="#{themeController.themes}" />
-                        </p:themeSwitcher>
-                        <p:commandButton value="Set" action="#{themeController.saveTheme}"></p:commandButton>
+                        <p:panel header="User Preferences" styleClass="verticalAndHorizontalCentering" >
+                            <f:facet name="header" >
+                                <h:outputText value="User Preferences" ></h:outputText>
+                                <p:spacer height="1" width="30" ></p:spacer>
+                                <p:commandButton value="Set" action="#{themeController.saveTheme}"></p:commandButton>
+                            </f:facet>
+
+                            <h:panelGrid columns="3" >
+                                <h:outputText value="Theme" ></h:outputText>
+                                <p:spacer height="1" width="30" ></p:spacer>
+                                <p:themeSwitcher style="width:165px" id="defaultSwitcher" value="#{themeController.theme}">
+                                    <f:selectItem itemLabel="Choose Theme" itemValue="" />
+                                    <f:selectItems value="#{themeController.themes}" />
+                                </p:themeSwitcher>
+                            </h:panelGrid>
+
+
+
+
+                        </p:panel>
                     </h:form>
-                </p:panel>
+                </div>
+
 
 
             </ui:define>
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

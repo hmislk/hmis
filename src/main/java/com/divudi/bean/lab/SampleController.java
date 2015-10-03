@@ -9,22 +9,18 @@
 package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import java.util.TimeZone;
-import com.divudi.facade.SampleFacade;
 import com.divudi.entity.lab.Sample;
+import com.divudi.facade.SampleFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-
+import javax.inject.Inject;
+import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
@@ -68,7 +64,7 @@ public  class SampleController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -112,7 +108,7 @@ public  class SampleController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

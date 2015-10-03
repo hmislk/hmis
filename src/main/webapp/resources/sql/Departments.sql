@@ -1,2 +1,1 @@
-
-select * from department where name = 'Cashier';
+select * from item where name like '%ezumi 40mg%';

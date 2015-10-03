@@ -7,7 +7,6 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -15,8 +14,8 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.InwardPriceAdjustment;
@@ -25,18 +24,17 @@ import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
@@ -142,7 +140,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setInstitution(department.getInstitution());
         a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
-        a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
             getFacade().create(a);
@@ -257,7 +255,7 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void delete() {
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

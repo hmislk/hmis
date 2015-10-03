@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html">
 
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -18,7 +18,7 @@
                             <h:panelGrid columns="1">
                                 <p:panel header="1) Store Item" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <h:panelGrid columns="1" >     
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="1) Consumable Categories" action="/store/consumable_category/List" ></p:commandButton>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1) Store Item Category" action="/store/consumable_category/List" ></p:commandButton>
                                         <p:commandButton styleClass="linkButton" ajax="false" action="/store/make_list" value="2) Manage Makes" />
                                         <p:commandButton styleClass="linkButton" ajax="false" value="3) Item Master" action="store_item_master" ></p:commandButton>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="4) Import from Excel" action="store_item_import" ></p:commandButton>
@@ -77,5 +77,5 @@
             </ui:define>
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

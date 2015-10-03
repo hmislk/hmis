@@ -8,17 +8,17 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.FeeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -35,7 +35,6 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -44,27 +43,25 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.FeeFacade;
-import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -250,9 +247,8 @@ public class BillBhtController implements Serializable {
         System.err.println("1 " + bill);
         System.err.println("2 " + billItem);
         System.err.println("3 " + billEntry);
-        System.err.println("4 " + billFees);
 
-        billItem.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
         billItem.setBill(bill);
 
@@ -309,7 +305,6 @@ public class BillBhtController implements Serializable {
             BilledBill temp = new BilledBill();
             //   System.err.println("2");
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
-            System.err.println("1");
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
@@ -319,7 +314,6 @@ public class BillBhtController implements Serializable {
             //System.err.println("5");
             getBills().add(b);
         } else {
-            System.err.println("2");
             putToBills(matrixDepartment);
         }
 
@@ -394,9 +388,9 @@ public class BillBhtController implements Serializable {
         temp.setPatientEncounter(patientEncounter);
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
@@ -549,7 +543,6 @@ public class BillBhtController implements Serializable {
             bItem.setQty(1.0);
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            System.err.println("Add To Bill");
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);
@@ -603,7 +596,6 @@ public class BillBhtController implements Serializable {
             bItem.setQty(1.0);
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            System.err.println("Add To Bill");
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);
