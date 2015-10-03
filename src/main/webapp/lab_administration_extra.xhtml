@@ -18,7 +18,10 @@
 
 
                         <p:panel header="Please do NOT click. Only for Developers."  >
+
                             <h:panelGrid columns="1"  >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Change Ix Institution According To Dept" action="#{investigationController.changeIxInstitutionAccordingToDept}" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Find Master Items" action="#{investigationController.changeIxReportedAsToMasterItem}" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Ix Cats to Cats Categories" action="#{investigationController.catToIxCat}" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add Worksheet Items" action="#{investigationController.reportItemsToWorksheetItems}" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Copy Ix" action="/lab/lab_copy" onclick="onSubmitButton();" />

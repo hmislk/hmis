@@ -769,6 +769,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         sql = "select wd.department "
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
+                + " and wd.department.retired=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findBySQL(sql, m);

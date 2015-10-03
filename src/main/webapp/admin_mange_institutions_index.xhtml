@@ -9,31 +9,43 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Manage Institution" >
+                    <p:panel header="Manage Institutions" styleClass="verticalAndHorizontalCentering" >
 
-                        <h:panelGrid columns="1" >
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="lab_institution" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="lab_institution_branch" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
+                        <h:panelGrid columns="3" styleClass="alignTop" >
 
-
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="lab_collecting_centre" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="lab_credit_company" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
+                            <p:panel header="Items" >
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="lab_institution" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="lab_institution_branch" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
 
 
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="lab_collecting_centre" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="lab_credit_company" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
+
+                            </p:panel>
+
+                            <p:panel header="Preferences" >
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
+
+                            </p:panel>
+
+                            <p:panel header="Developer" >
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+
+                            </p:panel>
+
 
 
 
                         </h:panelGrid>
-                    </p:panel>
-                    <p:panel >
-                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
-                          <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+
                     </p:panel>
                 </h:form>
             </ui:define>

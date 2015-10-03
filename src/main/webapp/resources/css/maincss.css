@@ -1016,6 +1016,9 @@ table.standardTable td {
     overflow: hidden;
 }
 
+
+
+
 .noBorderGrid1.ui-panelgrid>*>tr,
 .noBorderGrid1.ui-panelgrid .ui-panelgrid-cell {
     border: none;

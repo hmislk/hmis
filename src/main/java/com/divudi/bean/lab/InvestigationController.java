@@ -85,7 +85,7 @@ public class InvestigationController implements Serializable {
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
-    boolean listMasterItemsOnly = false;//if boolean is true list only institution null
+    Boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
@@ -93,6 +93,35 @@ public class InvestigationController implements Serializable {
     Institution institution;
     List<Investigation> deletedIxs;
     List<Investigation> selectedIxs;
+
+    public void changeIxInstitutionAccordingToDept() {
+        List<Investigation> ixs = getFacade().findAll(true);
+        for (Investigation ix : ixs) {
+            if (ix.getInstitution() != null && !ix.getDepartment().getInstitution().equals(ix.getInstitution())) {
+                ix.setInstitution(ix.getDepartment().getInstitution());
+                getFacade().edit(ix);
+                System.out.println("ix = " + ix.getName());
+            }
+        }
+    }
+
+    public void changeIxReportedAsToMasterItem() {
+        List<Investigation> ixs = getFacade().findAll(true);
+        for (Investigation ix : ixs) {
+            if (ix.getReportedAs() != null && ix.getInstitution() != null && ix.getReportedAs().getInstitution() != null) {
+                String j;
+                Map m = new HashMap();
+                j = "select ix from Investigation ix "
+                        + " where ix.retired=false "
+                        + " and ix.institution is null "
+                        + " and ix.name=:ixn";
+                m.put("ixn", ix.getName());
+
+                getFacade().edit(ix);
+                System.out.println("ix = " + ix.getName());
+            }
+        }
+    }
 
     public String toEditReportFormat() {
         if (current == null) {
@@ -123,10 +152,10 @@ public class InvestigationController implements Serializable {
         if (current.getReportedAs() == null) {
             current.setReportedAs(current);
         }
-        ixCalController.setIx((Investigation) current.getReportedAs()); 
+        ixCalController.setIx((Investigation) current.getReportedAs());
         return "lab_calculation";
     }
-    
+
     public String toEditFees() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -364,11 +393,18 @@ public class InvestigationController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public boolean isListMasterItemsOnly() {
+    public Boolean isListMasterItemsOnly() {
+        if (listMasterItemsOnly == null) {
+            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+                listMasterItemsOnly = true;
+            } else {
+                listMasterItemsOnly = false;
+            }
+        }
         return listMasterItemsOnly;
     }
 
-    public void setListMasterItemsOnly(boolean listMasterItemsOnly) {
+    public void setListMasterItemsOnly(Boolean listMasterItemsOnly) {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
