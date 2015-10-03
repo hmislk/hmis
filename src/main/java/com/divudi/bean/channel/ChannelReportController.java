@@ -96,6 +96,7 @@ public class ChannelReportController implements Serializable {
     Department department;
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
+    List<BookingCountSummryRow>bookingCountSummryRows;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -1533,6 +1534,70 @@ public class ChannelReportController implements Serializable {
         return billFeeList;
     }
 
+    //get scan count and other channel count seperatly
+    public double CountBillByBillTypeAndFeeType(Bill bill, List<BillType> bts, boolean scan, boolean sessoinDate, boolean paid) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select count(DISTINCT(bf.bill)) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType in :bt "
+                + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft ";
+
+        if (scan) {
+            sql += " and bf.feeValue!=:d "
+                    + " and bf.fee.name=:fn ";
+        } else {
+            sql += " and bf.feeValue=:d "
+                    + " and bf.fee.name=:fn ";
+        }
+
+        if (paid) {
+            sql += " and bf.bill.paidBill is not null "
+                    + " and bf.bill.paidAmount!=:d ";
+        }
+        if (sessoinDate) {
+            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and bf.bill.createdAt between :fd and :td ";
+        }
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("class", bill.getClass());
+        m.put("ft", FeeType.Service);
+        m.put("bt", bts);
+        m.put("d", 0.0);
+        m.put("fn", "Scan Fee");
+
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+    
+    public void createSummeryRow(List<BillType>bts,boolean scan){
+        for (BillType bt : bts) {
+            List<BillType> types = new ArrayList<>();
+            types.add(bt);
+            Bill[] bills = {new BilledBill(),
+                new CancelledBill(),
+                new RefundBill()};
+            for (Bill b : bills) {
+                BookingCountSummryRow row=new BookingCountSummryRow();
+                if (scan) {
+                    row.setBookingType("Scan "+bt.getLabel());
+                }else{
+                    row.setBookingType(bt.getLabel());
+                }
+                row.setBilledCount(CountBillByBillTypeAndFeeType(b, bts, true, true, true));
+            }
+
+        }
+    }
+
     FeeType feeType;
     List<BillFee> listBilledBillFees;
     List<BillFee> listCanceledBillFees;
@@ -1547,6 +1612,16 @@ public class ChannelReportController implements Serializable {
             listRefundBillFees = getBillFeeWithFeeTypes(new RefundBill(), getFeeType());
         }
 
+    }
+
+    public void createChannelPatientCount() {
+        bookingCountSummryRows=new ArrayList<>();
+        BillType[] billTypes = {BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelAgent,};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
     }
 
     public List<BillFee> getListBilledBillFees() {
@@ -2560,6 +2635,16 @@ public class ChannelReportController implements Serializable {
         this.agentHistoryFacade = agentHistoryFacade;
     }
 
+    public List<BookingCountSummryRow> getBookingCountSummryRows() {
+        return bookingCountSummryRows;
+    }
+
+    public void setBookingCountSummryRows(List<BookingCountSummryRow> bookingCountSummryRows) {
+        this.bookingCountSummryRows = bookingCountSummryRows;
+    }
+    
+    //Inner classes - data structures
+
     public class ChannelReportColumnModelBundle implements Serializable {
 
         List<ChannelReportColumnModel> rows;
@@ -3012,6 +3097,46 @@ public class ChannelReportController implements Serializable {
             this.refundBillFeeTypeTotal = refundBillFeeTypeTotal;
         }
 
+    }
+    
+    public class BookingCountSummryRow{
+        String bookingType;
+        double billedCount;
+        double cancelledCount;
+        double refundCount;
+
+        public String getBookingType() {
+            return bookingType;
+        }
+
+        public void setBookingType(String bookingType) {
+            this.bookingType = bookingType;
+        }
+
+        public double getBilledCount() {
+            return billedCount;
+        }
+
+        public void setBilledCount(double billedCount) {
+            this.billedCount = billedCount;
+        }
+
+        public double getCancelledCount() {
+            return cancelledCount;
+        }
+
+        public void setCancelledCount(double cancelledCount) {
+            this.cancelledCount = cancelledCount;
+        }
+
+        public double getRefundCount() {
+            return refundCount;
+        }
+
+        public void setRefundCount(double refundCount) {
+            this.refundCount = refundCount;
+        }
+        
     }
 
 }
