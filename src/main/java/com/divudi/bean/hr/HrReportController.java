@@ -862,6 +862,11 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
+        
+        if (getReportKeyWord().getEmployeeStatus() != null) {
+            sql += " and ss.staff.employeeStatus=:est ";
+            hm.put("est", getReportKeyWord().getEmployeeStatus());
+        }
 
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.institution=:ins ";
@@ -3523,6 +3528,7 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);

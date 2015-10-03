@@ -572,10 +572,10 @@
 
                                         </p:submenu>                                       
                                     </p:submenu>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"
                                                  value="Staff Salary Advace"   
                                                  actionListener="#{staffSalaryController.clear}"/>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"   
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
                                                  actionListener="#{staffSalaryController.clear}"/>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
