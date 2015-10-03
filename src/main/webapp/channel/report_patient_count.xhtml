@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"           
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Casheir Session Report Detail">
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
+
+                            <h:outputLabel value="Channel Patient Count"/>
+                        </f:facet>
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            
+                            <p:outputLabel value="Fee Type" />
+                            <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+
+                        </h:panelGrid>
+                        <p:panel id="reportPrint">
+                            <p:spacer width="50" height="1"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountByCreatedDate}"/>
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountBySessionDate}"/>
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
+
+
+                            <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
+
+                                <h:panelGroup>
+
+                                    <h:outputLabel value="From" />
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To" />
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>
+
+                                </h:panelGroup >
+
+                            </h:panelGrid>
+
+                            <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
+                                <f:facet name="header" >
+                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>                          
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <p:column style="text-align: left;" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Booking Type" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.bookingType}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Bill Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.billedCount}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Cancel Bill Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.cancelledCount}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Rerfund Bill Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.refundCount}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Total Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.billedCount-(b.cancelledCount+b.refundCount)}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
