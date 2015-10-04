@@ -17,6 +17,9 @@
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
+                    <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" >
+                        <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
+                    </h:inputText>
                     <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
                                   selection="#{bookingController.speciality}"
@@ -26,7 +29,7 @@
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
-                        <p:column headerText="Specialities" filterBy="#{spe.name}" filterMatchMode="contains" 
+                        <p:column headerText="Specialities"
                                   style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
                             <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
