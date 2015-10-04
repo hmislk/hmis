@@ -14,6 +14,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.SymanticType;
+import com.divudi.data.lab.InvestigationWithCount;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
@@ -350,17 +351,60 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
-            sql += " and (c.institution is null "
-                    + " or c.institution=:ins) ";
-            m.put("ins", sessionController.getInstitution());
-        }
+//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//            sql += " and (c.institution is null "
+//                    + " or c.institution=:ins) ";
+//            m.put("ins", sessionController.getInstitution());
+//        }
 
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         return suggestions;
+    }
+    
+    public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
+        System.out.println("master" + listMasterItemsOnly);
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+
+        //m.put(m, m);
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and (upper(c.name) like :n or "
+                + " upper(c.fullName) like :n or "
+                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+        ////System.out.println(sql);
+
+        m.put("n", "%" + query.toUpperCase() + "%");
+
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+
+//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//            sql += " and (c.institution is null "
+//                    + " or c.institution=:ins) ";
+//            m.put("ins", sessionController.getInstitution());
+//        }
+
+        sql += " order by c.name";
+
+        suggestions = getFacade().findBySQL(sql, m);
+
+        List<InvestigationWithCount> ics = new ArrayList<>();
+        for(Investigation ix:suggestions){
+            InvestigationWithCount ic = new InvestigationWithCount(ix, investigationItemController.findItemCount(ix));
+            ics.add(ic);
+        }
+        
+        return ics;
+        
     }
 
     public List<Investigation> completeInvestWithout(String query) {
@@ -394,6 +438,17 @@ public class InvestigationController implements Serializable {
     }
 
     public Boolean isListMasterItemsOnly() {
+        if (listMasterItemsOnly == null) {
+            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+                listMasterItemsOnly = true;
+            } else {
+                listMasterItemsOnly = false;
+            }
+        }
+        return listMasterItemsOnly;
+    }
+    
+    public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
             if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
@@ -453,8 +508,12 @@ public class InvestigationController implements Serializable {
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
         if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
-            sql += " and c.institution=:ins";
-            m.put("ins", institution);
+            if (institution != null) {
+                sql += " and c.institution=:ins ";
+                m.put("ins", institution);
+            } else {
+                sql += " and c.institution is null ";
+            }
         }
         sql += " order by c.name";
         selectedItems = getFacade().findBySQL(sql, m);

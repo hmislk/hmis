@@ -48,6 +48,13 @@ body {
     border-bottom: 0px !important;
 }
 
+.horizontalCenteringLarge {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+
 .verticalAndHorizontalCenteringLarge {
     position: absolute;
     top: 50%;
