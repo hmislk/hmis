@@ -766,9 +766,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         String sql;
         Map m = new HashMap();
         m.put("wu", e);
-        sql = "select wd.department "
+        sql = "select distinct(wd.department) "
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
+                + " and wd.department.retired=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findBySQL(sql, m);

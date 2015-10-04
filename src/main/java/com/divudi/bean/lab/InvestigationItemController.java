@@ -41,16 +41,30 @@ import javax.inject.Named;
 public class InvestigationItemController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+
+    /**
+     * EJBs
+     */
     @EJB
     private InvestigationItemFacade ejbFacade;
     @EJB
     InvestigationItemValueFacade iivFacade;
+
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    InvestigationController investigationController;
+    /**
+     * Properties
+     */
     List<InvestigationItem> selectedItems;
     private InvestigationItem current;
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
+    
     String selectText = "";
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
@@ -59,6 +73,10 @@ public class InvestigationItemController implements Serializable {
     Investigation copyingFromInvestigation;
     Investigation copyingToInvestigation;
     String ixXml;
+
+    public void toInvestigationMaster() {
+        investigationController.setCurrent(currentInvestigation);
+    }
 
     public String copyInvestigation() {
         if (copyingFromInvestigation == null) {
@@ -72,11 +90,9 @@ public class InvestigationItemController implements Serializable {
 
         //System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
         //System.out.println("copyingToInvestigation = " + copyingToInvestigation);
-
         for (InvestigationItem ii : copyingFromInvestigation.getReportItems()) {
 
             //System.out.println("ii = " + ii);
-
             if (!ii.isRetired()) {
 
                 InvestigationItem nii = new InvestigationItem();
@@ -118,7 +134,6 @@ public class InvestigationItemController implements Serializable {
                 for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
 
                     //System.out.println("iiv = " + iiv);
-
                     InvestigationItemValue niiv = new InvestigationItemValue();
                     niiv.setCode(iiv.getCode());
                     niiv.setCreatedAt(new Date());
@@ -132,11 +147,11 @@ public class InvestigationItemController implements Serializable {
                 nii.setInvestigationItemValues(niivs);
 
                 getEjbFacade().create(nii);
-                
+
             }
 
         }
-        
+
         setCurrentInvestigation(copyingToInvestigation);
 
         return "/lab_investigation_format";
@@ -376,16 +391,16 @@ public class InvestigationItemController implements Serializable {
 
     }
 
-    public void saveSelectedItemValue(InvestigationItemValue iiv){
-        if(current==null){
+    public void saveSelectedItemValue(InvestigationItemValue iiv) {
+        if (current == null) {
             return;
         }
-        if(iiv==null){
+        if (iiv == null) {
             return;
         }
         getIivFacade().edit(iiv);
     }
-    
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -453,14 +468,32 @@ public class InvestigationItemController implements Serializable {
     }
 
     public List<InvestigationItem> getItems() {
-        if (getCurrentInvestigation().getId() != null) {
-            String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + getCurrentInvestigation().getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
-            items = getFacade().findBySQL(temSql);
-        } else {
-            items = new ArrayList<InvestigationItem>();
-        }
+        items = getItems(currentInvestigation);
         return items;
+    }
+    
+    public List<InvestigationItem> getItems(Investigation ix) {
+        List<InvestigationItem> iis;
+        if (ix!=null && ix.getId() != null) {
+            String temSql;
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
+            iis = getFacade().findBySQL(temSql);
+        } else {
+            iis = new ArrayList<>();
+        }
+        return iis;
+    }
+    
+    public Long findItemCount(Investigation ix) {
+        Long iis;
+        if (ix!=null && ix.getId() != null) {
+            String temSql;
+            temSql = "SELECT count(i) FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
+            iis = getFacade().countBySql(temSql);
+        } else {
+            iis = null;
+        }
+        return iis;
     }
 
     public Investigation getCurrentInvestigation() {

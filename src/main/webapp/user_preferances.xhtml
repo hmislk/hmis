@@ -26,9 +26,18 @@
                             <h:panelGrid columns="3" >
                                 <h:outputText value="Theme" ></h:outputText>
                                 <p:spacer height="1" width="30" ></p:spacer>
-                                <p:themeSwitcher style="width:165px" id="defaultSwitcher" value="#{themeController.theme}">
+                                <p:themeSwitcher style="width:165px" id="defaultSwitcher" value="#{themeController.theme}"
+                                                 var="t">
                                     <f:selectItem itemLabel="Choose Theme" itemValue="" />
                                     <f:selectItems value="#{themeController.themes}" />
+                                    
+                                    <p:column style="width:40%">
+                                        <h:outputText styleClass="ui-theme ui-theme-#{t}" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{t}" />
+                                    </p:column>
                                 </p:themeSwitcher>
                             </h:panelGrid>
 

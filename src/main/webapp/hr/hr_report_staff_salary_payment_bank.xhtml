@@ -54,6 +54,11 @@
                             <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}"/>
                             <h:outputLabel value="Bank : "/>
                             <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}"/>
+                            <h:outputLabel value="Employee Status : "/>
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.employeeStatus}" >
+                                <f:selectItem itemLabel="Please select Employee Status"/>
+                                <f:selectItems value="#{staffController.employeeStatuses}"/>
+                            </p:selectOneMenu>
                             <h:outputLabel value="Show Blocked"/>
                             <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
                             <h:outputLabel value="Show Hold"/>

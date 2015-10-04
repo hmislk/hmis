@@ -11,9 +11,9 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generate Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
-                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
-                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
+                <p:commandButton ajax="false" value="Generate Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
             </p:panel>
 
             <p:tabView style="min-height:300px;">

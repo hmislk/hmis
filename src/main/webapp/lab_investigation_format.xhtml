@@ -14,39 +14,49 @@
 
                 <h:panelGroup>
                     <p:panel header="Investigation">
-                        <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
-                            <p:ajax event="change" process="@this" update="acPt" />
-                        </p:selectBooleanCheckbox>
-                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
-                                        value="#{investigationItemController.currentInvestigation}" 
-                                        completeMethod="#{investigationController.completeInvest}" 
-                                        var="apt" itemLabel="#{apt.name}" 
-                                        itemValue="#{apt}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{apt.name}
-                            </p:column>
-                            <p:column>
-                                #{apt.id}
-                            </p:column>
-                            <p:column>
-                                #{apt.fullName}
-                            </p:column>
-                            <p:column>
-                                #{apt.department.name}
-                            </p:column>
-                            <p:column>
-                                #{apt.institution.name}
-                            </p:column>
-                            <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
-                        </p:autoComplete> 
-                        <!--ixConverter-->
-                        <p:panel header="Add New ..." >
-                            <h:commandButton value="Label" action="#{investigationItemController.addNewLabel()}"/>
-                            <h:commandButton value="Value" action="#{investigationItemController.addNewValue()}"/>
-                            <h:commandButton value="Cal" action="#{investigationItemController.addNewCalculation()}"/>
-                            <h:commandButton value="Flag" action="#{investigationItemController.addNewFlag() }"/>
-                        </p:panel>
+                        <f:facet name="header" >
+                            <h:outputText value="Investigation" ></h:outputText>
+                            <p:commandButton ajax="false" action="/lab_administration" value="Back" style="float: right;" ></p:commandButton>
+                        </f:facet>
+                        <h:panelGrid columns="1" >
+                            <h:panelGroup >
+                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acPt" />
+                                </p:selectBooleanCheckbox>
+                                <p:commandLink ajax="false" action="/lab_investigation" value="Ix Details" style="float: right;" 
+                                               actionListener="#{investigationItemController.toInvestigationMaster}"></p:commandLink>
+                            </h:panelGroup>
 
+
+                            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
+                                            value="#{investigationItemController.currentInvestigation}" 
+                                            completeMethod="#{investigationController.completeInvestWithIiCount}" 
+                                            var="apt" 
+                                            itemValue="#{apt.investigation}" size="30"  style="width: 400px;">
+                                <p:column>
+                                    #{apt.investigation.name}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.fullName}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.department.name}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.institution.name}
+                                </p:column>
+                                <p:column >
+                                    <h:outputText value="#{apt.iiCount}" ></h:outputText>
+                                </p:column>
+                                <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
+                            </p:autoComplete> 
+                            <p:panel header="Add New ..." >
+                                <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
+                                <p:commandButton  ajax="false" value="Value" action="#{investigationItemController.addNewValue()}"/>
+                                <p:commandButton  ajax="false" value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
+                                <p:commandButton  ajax="false"  value="Flag" action="#{investigationItemController.addNewFlag() }"/>
+                            </p:panel>
+                        </h:panelGrid>
                     </p:panel>
                     <p:panel  header="Investigation Items List" id="pIx">
                         <p:selectOneMenu  id="dtbItem" value="#{investigationItemController.current}" style="width: 270px;" >

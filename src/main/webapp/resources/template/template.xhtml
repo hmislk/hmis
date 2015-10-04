@@ -462,7 +462,7 @@
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
                                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard" rendered="false"/>
-                                    
+
                                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_search" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
@@ -572,10 +572,10 @@
 
                                         </p:submenu>                                       
                                     </p:submenu>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"
                                                  value="Staff Salary Advace"   
                                                  actionListener="#{staffSalaryController.clear}"/>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"   
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
                                                  actionListener="#{staffSalaryController.clear}"/>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
@@ -744,12 +744,24 @@
                             <h:panelGrid columns="3" >
                                 <h:outputText value="Department" ></h:outputText>
                                 <p:spacer height="1" width="30" ></p:spacer>
-                                <p:selectOneMenu value="#{sessionController.department}" required="true" >
+                                <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" >
                                     <f:selectItems value="#{sessionController.departments}"
                                                    var="dept"
                                                    itemLabel="#{dept.name}"
                                                    itemValue="#{dept}" >
                                     </f:selectItems>
+                                    <p:column  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Department" ></h:outputText>
+                                        </f:facet>
+                                        <h:outputText value="#{d.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Institution" ></h:outputText>
+                                        </f:facet>
+                                        <h:outputText value="#{d.institution.name}" ></h:outputText>
+                                    </p:column>
                                 </p:selectOneMenu>
 
                                 <p:spacer height="1" width="30" ></p:spacer>
