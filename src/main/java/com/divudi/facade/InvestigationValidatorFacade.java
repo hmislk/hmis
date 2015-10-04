@@ -15,7 +15,7 @@ import javax.persistence.PersistenceContext;
  * @author pasan
  */
 @Stateless
-public class InvestigationItemValidatorFacade extends AbstractFacade<InvestigationValidator> {
+public class InvestigationValidatorFacade extends AbstractFacade<InvestigationValidator> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -24,7 +24,7 @@ public class InvestigationItemValidatorFacade extends AbstractFacade<Investigati
         if(em == null){}return em;
     }
 
-    public InvestigationItemValidatorFacade() {
+    public InvestigationValidatorFacade() {
         super(InvestigationValidator.class);
     }
     

@@ -25,6 +25,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -58,7 +59,7 @@ public class ReportItem implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Item item;
     @Enumerated(EnumType.STRING)
     InvestigationItemType ixItemType;
@@ -107,24 +108,36 @@ public class ReportItem implements Serializable {
     @ManyToOne
     private Category referringCategory;
 
-    @Transient
-    double transCssTop;
+    double riTop;
+    double riHeight;
+    double riLeft;
+    double riWidth;
+    double riFontSize;
+    
+    @Lob
+    String htmltext;
 
-    public double getTransCssTop() {
-        try{
-            transCssTop= Double.parseDouble(cssTop);
-        }catch(Exception e){
-            transCssTop = 0;
+    public String getHtmltext() {
+        return htmltext;
+    }
+
+    public void setHtmltext(String htmltext) {
+        this.htmltext = htmltext;
+    }
+    
+    
+
+    public String removeLastPercentage(String inputString) {
+        if (inputString == null) {
+            return null;
         }
-        return transCssTop;
+        if (inputString.contains("%")) {
+            int len = inputString.length();
+            return inputString.substring(0, len - 1);
+        }
+        return inputString;
     }
 
-    public void setTransCssTop(double transCssTop) {
-        this.transCssTop = transCssTop;
-    }
-    
-    
-    
     public int getPageNo() {
         return pageNo;
     }
@@ -303,9 +316,6 @@ public class ReportItem implements Serializable {
     }
 
     public String getCssTop() {
-        if (cssTop == null || cssTop.equals("")) {
-            cssTop = "10%";
-        }
         return cssTop;
     }
 
@@ -354,6 +364,9 @@ public class ReportItem implements Serializable {
     }
 
     public CssFontStyle getCssFontStyle() {
+        if (cssFontStyle == null) {
+            cssFontStyle = CssFontStyle.Normal;
+        }
         return cssFontStyle;
     }
 
@@ -404,10 +417,6 @@ public class ReportItem implements Serializable {
     public String getCssColor() {
         return cssColor;
     }
-    
-    public String getInnerCss() {
-        return cssColor + "; " + cssWidth + ";" ;
-    }
 
     public void setCssColor(String cssColor) {
         this.cssColor = cssColor;
@@ -454,6 +463,9 @@ public class ReportItem implements Serializable {
     }
 
     public CssTextAlign getCssTextAlign() {
+        if (cssTextAlign == null) {
+            cssTextAlign = CssTextAlign.Left;
+        }
         return cssTextAlign;
     }
 
@@ -501,38 +513,209 @@ public class ReportItem implements Serializable {
         this.sName = sName;
     }
 
+//    public String getCssStyle() {
+//        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
+//                + "%; width:" + getRiWidth() + "; height:"
+//                + getRiHeight() + "; background-color:" + cssColor + ";"
+//                + "font-style:" + cssFontStyle + ";font-size:"
+//                + cssFontSize + "%;line-height:" + cssLineHeight
+//                + "%;margin:" + cssMargin + "%;padding:" + cssPadding + "%;"
+//                + "border:" + cssBorder + "%;background-color:" + cssBackColor + ";"
+//                + "position:" + cssPosition + "; vertical-align: " + cssVerticalAlign + ";"
+//                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
+//                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
+//                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
+//
+//        //TODO (Later) to add cssHeight, font styles, etc, Now 12
+//        return cssStyle;
+//    }
     public String getCssStyle() {
-        cssStyle = "top:" + cssTop + "%; left:" + cssLeft
-                + "%; width:" + cssWidth + "; height:"
-                + cssHeight + "; background-color:" + cssColor + ";"
-                + "font-style:" + cssFontStyle + ";font-size:"
-                + cssFontSize + "%;line-height:" + cssLineHeight
-                + "%;margin:" + cssMargin + "%;padding:" + cssPadding + "%;"
-                + "border:" + cssBorder + "%;background-color:" + cssBackColor + ";"
-                + "position:" + cssPosition + "; vertical-align: " + cssVerticalAlign + ";"
-                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
-                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
-                + "font-weight: " + cssFontWeight + ";border-radius: " + cssBorderRadius + ";";
+        cssStyle = "";
+        if (getRiTop() != 0) {
+            cssStyle += "top:" + getRiTop() + "%;";
+        }
+        if (getRiLeft() != 0) {
+            cssStyle += "left:" + getRiLeft() + "%;";
+        }
+        if (getRiWidth() != 0) {
+            cssStyle += "width:" + getRiWidth() + "%;";
+        }
+        if (getRiHeight() != 0) {
+            cssStyle += "height:" + getRiHeight() + "%;";
+        }
+        if (getRiFontSize() != 0) {
+            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+        }
 
+        switch (getCssTextAlign()) {
+            case Center:
+                cssStyle += "text-align:center;";
+                break;
+            case Justify:
+                cssStyle += "text-align:justify;";
+                break;
+            case Left:
+                cssStyle += "text-align:left;";
+                break;
+            case Right:
+                cssStyle += "text-align:right;";
+                break;
+            default:
+        }
+
+        switch (getCssFontStyle()) {
+            case Normal:
+                cssStyle += "font-style:normal;";
+                break;
+            case Italic:
+                cssStyle += "font-style:italic;";
+                break;
+            case Oblique:
+                cssStyle += "font-style:oblique;";
+                break;
+            default:
+        }
+
+        if (cssFontFamily != null && !cssFontFamily.equals("")) {
+            cssStyle += "font-family:" + cssFontFamily + "; ";
+        }
+
+        if (cssFontWeight != null && !cssFontWeight.equals("")) {
+            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+        }
+
+        cssStyle += "position:static; ";
+        if (cssVerticalAlign != null) {
+            cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
+        }
+
+//        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
+//                + "%; width:" + getRiWidth() + "; height:"
+//                + getRiHeight() + "; background-color:" + cssColor + ";"
+//                + "font-style:" + cssFontStyle + ";font-size:"
+//                + cssFontSize + "%;line-height:" + cssLineHeight
+//                + "%;margin:" + cssMargin + "%;padding:" + cssPadding + "%;"
+//                + "border:" + cssBorder + "%;background-color:" + cssBackColor + ";"
+//                + "position:" + cssPosition + "; vertical-align: " + cssVerticalAlign + ";"
+//                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
+//                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
+//                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
         //TODO (Later) to add cssHeight, font styles, etc, Now 12
         return cssStyle;
     }
 
     public String getInnerCssStyle() {
-        cssStyle = "width:" + cssWidth + "!important; height:"
-                + cssHeight + "; background-color:" + cssColor + ";"
-                + "font-style:" + cssFontStyle + ";font-size:"
-                + cssFontSize + "%;line-height:" + cssLineHeight
-                + "%; vertical-align: " + cssVerticalAlign + ";"
-                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
-                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
-                + "font-weight: " + cssFontWeight + ";";
+        cssStyle = "";
+        if (getRiFontSize() != 0) {
+            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+        }
 
-        //TODO (Later) to add cssHeight, font styles, etc, Now 12
+        switch (getCssTextAlign()) {
+            case Center:
+                cssStyle += "text-align:center;";
+                break;
+            case Justify:
+                cssStyle += "text-align:justify;";
+                break;
+            case Left:
+                cssStyle += "text-align:left;";
+                break;
+            case Right:
+                cssStyle += "text-align:right;";
+                break;
+            default:
+        }
+
+        switch (getCssFontStyle()) {
+            case Normal:
+                cssStyle += "font-style:normal;";
+                break;
+            case Italic:
+                cssStyle += "font-style:italic;";
+                break;
+            case Oblique:
+                cssStyle += "font-style:oblique;";
+                break;
+            default:
+        }
+
+        if (cssFontFamily != null && !cssFontFamily.equals("")) {
+            cssStyle += "font-family:" + getCssFontFamily() + "; ";
+        }
+
+        if (cssFontWeight != null && !cssFontWeight.equals("")) {
+            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+        }
+
+        cssStyle+="min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
+        
         return cssStyle;
     }
 
-    
+    public String getOuterCssStyle() {
+        cssStyle = "";
+        if (getRiTop() != 0) {
+            cssStyle += "top:" + getRiTop() + "%;";
+        }
+        if (getRiLeft() != 0) {
+            cssStyle += "left:" + getRiLeft() + "%;";
+        }
+        if (getRiWidth() != 0) {
+            cssStyle += "width:" + getRiWidth() + "%;";
+        }
+        if (getRiHeight() != 0) {
+            cssStyle += "height:" + getRiHeight() + "%;";
+        }
+        if (getRiFontSize() != 0) {
+            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+        }
+
+        switch (getCssTextAlign()) {
+            case Center:
+                cssStyle += "text-align:center;";
+                break;
+            case Justify:
+                cssStyle += "text-align:justify;";
+                break;
+            case Left:
+                cssStyle += "text-align:left;";
+                break;
+            case Right:
+                cssStyle += "text-align:right;";
+                break;
+            default:
+        }
+
+        switch (getCssFontStyle()) {
+            case Normal:
+                cssStyle += "font-style:normal;";
+                break;
+            case Italic:
+                cssStyle += "font-style:italic;";
+                break;
+            case Oblique:
+                cssStyle += "font-style:oblique;";
+                break;
+            default:
+        }
+
+        if (cssFontFamily != null && !cssFontFamily.equals("")) {
+            cssStyle += "font-family:" + getCssFontFamily() + "; ";
+        }
+
+        if (cssFontWeight != null && !cssFontWeight.equals("")) {
+            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+        }
+
+        if (cssVerticalAlign != null) {
+            cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
+        }
+        
+        cssStyle+=" position:absolute; overflow: hidden!important; ";
+        
+        return cssStyle;
+    }
+
     public void setCssStyle(String cssStyle) {
         this.cssStyle = cssStyle;
     }
@@ -552,4 +735,54 @@ public class ReportItem implements Serializable {
     public void setReferringCategory(Category referringCategory) {
         this.referringCategory = referringCategory;
     }
+
+    public double getRiTop() {
+        return riTop;
+    }
+
+    public void setRiTop(double riTop) {
+        this.riTop = riTop;
+    }
+
+    public double getRiHeight() {
+        if(riHeight==0){
+            riHeight=2;
+        }
+        return riHeight;
+    }
+
+    public void setRiHeight(double riHeight) {
+        this.riHeight = riHeight;
+    }
+
+    public double getRiLeft() {
+        return riLeft;
+    }
+
+    public void setRiLeft(double riLeft) {
+        this.riLeft = riLeft;
+    }
+
+    public double getRiWidth() {
+        if(riWidth==0){
+            riWidth=30;
+        }
+        return riWidth;
+    }
+
+    public void setRiWidth(double riWidth) {
+        this.riWidth = riWidth;
+    }
+
+    public double getRiFontSize() {
+        if(riFontSize==0){
+            riFontSize=12;
+        }
+        return riFontSize;
+    }
+
+    public void setRiFontSize(double riFontSize) {
+        this.riFontSize = riFontSize;
+    }
+
 }

@@ -1,0 +1,2 @@
+
+select `PURCAHSERATE`, `RETAILSALERATE`,`WHOLESALERATE` from itembatch order by `WHOLESALERATE` desc;

@@ -12,24 +12,25 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
-                            <h:panelGrid columns="6" >
+                            <h:panelGrid columns="7" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                 </p:calendar>
+                                <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.createPatientInvestigationsTableLogin()}" onclick="onSubmitButton();" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 <p:spacer height="30"/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/> <h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>
                                 <h:outputLabel value="Patient Phone"/>                               
                                 <h:outputLabel value="Investigation Name"/>
-                                <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
@@ -45,8 +46,8 @@
 
                             <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
-                                               value="#{pi.billItem.bill.insId}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                               value="#{pi.billItem.bill.deptId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
                                 <p:tooltip for="lblBillNo"  >
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                     <br/>
@@ -54,26 +55,28 @@
                                     <br/>
                                     <h:outputLabel value="Sampled : " />
                                     <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                     <br/>
                                     <h:outputLabel value="Received : " />
                                     <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled : " />
                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{pi.billItem.refunded}" >
                                         <h:outputLabel style="color: red;" value="Refunded : " />
                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
+
+
                                 </p:tooltip>
                             </p:column>
 
@@ -111,12 +114,13 @@
                                 </p:tooltip>
                             </p:column>
 
+
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
                                                action="patient" 
                                                style="text-decoration:underline;"
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"
                                                >
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
@@ -138,6 +142,11 @@
 
                             </p:column>
 
+                            <p:column headerText="Billed for"  styleClass="alignTop">
+                                <h:outputLabel value="#{pi.billItem.bill.toDepartment.name}" >
+                                </h:outputLabel>
+                            </p:column>
+                            
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
@@ -182,7 +191,7 @@
                                     <h:outputLabel value="Receive Sample" rendered="#{!pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="Sample received at " rendered="#{pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.receivedAt}" rendered="#{pi.received}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -190,7 +199,7 @@
                                     <h:outputLabel value="Collect Sample" rendered="#{!pi.collected }" ></h:outputLabel>
                                     <h:outputLabel value="Sampled at " rendered="#{pi.collected}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.sampledAt}" rendered="#{pi.collected}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -198,24 +207,25 @@
 
                                 <p:tooltip for="btnPrintWorksheets" value="Print worksheet" ></p:tooltip>
 
-                                <h:dataTable  rendered="#{!empty itemForItemController.getItemsForParentItem(pi.investigation)}"
-                                              value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi" >
-                                    <h:column >
-                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" action="#{patientReportController.enterNewReportFormat(pi, ifi)}" 
-                                                       ajax="false">
-                                        </p:commandLink>
-                                    </h:column>
-                                </h:dataTable>
+
+                                <table >
+                                    <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
+                                        <tr>
+                                            <td>
+                                                <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" action="#{patientReportController.enterNewReportFormat(pi, ifi)}" 
+                                                               ajax="false">
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </table>
+
 
                             </p:column>
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
-                                <h:dataTable 
-                                    value="#{pi.patientReports}" 
-                                    var="dpr" rendered="#{pi.patientReports.size() ne 0}"  
-                                    styleClass="noBorderGrid"
-                                    >
+                                <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" >
                                     <h:column >
 
                                         <h:panelGrid columns="6" styleClass="noBorderGrid">
@@ -240,17 +250,8 @@
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
                                                             style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
-
-                                            <p:commandLink style="float: right" ajax="false" 
-                                                           id="btnRevert" 
-                                                           disabled="#{!pi.collected}"
-                                                           action="#{patientInvestigationController.revertMarkedSample()}" 
-                                                           rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
-                                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                                <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
-                                            </p:commandLink>
-
                                         </h:panelGrid>
+
 
                                         <p:tooltip for="imgApproved" >
                                             <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
@@ -273,23 +274,22 @@
                                             <br/>
                                             <h:outputLabel value="Data enterd at " ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.dataEntryAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                             </h:outputLabel>
                                         </p:tooltip>
-                                        <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>
+
 
                                     </h:column>
-
                                 </h:dataTable>
 
 
