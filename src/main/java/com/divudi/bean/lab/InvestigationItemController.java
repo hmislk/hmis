@@ -879,6 +879,10 @@ public class InvestigationItemController implements Serializable {
 
     }
 
+    Long findItemCount(Investigation ix) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public enum EditMode {
 
         View_Mode,
