@@ -14,9 +14,11 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,6 +51,8 @@ public class InvestigationItemController implements Serializable {
     private InvestigationItemFacade ejbFacade;
     @EJB
     InvestigationItemValueFacade iivFacade;
+    @EJB
+    ReportItemFacade riFacade;
 
     /**
      * Controllers
@@ -64,7 +68,7 @@ public class InvestigationItemController implements Serializable {
     private InvestigationItem current;
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
-    
+
     String selectText = "";
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
@@ -260,6 +264,18 @@ public class InvestigationItemController implements Serializable {
 
     public void setAddingItem(InvestigationItemValue addingItem) {
         this.addingItem = addingItem;
+    }
+
+    public List<ReportItem> getAllReportItemList() {
+        String sql = "select ri from ReportItem ri where ri.retired=false ";
+
+        return riFacade.findBySQL(sql);
+    }
+    
+    public void moveAllItemsUp(){
+        for(ReportItem ri:getAllReportItemList()){
+            //ri.set
+        }
     }
 
     public List<InvestigationItem> getSelectedItems() {
@@ -471,10 +487,10 @@ public class InvestigationItemController implements Serializable {
         items = getItems(currentInvestigation);
         return items;
     }
-    
+
     public List<InvestigationItem> getItems(Investigation ix) {
         List<InvestigationItem> iis;
-        if (ix!=null && ix.getId() != null) {
+        if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
             iis = getFacade().findBySQL(temSql);
@@ -483,12 +499,12 @@ public class InvestigationItemController implements Serializable {
         }
         return iis;
     }
-    
+
     public Long findItemCount(Investigation ix) {
         Long iis;
-        if (ix!=null && ix.getId() != null) {
+        if (ix != null && ix.getId() != null) {
             String temSql;
-            temSql = "SELECT count(i) FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
+            temSql = "SELECT count(i) FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId();
             iis = getFacade().countBySql(temSql);
         } else {
             iis = null;
