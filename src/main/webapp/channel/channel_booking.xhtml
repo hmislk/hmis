@@ -19,6 +19,7 @@
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
+                        <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </h:inputText>
                     <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
@@ -28,6 +29,7 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
                         <p:column headerText="Specialities"
                                   style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
@@ -38,13 +40,14 @@
                 </h:panelGrid>
 
                 <h:panelGroup id="scStaff" >
-
-                    <p:dataTable  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
+                    <h:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectText}" >
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
+                    </h:inputText>
+                    <p:dataTable id="tblCon"  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
                                   selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
                                   style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
                                   selectionMode="single" >
                         <p:column headerText="Consultants"
-                                  filterBy="#{mys.person.name}" filterMatchMode="contains" 
                                   style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.name}" />
                             <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
@@ -52,7 +55,7 @@
                                           atPosition="left bottom" ></poue:tooltip>
                         </p:column>
                         <p:ajax  event="rowSelect" 
-                                 process="@this :#{p:component('scStaff')}" 
+                                 process="@this" 
                                  update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
                                  listener="#{bookingController.generateSessions}"/>
                     </p:dataTable>
