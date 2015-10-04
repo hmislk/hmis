@@ -1542,103 +1542,68 @@ public class ChannelReportController implements Serializable {
     }
 
     //get scan count and other channel count seperatly
-//    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean sessoinDate, boolean paid) {
-//
-//        String sql;
+    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt,boolean scan, boolean sessoinDate, boolean paid) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select count(bf) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType=:bt "
+                + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft ";
+
+        if (scan) {
+            sql += " and bf.feeValue>0 ";
+//                    + " and bf.fee.name=:fn ";
+        } else {
+            sql += " and bf.feeValue=0 ";
+//                    + " and bf.fee.name=:fn ";
+        }
+
+        if (paid) {
+            sql += " and bf.bill.paidBill is not null "
+                    + " and bf.bill.paidAmount!=0 ";
+        }
+        if (sessoinDate) {
+            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and bf.bill.createdAt between :fd and :td ";
+        }
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("class", bill.getClass());
+        m.put("ft", ft);
+        m.put("bt", bt);
+//        m.put("fn", "Scan Fee");
+        
+        double d= getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " +d);
+        return d;
+    }
+    
+//    public double countScan(BillType bt, Bill bill, boolean sessoinDate) {
 //        Map m = new HashMap();
-//
-//        sql = " select count(bf) from BillFee  bf where "
+//        String sql = " select count(bf) from BillFee  bf where "
 //                + " bf.bill.retired=false "
-//                //                + " and bf.bill.billType in :bt "
 //                + " and bf.bill.billType=:bt "
+//                + " and bf.feeValue>0 "
 //                + " and type(bf.bill)=:class "
-//                + " and bf.fee.feeType =:ft "
-//                + " and bf.feeValue>0 ";
-//
-////        if (scan) {
-////            sql += " and bf.feeValue>0 ";
-//////                    + " and bf.fee.name=:fn ";
-////        } else {
-////            sql += " and bf.feeValue=0 ";
-//////                    + " and bf.fee.name=:fn ";
-////        }
-//
-//        if (paid) {
-//            sql += " and bf.bill.paidBill is not null "
-//                    + " and bf.bill.paidAmount!=0 ";
-//        }
-//        if (sessoinDate) {
-//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
-//        } else {
-//            sql += " and bf.bill.createdAt between :fd and :td ";
-//        }
-//
+//                + " and bf.fee.feeType =:ft"
+//                + " and bf.bill.createdAt between :fd and :td ";
+//        
 //        m.put("fd", getFromDate());
 //        m.put("td", getToDate());
+//        m.put("ft", FeeType.Service);
 //        m.put("class", bill.getClass());
-//        m.put("ft", ft);
-////        m.put("bt", bts);
 //        m.put("bt", bt);
-////        m.put("fn", "Scan Fee");
-//        
-//        
-//        
-//        System.out.println("sql = " + sql);
-//        System.out.println("m = " + m);
-//        System.err.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
-//        System.err.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.DATE));
-//        System.err.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP)2 = " + a11(bt,bill));
-//        return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+//        System.out.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
+//        return getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 //    }
-    public double countScan(BillType bt, Bill bill, boolean sessoinDate) {
-        Map m = new HashMap();
-        String sql = " select count(bf) from BillFee  bf where "
-                + " bf.bill.retired=false "
-                + " and bf.bill.billType=:bt "
-                + " and bf.feeValue>0 "
-                + " and type(bf.bill)=:class "
-                + " and bf.fee.feeType =:ft"
-                + " and bf.bill.createdAt between :fd and :td ";
-        
-//        if (sessoinDate) {
-//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
-//        } else {
-//            sql += " and bf.bill.createdAt between :fd and :td ";
-//        }
-
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ft", FeeType.Service);
-        m.put("class", bill.getClass());
-        m.put("bt", bt);
-        System.out.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
-        return getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-    }
-
-    public double countHos(BillType bt, Bill bill, boolean sessoinDate) {
-        Map m = new HashMap();
-        String sql = " select bf from BillFee  bf where "
-                + " bf.bill.retired=false "
-                + " and bf.bill.billType=:bt "
-                + " and bf.feeValue>0 "
-                + " and type(bf.bill)=:class "
-                + " and bf.fee.feeType =:ft"
-                + " and bf.bill.createdAt between :fd and :td ";
-        
-//        if (sessoinDate) {
-//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
-//        } else {
-//            sql += " and bf.bill.createdAt between :fd and :td ";
-//        }
-
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ft", FeeType.OwnInstitution);
-        m.put("class", bill.getClass());
-        m.put("bt", bt);
-        System.out.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
-        return getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-    }
 
     FeeType feeType;
     List<BillFee> listBilledBillFees;
@@ -1680,21 +1645,21 @@ public class ChannelReportController implements Serializable {
             BookingCountSummryRow row = new BookingCountSummryRow();
             if (ft == FeeType.Service) {
                 row.setBookingType("Scan " + bt.getLabel());
-                row.setBilledCount(countScan(bt,new BilledBill(),sessionDate));
-//                row.setCancelledCount(countScan( bt, new CancelledBill(),sessionDate));
-//                row.setRefundCount(countScan( bt, new RefundBill(),sessionDate));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, true, sessionDate, paid));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, true, sessionDate, paid));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, true, sessionDate, paid));
             } else {
                 row.setBookingType(bt.getLabel());
-                row.setBilledCount(countHos(bt,new BilledBill(),sessionDate));
-//                row.setCancelledCount(countHos( bt, new CancelledBill(),sessionDate));
-//                row.setRefundCount(countHos( bt, new RefundBill(),sessionDate));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, false, sessionDate, paid));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, false, sessionDate, paid));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, false, sessionDate, paid));
             }
 
             bookingCountSummryRows.add(row);
 
         }
     }
-
+    
     public List<BillFee> getListBilledBillFees() {
         return listBilledBillFees;
     }
