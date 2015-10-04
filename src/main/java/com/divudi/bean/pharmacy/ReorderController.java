@@ -280,7 +280,8 @@ public class ReorderController implements Serializable {
     public List<ItemTransactionSummeryRow> findDailyStockAverage(Item item, Department dept, Date fd, Date td) {
         String jpql;
         List<ItemTransactionSummeryRow> rows;
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
+        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow"
+                + "(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
                 + " FROM StockHistory s "
                 + " WHERE s.createdAt between :fd and :td "
                 + " and s.item=:item ";
@@ -815,7 +816,7 @@ public class ReorderController implements Serializable {
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();
-        return "/pharmacy_purhcase_order_request";
+        return "/pharmacy/pharmacy_purhcase_order_request";
     }
 
     public String createPharmacyTransferRequest() {

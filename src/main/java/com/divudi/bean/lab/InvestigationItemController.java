@@ -10,18 +10,36 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.CssFontStyle;
+import com.divudi.data.CssTextAlign;
+import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.ReportItemType;
+import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -30,6 +48,14 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -47,6 +73,8 @@ public class InvestigationItemController implements Serializable {
     private InvestigationItemFacade ejbFacade;
     @EJB
     InvestigationItemValueFacade iivFacade;
+    @EJB
+    ReportItemFacade riFacade;
     List<InvestigationItem> selectedItems;
     private InvestigationItem current;
     private Investigation currentInvestigation;
@@ -55,116 +83,152 @@ public class InvestigationItemController implements Serializable {
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
     String addingString;
+    EditMode editMode = EditMode.View_Mode;
 
-    Investigation copyingFromInvestigation;
-    Investigation copyingToInvestigation;
-    String ixXml;
+    private String input;
+    private int keyCode;
+    private int previousKeyCode;
+    private int specialCode;
 
-    public String copyInvestigation() {
-        if (copyingFromInvestigation == null) {
-            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
-            return "";
+    public EditMode getEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(EditMode editMode) {
+        this.editMode = editMode;
+    }
+
+    public int getPreviousKeyCode() {
+        return previousKeyCode;
+    }
+
+    public void setPreviousKeyCode(int previousKeyCode) {
+        this.previousKeyCode = previousKeyCode;
+    }
+
+    public int getSpecialCode() {
+        return specialCode;
+    }
+
+    public void setSpecialCode(int specialCode) {
+        this.specialCode = specialCode;
+    }
+
+    public void ajaxIiKeydownListner(InvestigationItem ii) {
+        System.out.println("ii = " + ii);
+        if (ii == null) {
+            return;
         }
-        if (copyingToInvestigation == null) {
-            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
-            return "";
-        }
-
-        //System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
-        //System.out.println("copyingToInvestigation = " + copyingToInvestigation);
-
-        for (InvestigationItem ii : copyingFromInvestigation.getReportItems()) {
-
-            //System.out.println("ii = " + ii);
-
-            if (!ii.isRetired()) {
-
-                InvestigationItem nii = new InvestigationItem();
-                nii.setCategory(ii.getCategory());
-                nii.setCreatedAt(new Date());
-                nii.setCreater(getSessionController().getLoggedUser());
-                nii.setCssBackColor(ii.getCssBackColor());
-                nii.setCssBorder(ii.getCssBorder());
-                nii.setCssBorderRadius(ii.getCssBorderRadius());
-                nii.setCssClip(ii.getCssClip());
-                nii.setCssColor(ii.getCssColor());
-                nii.setCssFontFamily(ii.getCssFontFamily());
-                nii.setCssFontSize(ii.getCssFontSize());
-                nii.setCssFontStyle(ii.getCssFontStyle());
-                nii.setCssFontVariant(ii.getCssFontVariant());
-                nii.setCssFontWeight(ii.getCssFontWeight());
-                nii.setCssHeight(ii.getCssHeight());
-                nii.setCssLeft(ii.getCssLeft());
-                nii.setCssLineHeight(ii.getCssLineHeight());
-                nii.setCssMargin(ii.getCssMargin());
-                nii.setCssOverflow(ii.getCssOverflow());
-                nii.setCssPadding(ii.getCssPadding());
-                nii.setCssPosition(ii.getCssPosition());
-                nii.setCssStyle(ii.getCssStyle());
-                nii.setCssTextAlign(ii.getCssTextAlign());
-                nii.setCssTop(ii.getCssTop());
-                nii.setCssVerticalAlign(ii.getCssVerticalAlign());
-                nii.setCssWidth(ii.getCssWidth());
-                nii.setCssZorder(ii.getCssZorder());
-
-                nii.setIxItemType(ii.getIxItemType());
-                nii.setIxItemValueType(ii.getIxItemValueType());
-                nii.setItem(copyingToInvestigation);
-
-                nii.setName(ii.getName());
-                nii.setReportItemType(ii.getReportItemType());
-
-                List<InvestigationItemValue> niivs = new ArrayList<>();
-                for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
-
-                    //System.out.println("iiv = " + iiv);
-
-                    InvestigationItemValue niiv = new InvestigationItemValue();
-                    niiv.setCode(iiv.getCode());
-                    niiv.setCreatedAt(new Date());
-                    niiv.setCreater(getSessionController().getLoggedUser());
-                    niiv.setInvestigationItem(nii);
-                    niiv.setName(iiv.getName());
-                    niiv.setOrderNo(iiv.getOrderNo());
-                    niivs.add(niiv);
-                }
-
-                nii.setInvestigationItemValues(niivs);
-
-                getEjbFacade().create(nii);
-                
+        System.out.println("keyCode = " + keyCode);
+        if (specialCode == 17) {
+            specialCode = 17;
+        } else {
+            if (keyCode != previousKeyCode) {
+                specialCode = 0;
             }
-
+            switch (keyCode) {
+                case 38:
+                    //Up
+                    ii.setRiTop(ii.getRiTop() - 1);
+                    break;
+                case 40:
+                    // Down
+                    ii.setRiTop(ii.getRiTop() + 1);
+                    break;
+                case 37:
+                    // Left
+                    ii.setRiLeft(ii.getRiLeft() - 1);
+                    break;
+                case 39:
+                    // Right
+                    ii.setRiLeft(ii.getRiLeft() + 1);
+                    break;
+                case 46:
+                    ii.setRetired(true);
+                    ii.setRetiredAt(new Date());
+                    ii.setRetirer(getSessionController().getLoggedUser());
+                    break;
+                case 66://b
+                    ii.setCssFontWeight("bold");
+                    break;
+                case 73://i
+                    ii.setCssFontStyle(CssFontStyle.Italic);
+                    break;
+                case 78://n
+                    ii.setCssFontWeight("bold");
+                    ii.setCssFontStyle(CssFontStyle.Normal);
+                    break;
+                case 82://r
+                    ii.setCssTextAlign(CssTextAlign.Right);
+                    break;
+                case 76://l
+                    ii.setCssTextAlign(CssTextAlign.Left);
+                    break;
+                case 67://c
+                    ii.setCssTextAlign(CssTextAlign.Center);
+                    break;
+                case 74://j
+                    ii.setCssTextAlign(CssTextAlign.Justify);
+                    break;
+                case 71://g
+                    ii.setRiFontSize(ii.getRiFontSize() + 1);
+                    break;
+                case 83://s
+                    ii.setRiFontSize(ii.getRiFontSize() - 1);
+                    break;
+                case 87://w
+                    ii.setRiWidth(ii.getRiWidth() + 1);
+                    break;
+                case 79://o
+                    ii.setRiWidth(ii.getRiWidth() - 1);
+                    break;
+                case 84://t
+                    ii.setRiHeight(ii.getRiHeight() + 1);
+                    break;
+                case 72://h
+                    ii.setRiHeight(ii.getRiHeight() - 1);
+                    break;
+                default:
+                    // Other key was pressed.
+                    break;
+            }
         }
-        
-        setCurrentInvestigation(copyingToInvestigation);
-
-        return "/lab_investigation_format";
-
+        previousKeyCode = keyCode;
+        getFacade().edit(ii);
+        setCurrent(ii);
     }
 
-    public String getIxXml() {
-        return ixXml;
+    public String getInput() {
+        return input;
     }
 
-    public void setIxXml(String ixXml) {
-        this.ixXml = ixXml;
+    public void setInput(String input) {
+        this.input = input;
     }
 
-    public Investigation getCopyingFromInvestigation() {
-        return copyingFromInvestigation;
+    public int getKeyCode() {
+        return keyCode;
     }
 
-    public void setCopyingFromInvestigation(Investigation copyingFromInvestigation) {
-        this.copyingFromInvestigation = copyingFromInvestigation;
+    public void setKeyCode(int keyCode) {
+        this.keyCode = keyCode;
     }
 
-    public Investigation getCopyingToInvestigation() {
-        return copyingToInvestigation;
+    public void saveIiOnAjax(InvestigationItem ii) {
+        System.out.println("saving Ii on Ajax");
+        System.out.println("ii = " + ii);
+        if (ii != null) {
+            System.out.println("ii name = " + ii.getName());
+            getFacade().edit(ii);
+        }
+        setCurrent(ii);
     }
 
-    public void setCopyingToInvestigation(Investigation copyingToInvestigation) {
-        this.copyingToInvestigation = copyingToInvestigation;
+    public void makeThisCurrent(InvestigationItem ii) {
+        System.out.println("saving Ii on Ajax");
+        System.out.println("ii = " + ii);
+        setCurrent(ii);
+        System.out.println("current = " + current);
     }
 
     public InvestigationItemValueFacade getIivFacade() {
@@ -186,14 +250,14 @@ public class InvestigationItemController implements Serializable {
     public List<InvestigationItem> completeIxItem(String qry) {
         List<InvestigationItem> iivs;
         if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
-            return new ArrayList<InvestigationItem>();
+            return new ArrayList<>();
         } else {
             String sql;
             sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and upper(i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
             iivs = getEjbFacade().findBySQL(sql);
         }
         if (iivs == null) {
-            iivs = new ArrayList<InvestigationItem>();
+            iivs = new ArrayList<>();
         }
         return iivs;
     }
@@ -201,14 +265,14 @@ public class InvestigationItemController implements Serializable {
     public List<InvestigationItem> getCurrentIxItems() {
         List<InvestigationItem> iivs;
         if (currentInvestigation == null || currentInvestigation.getId() == null) {
-            return new ArrayList<InvestigationItem>();
+            return new ArrayList<>();
         } else {
             String sql;
             sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
             iivs = getEjbFacade().findBySQL(sql);
         }
         if (iivs == null) {
-            iivs = new ArrayList<InvestigationItem>();
+            iivs = new ArrayList<>();
         }
         return iivs;
     }
@@ -250,7 +314,7 @@ public class InvestigationItemController implements Serializable {
     public List<InvestigationItem> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from InvestigationItem c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         if (selectedItems == null) {
-            selectedItems = new ArrayList<InvestigationItem>();
+            selectedItems = new ArrayList<>();
         }
 
         return selectedItems;
@@ -258,10 +322,354 @@ public class InvestigationItemController implements Serializable {
 
     public void listInvestigationItem() {
         if (getCurrentInvestigation() == null || getCurrentInvestigation().getId() == null) {
-            items = new ArrayList<InvestigationItem>();
+            items = new ArrayList<>();
         } else {
             items = getEjbFacade().findBySQL("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
         }
+    }
+
+    String xml;
+
+    public String getXml() {
+        return xml;
+    }
+
+    public void setXml(String xml) {
+        this.xml = xml;
+    }
+
+    private UploadedFile file;
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
+    public void convertCssValuesToRiValues() {
+        String j = "select ri from ReportItem ri";
+        List<ReportItem> ris = riFacade.findBySQL(j);
+        for (ReportItem ri : ris) {
+
+            try {
+
+                System.out.println("ri = " + ri);
+                
+                ri.setCssTop(ri.getCssTop().replace("%", ""));
+                ri.setCssLeft(ri.getCssLeft().replace("%", ""));
+                ri.setCssHeight(ri.getCssHeight().replace("%", ""));
+                ri.setCssWidth(ri.getCssWidth().replace("%", ""));
+                
+                try {
+                    ri.setRiTop(Double.parseDouble(ri.getCssTop()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssTop() = " + ri.getCssTop());
+                }
+                
+                try {
+                    ri.setRiLeft(Double.parseDouble(ri.getCssLeft()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssLeft() = " + ri.getCssLeft());
+                }
+                
+                try {
+                    ri.setRiHeight(Double.parseDouble(ri.getCssHeight()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssHeight() = " + ri.getCssHeight());
+                }
+                
+                try {
+                    ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
+                } catch (Exception e) {
+                    System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
+                }
+
+                System.out.println("ri.getName() = " + ri.getName());
+                System.out.println("ri.getHtmltext() = " + ri.getHtmltext());
+                
+                if (ri.getHtmltext()==null || ri.getHtmltext().trim().equals("")) {
+                    ri.setHtmltext(ri.getName());
+                }
+
+                riFacade.edit(ri);
+
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+            }
+        }
+
+    }
+
+    public void upload() {
+        if (getCurrentInvestigation() == null) {
+            JsfUtil.addErrorMessage("No Investigation");
+            return;
+        }
+        for (InvestigationItem ii : getCurrentInvestigation().getReportItems()) {
+            ii.setRetired(true);
+            ii.setRetiredAt(new Date());
+            ii.setRetireComments("Retired before importing the format");
+            ii.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(ii);
+        }
+        InputStream in;
+
+        StringWriter writer = new StringWriter();
+        System.out.println("file = " + file);
+        if (file != null) {
+            try {
+                File uploadedFile = new File("/tmp/" + file.getFileName());
+                InputStream inputStream = file.getInputstream();
+                OutputStream out = new FileOutputStream(uploadedFile);
+                int read = 0;
+                byte[] bytes = new byte[1024];
+                while ((read = inputStream.read(bytes)) != -1) {
+                    out.write(bytes, 0, read);
+                }
+                inputStream.close();
+                out.flush();
+                out.close();
+                SAXBuilder builder = new SAXBuilder();
+                File xmlfile = uploadedFile;
+                Document document = (Document) builder.build(xmlfile);
+                Element rootNode = document.getRootElement();
+                List list = rootNode.getChildren("investigation_item");
+                for (int i = 0; i < list.size(); i++) {
+                    Element nii = (Element) list.get(i);
+                    InvestigationItem ii = new InvestigationItem();
+                    ii.setItem(currentInvestigation);
+                    ii.setCreatedAt(new Date());
+                    ii.setCreater(getSessionController().getLoggedUser());
+                    ii.setCssFontFamily(nii.getAttributeValue("font_family"));
+                    ii.setCssFontVariant(nii.getAttributeValue("font_variant"));
+                    ii.setCssFontWeight(nii.getAttributeValue("font_weight"));
+                    ii.setCssMargin(nii.getAttributeValue("margin"));
+                    ii.setCssPadding(nii.getAttributeValue("padding"));
+                    ii.setDescription(nii.getAttributeValue("description"));
+                    ii.setFormatPrefix(nii.getAttributeValue("prefix"));
+                    ii.setFormatString(nii.getAttributeValue("format_string"));
+                    ii.setFormatSuffix(nii.getAttributeValue("suffix"));
+                    ii.setName(nii.getAttributeValue("name"));
+                    ii.setHtmltext(nii.getAttributeValue("html_text"));
+                    ii.setCssFontFamily(nii.getAttributeValue("font_family"));
+                    ii.setCssFontStyle(CssFontStyle.valueOf(nii.getAttributeValue("font_style")));
+                    ii.setCssTextAlign(CssTextAlign.valueOf(nii.getAttributeValue("text_align")));
+                    ii.setCssVerticalAlign(CssVerticalAlign.valueOf(nii.getAttributeValue("vertical_align")));
+                    ii.setIxItemType(InvestigationItemType.valueOf(nii.getAttributeValue("item_type")));
+                    ii.setIxItemValueType(InvestigationItemValueType.valueOf(nii.getAttributeValue("value_type")));
+                    if (nii.getAttributeValue("report_item_type") != null && ReportItemType.valueOf(nii.getAttributeValue("report_item_type")) != null) {
+                        ii.setReportItemType(ReportItemType.valueOf(nii.getAttributeValue("report_item_type")));
+                    }
+                    ii.setRiFontSize(nii.getAttribute("font_size").getIntValue());
+                    ii.setRiHeight(nii.getAttribute("height").getIntValue());
+                    ii.setRiLeft(nii.getAttribute("left").getIntValue());
+                    ii.setRiTop(nii.getAttribute("top").getIntValue());
+                    ii.setRiWidth(nii.getAttribute("width").getIntValue());
+
+                    List listiivs = nii.getChildren("investigation_item_value");
+                    for (Object listiiv : listiivs) {
+                        Element niiv = (Element) listiiv;
+                        InvestigationItemValue iiv = new InvestigationItemValue();
+                        iiv.setInvestigationItem(ii);
+                        iiv.setCreatedAt(new Date());
+                        iiv.setCreater(getSessionController().getLoggedUser());
+                        iiv.setName(niiv.getAttributeValue("name"));
+                        ii.getInvestigationItemValues().add(iiv);
+                        getIivFacade().edit(iiv);
+                    }
+                    getFacade().edit(ii);
+                }
+                getIxFacade().edit(currentInvestigation);
+            } catch (IOException io) {
+                System.out.println("IOException");
+                System.out.println(io.getMessage());
+            } catch (Exception jdomex) {
+                System.out.println("JDOM Excepton");
+                System.out.println(jdomex.getMessage());
+            }
+
+        }
+    }
+
+    private StreamedContent downloadingFile;
+
+    public void createXml() {
+        if (currentInvestigation == null) {
+            return;
+        }
+        InputStream stream = new ByteArrayInputStream(ixToXml(currentInvestigation).getBytes(Charset.defaultCharset()));
+        downloadingFile = new DefaultStreamedContent(stream, "image/jpg", currentInvestigation.getName() + ".xml");
+    }
+
+    public StreamedContent getDownloadingFile() {
+        createXml();
+        return downloadingFile;
+    }
+
+//    public void get
+    public String ixToXml(Item item) {
+        if (item == null) {
+            return "";
+        }
+        if (!(item instanceof Investigation)) {
+            return "";
+        }
+
+        Investigation ix = (Investigation) item;
+
+        String xml = "";
+
+        Element eix = new Element("investigation");
+
+        if (ix.getBarcode() != null) {
+            eix.setAttribute("bar_code", ix.getBarcode());
+        }
+
+        if (ix.getCode() != null) {
+            eix.setAttribute("code", ix.getCode());
+        }
+
+        if (ix.getDescreption() != null) {
+            eix.setAttribute("descreption", ix.getDescreption());
+        }
+
+        if (ix.getName() != null) {
+            eix.setAttribute("name", ix.getName());
+        }
+
+        if (ix.getFullName() != null) {
+            eix.setAttribute("full_name", ix.getFullName());
+        }
+
+        if (ix.getPrintName() != null) {
+            eix.setAttribute("print_name", ix.getPrintName());
+        }
+
+        if (ix.getShortName() != null) {
+            eix.setAttribute("short_name", ix.getShortName());
+        }
+
+        if (ix.getCategory() != null && ix.getCategory().getName() != null) {
+            eix.setAttribute("category_name", ix.getCategory().getName());
+        }
+
+        if (ix.getInvestigationCategory() != null && ix.getCategory().getName() != null) {
+            eix.setAttribute("investigation_category_name", ix.getInvestigationCategory().getName());
+        }
+
+        if (ix.getInvestigationTube() != null && ix.getInvestigationTube().getName() != null) {
+            eix.setAttribute("investigation_tube_name", ix.getInvestigationTube().getName());
+        }
+
+        if (ix.getReportType() != null) {
+            eix.setAttribute("report_type", ix.getReportType().name());
+        }
+
+        if (ix.getSample() != null && ix.getSample().getName() != null) {
+            eix.setAttribute("sample_name", ix.getSample().getName());
+        }
+
+        Document doc = new Document(eix);
+        doc.setRootElement(eix);
+
+        for (InvestigationItem ii : ix.getReportItems()) {
+
+            if (!ii.isRetired()) {
+
+                Element eii = new Element("investigation_item");
+
+                if (ii.getCssFontFamily() != null) {
+                    eii.setAttribute("font_family", ii.getCssFontFamily());
+                }
+
+                if (ii.getCssFontVariant() != null) {
+                    eii.setAttribute("font_variant", ii.getCssFontVariant());
+                }
+
+                if (ii.getCssFontWeight() != null) {
+                    eii.setAttribute("font_weight", ii.getCssFontWeight());
+                }
+
+                if (ii.getCssMargin() != null) {
+                    eii.setAttribute("margin", ii.getCssMargin());
+                }
+
+                if (ii.getCssPadding() != null) {
+                    eii.setAttribute("padding", ii.getCssPadding());
+                }
+
+                if (ii.getDescription() != null) {
+                    eii.setAttribute("description", ii.getDescription());
+                }
+
+                if (ii.getFormatPrefix() != null) {
+                    eii.setAttribute("prefix", ii.getFormatPrefix());
+                }
+
+                if (ii.getFormatString() != null) {
+                    eii.setAttribute("format_string", ii.getFormatString());
+                }
+
+                if (ii.getFormatSuffix() != null) {
+                    eii.setAttribute("suffix", ii.getFormatSuffix());
+                }
+
+                if (ii.getName() != null) {
+                    eii.setAttribute("name", ii.getName());
+                }
+
+                if (ii.getHtmltext() != null) {
+                    eii.setAttribute("html_text", ii.getHtmltext());
+                }
+
+                if (ii.getCssFontStyle() != null) {
+                    eii.setAttribute("font_style", ii.getCssFontStyle().name());
+                }
+
+                if (ii.getCssTextAlign() != null) {
+                    eii.setAttribute("text_align", ii.getCssTextAlign().name());
+                }
+
+                if (ii.getCssVerticalAlign() != null) {
+                    eii.setAttribute("vertical_align", ii.getCssVerticalAlign().name());
+                }
+
+                if (ii.getIxItemType() != null) {
+                    eii.setAttribute("item_type", ii.getIxItemType().name());
+                }
+
+                if (ii.getIxItemValueType() != null) {
+                    eii.setAttribute("value_type", ii.getIxItemValueType().name());
+                }
+
+                if (ii.getReportItemType() != null) {
+                    eii.setAttribute("report_item_type", ii.getReportItemType().name());
+                }
+
+                eii.setAttribute("font_size", String.valueOf(ii.getRiFontSize()));
+                eii.setAttribute("height", String.valueOf(ii.getRiHeight()));
+                eii.setAttribute("left", String.valueOf(ii.getRiLeft()));
+                eii.setAttribute("top", String.valueOf(ii.getRiTop()));
+                eii.setAttribute("width", String.valueOf(ii.getRiWidth()));
+
+                for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
+                    Element eiiv = new Element("investigation_item_value");
+                    eiiv.setAttribute("name", iiv.getName());
+                    eii.addContent(eiiv);
+                }
+
+                eix.addContent(eii);
+            }
+        }
+
+        XMLOutputter xmlOutput = new XMLOutputter();
+        xmlOutput.setFormat(Format.getPrettyFormat());
+        xml = xmlOutput.outputString(doc);
+        System.out.println("File Saved!");
+
+        return xml;
     }
 
     public void addNewLabel() {
@@ -270,42 +678,43 @@ public class InvestigationItemController implements Serializable {
             return;
         }
         current = new InvestigationItem();
-        current.setName("New Label");
+        current.setName("Label");
         current.setItem(currentInvestigation);
         current.setIxItemType(InvestigationItemType.Label);
-//        getEjbFacade().create(current);
-//        listInvestigationItem();
+        current.setCreatedAt(new Date());
+        current.setCreater(getSessionController().getLoggedUser());
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
     }
 
     public void removeItem() {
         current.setRetired(true);
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setRetiredAt(new Date());
+        current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         getEjbFacade().edit(getCurrent());
         getItems().remove(getCurrent());
 
     }
 
     public void removeInvestigationItemValue() {
-        ////System.out.println("1");
+        //System.out.println("1");
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to Remove");
             return;
         }
-        ////System.out.println("1");
+        //System.out.println("1");
         if (removingItem == null) {
             UtilityController.addErrorMessage("Nothing to Remove");
             return;
         }
-        ////System.out.println("3");
+        //System.out.println("3");
         getIivFacade().remove(removingItem);
-        ////System.out.println("4");
+        //System.out.println("4");
         current.getInvestigationItemValues().remove(removingItem);
-        ////System.out.println("5");
+        //System.out.println("5");
         getEjbFacade().edit(current);
-        ////System.out.println("6");
+        //System.out.println("6");
 
         UtilityController.addSuccessMessage("Removed");
     }
@@ -319,7 +728,6 @@ public class InvestigationItemController implements Serializable {
         current.setName("New Value");
         current.setItem(currentInvestigation);
         current.setIxItemType(InvestigationItemType.Value);
-//        getEjbFacade().create(current);
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
         listInvestigationItem();
@@ -376,23 +784,13 @@ public class InvestigationItemController implements Serializable {
 
     }
 
-    public void saveSelectedItemValue(InvestigationItemValue iiv){
-        if(current==null){
-            return;
-        }
-        if(iiv==null){
-            return;
-        }
-        getIivFacade().edit(iiv);
-    }
-    
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -445,7 +843,10 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void setCurrent(InvestigationItem current) {
+        System.out.println("current = " + current);
+        System.out.println("this.current = " + this.current);
         this.current = current;
+        System.out.println("this.current = " + this.current);
     }
 
     private InvestigationItemFacade getFacade() {
@@ -475,6 +876,18 @@ public class InvestigationItemController implements Serializable {
     public void setCurrentInvestigation(Investigation currentInvestigation) {
         this.currentInvestigation = currentInvestigation;
         listInvestigationItem();
+
+    }
+
+    Long findItemCount(Investigation ix) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public enum EditMode {
+
+        View_Mode,
+        Edit_mode,
+        Move_Mode,
     }
 
     /**

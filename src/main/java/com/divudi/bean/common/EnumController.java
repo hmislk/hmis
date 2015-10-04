@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
+import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -49,8 +50,12 @@ public class EnumController implements Serializable {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
     }
-    
-    public DepartmentListMethod[] getDepartmentListMethods(){
+
+    public CssVerticalAlign[] getCssVerticalAlign() {
+        return CssVerticalAlign.values();
+    }
+
+    public DepartmentListMethod[] getDepartmentListMethods() {
         return DepartmentListMethod.values();
     }
 
@@ -241,8 +246,7 @@ public class EnumController implements Serializable {
             BillType.PharmacySale,
             BillType.ChannelCash,
             BillType.ChannelPaid,
-            BillType.GrnPaymentPre,
-        //            BillType.PharmacyPurchaseBill,
+            BillType.GrnPaymentPre, //            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -363,7 +367,7 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Card};
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
