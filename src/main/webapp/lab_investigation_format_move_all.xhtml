@@ -58,15 +58,15 @@
                             <h:outputLabel value="Move All"/>
                         </f:facet>
                         <h:outputLabel/>
-                        <p:commandButton value="Up"/>
+                        <p:commandButton value="Up" action="#{investigationItemController.moveUpAllReportItems}" ajax="false"/>
                         <h:outputLabel/>
                         
-                        <p:commandButton value="Left"/>
+                        <p:commandButton value="Left" action="#{investigationItemController.moveLeftAllReportItems}" ajax="false"/>
                         <h:outputLabel/>
-                        <p:commandButton value="Right"/>
+                        <p:commandButton value="Right" action="#{investigationItemController.moveRightAllReportItems}" ajax="false"/>
                         
                         <h:outputLabel/>
-                        <p:commandButton value="Down"/>
+                        <p:commandButton value="Down" action="#{investigationItemController.moveDownAllReportItems}" ajax="false"/>
                         <h:outputLabel/>
                     </p:panelGrid>
                     
@@ -75,10 +75,12 @@
                             <h:outputLabel value="Update All"/>
                         </f:facet>
                         <p:outputLabel value="Font Size"/>
-                        <p:inputText/>
+                        <p:inputText value="#{investigationItemController.fontSize}" autocomplete="off"/>
                         
                         <p:outputLabel value="Font Family"/>
-                        <p:inputText/>
+                        <p:inputText value="#{investigationItemController.fontFamily}"/>
+                        
+                        <p:commandButton value="Update" action="#{investigationItemController.updateAllFontValues}" ajax="false"/>
                     </p:panelGrid>
                     
 
