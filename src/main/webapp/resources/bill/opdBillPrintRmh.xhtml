@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate"/>
+        <cc:attribute name="refund"/>
+        <cc:attribute name="cancell"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+        <h:panelGroup>
+            <h:outputStylesheet library="css" name="printing_rmh.css"></h:outputStylesheet>
+
+            <div class="fiveinchbillRmh">
+
+                <h:panelGroup id="gpBillPreview" >
+
+
+                    <div class="errorMessage" >
+                        <h:outputLabel rendered="#{cc.attrs.bill.transError}"
+                                       style="font-size: 15px!important; 
+                                       font-weight: bolder!important;
+                                       position: absolute!important;
+                                       left: 7.0%!important;
+                                       top: 2.0%!important;"
+                                       value=" THIS BILL IS NOT VALID PLEASE CANCEL"/>
+                    </div>
+
+
+
+
+                    <div >
+
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.duplicate eq false}"
+                                       styleClass="opdRefNo"/>
+
+
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null 
+                                                   and cc.attrs.bill.cancelled eq true}"
+                                       styleClass="opdBillHeading"/> 
+
+                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null 
+                                                   and cc.attrs.bill.refunded eq true}"
+                                       styleClass="opdBillHeading"/> 
+
+                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                   cc.attrs.bill.cancelledBill.insId eq null 
+                                                   and cc.attrs.duplicate eq true}"
+                                       styleClass="opdBillHeading"/>
+                    </div>
+
+                    <div class="opdAppNo" >                       
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                            <f:convertDateTime pattern="dd/MM/yy"/>
+                        </h:outputLabel>
+                    </div>
+
+                    <!--                    <div class="opdPaymentMethod" >
+                                            <h:panelGroup>
+                                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />                                
+                                            </h:panelGroup>
+                                        </div>-->
+
+                    <div class="opdReferralInstitution" >
+                        <h:panelGroup>
+                            <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}"/>                              
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="opdConsultant" >
+                        <h:panelGroup>
+                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"/>                              
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="opdAppAt" >      
+
+<!--                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                            <f:convertDateTime pattern="hh:mm a"/>
+                        </h:outputLabel>-->
+
+                    </div>
+
+                    <div class="opdPatientName" >
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                        </h:outputLabel>
+                    </div>
+
+                    <!--                    <div class="opdPatientPhone" >
+                                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
+                                                           >
+                                            </h:outputLabel>
+                                        </div>-->
+
+                    <!--                    <div class="cashierPrintingRuhunu" >
+                                            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
+                                            </h:outputLabel>
+                                        </div>-->
+
+                    <div style="position:absolute!important;
+    left:95%!important;
+    top: 96%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.code}">
+                        </h:outputLabel>
+                    </div>
+
+                    <div class="consultPrintingRuhunu" >
+                        <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name}" />
+                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                    </div>
+
+
+
+                    <div style="font-size: 20px;
+                         position: absolute;
+                         left: 5%;
+                         top: 65%;" >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
+                            <h:column >
+
+                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 20px!important;" >
+                                </h:outputLabel>
+                                <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
+                                    <br/>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
+                                        <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
+                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 20px!important; font-weight: bold;" >
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:column>
+                        </h:dataTable>
+                    </div>
+
+                    <div style="position: absolute;
+                         font-size: 20px;
+                         left: 80%;
+                         top: 65%;
+                         text-align: right;"  >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
+                            <h:column >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 20px!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </h:column>
+                        </h:dataTable>
+                    </div>
+
+                    <div class="totalsPrintingRuhunu">
+
+                        <table>
+                            <tr>
+                                <td>
+                                    <br/>
+                                    <br/>
+                                </td>
+                                <td>
+                                    <br/>
+                                    <br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!--                                <td style="text-align: left; min-width: 3cm;">
+                                                                    <h:outputLabel value="TOTAL" />
+                                                                </td>-->
+                                <td style="text-align: right!important; font-size: 20px;">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                </td>
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                </td>
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+
+
+                        </table>
+
+                    </div>
+
+
+
+
+
+
+
+                </h:panelGroup>
+            </div>
+        </h:panelGroup>                
+
+
+
+
+
+
+
+
+
+    </cc:implementation>
+</html>

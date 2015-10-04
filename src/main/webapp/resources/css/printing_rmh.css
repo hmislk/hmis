@@ -1,0 +1,164 @@
+/* 
+    Document   : printing
+    Created on : Oct 6, 2013, 11:53:48 AM
+    Author     : Buddhika
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+
+*{
+    margin:0px;
+    padding: 0px;
+}
+
+root { 
+    display: block;
+}
+
+@media screen{
+    .fiveinchbillRmh{
+        position: relative!important;
+
+        padding: 0px!important;
+        margin: auto!important; 
+        border: 1px solid!important;
+
+        height:15.97cm!important;
+        width:13.97cm!important; 
+
+        overflow:hidden!important; 
+
+        font-size: 12px;
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+
+        background-size: 100% auto!important; 
+
+    }
+
+
+
+}
+
+@media print{
+    .fiveinchbillRmh{
+        position: relative!important;
+
+        padding: 0px!important;
+        margin: auto!important; 
+        /*    border: 1px solid!important;*/
+
+        height:15.97cm!important;
+        width:13.97cm!important; 
+
+        overflow:hidden!important; 
+
+        font-size: 20px;
+        font-family: sans-serif!important; 
+        font-size: 20px!important; 
+
+        background-size: 100% auto!important; 
+
+    }
+
+    .itemRmh{
+        font-size: 20px;
+        position: absolute;
+        left: 12%;
+        top: 50%;
+    }
+}
+
+.opdBillHeading{
+    position: absolute!Important;
+    left: 7.7cm;
+    top:3.8cm;
+}
+
+.opdBillDate{
+    position: absolute!Important;
+    left: 7.7cm;
+    top:3.7cm;
+}
+
+.opdRefNo{
+    position: absolute!important;
+    left: 9.4cm;
+    top: 4cm;
+}
+
+.opdAppOn{
+    position: absolute!important;
+    left: 3cm;
+    top: 4.5cm;
+}
+
+.opdAppAt{
+    position: absolute!important;
+    left: 5.9cm!important;
+    top: 4.55cm!important;
+}
+
+.opdAppNo{
+    position: absolute!important;
+    left: 2.3cm;
+    top: 4cm;
+}
+
+
+
+.opdConsultant{
+    position: absolute!important;
+    left: 2.4cm;
+    top: 5.4cm;
+}
+
+
+.opdReferralInstitution{
+    position: absolute!important;
+    left: 5cm;
+    top: 6.4cm;
+}
+
+.opdPaymentMethod{
+    position: absolute!important;
+    left: 3.9cm;
+    top: 11cm;
+}
+
+.opdPatientName{
+    position: absolute!important;
+    left: 3cm;
+    top: 7.6cm;
+}
+
+.opdPatientPhone{
+    position: absolute!important;
+    left: 7.4cm;
+    top: 6.3cm;
+}
+
+.opdCashier{
+    position: absolute!important;
+    left: 9.5cm;
+    top: 12cm;
+}
+
+.totalsPrintingRuhunu{
+    position: absolute;
+    left: 30%!important;
+/*   bottom:10%!important;*/
+top: 13.8cm;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: right;
+}
+
+.cashierPrintingRuhunu{
+/*    text-decoration: overline;*/
+    position:absolute!important;
+    left:90%!important;
+    top: 14cm;
+
+}

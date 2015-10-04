@@ -6,16 +6,16 @@
 package com.divudi.bean.lab;
 
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationValidaterComponent;
 import com.divudi.entity.lab.InvestigationValidator;
-import com.divudi.facade.InvestigationItemValidatorFacade;
+import com.divudi.entity.lab.InvestigationValidaterComponent;
+import com.divudi.facade.InvestigationValidatorFacade;
 import com.divudi.facade.util.JsfUtil;
+import javax.inject.Named;
+import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 
 /**
  *
@@ -36,7 +36,7 @@ public class InvestigationValidatorComponentController implements Serializable {
     InvestigationValidator currentValidator;
     private List<InvestigationValidator> investigationItemValidators;
     @EJB
-    private InvestigationItemValidatorFacade investigationItemValidatorFacade;
+    private InvestigationValidatorFacade investigationItemValidatorFacade;
     private String newValidatorName;
 
     
@@ -89,11 +89,11 @@ public class InvestigationValidatorComponentController implements Serializable {
         this.investigationItemValidators = investigationItemValidators;
     }
 
-    public InvestigationItemValidatorFacade getInvestigationItemValidatorFacade() {
+    public InvestigationValidatorFacade getInvestigationItemValidatorFacade() {
         return investigationItemValidatorFacade;
     }
 
-    public void setInvestigationItemValidatorFacade(InvestigationItemValidatorFacade investigationItemValidatorFacade) {
+    public void setInvestigationItemValidatorFacade(InvestigationValidatorFacade investigationItemValidatorFacade) {
         this.investigationItemValidatorFacade = investigationItemValidatorFacade;
     }
 

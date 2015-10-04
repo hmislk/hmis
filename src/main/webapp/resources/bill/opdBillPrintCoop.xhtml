@@ -25,7 +25,13 @@
 
 
 
-                    <div class="headingPrinting">
+                    <div style="text-align: center!important; 
+    min-width: 90%!important; 
+    /*padding: 5px!important;*/ 
+    padding-top: 32%!important;
+    margin: auto!important; 
+    font-size: 13px!important;
+    font-weight: bold;">
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
                         <h:outputLabel value="**Cancelled"  
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null and cc.attrs.cancell eq true}"/> 
