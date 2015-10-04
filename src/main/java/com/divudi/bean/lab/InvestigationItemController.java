@@ -488,7 +488,7 @@ public class InvestigationItemController implements Serializable {
         Long iis;
         if (ix!=null && ix.getId() != null) {
             String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
+            temSql = "SELECT count(i) FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
             iis = getFacade().countBySql(temSql);
         } else {
             iis = null;
