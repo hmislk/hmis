@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Medical Package Bill Detail Report" />
@@ -22,7 +22,7 @@
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         </p:calendar>
-                        
+
                     </p:panel>
                     <p:panel>
                         <p:autoComplete widgetVar="aIx2" id="acIx2" value="#{billPackageMedicalController.currentBillItem.item}" completeMethod="#{itemController.completeMedicalPackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
@@ -59,7 +59,7 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
-                                        action="#{billPackageMedicalController.createMedicalPackageBillItems()}"
+                                         action="#{billPackageMedicalController.createMedicalPackageBillItems()}"
                                          onclick="onSubmitButton();" />
                         <p:watermark for="acIx2" value="Meical Package" />
                         <p:watermark for="ins" value="Institution" />
@@ -81,19 +81,19 @@
                             <p:outputLabel value="Medical Package Detail Report" />
                             <br/>
                             <p:outputLabel value="From : "/>
-                        <p:outputLabel value="#{billPackageMedicalController.frmDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                        </p:outputLabel>
-                        <p:spacer width="30" height="1"/>
-                        <p:outputLabel value="To : "/>
-                        <p:outputLabel value="#{billPackageMedicalController.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                        </p:outputLabel><br/>
-                        <p:outputLabel value=" #{billPackageMedicalController.currentBillItem.item.name}" />
-                        <p:spacer width="30" height="1"/>
-                        <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
-                        <p:spacer width="30" height="1"/>
-                        <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
+                            <p:outputLabel value="#{billPackageMedicalController.frmDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </p:outputLabel>
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="To : "/>
+                            <p:outputLabel value="#{billPackageMedicalController.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </p:outputLabel><br/>
+                            <p:outputLabel value=" #{billPackageMedicalController.currentBillItem.item.name}" />
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="#{billPackageMedicalController.institution.name}" />
+                            <p:spacer width="30" height="1"/>
+                            <p:outputLabel value="#{billPackageMedicalController.serviceItem.name}" />
                         </f:facet>
                         <p:column headerText="Serial No">
                             <f:facet name="header">
@@ -106,6 +106,8 @@
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.insId}" />
+                            <p:outputLabel value=" - " rendered="#{bill.cancelledBill ne null}" />
+                            <p:outputLabel value="#{bi.bill.cancelledBill.insId}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" />
                         </p:column> 
                         <p:column headerText="Institution">
                             <f:facet name="header">
@@ -130,6 +132,10 @@
                                 <p:outputLabel value="Added Date" />
                             </f:facet>
                             <p:outputLabel value="#{bi.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                            <p:outputLabel value=" - " rendered="#{bi.bill.cancelledBill ne null}" />
+                            <p:outputLabel value="#{bi.bill.cancelledBill.createdAt}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" >
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                             </p:outputLabel>
                         </p:column>

@@ -594,30 +594,13 @@ public class BillPackageMedicalController implements Serializable {
         return billItems;
     }
 
-    public void createBills() {
-        String sql;
-        Map m = new HashMap();
-        sql = "select bill from Bill bill"
-                + " where bill.billType =:billType "
-                + " and bill.createdAt between :fromDate and :toDate "
-                + " and bill.retired=false ";
+    public void createBills(Item item) {
+        bills = new ArrayList<>();
 
-        if (getServiceItem() != null) {
-            sql += " and bill.billPackege=:item ";
-            m.put("item", getServiceItem());
-        }
-
-        if (institution != null) {
-            sql += " and bill.creditCompany=:ins ";
-            m.put("ins", institution);
-        }
-
-        m.put("billType", BillType.OpdBill);
-        m.put("toDate", toDate);
-        m.put("fromDate", frmDate);
-
-        bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-
+        bills.addAll(packageBills(item, false));
+        System.out.println("1.bills.size() = " + bills.size());
+        bills.addAll(packageBills(item, true));
+        System.out.println("2.bills.size() = " + bills.size());
         total = 0.0;
 
         if (bills == null) {
@@ -627,6 +610,43 @@ public class BillPackageMedicalController implements Serializable {
         for (Bill bi : bills) {
             total += bi.getNetTotal();
         }
+    }
+
+    public List<Bill> packageBills(Item item, boolean can) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bill from Bill bill"
+                + " where bill.billType =:billType "
+                + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.retired=false ";
+
+        if (can) {
+            if (getServiceItem() != null) {
+                sql += " and bill.billedBill.billPackege=:item ";
+                m.put("item", getServiceItem());
+            }
+            sql += " and type(bill.billedBill.billPackege)=:class ";
+        } else {
+            if (getServiceItem() != null) {
+                sql += " and bill.billPackege=:item ";
+                m.put("item", getServiceItem());
+            }
+            sql += " and type(bill.billPackege)=:class ";
+        }
+
+        if (institution != null) {
+            sql += " and bill.creditCompany=:ins ";
+            m.put("ins", institution);
+        }
+
+        m.put("class", item.getClass());
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+
+        return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
     public double getTotal(List<BillItem> billItm) {
@@ -662,7 +682,7 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void createOtherPackageBills() {
-        createBills();
+        createBills(new Packege());
     }
 
     public void clearBillItemValues() {
