@@ -110,6 +110,14 @@ public class AgentReferenceBookController implements Serializable {
                 UtilityController.addErrorMessage("Ending Reference Number Is Alredy Given");
                 return;
             }
+            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getStartingReferenceNumber())&&(arb.getEndingReferenceNumber() >= agentReferenceBook.getStartingReferenceNumber())) {
+                UtilityController.addErrorMessage("Starting Reference Number Is In Given Book Range");
+                return;
+            }
+            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getEndingReferenceNumber())&&(arb.getEndingReferenceNumber() >= agentReferenceBook.getEndingReferenceNumber())) {
+                UtilityController.addErrorMessage("Ending Reference Number Is In Given Book Range");
+                return;
+            }
         }
         getAgentReferenceBook().setCreatedAt(new Date());
         getAgentReferenceBook().setCreater(getSessionController().getLoggedUser());
