@@ -22,7 +22,28 @@
                         <p:autoComplete styleClass="noPrintButton" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
                                         completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
 
-                        </p:autoComplete>  
+                        </p:autoComplete>
+                        
+                        
+                        <h:outputLabel value="Service Name"/>
+                        <p:autoComplete value="#{creditSummeryController.item}" completeMethod="#{itemController.completeService}" var="ix" 
+                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.department.name}
+                            </p:column>  
+                            <p:column>
+                                #{ix.category.name}
+                            </p:column>
+                            
+                            <p:column>
+                                #{ix.category.parentCategory.name}
+                            </p:column> 
+                            
+                        </p:autoComplete>
+                        
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -33,7 +54,8 @@
                     </h:panelGrid>
                     <h:panelGrid columns="3" >
                         <p:spacer width="90" height="1"/>
-                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" actionListener="#{creditSummeryController.makeNull}" />
+                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" 
+                                         actionListener="#{creditSummeryController.makeNull}" />
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
