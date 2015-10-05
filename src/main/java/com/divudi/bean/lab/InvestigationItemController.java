@@ -469,24 +469,28 @@ public class InvestigationItemController implements Serializable {
                 try {
                     ri.setRiTop(Double.parseDouble(ri.getCssTop()));
                 } catch (Exception e) {
+                    ri.setRiTop(11.11);
                     System.out.println("ri.getCssTop() = " + ri.getCssTop());
                 }
 
                 try {
                     ri.setRiLeft(Double.parseDouble(ri.getCssLeft()));
                 } catch (Exception e) {
+                    ri.setRiTop(22.22);
                     System.out.println("ri.getCssLeft() = " + ri.getCssLeft());
                 }
 
                 try {
                     ri.setRiHeight(Double.parseDouble(ri.getCssHeight()));
                 } catch (Exception e) {
+                    ri.setRiHeight(2);
                     System.out.println("ri.getCssHeight() = " + ri.getCssHeight());
                 }
 
                 try {
                     ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
                 } catch (Exception e) {
+                    ri.setRiWidth(10);
                     System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
                 }
 

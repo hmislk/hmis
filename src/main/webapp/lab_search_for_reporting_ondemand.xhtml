@@ -12,33 +12,34 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
-                            <h:panelGrid columns="7" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.createPatientInvestigationsTableLogin()}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
-                                <p:spacer height="30"/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/> <h:outputLabel/>
+                            <h:panelGrid columns="1" >
+                                <h:panelGrid columns="7" >
 
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Patient Name"/>
-                                <h:outputLabel value="Patient Phone"/>                               
-                                <h:outputLabel value="Investigation Name"/>
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                    </p:calendar>
+                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.createPatientInvestigationsTableLogin()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                </h:panelGrid>
+                                <h:panelGrid columns="7" >
+                                    <h:outputLabel value="Bill No"/>
+                                    <h:outputLabel value="Patient Name"/>
+                                    <h:outputLabel value="Patient Phone"/>                               
+                                    <h:outputLabel value="Investigation Name"/>
+                                    <h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
 
+                                </h:panelGrid>
                             </h:panelGrid>
                         </f:facet>
-                        <p:defaultCommand target="btnSearch" />
+
 
 
 
@@ -146,7 +147,7 @@
                                 <h:outputLabel value="#{pi.billItem.bill.toDepartment.name}" >
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
