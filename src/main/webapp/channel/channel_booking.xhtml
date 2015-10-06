@@ -249,7 +249,7 @@
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
                                 <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
-                                <p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />
+                                <!--<p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />-->
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete> 
