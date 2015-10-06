@@ -11,6 +11,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.ReportKeyWord;
@@ -23,6 +24,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.Staff_;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
@@ -237,6 +239,20 @@ public class StaffController implements Serializable {
         ////System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
+    }
+    
+    public List<Staff> getStaffbyClassType(Staff st){
+        System.out.println("Inside getStaffbyClassType");
+        HashMap hm = new HashMap();
+        String sql = "select p from Staff p where p.retired=false and ";
+        
+        if(st!=null){
+            System.out.println("1");
+            sql+=" and type(p)=:class ";
+            hm.put("class", st.getClass());
+        }
+        
+        return getEjbFacade().findBySQL(sql);
     }
 
     ReportKeyWord reportKeyWord;
