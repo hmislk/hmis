@@ -66,23 +66,43 @@ import org.primefaces.model.UploadedFile;
 @SessionScoped
 public class InvestigationItemController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    /**
+     * EJBs
+     */
     @EJB
     private InvestigationItemFacade ejbFacade;
     @EJB
     InvestigationItemValueFacade iivFacade;
     @EJB
     ReportItemFacade riFacade;
+    @EJB
+    InvestigationFacade ixFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    InvestigationController investigationController;
+    /**
+     * Properties
+     */
     List<InvestigationItem> selectedItems;
     private InvestigationItem current;
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
+
     String selectText = "";
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
     String addingString;
+
+    Investigation copyingFromInvestigation;
+    Investigation copyingToInvestigation;
+    String ixXml;
+
+    private static final long serialVersionUID = 1L;
+
     EditMode editMode = EditMode.View_Mode;
 
     private String input;
@@ -91,6 +111,90 @@ public class InvestigationItemController implements Serializable {
     private int specialCode;
     String fontFamily;
     double fontSize;
+
+    public void toInvestigationMaster() {
+        investigationController.setCurrent(currentInvestigation);
+    }
+
+    public String copyInvestigation() {
+        if (copyingFromInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
+            return "";
+        }
+        if (copyingToInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
+            return "";
+        }
+
+        //System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
+        //System.out.println("copyingToInvestigation = " + copyingToInvestigation);
+        for (InvestigationItem ii : copyingFromInvestigation.getReportItems()) {
+
+            //System.out.println("ii = " + ii);
+            if (!ii.isRetired()) {
+
+                InvestigationItem nii = new InvestigationItem();
+                nii.setCategory(ii.getCategory());
+                nii.setCreatedAt(new Date());
+                nii.setCreater(getSessionController().getLoggedUser());
+                nii.setCssBackColor(ii.getCssBackColor());
+                nii.setCssBorder(ii.getCssBorder());
+                nii.setCssBorderRadius(ii.getCssBorderRadius());
+                nii.setCssClip(ii.getCssClip());
+                nii.setCssColor(ii.getCssColor());
+                nii.setCssFontFamily(ii.getCssFontFamily());
+                nii.setCssFontSize(ii.getCssFontSize());
+                nii.setCssFontStyle(ii.getCssFontStyle());
+                nii.setCssFontVariant(ii.getCssFontVariant());
+                nii.setCssFontWeight(ii.getCssFontWeight());
+                nii.setCssHeight(ii.getCssHeight());
+                nii.setCssLeft(ii.getCssLeft());
+                nii.setCssLineHeight(ii.getCssLineHeight());
+                nii.setCssMargin(ii.getCssMargin());
+                nii.setCssOverflow(ii.getCssOverflow());
+                nii.setCssPadding(ii.getCssPadding());
+                nii.setCssPosition(ii.getCssPosition());
+                nii.setCssStyle(ii.getCssStyle());
+                nii.setCssTextAlign(ii.getCssTextAlign());
+                nii.setCssTop(ii.getCssTop());
+                nii.setCssVerticalAlign(ii.getCssVerticalAlign());
+                nii.setCssWidth(ii.getCssWidth());
+                nii.setCssZorder(ii.getCssZorder());
+
+                nii.setIxItemType(ii.getIxItemType());
+                nii.setIxItemValueType(ii.getIxItemValueType());
+                nii.setItem(copyingToInvestigation);
+
+                nii.setName(ii.getName());
+                nii.setReportItemType(ii.getReportItemType());
+
+                List<InvestigationItemValue> niivs = new ArrayList<>();
+                for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
+
+                    //System.out.println("iiv = " + iiv);
+                    InvestigationItemValue niiv = new InvestigationItemValue();
+                    niiv.setCode(iiv.getCode());
+                    niiv.setCreatedAt(new Date());
+                    niiv.setCreater(getSessionController().getLoggedUser());
+                    niiv.setInvestigationItem(nii);
+                    niiv.setName(iiv.getName());
+                    niiv.setOrderNo(iiv.getOrderNo());
+                    niivs.add(niiv);
+                }
+
+                nii.setInvestigationItemValues(niivs);
+
+                getEjbFacade().create(nii);
+
+            }
+
+        }
+
+        setCurrentInvestigation(copyingToInvestigation);
+
+        return "/lab_investigation_format";
+
+    }
 
     public EditMode getEditMode() {
         return editMode;
@@ -901,8 +1005,7 @@ public class InvestigationItemController implements Serializable {
 //        recreateModel();
 //        getItems();
     }
-    @EJB
-    InvestigationFacade ixFacade;
+    
 
     public InvestigationFacade getIxFacade() {
         return ixFacade;
@@ -953,16 +1056,35 @@ public class InvestigationItemController implements Serializable {
         return ejbFacade;
     }
 
-    public List<InvestigationItem> getItems() {
-        if (getCurrentInvestigation().getId() != null) {
-            String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + getCurrentInvestigation().getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
-            items = getFacade().findBySQL(temSql);
-        } else {
-            items = new ArrayList<InvestigationItem>();
-        }
+   public List<InvestigationItem> getItems() {
+        items = getItems(currentInvestigation);
         return items;
     }
+    
+    public List<InvestigationItem> getItems(Investigation ix) {
+        List<InvestigationItem> iis;
+        if (ix!=null && ix.getId() != null) {
+            String temSql;
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
+            iis = getFacade().findBySQL(temSql);
+        } else {
+            iis = new ArrayList<>();
+        }
+        return iis;
+    }
+    
+    public Long findItemCount(Investigation ix) {
+        Long iis;
+        if (ix!=null && ix.getId() != null) {
+            String temSql;
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
+            iis = getFacade().countBySql(temSql);
+        } else {
+            iis = null;
+        }
+        return iis;
+    }
+
 
     public Investigation getCurrentInvestigation() {
         if (currentInvestigation == null) {
@@ -979,9 +1101,6 @@ public class InvestigationItemController implements Serializable {
 
     }
 
-    Long findItemCount(Investigation ix) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     public enum EditMode {
 
@@ -990,6 +1109,40 @@ public class InvestigationItemController implements Serializable {
         Move_Mode,
     }
 
+    public InvestigationController getInvestigationController() {
+        return investigationController;
+    }
+
+    public void setInvestigationController(InvestigationController investigationController) {
+        this.investigationController = investigationController;
+    }
+
+    public Investigation getCopyingFromInvestigation() {
+        return copyingFromInvestigation;
+    }
+
+    public void setCopyingFromInvestigation(Investigation copyingFromInvestigation) {
+        this.copyingFromInvestigation = copyingFromInvestigation;
+    }
+
+    public Investigation getCopyingToInvestigation() {
+        return copyingToInvestigation;
+    }
+
+    public void setCopyingToInvestigation(Investigation copyingToInvestigation) {
+        this.copyingToInvestigation = copyingToInvestigation;
+    }
+
+    public String getIxXml() {
+        return ixXml;
+    }
+
+    public void setIxXml(String ixXml) {
+        this.ixXml = ixXml;
+    }
+
+    
+    
     /**
      *
      */

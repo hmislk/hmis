@@ -17,10 +17,10 @@
                 <h:panelGrid columns="2">                    
 
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                     </p:calendar>       
                     <h:outputLabel value="Package"/>
                     <p:autoComplete value="#{billPackageMedicalController.serviceItem}"
@@ -77,7 +77,7 @@
                     </f:facet>
                     <p:column headerText="Serial No">
                         <f:facet name="header">
-                            <p:outputLabel value="Serial No" />
+                            <p:outputLabel value="No" />
                         </f:facet>
                         <p:outputLabel value="#{i+1}" />
                     </p:column>
@@ -86,6 +86,8 @@
                             <p:outputLabel value="Bill No" />
                         </f:facet>
                         <p:outputLabel value="#{bill.insId}" />
+                        <p:outputLabel value=" - " rendered="#{bill.cancelledBill ne null}" />
+                        <p:outputLabel value="#{bill.cancelledBill.insId}" rendered="#{bill.cancelledBill ne null}" style="color: red;" />
                     </p:column> 
                     <p:column headerText="Credit Company">
                         <f:facet name="header">
@@ -106,6 +108,10 @@
                         <p:outputLabel value="#{bill.createdAt}" >
                             <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                         </p:outputLabel>
+                        <p:outputLabel value=" - " rendered="#{bill.cancelledBill ne null}" />
+                        <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelledBill ne null}" style="color: red;" >
+                            <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                        </p:outputLabel>
                     </p:column>
                     <p:column headerText="Payment Methord">     
                         <f:facet name="header">
@@ -119,6 +125,7 @@
                             <p:outputLabel value="Package" />
                         </f:facet>
                         <p:outputLabel value="#{bill.billPackege.name}" />
+                        <p:outputLabel value="#{bill.billedBill.billPackege.name}" />
                     </p:column>
                     <p:column headerText="Net Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
