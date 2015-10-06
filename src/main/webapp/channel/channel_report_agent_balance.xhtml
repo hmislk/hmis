@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Cannel Agent Reperence Book">
+
+                <p:panel>
+                    <h:panelGrid columns="3" >
+                        <p:commandButton value="Fill" ajax="false" ></p:commandButton> 
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{channelReportController.createAgentHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
+                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
+                        </p:commandButton>
+                    </h:panelGrid> 
+                </p:panel>
+                <p:panel id="reportPrint" style="summeryBorder">
+                    <p:dataTable value="#{institutionController.agencies}" var="a" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br></br>
+                            <p:outputLabel value="Agency Balance" />
+                            <br></br>
+                            <p:outputLabel value="Print Time" />
+                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column sortBy="#{a.institutionCode}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Agent Code" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.institutionCode}" />
+                            
+                        </p:column>
+                        <p:column sortBy="#{a.name}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Agent Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.name}" >
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Allowed Max C.L." />
+                            </f:facet>
+                            <p:outputLabel value="#{a.maxCreditLimit}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Standerd C.L." />
+                            </f:facet>
+                            <p:outputLabel value="#{a.standardCreditLimit}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Allowed C.L." />
+                            </f:facet>
+                            <p:outputLabel value="#{a.allowedCredit}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Balance" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.ballance}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
