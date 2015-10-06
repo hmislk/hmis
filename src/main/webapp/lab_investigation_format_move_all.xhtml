@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <h:form id="form">
+            <h:panelGrid columns="2" styleClass="alignTop" >
+
+                <h:panelGroup>
+                    <p:panel header="Investigation">
+                        <f:facet name="header" >
+                            <h:outputText value="Investigation" ></h:outputText>
+                            <p:commandButton ajax="false" action="/lab_administration" value="Back" style="float: right;" ></p:commandButton>
+                        </f:facet>
+                        <h:panelGrid columns="1" >
+                            <h:panelGroup >
+                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acPt" />
+                                </p:selectBooleanCheckbox>
+                                <p:commandLink ajax="false" action="/lab_investigation" value="Ix Details" style="float: right;" 
+                                               actionListener="#{investigationItemController.toInvestigationMaster}"></p:commandLink>
+                            </h:panelGroup>
+
+
+                            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
+                                            value="#{investigationItemController.currentInvestigation}" 
+                                            completeMethod="#{investigationController.completeInvestWithIiCount}" 
+                                            var="apt" 
+                                            itemValue="#{apt.investigation}" size="30"  style="width: 400px;">
+                                <p:column>
+                                    #{apt.investigation.name}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.fullName}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.department.name}
+                                </p:column>
+                                <p:column>
+                                    #{apt.investigation.institution.name}
+                                </p:column>
+                                <p:column >
+                                    <h:outputText value="#{apt.iiCount}" ></h:outputText>
+                                </p:column>
+                                <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')}"/>
+                            </p:autoComplete> 
+                            
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panelGrid columns="3" style="noborder">
+                        <f:facet name="header">
+                            <h:outputLabel value="Move All"/>
+                        </f:facet>
+                        <h:outputLabel/>
+                        <p:commandButton value="Up" action="#{investigationItemController.moveUpAllReportItems}" ajax="false"/>
+                        <h:outputLabel/>
+                        
+                        <p:commandButton value="Left" action="#{investigationItemController.moveLeftAllReportItems}" ajax="false"/>
+                        <h:outputLabel/>
+                        <p:commandButton value="Right" action="#{investigationItemController.moveRightAllReportItems}" ajax="false"/>
+                        
+                        <h:outputLabel/>
+                        <p:commandButton value="Down" action="#{investigationItemController.moveDownAllReportItems}" ajax="false"/>
+                        <h:outputLabel/>
+                    </p:panelGrid>
+                    
+                    <p:panelGrid columns="2" style="noborder">
+                        <f:facet name="header">
+                            <h:outputLabel value="Update All"/>
+                        </f:facet>
+                        <p:outputLabel value="Font Size"/>
+                        <p:inputText value="#{investigationItemController.fontSize}" autocomplete="off"/>
+                        
+                        <p:outputLabel value="Font Family"/>
+                        <p:inputText value="#{investigationItemController.fontFamily}"/>
+                        
+                        <p:commandButton value="Update" action="#{investigationItemController.updateAllFontValues}" ajax="false"/>
+                    </p:panelGrid>
+                    
+
+                    
+                </h:panelGroup>
+
+
+                <p:panel id="pPreview"   >
+                    <f:facet name="header" >
+                        <p:commandButton ajax="false" value="Print" >
+                            <p:printer target="divPrint" />
+                        </p:commandButton>
+                    </f:facet>
+
+                    <p:panel id="divPrint" style="border: 0px; margin: 0px; padding: 0px;" >
+                        <div  style="width:21cm; height: 29.7cm; position: relative;  ">
+
+                            <ui:repeat value="#{commonReportItemController.items}" var="myCli" >
+                                <div style="#{myCli.cssStyle}; position:absolute;">
+                                    <h:outputText rendered="#{!myCli.retired eq true}"  value="#{myCli.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                </div>
+                            </ui:repeat>
+
+                            <ui:repeat value="#{investigationItemController.items}" var="myIi" >
+                                <div style="#{myIi.cssStyle}; position:absolute;">
+                                    <h:outputText rendered="#{myIi.retired ne true}"  value="#{myIi.name}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </p:panel>
+
+                </p:panel>
+
+            </h:panelGrid>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
