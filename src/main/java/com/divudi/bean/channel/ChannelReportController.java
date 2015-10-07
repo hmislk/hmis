@@ -2167,7 +2167,10 @@ public class ChannelReportController implements Serializable {
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
-        if (serviceSession != null) {
+        if (serviceSession == null) {
+            UtilityController.addErrorMessage("Please Select Session");
+            return;
+        }
             String sql = "Select bs From BillSession bs "
                     + " where bs.retired=false and "
                     + " bs.bill.cancelled=false and "
@@ -2183,7 +2186,7 @@ public class ChannelReportController implements Serializable {
             bts.add(BillType.ChannelOnCall);
             hh.put("tbs", bts);
             nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        }
+        
     }
 
     public void fillDoctorView() {
