@@ -1595,17 +1595,17 @@ public class ChannelReportController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select count(bi.bill) from BillItem  bi  "
+        sql = " select count(distinct(bi.bill)) from BillItem  bi  "
                 + " where bi.retired=false ";
 
         if (sessoinDate) {
-            sql += " and bi.singleBillSession.sessionDate between :fd and :td ";
+            sql += " and bi.bill.singleBillSession.sessionDate between :fd and :td ";
         } else {
-            sql += " and bi.createdAt between :fd and :td ";
+            sql += " and bi.bill.createdAt between :fd and :td ";
         }
 
         if (bt != null) {
-            sql += " and bi.billType=:bt ";
+            sql += " and bi.bill.billType=:bt ";
             m.put("bt", bt);
         }
 
@@ -1615,14 +1615,14 @@ public class ChannelReportController implements Serializable {
         }
 
         if (st != null) {
-            sql += " and billSession.staff =:stf ";
+            sql += " and bi.billSession.staff =:stf ";
             m.put("stf", st);
         }
 
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        double d = getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
@@ -1680,11 +1680,16 @@ public class ChannelReportController implements Serializable {
 
         BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
+        
+        System.out.println("getStaffbyClassType(bts) = " + staffController.getStaffbyClassType(bts,fromDate,toDate));
 
-        for (Staff s : staffController.getStaffbyClassType(new Consultant())) {
+        for (Staff s : staffController.getStaffbyClassType(bts,fromDate,toDate)) {
+            
+            System.out.println("s = " + s);
             BookingCountSummryRow row = new BookingCountSummryRow();
             double[] arr = new double[4];
             int i = 0;
+            System.out.println("i = " + i);
 
             row.setConsultant(s);
 
@@ -1696,6 +1701,9 @@ public class ChannelReportController implements Serializable {
                 i++;
                 System.out.println("i"+i);
                 System.out.println("bilType"+bt);
+                System.out.println("billedCount"+billedCount);
+                System.out.println("canceledCount"+canceledCount);
+                System.out.println("refundCount"+refundCount);
             }
             row.setCashCount(arr[0]);
             row.setAgentCount(arr[1]);
