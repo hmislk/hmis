@@ -2183,6 +2183,7 @@ public class ChannelReportController implements Serializable {
             bts.add(BillType.ChannelOnCall);
             hh.put("tbs", bts);
             nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            System.out.println("nurseViewSessions = " + nurseViewSessions);
         }
     }
 
