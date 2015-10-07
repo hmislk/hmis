@@ -17,10 +17,10 @@
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
-                    <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" >
+                    <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
                         <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
-                    </h:inputText>
+                    </p:inputText>
                     <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
                                   selection="#{bookingController.speciality}"
@@ -31,8 +31,7 @@
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
-                        <p:column headerText="Specialities"
-                                  style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
+                        <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
                             <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
                         </p:column>
@@ -40,15 +39,14 @@
                 </h:panelGrid>
 
                 <h:panelGroup id="scStaff" >
-                    <h:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectText}" >
+                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectText}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
                         <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
-                    </h:inputText>
+                    </p:inputText>
                     <p:dataTable id="tblCon"  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
-                                  selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
-                                  style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
-                                  selectionMode="single" >
-                        <p:column headerText="Consultants"
-                                  style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
+                                 selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
+                                 style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
+                                 selectionMode="single" >
+                        <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.name}" />
                             <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
                                           showDelay="0" hideDelay="0" 
@@ -893,10 +891,25 @@
 
 
                         <p:tab title="Search">
-                            <p:calendar id="cal"  value="#{channelSearchController.date}" pattern="dd MMMM yyyy" >   
+                            <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" pattern="dd MMMM yyyy" >   
                                 <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                             </p:calendar>
-                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.billSessions}" var='bs'
+                            <p:calendar id="calTo"  value="#{channelSearchController.toDate}" pattern="dd MMMM yyyy" >   
+                                <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
+                            </p:calendar>
+
+                            <p:inputText id="txtBsSearch" value="#{channelSearchController.txtSearch}" placeholder="ID" >
+                            </p:inputText>
+
+                            <p:commandButton id="btnBsSearch" 
+                                             value="Search" action="#{channelSearchController.searchForBillSessions}" 
+                                             process="txtBsSearch calFrom calTo btnBsSearch" 
+                                             update="bSessionSearch">
+
+                                
+                            </p:commandButton>
+
+                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
                                          filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
