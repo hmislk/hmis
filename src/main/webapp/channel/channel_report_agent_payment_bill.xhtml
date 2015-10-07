@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <p:panel>
+                            <f:facet name="header" >
+                                <p:outputLabel value="AGENT Deposit" />
+                            </f:facet>
+                            <h:panelGroup>                               
+                                <h:panelGrid columns="5" >
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{channelReportTempController.fromDate}"
+                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{channelReportTempController.toDate}" 
+                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                    </p:calendar>
+                                    <p:calendar styleClass="dateTimePicker" id="aaaaaaaaaa" value="#{channelReportTempController.toDate}" 
+                                                navigator="true" pattern="yyyy" >                                                                              
+                                    </p:calendar>
+                                </h:panelGrid>
+                                <h:panelGrid columns="3" >
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createAgentPaymentTable()}" onclick="onSubmitButton();"/>
+                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                        <p:printer target="reportPrint"  />
+                                    </p:commandButton>
+                                    <p:commandButton actionListener="#{channelReportController.createAgentHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
+                                        <pe:exporter type="xlsx" target="tblBills" fileName="channel_report_agent_payment_bill"  />
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </h:panelGroup>
+                            <p:panel id="reportPrint" styleClass="summeryBorder">
+                                <p:dataTable id="tblBills" value="#{channelReportTempController.bills}" var="bill" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                                        <br></br>
+                                        <p:outputLabel value="Agent Deposit" />
+                                        <br></br>
+                                        <p:outputLabel value="From - " />
+                                        <h:outputLabel value="#{channelReportTempController.fromDate}" >
+                                            <f:convertDateTime pattern="yyyy MMMM dd - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                        <p:outputLabel value=" - To - " />
+                                        <h:outputLabel value="#{channelReportTempController.toDate}" >
+                                            <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bill No" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.insId}" />
+                                        <h:outputLabel value=" - " rendered="#{bill.cancelled}"/>
+                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.insId}" />
+                                    </p:column>                                            
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Billed at" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" - " rendered="#{bill.cancelled}"/>
+                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </p:column>  
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Billed by" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}(#{bill.creater.code})" />                                      
+                                    </p:column> 
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Payment Methord" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.paymentMethod}" />                                      
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Agent Code" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.fromInstitution.institutionCode}" />
+                                    </p:column>  
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Agent Name" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.fromInstitution.name}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bank" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.bank.name}" />
+                                    </p:column>
+
+                                    <p:column styleClass="averageNumericColumn">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Amount" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>                          
+                                    <p:column >
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Comments" />
+                                        </f:facet>
+                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:panel>
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
