@@ -1546,7 +1546,7 @@ public class ChannelReportController implements Serializable {
     }
 
     //get scan count and other channel count seperatly
-    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean scan, boolean sessoinDate, boolean paid) {
+    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean sessoinDate, boolean paid) {
 
         String sql;
         Map m = new HashMap();
@@ -1555,14 +1555,16 @@ public class ChannelReportController implements Serializable {
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
-                + " and bf.fee.feeType =:ft ";
+                + " and bf.fee.feeType =:ft "
+                + " and bf.feeValue>0 ";
 
-        if (scan) {
-            sql += " and bf.feeValue>0 ";
-//                    + " and bf.fee.name=:fn ";
-        } else {
-            sql += " and bf.feeValue=0 ";
-//                    + " and bf.fee.name=:fn ";
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
         }
 
         if (paid) {
@@ -1577,7 +1579,7 @@ public class ChannelReportController implements Serializable {
 
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-        m.put("class", bill.getClass());
+        m.put("class", BilledBill.class);
         m.put("ft", ft);
         m.put("bt", bt);
 //        m.put("fn", "Scan Fee");
@@ -1680,11 +1682,11 @@ public class ChannelReportController implements Serializable {
 
         BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        
-        System.out.println("getStaffbyClassType(bts) = " + staffController.getStaffbyClassType(bts,fromDate,toDate));
 
-        for (Staff s : staffController.getStaffbyClassType(bts,fromDate,toDate)) {
-            
+        System.out.println("getStaffbyClassType(bts) = " + staffController.getStaffbyClassType(bts, fromDate, toDate));
+
+        for (Staff s : staffController.getStaffbyClassType(bts, fromDate, toDate)) {
+
             System.out.println("s = " + s);
             BookingCountSummryRow row = new BookingCountSummryRow();
             double[] arr = new double[4];
@@ -1699,11 +1701,11 @@ public class ChannelReportController implements Serializable {
                 refundCount = countBillByBillType(new RefundBill(), bt, sessionDate, s);
                 arr[i] = billedCount - (canceledCount + refundCount);
                 i++;
-                System.out.println("i"+i);
-                System.out.println("bilType"+bt);
-                System.out.println("billedCount"+billedCount);
-                System.out.println("canceledCount"+canceledCount);
-                System.out.println("refundCount"+refundCount);
+                System.out.println("i" + i);
+                System.out.println("bilType" + bt);
+                System.out.println("billedCount" + billedCount);
+                System.out.println("canceledCount" + canceledCount);
+                System.out.println("refundCount" + refundCount);
             }
             row.setCashCount(arr[0]);
             row.setAgentCount(arr[1]);
@@ -1739,14 +1741,14 @@ public class ChannelReportController implements Serializable {
             BookingCountSummryRow row = new BookingCountSummryRow();
             if (ft == FeeType.Service) {
                 row.setBookingType("Scan " + bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, true, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, true, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, true, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
             } else {
                 row.setBookingType(bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, false, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, false, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, false, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
             }
 
             bookingCountSummryRows.add(row);
