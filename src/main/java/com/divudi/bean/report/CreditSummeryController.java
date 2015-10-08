@@ -53,6 +53,7 @@ public class CreditSummeryController implements Serializable {
     ///////////////
     private List<DailyCash> dailyCash;
     List<DailyCredit> dailyCredit;
+    List<DailyCash> dailyCashSummery;
     /////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -91,6 +92,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     private List<Department> findDepartment() {
+        System.out.println("department = " );
 
         String sql;
         Map temMap = new HashMap();
@@ -141,7 +143,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("it", item);
         }
 
-        if (d != null) {
+        if (getInstitution() != null) {
             sql += " and bi.bill.creditCompany=:credit ";
             temMap.put("credit", getInstitution());
         }
@@ -175,7 +177,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("it", item);
         }
 
-        if (dep != null) {
+        if (getInstitution() != null) {
             sql += " and bi.bill.creditCompany=:credit ";
             temMap.put("credit", getInstitution());
         }
@@ -262,8 +264,9 @@ public class CreditSummeryController implements Serializable {
     }
 
     public double getDepartmentTotal() {
+        System.out.println("Cal Total");
         double tmp = 0.0;
-        for (DailyCash d : getDailyCash()) {
+        for (DailyCash d : getDailyCashSummery()) {
             tmp += d.getDepartmentTotal();
         }
 
@@ -279,6 +282,22 @@ public class CreditSummeryController implements Serializable {
         return tmp;
     }
 
+    public List<DailyCash> getDailyCashSummery() {
+        return dailyCashSummery;
+    }
+
+    public void setDailyCashSummery(List<DailyCash> dailyCashSummery) {
+        this.dailyCashSummery = dailyCashSummery;
+    }
+    
+    public void createDailyCashTable(){
+        dailyCashSummery=new ArrayList<>();
+        if(!getDailyCredit().isEmpty()){
+           dailyCashSummery.addAll(getDailyCredit()); 
+        }
+        
+    }
+
     public List<DailyCash> getDailyCredit() {
         // ////System.out.println("Starting : ");
         if (dailyCash == null) {
@@ -286,20 +305,24 @@ public class CreditSummeryController implements Serializable {
 
             for (Department d : findDepartment()) {
                 DailyCash tmp = new DailyCash();
+                System.out.println("d = " + d);
                 tmp.setDepartment(d);
                 dailyCash.add(tmp);
             }
 
             for (DailyCash d : dailyCash) {
+                System.out.println("d = " + d);
                 List<CategoryWithItem> tmpCatList = new ArrayList<>();
 
                 for (Category cat : findCategory(d.getDepartment())) {
+                    System.out.println("cat = " + cat);
                     CategoryWithItem n = new CategoryWithItem();
                     n.setCategory(cat);
 
                     List<ItemWithFee> tmpItemList = new ArrayList<>();
 
                     for (Item i : findItem(cat, d.getDepartment())) {
+                        System.out.println("i = " + i);
                         ItemWithFee iwf = new ItemWithFee();
                         iwf.setItem(i);
                         iwf.setCount(getCount(iwf));
