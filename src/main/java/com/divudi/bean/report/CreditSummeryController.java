@@ -96,8 +96,7 @@ public class CreditSummeryController implements Serializable {
         Map temMap = new HashMap();
         sql = "select distinct(bi.item.department) "
                 + " FROM BillItem bi "
-                + " where  bi.bill.billType= :bTp "
-                + " and bi.bill.creditCompany=:credit"
+                + " where  bi.bill.billType= :bTp "                
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod = :pm ";
 
@@ -105,12 +104,16 @@ public class CreditSummeryController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        temMap.put("pm", PaymentMethod.Credit);        
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit";
+            temMap.put("credit", getInstitution());
         }
 
         List<Department> tmp = getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -125,18 +128,22 @@ public class CreditSummeryController implements Serializable {
         }
         sql = "select distinct(bi.item.category) FROM BillItem bi where bi.bill.billType= :bTp "
                 + " and bi.item.department=:dep and  bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod = :pm and bi.bill.creditCompany=:credit";
+                + " and bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //   temMap.put("ins", getSessionController().getInstitution());
         temMap.put("dep", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
+        }
+
+        if (d != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
         }
 
         List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -153,7 +160,7 @@ public class CreditSummeryController implements Serializable {
         sql = "select distinct(bi.item) FROM BillItem bi where bi.item.department=:dep "
                 + " and  bi.bill.billType= :bTp  "
                 + " and bi.item.category=:cat and  bi.bill.createdAt between :fromDate and :toDate "
-                + "and  bi.bill.paymentMethod = :pm and bi.bill.creditCompany=:credit ";
+                + "and  bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //     temMap.put("ins", getSessionController().getInstitution());
@@ -161,11 +168,16 @@ public class CreditSummeryController implements Serializable {
         temMap.put("cat", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
+        }
+
+        if (dep != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
         }
 
         List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -179,7 +191,7 @@ public class CreditSummeryController implements Serializable {
         Map temMap = new HashMap();
         String sql;
 
-        sql = "select count(bi) FROM BillItem bi where bi.item=:itm and bi.bill.creditCompany=:credit"
+        sql = "select count(bi) FROM BillItem bi where bi.item=:itm "
                 + " and bi.bill.paymentMethod = :pm "
                 + "and bi.bill.billType=:btp and type(bi.bill)=:billClass "
                 + "and bi.bill.createdAt between :fromDate and :toDate ";
@@ -190,12 +202,16 @@ public class CreditSummeryController implements Serializable {
         temMap.put("itm", i);
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("billClass", bill.getClass());
-        temMap.put("btp", BillType.OpdBill);
-        temMap.put("credit", getInstitution());
+        temMap.put("btp", BillType.OpdBill);        
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
         }
 
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
@@ -207,7 +223,7 @@ public class CreditSummeryController implements Serializable {
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + "  and bf.billItem.item=:itm"
-                + " and bf.bill.paymentMethod = :pm and bf.bill.creditCompany=:credit ";
+                + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
         temMap.put("toDate", getToDate());
@@ -217,11 +233,16 @@ public class CreditSummeryController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ftp", feeType);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bf.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
         }
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);

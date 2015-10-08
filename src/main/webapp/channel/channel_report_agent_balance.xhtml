@@ -27,7 +27,7 @@
                         </p:commandButton>
                     </h:panelGrid> 
                 </h:panelGrid>
-                <p:panel id="reportPrint" style="summeryBorder">
+                <p:panel id="reportPrint" styleClass="summeryBorder noBorder">
                     <p:dataTable value="#{institutionController.agencies}" var="a" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
