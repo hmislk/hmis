@@ -240,29 +240,7 @@ public class StaffController implements Serializable {
 
     }
     
-    public List<Staff> getStaffbyClassType(List<BillType> bts, Date fd, Date td){
-        System.out.println("Inside getStaffbyClassType");
-        HashMap hm = new HashMap();
-//        String sql = "select p from Staff p where p.retired=false ";
-//        
-//        if(st!=null){
-//            System.out.println("1");
-//            sql+=" and type(p)=:class ";
-//            hm.put("class", st.getClass());
-//        }
-        
-        String sql="select distinct(bf.staff) from BillFee bf "
-                + " where bf.bill.retired=false "
-                + " and bf.bill.billType in :bts "
-                + " and bf.staff is not null "
-                + " and bf.createdAt between :fd and :td ";
-        
-        hm.put("bts", bts);
-        hm.put("fd", fd);
-        hm.put("td", td);
-        
-        return getEjbFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-    }
+    
 
     ReportKeyWord reportKeyWord;
 
