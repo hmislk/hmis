@@ -24,7 +24,6 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.entity.Staff_;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
