@@ -55,10 +55,12 @@
                         <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.billType eq 'ChannelAgent'}"/>  
                         <p:outputLabel value="(#{bs.bill.creditCompany.institutionCode})" rendered="#{bs.bill.billType eq 'ChannelAgent'}"/>
 
-                        <p:outputLabel value="Booking" rendered="#{bs.bill.billType eq 'ChannelStaff' or bs.bill.billType eq 'ChannelOnCall'}"/>
+                        <p:outputLabel value="Booking" rendered="#{(bs.bill.billType eq 'ChannelStaff' or bs.bill.billType eq 'ChannelOnCall') 
+                                                                   and bs.bill.paidAmount eq 0}"/>
 
-                        <p:outputLabel value="-" rendered="#{bs.bill.billType ne 'ChannelAgent' and 
-                                                             bs.bill.billType ne 'ChannelStaff' and bs.bill.billType ne 'ChannelOnCall' }"/>
+                        <p:outputLabel value="-" rendered="#{(bs.bill.billType ne 'ChannelAgent' or 
+                                                             bs.bill.billType ne 'ChannelStaff' or bs.bill.billType ne 'ChannelOnCall') 
+                                                             and bs.bill.paidBill ne null}"/>
 
                     </p:column>                
                     <p:column headerText="Agent Ref No" style="text-align: center;">                        
