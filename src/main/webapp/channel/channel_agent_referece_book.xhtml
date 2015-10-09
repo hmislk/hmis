@@ -4,7 +4,9 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions" >
 
     <ui:define name="content">
 
@@ -22,9 +24,12 @@
                         <p:column>#{vt.name}</p:column>
                     </p:autoComplete>
                     <p:outputLabel value="Book Number" />
-                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.bookNumber}"  >
+                        <f:convertNumber parent="#,###,##0.00" />
+                    </p:inputText>
                     <p:outputLabel value="Strarting Reference Number" />
-                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" />
+                    <!--<p:inputText value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" />-->
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
                     <p:outputLabel value="Ending Reference Number" />
                     <p:inputText value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" />
                     <p:commandButton action="#{agentReferenceBookController.saveAgentBook}" value="Save" ajax="false" ></p:commandButton> 

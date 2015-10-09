@@ -12,7 +12,7 @@
 
         <h:form>
 
-            <p:panel header="Cannel Agent Reperence Book">
+            <p:panel header="Statement Of Agent Account">
 
                 <p:panel>
                     <h:panelGrid columns="2" >
@@ -95,10 +95,10 @@
                                 <p:outputLabel value="#{a.historyType}"/>
                             </p:column>
                             <p:column>
-                                <p:outputLabel value="Deposit"  rendered="#{a.historyType eq 'ChannelDeposit'}"/>
-                                <p:outputLabel value="Deposit Cancel"  rendered="#{a.historyType eq 'ChannelDepositCancel'}"/>
-                                <p:outputLabel value="Cancel"  rendered="#{a.historyType eq 'ChannelBooking' and a.bill.billClassType eq 'CancelledBill'}"/>
-                                <p:outputLabel value="Refunded"  rendered="#{a.historyType eq 'ChannelBooking' and a.bill.billClassType eq 'RefundBill'}"/>
+                                <p:outputLabel value="Deposit"  rendered="#{a.historyType eq 'ChannelDeposit'}" style="color: green;"/>
+                                <p:outputLabel value="Deposit Cancel"  rendered="#{a.historyType eq 'ChannelDepositCancel'}" style="color: red;"/>
+                                <p:outputLabel value="Cancel"  rendered="#{a.historyType eq 'ChannelBooking' and a.bill.billClassType eq 'CancelledBill'}" style="color: red;"/>
+                                <p:outputLabel value="Refunded"  rendered="#{a.historyType eq 'ChannelBooking' and a.bill.billClassType eq 'RefundBill'}" style="color: red;"/>
                                 <p:outputLabel value=""  rendered="#{a.historyType ne 'ChannelDeposit'}"/>
                             </p:column>
                             <p:column styleClass="numberCol" >
