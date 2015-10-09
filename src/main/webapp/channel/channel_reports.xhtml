@@ -37,8 +37,8 @@
                             <h:panelGrid columns="1">
                                 <p:panel header="Cashier Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
-            <!--                            <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Detail Summary" action="/channel/channel_report_cashier_all_summery"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Summary" action="/channel/channel_report_cashier_summery"/>-->
+                                        <!--                            <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Detail Summary" action="/channel/channel_report_cashier_all_summery"/>
+                                                                    <p:commandButton styleClass="linkButton" ajax="false" value="  Cashier Summary" action="/channel/channel_report_cashier_summery"/>-->
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Bills by Single Cashier" action="/channel/report_cashier_detailed_by_user"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Single Cashier Summary" action="/channel/report_cashier_summery_by_user"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Bills by All Cashiers" action="/channel/report_cashier_summery_all"/>
@@ -57,7 +57,7 @@
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
-                            
+
                             <h:panelGrid columns="1">
                                 <p:panel header="Count" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
@@ -65,16 +65,25 @@
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
-                             <h:panelGrid columns="1">
+                            <h:panelGrid columns="1">
                                 <p:panel header="Consutant Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report" action="/channel/channel_report_doctor_leave"/>                                        
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
-                    </h:panelGrid>
+
+                            <h:panelGrid columns="1">
+                                <p:panel header="Payment Report" style="width: 400px;margin: auto;"  toggleable="true">  
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report" action="/channel/channel_payment_report"/>                                        
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
+
+                        </h:panelGrid>
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
 
