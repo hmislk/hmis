@@ -58,9 +58,9 @@
                         <p:outputLabel value="Booking" rendered="#{(bs.bill.billType eq 'ChannelStaff' or bs.bill.billType eq 'ChannelOnCall') 
                                                                    and bs.bill.paidAmount eq 0}"/>
 
-                        <p:outputLabel value="-" rendered="#{(bs.bill.billType ne 'ChannelAgent' or 
+                        <p:outputLabel value="-" rendered="#{bs.bill.billType ne 'ChannelAgent' and ( 
                                                              bs.bill.billType ne 'ChannelStaff' or bs.bill.billType ne 'ChannelOnCall') 
-                                                             and bs.bill.paidBill ne null}"/>
+                                                             and bs.bill.paidAmount ne 0}"/>
 
                     </p:column>                
                     <p:column headerText="Agent Ref No" style="text-align: center;">                        
