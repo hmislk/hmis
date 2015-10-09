@@ -46,10 +46,10 @@
                         <p:outputLabel value="#{bs.bill.billType}"/>
                     </p:column>
                     <p:column headerText="C / R" style="text-align: center;">
-                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}" style="color: red;"/>
-                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}" style="color: red;"/>
-                        <p:outputLabel value="-" rendered="#{bs.bill.refunded==false and bs.bill.cancelled==false}"/>
-
+                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled eq true}" style="color: red;"/>
+                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded eq true}" style="color: red;"/>
+                        <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
+                        
                     </p:column>
                     <p:column headerText="Agent/Emp" style="text-align: center;">
                         <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.billType eq 'ChannelAgent'}"/>  

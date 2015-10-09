@@ -2179,11 +2179,12 @@ public class ChannelReportController implements Serializable {
 
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false and "
-                + " bs.bill.cancelled=false and "
-                + " bs.bill.refunded=false and "
+                + " type(bs.bill)=:class and "
+                //+ " bs.bill.refunded=false and "
                 + " bs.bill.billType in :tbs and "
                 + " bs.serviceSession.id=" + bookingController.getSelectedServiceSession().getId() + " order by bs.serialNo";
         HashMap hh = new HashMap();
+        hh.put("class", BilledBill.class);
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelAgent);
         bts.add(BillType.ChannelCash);
