@@ -17,6 +17,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
+import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
@@ -24,6 +25,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -58,6 +60,8 @@ public class ChannelReportTempController implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    ServiceSessionLeaveFacade serviceSessionLeaveFacade;
     //
     @EJB
     ChannelBean channelBean;
@@ -71,10 +75,12 @@ public class ChannelReportTempController implements Serializable {
     //
     List<Bill> bills;
     List<AgentReferenceBook> agentReferenceBooks;
+    List<ServiceSessionLeave> serviceSessionLeaves;
     //
     Date fromDate;
     Date toDate;
     SearchKeyword searchKeyword;
+    ReportKeyWord reportKeyWord;
 
     /**
      * Creates a new instance of ChannelReportTempController
@@ -205,6 +211,27 @@ public class ChannelReportTempController implements Serializable {
         UtilityController.addSuccessMessage("Updated");
         createAgentReferenceBooks();
     }
+    
+    public void createConsultantLeaves() {
+        String sql;
+        HashMap m = new HashMap();
+        
+        sql = "Select s From ServiceSessionLeave s Where s.retired=false "
+                + " and s.sessionDate between :fd and :td ";
+                
+        
+        if (getReportKeyWord().getStaff()!=null) {
+            sql+= "  and s.staff=:st";
+            m.put("st", getReportKeyWord().getStaff());
+        }
+        
+        sql += " order by s.sessionDate ";
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        serviceSessionLeaves = getServiceSessionLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
 
     //Getters and Setters
     public Date getFromDate() {
@@ -334,6 +361,33 @@ public class ChannelReportTempController implements Serializable {
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public ServiceSessionLeaveFacade getServiceSessionLeaveFacade() {
+        return serviceSessionLeaveFacade;
+    }
+
+    public void setServiceSessionLeaveFacade(ServiceSessionLeaveFacade serviceSessionLeaveFacade) {
+        this.serviceSessionLeaveFacade = serviceSessionLeaveFacade;
+    }
+
+    public List<ServiceSessionLeave> getServiceSessionLeaves() {
+        return serviceSessionLeaves;
+    }
+
+    public void setServiceSessionLeaves(List<ServiceSessionLeave> serviceSessionLeaves) {
+        this.serviceSessionLeaves = serviceSessionLeaves;
     }
 
 }
