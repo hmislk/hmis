@@ -120,6 +120,8 @@ public class ChannelReportController implements Serializable {
     SessionController sessionController;
     @Inject
     StaffController staffController;
+    @Inject
+    BookingController bookingController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -2169,26 +2171,29 @@ public class ChannelReportController implements Serializable {
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
-        if (serviceSession == null) {
+        if (bookingController.getSelectedServiceSession() == null) {
             UtilityController.addErrorMessage("Please Select Session");
             return;
         }
-            String sql = "Select bs From BillSession bs "
-                    + " where bs.retired=false and "
-                    + " bs.bill.cancelled=false and "
-                    + " bs.bill.refunded=false and "
-                    + " bs.bill.billType in :tbs and "
-                    + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
-                    + " order by bs.serialNo";
-            HashMap hh = new HashMap();
-            hh.put("ssDate", serviceSession.getSessionAt());
-            List<BillType> bts = new ArrayList<>();
-            bts.add(BillType.ChannelAgent);
-            bts.add(BillType.ChannelCash);
-            bts.add(BillType.ChannelOnCall);
-            hh.put("tbs", bts);
-            nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        
+        System.out.println("bookingController.getSelectedServiceSession() = " + bookingController.getSelectedServiceSession());
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false and "
+                + " type(bs.bill)=:class and "
+                //+ " bs.bill.refunded=false and "
+                + " bs.bill.billType in :tbs and "
+                + " bs.serviceSession.id=" + bookingController.getSelectedServiceSession().getId() + " order by bs.serialNo";
+        HashMap hh = new HashMap();
+        hh.put("class", BilledBill.class);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelOnCall);
+        bts.add(BillType.ChannelStaff);
+        hh.put("tbs", bts);
+        nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        System.out.println("nurseViewSessions = " + nurseViewSessions);
+
     }
 
     public void fillDoctorView() {
