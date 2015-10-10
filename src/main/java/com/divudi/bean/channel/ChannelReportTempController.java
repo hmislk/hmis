@@ -118,6 +118,7 @@ public class ChannelReportTempController implements Serializable {
     boolean sessoinDate;
     boolean paid;
     boolean scan;
+    ChannelTotal channelTotal;
 
     /**
      * Creates a new instance of ChannelReportTempController
@@ -553,8 +554,8 @@ public class ChannelReportTempController implements Serializable {
         temMap.put("bill", billClass.getClass());
 
         sql += " order by b.insId ";
-        System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
+//        System.out.println("temMap = " + temMap);
+//        System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -565,6 +566,7 @@ public class ChannelReportTempController implements Serializable {
             return;
         }
         channelDateDetailRows = new ArrayList<>();
+        channelTotal=new ChannelTotal();
         Date nowDate = getFromDate();
         while (nowDate.before(getToDate())) {
             ChannelDateDetailRow row = new ChannelDateDetailRow();
@@ -584,31 +586,38 @@ public class ChannelReportTempController implements Serializable {
             row.setCash(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.cashTotal+=row.getCash();
             
             row.setAgent(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.agentTotal+=row.getAgent();
             
             row.setCard(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.cardTotal+=row.getCard();
             
             row.setCheque(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.chequeTotal+=row.getCheque();
             
             row.setOnCall(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.onCallTotal+=row.getOnCall();
             
             row.setSlip(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td));
+            channelTotal.slipTotal+=row.getSlip();
             
             row.setStaff(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td)
                     + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td));
-
+            channelTotal.staffTotal+=row.getStaff();
+            
             channelDateDetailRows.add(row);
             Calendar cal = Calendar.getInstance();
             cal.setTime(nowDate);
@@ -1100,6 +1109,74 @@ public class ChannelReportTempController implements Serializable {
         }
 
     }
+    
+    public class ChannelTotal {
+
+        double cashTotal;
+        double cardTotal;
+        double slipTotal;
+        double chequeTotal;
+        double agentTotal;
+        double staffTotal;
+        double onCallTotal;
+
+        public double getCashTotal() {
+            return cashTotal;
+        }
+
+        public void setCashTotal(double cashTotal) {
+            this.cashTotal = cashTotal;
+        }
+
+        public double getCardTotal() {
+            return cardTotal;
+        }
+
+        public void setCardTotal(double cardTotal) {
+            this.cardTotal = cardTotal;
+        }
+
+        public double getSlipTotal() {
+            return slipTotal;
+        }
+
+        public void setSlipTotal(double slipTotal) {
+            this.slipTotal = slipTotal;
+        }
+
+        public double getChequeTotal() {
+            return chequeTotal;
+        }
+
+        public void setChequeTotal(double chequeTotal) {
+            this.chequeTotal = chequeTotal;
+        }
+
+        public double getAgentTotal() {
+            return agentTotal;
+        }
+
+        public void setAgentTotal(double agentTotal) {
+            this.agentTotal = agentTotal;
+        }
+
+        public double getStaffTotal() {
+            return staffTotal;
+        }
+
+        public void setStaffTotal(double staffTotal) {
+            this.staffTotal = staffTotal;
+        }
+
+        public double getOnCallTotal() {
+            return onCallTotal;
+        }
+
+        public void setOnCallTotal(double onCallTotal) {
+            this.onCallTotal = onCallTotal;
+        }
+
+    }
 
     //Getters and Setters
     public Date getFromDate() {
@@ -1387,6 +1464,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setChannelDateDetailRows(List<ChannelDateDetailRow> channelDateDetailRows) {
         this.channelDateDetailRows = channelDateDetailRows;
+    }
+
+    public ChannelTotal getChannelTotal() {
+        return channelTotal;
+    }
+
+    public void setChannelTotal(ChannelTotal channelTotal) {
+        this.channelTotal = channelTotal;
     }
 
 }

@@ -106,8 +106,9 @@ public class ChannelReportController implements Serializable {
     ChannelBillTotals billTotals;
     Department department;
     boolean paid = false;
-    boolean sessoinDate=false;
-    boolean withDates=false;
+    boolean sessoinDate = false;
+    boolean withDates = false;
+    PaymentMethod paymentMethod;
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -151,14 +152,14 @@ public class ChannelReportController implements Serializable {
         billedBills = new ArrayList<>();
         cancelBills = new ArrayList<>();
         refundBills = new ArrayList<>();
-        netTotal=0.0;
-        cancelTotal=0.0;
-        refundTotal=0.0;
-        totalBilled=0.0;
-        totalCancel=0.0;
-        totalRefund=0.0;
+        netTotal = 0.0;
+        cancelTotal = 0.0;
+        refundTotal = 0.0;
+        totalBilled = 0.0;
+        totalCancel = 0.0;
+        totalRefund = 0.0;
         staff = null;
-        sessoinDate=false;
+        sessoinDate = false;
     }
 
     public Institution getInstitution() {
@@ -1012,18 +1013,66 @@ public class ChannelReportController implements Serializable {
         cancelBills = new ArrayList<>();
         refundBills = new ArrayList<>();
 
-        billedBills = channelListByBillClass(new BilledBill(), webUser,sessoinDate);
-        cancelBills = channelListByBillClass(new CancelledBill(), webUser,sessoinDate);
-        refundBills = channelListByBillClass(new RefundBill(), webUser,sessoinDate);
-        
-        totalBilled=calTotal(billedBills);
-        totalCancel=calTotal(cancelBills);
-        totalRefund=calTotal(refundBills);
-        netTotal=totalBilled+totalCancel+totalRefund;
-        
+        billedBills = channelListByBillClass(new BilledBill(), webUser, sessoinDate);
+        cancelBills = channelListByBillClass(new CancelledBill(), webUser, sessoinDate);
+        refundBills = channelListByBillClass(new RefundBill(), webUser, sessoinDate);
+
+        totalBilled = calTotal(billedBills);
+        totalCancel = calTotal(cancelBills);
+        totalRefund = calTotal(refundBills);
+        netTotal = totalBilled + totalCancel + totalRefund;
+
     }
 
-    public List<Bill> channelListByBillClass(Bill bill, WebUser webUser,boolean sd) {
+    public void channelBillClassListByPaymentMethord() {
+        if (webUser == null) {
+            JsfUtil.addErrorMessage("Select User......");
+            return;
+        }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select Payment Methord.....");
+            return;
+        }
+        billedBills = new ArrayList<>();
+        cancelBills = new ArrayList<>();
+        refundBills = new ArrayList<>();
+        BillType bt=null;
+        switch (paymentMethod) {
+            case Cash:
+                bt = BillType.ChannelCash;
+                break;
+            case Cheque:
+                bt = BillType.ChannelCash;
+                break;
+            case Slip:
+                bt = BillType.ChannelCash;
+                break;
+            case Card:
+                bt = BillType.ChannelCash;
+                break;
+            case Agent:
+                bt = BillType.ChannelAgent;
+                break;
+            case OnCall:
+                bt = BillType.ChannelPaid;
+                break;
+            case Staff:
+                bt = BillType.ChannelPaid;
+                break;
+        }
+        System.out.println("bt = " + bt);
+        billedBills = fetchBills(new BilledBill(), bt, paymentMethod, webUser, fromDate, toDate);
+        cancelBills = fetchBills(new CancelledBill(), bt, paymentMethod, webUser, fromDate, toDate);
+        refundBills = fetchBills(new RefundBill(), bt, paymentMethod, webUser, fromDate, toDate);
+
+        totalBilled = calTotal(billedBills);
+        totalCancel = calTotal(cancelBills);
+        totalRefund = calTotal(refundBills);
+        netTotal = totalBilled + totalCancel + totalRefund;
+
+    }
+
+    public List<Bill> channelListByBillClass(Bill bill, WebUser webUser, boolean sd) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
@@ -1051,6 +1100,48 @@ public class ChannelReportController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("hm = " + hm);
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    private List<Bill> fetchBills(Bill billClass, BillType bt, PaymentMethod paymentMethod, WebUser wUser, Date fd, Date td) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and type(b)=:bill "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (wUser != null) {
+            sql += " and b.creater=:w ";
+            temMap.put("w", wUser);
+        }
+
+        if (paymentMethod == PaymentMethod.OnCall || paymentMethod == PaymentMethod.Staff) {
+            if (billClass instanceof BilledBill) {
+                sql += " and b.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            } else {
+                sql += " and b.billedBill.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            }
+
+        } else {
+            sql += " and b.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btp", bt);
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -3926,6 +4017,14 @@ public class ChannelReportController implements Serializable {
 
     public void setWithDates(boolean withDates) {
         this.withDates = withDates;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
