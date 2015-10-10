@@ -466,22 +466,22 @@ public class AmpController implements Serializable {
         if (errorCheck()) {
             return;
         }
-
-        if (getTabId().toString().equals("tabGen")) {
-            if (errorCheckForGen()) {
-                return;
-            }
-
-            saveVmp();
-            getAddingVtmInVmp().setVmp(currentVmp);
-            if (getAddingVtmInVmp().getId() == null || getAddingVtmInVmp().getId() == null) {
-                getVivFacade().create(getAddingVtmInVmp());
-            } else {
-                getVivFacade().edit(getAddingVtmInVmp());
-            }
-
-            getCurrent().setVmp(currentVmp);
-        }
+//
+//        if (getTabId().toString().equals("tabGen")) {
+//            if (errorCheckForGen()) {
+//                return;
+//            }
+//
+//            saveVmp();
+//            getAddingVtmInVmp().setVmp(currentVmp);
+//            if (getAddingVtmInVmp().getId() == null || getAddingVtmInVmp().getId() == null) {
+//                getVivFacade().create(getAddingVtmInVmp());
+//            } else {
+//                getVivFacade().edit(getAddingVtmInVmp());
+//            }
+//
+//            getCurrent().setVmp(currentVmp);
+//        }
 
         if (current.getName() == null || current.getName().equals("")) {
             current.setName(createAmpName());

@@ -102,9 +102,8 @@
                                                          completeMethod="#{vmpController.completeVmp}"
                                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{ampController.current.vmp}" ></p:autoComplete>
                                         <p:commandLink id="btnAddVmp" 
-                                                         value="New" 
-                                                         onclick="dlgVmp.show();" 
-                                                         actionListener="#{ampController.prepareAddNewVmp}" />  
+                                                         value="Create New Product" 
+                                                         action="/pharmacy/pharmacy_vmp"/>  
 
 
 
