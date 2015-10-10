@@ -109,6 +109,8 @@ public class InvestigationItemController implements Serializable {
     private int keyCode;
     private int previousKeyCode;
     private int specialCode;
+    String fontFamily;
+    double fontSize;
 
     public void toInvestigationMaster() {
         investigationController.setCurrent(currentInvestigation);
@@ -216,6 +218,22 @@ public class InvestigationItemController implements Serializable {
 
     public void setSpecialCode(int specialCode) {
         this.specialCode = specialCode;
+    }
+
+    public String getFontFamily() {
+        return fontFamily;
+    }
+
+    public void setFontFamily(String fontFamily) {
+        this.fontFamily = fontFamily;
+    }
+
+    public double getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(double fontSize) {
+        this.fontSize = fontSize;
     }
 
     public void ajaxIiKeydownListner(InvestigationItem ii) {
@@ -349,6 +367,88 @@ public class InvestigationItemController implements Serializable {
 
     public void setAddingString(String addingString) {
         this.addingString = addingString;
+    }
+
+    public List<ReportItem> getAllReportItemList() {
+        String sql = "select ri from ReportItem ri ";
+
+        return riFacade.findBySQL(sql);
+    }
+
+    public void moveUpAllReportItems() {
+        if (getAllReportItemList().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getAllReportItemList()) {
+            ri.setRiTop(ri.getRiTop() + 1);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Moved Successfully");
+    }
+
+    public void moveLeftAllReportItems() {
+        if (getAllReportItemList().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getAllReportItemList()) {
+            ri.setRiLeft(ri.getRiLeft() + 1);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Moved Successfully");
+    }
+    
+    public void moveDownAllReportItems() {
+        if (getAllReportItemList().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getAllReportItemList()) {
+            ri.setRiHeight(ri.getRiHeight()+ 1);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Moved Successfully");
+    }
+    
+    public void moveRightAllReportItems() {
+        if (getAllReportItemList().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getAllReportItemList()) {
+            ri.setRiWidth(ri.getRiWidth()+ 1);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Moved Successfully");
+    }
+
+    public void updateAllFontValues() {
+
+        for (ReportItem ri : getAllReportItemList()) {
+            if (fontFamily != null) {
+                System.out.println("update Font Family");
+                ri.setCssFontFamily(fontFamily);
+                riFacade.edit(ri);
+            }
+            
+            if (fontSize != 0) {
+                System.out.println("update Font Size");
+                ri.setRiFontSize(fontSize);
+                riFacade.edit(ri);
+            }
+        }
+        
+        UtilityController.addSuccessMessage("Update Success");
+
     }
 
     public List<InvestigationItem> completeIxItem(String qry) {

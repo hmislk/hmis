@@ -539,7 +539,11 @@ public class StoreGrnController implements Serializable {
 //            return;
 //        }
         if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
-            billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
+            try {
+                billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         System.err.println("2");

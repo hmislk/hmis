@@ -22,6 +22,10 @@
                             <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
 
                             <h:outputLabel value="Channel Patient Count"/>
+                            <p:commandButton id="btnBack" value="Back" 
+                                             action="/channel/channel_reports" style="float: right;"
+                                             ajax="false">
+                            </p:commandButton>
                         </f:facet>
                         <h:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
@@ -31,8 +35,8 @@
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-                            
-                            <p:outputLabel value="Fee Type" />
+
+                            <p:outputLabel value="Paid Only" />
                             <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
 
                         </h:panelGrid>

@@ -18,7 +18,13 @@
 
 
 
-                <p:panel header="Manage Pharmaceutical Item Categories" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel styleClass="verticalAndHorizontalCenteringLarge">
+                    
+                    <f:facet name="header" >
+                        <h:outputLabel value="Manage Pharmaceutical Item Categories" ></h:outputLabel>
+                        <p:commandButton value="Back" ajax="false" action="/pharmacy/pharmacy_admin" icon="ui-icon-circle-triangle-w" style="float: right;" ></p:commandButton>
+                    </f:facet>
+                    
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
                         <h:panelGrid id="gpSelect" columns="1"  >
