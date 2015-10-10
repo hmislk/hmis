@@ -31,7 +31,7 @@ public enum Title {
     public String getLabel() {
         switch (this) {
             case Baby_Of:
-                return "Baby of";
+                return "Baby of ";
             case DrMiss:
                 return "Dr. (Miss)";
             case DrMrs:
@@ -57,7 +57,7 @@ public enum Title {
             case RtRev:
                 return "Rt. Rev.";
             case Other:
-                return "";
+                return "Other";
             default:
                 return this.toString();
 

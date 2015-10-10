@@ -10,8 +10,8 @@
         <h:form  >
             <p:focus id="selectFocus" for="lstSelect"  />
             <p:focus id="detailFocus" for="txtName" />
-            <p:panel header="Manage Report Format Categories" >
-                <p:panelGrid columns="2"  >
+            <p:panel header="Manage Report Format Categories" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panelGrid columns="2"  styleClass="alignTop">
                     <p:panel  >
                         <p:selectOneListbox   id="lstSelect"   value="#{reportFormatController.current}" styleClass="listBox">
                             <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>

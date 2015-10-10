@@ -276,6 +276,7 @@ public enum Privileges {
     HrAdmin,
     EmployeeHistoryReport,
     hrDeleteLateLeave,
+    HrGenerateSalary,
     
     
     Developers,

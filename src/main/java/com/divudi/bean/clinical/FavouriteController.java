@@ -24,7 +24,7 @@ import javax.inject.Named;
  *
  * @author buddhika
  */
-@Named(value = "favouriteController")
+@Named
 @SessionScoped
 public class FavouriteController implements Serializable {
 
@@ -83,6 +83,10 @@ public class FavouriteController implements Serializable {
         items = favouriteItemFacade.findBySQL(j, m);
     }
 
+    public void prepareAddingFavouriteItem(){
+        current = new FavouriteItem();
+    }
+    
     public void addToFavouriteMedicine() {
         if (item == null) {
             JsfUtil.addErrorMessage("Please select an item");

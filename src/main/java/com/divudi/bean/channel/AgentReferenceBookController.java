@@ -100,14 +100,27 @@ public class AgentReferenceBookController implements Serializable {
         for (AgentReferenceBook arb : agentReferenceBooks) {
             if (arb.getBookNumber() == agentReferenceBook.getBookNumber()) {
                 UtilityController.addErrorMessage("Book Number Is Alredy Given");
+                commonErrorMessageForSaveChannelBook(arb);
                 return;
             }
             if (arb.getStartingReferenceNumber() == agentReferenceBook.getStartingReferenceNumber()) {
                 UtilityController.addErrorMessage("Starting Reference Number Is Alredy Given");
+                commonErrorMessageForSaveChannelBook(arb);
                 return;
             }
             if (arb.getEndingReferenceNumber() == agentReferenceBook.getEndingReferenceNumber()) {
                 UtilityController.addErrorMessage("Ending Reference Number Is Alredy Given");
+                commonErrorMessageForSaveChannelBook(arb);
+                return;
+            }
+            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getStartingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getStartingReferenceNumber())) {
+                UtilityController.addErrorMessage("Starting Reference Number Is In Given Book Range");
+                commonErrorMessageForSaveChannelBook(arb);
+                return;
+            }
+            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getEndingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getEndingReferenceNumber())) {
+                UtilityController.addErrorMessage("Ending Reference Number Is In Given Book Range");
+                commonErrorMessageForSaveChannelBook(arb);
                 return;
             }
         }
@@ -124,6 +137,13 @@ public class AgentReferenceBookController implements Serializable {
         UtilityController.addSuccessMessage("Saved");
         makeNull();
 
+    }
+
+    public void commonErrorMessageForSaveChannelBook(AgentReferenceBook arb) {
+        UtilityController.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getInstitutionCode() + ")");
+        UtilityController.addErrorMessage("Book No - " + arb.getBookNumber());
+        UtilityController.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
+        UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
     }
 
     public void createAllBooks() {
@@ -165,16 +185,6 @@ public class AgentReferenceBookController implements Serializable {
             rb.setRetiredAt(new Date());
             getAgentReferenceBookFacade().edit(rb);
         }
-        createAllBooks();
-    }
-
-    public void updateDecactivateAgentBook(AgentReferenceBook a) {
-
-        a.setEditor(getSessionController().getLoggedUser());
-        a.setEditedAt(new Date());
-        getAgentReferenceBookFacade().edit(a);
-
-        UtilityController.addSuccessMessage("Updated");
         createAllBooks();
     }
 
@@ -249,7 +259,6 @@ public class AgentReferenceBookController implements Serializable {
         m.put("rn", "%" + refNumber.toUpperCase() + "%");
 
         List<AgentHistory> ahs = agentHistoryFacade.findBySQL(sql, m);
-
 
         if (ahs.isEmpty()) {
             return false;

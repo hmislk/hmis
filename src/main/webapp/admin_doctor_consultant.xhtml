@@ -18,8 +18,8 @@
 
 
 
-                <p:panel header="Manage Doctor" styleClass="verticalAndHorizontalCenteringLarge" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                <p:panel header="Manage Doctor" styleClass="verticalAndHorizontalCenteringLarge">
+                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
@@ -59,10 +59,10 @@
                                     <h:outputText  value="Address" />
                                     <p:inputText autocomplete="off" value="#{consultantController.current.person.address}"  />
                                     <h:outputText value="Speciality" />
-                                    <p:selectOneMenu  value="#{consultantController.current.speciality}" >
+                                    <h:selectOneListbox size="1" value="#{consultantController.current.speciality}" >
                                         <f:selectItem itemLabel="Please select a speciality"/>
                                         <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                    </p:selectOneMenu>
+                                    </h:selectOneListbox>
                                     <h:outputText value="Registration" />
                                     <p:inputText autocomplete="off" value="#{consultantController.current.registration}" />
                                     <h:outputText value="Qualification" />

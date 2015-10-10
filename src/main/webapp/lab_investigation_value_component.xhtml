@@ -40,11 +40,11 @@
                             </h:selectOneMenu>
 
                             <p:panel id="panelDetails" >
-                                <p:outputLabel value="Maximum Value"  rendered="#{investigationItemValidatorController.current ne null}"></p:outputLabel>
-                                <p:inputText value="#{investigationItemValidatorController.current.maximumValue}" rendered="#{investigationItemValidatorController.current ne null}"></p:inputText>
-                                <p:outputLabel value="Minimum Value"  rendered="#{investigationItemValidatorController.current ne null}"></p:outputLabel>
-                                <p:inputText value="#{investigationItemValidatorController.current.minimumValue}"  rendered="#{investigationItemValidatorController.current ne null}"></p:inputText>
-                                <p:commandButton ajax="false" value="Save" action="#{investigationItemValidatorController.updateValidator()}"></p:commandButton>
+                                <p:outputLabel value="Maximum Value"  rendered="#{investigationValidatorController.current ne null}"></p:outputLabel>
+                                <p:inputText value="#{investigationValidatorController.current.maximumValue}" rendered="#{investigationValidatorController.current ne null}"></p:inputText>
+                                <p:outputLabel value="Minimum Value"  rendered="#{investigationValidatorController.current ne null}"></p:outputLabel>
+                                <p:inputText value="#{investigationValidatorController.current.minimumValue}"  rendered="#{investigationValidatorController.current ne null}"></p:inputText>
+                                <p:commandButton ajax="false" value="Save" action="#{investigationValidatorController.updateValidator()}"></p:commandButton>
                             </p:panel>
 
                         </p:panelGrid>

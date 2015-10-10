@@ -141,7 +141,8 @@ public class ServiceSessionLeaveController implements Serializable {
     }
 
     public void fillLeaveItems() {
-
+        setCurrentStaff(bookingController.getStaff());
+        
         String slq = "Select s From ServiceSessionLeave s Where s.sessionDate> :dt and s.staff=:st";
         HashMap hm = new HashMap();
         hm.put("dt", Calendar.getInstance().getTime());

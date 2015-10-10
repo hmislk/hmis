@@ -11,11 +11,16 @@
                 <h:form >
                     <p:panel header="Manage Investigatio Calculations" >
                         <p:panelGrid columns="1" >
+                            <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                            <p:ajax event="change" process="@this" update="acIx" />
+                                </p:selectBooleanCheckbox>
                             <p:panelGrid columns="2" >
+                                
                                 <h:outputLabel value="Investigation" ></h:outputLabel>
-                                <p:autoComplete converter="ixcon" forceSelection="true" id="acIx"  value="#{ixCalController.ix}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                <p:autoComplete converter="ixcon" forceSelection="true" id="acIx"  value="#{ixCalController.ix}" completeMethod="#{investigationController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                     <p:ajax event="itemSelect" process="acIx" update="tbl acIiv" />
                                 </p:autoComplete>
+                                
                                 <h:outputLabel value="Calculation Field" ></h:outputLabel>
                                 <p:selectOneMenu id="acIiv" value="#{ixCalController.cal }" >
                                     <f:selectItem itemLabel="Select" />

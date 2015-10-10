@@ -18,7 +18,16 @@
 
 
 
-                <p:panel header="Manage Departments" >
+                <p:panel styleClass="verticalAndHorizontalCenteringLarge" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Manage Departments" ></p:outputLabel>
+                        <p:commandButton id="btnBack" value="Back" 
+                                         action="/admin_mange_institutions_index" style="float: right;"
+                                         ajax="false">
+                        </p:commandButton>
+
+                    </f:facet>
+                    
                     <h:panelGrid id ="gpVeda" columns="3" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1"  >
@@ -27,7 +36,7 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Search Departments" ></p:outputLabel>
 
-                                    <p:commandButton id="btnAdd" value="Add New Department" action="#{departmentController.prepareAdd()}" style="float: right;"
+                                    <p:commandButton id="btnAdd" value="Add New" action="#{departmentController.prepareAdd()}" style="float: right;"
                                                      update="lstSelect gpDetail detailFocus" process="btnAdd">
                                     </p:commandButton>
 
@@ -52,9 +61,13 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
-                                    <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{departmentController.delete()}"  value="Delete"  >
-                                    </h:commandButton>
+                                    <p:commandButton id="btnDelete" 
+                                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" 
+                                       action="#{departmentController.delete()}"  
+                                       value="Delete"
+                                       ajax="false">
+                                    </p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
@@ -71,15 +84,18 @@
 
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtName" value="#{departmentController.current.name}"  ></p:inputText>
+                                    <h:outputText id="lblName" value="Name"  ></h:outputText>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtName" value="#{departmentController.current.name}" 
+                                                 styleClass="longText"></p:inputText>
                                     <h:outputText value="Code" />                                   
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.departmentCode}"  />
 
                                     <h:outputText  value="Printing Name" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.printingName}"  ></p:inputText>
+                                    <p:inputText autocomplete="off"  styleClass="longText"
+                                                 value="#{departmentController.current.printingName}"  ></p:inputText>
                                     <h:outputText  value="Adress" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.address}"  ></p:inputText>
+                                    <p:inputTextarea styleClass="longText" value="#{departmentController.current.address}"  ></p:inputTextarea>
                                     <h:outputText  value="Tel. No. 1" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.telephone1}"  ></p:inputText>
                                     <h:outputText  value="Tel. No. 2" ></h:outputText>
@@ -88,15 +104,11 @@
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.fax}"  ></p:inputText>
                                     <h:outputText  value="Email" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.email}"  ></p:inputText>
-
-
                                     <h:outputText value="OPD Margin Percenttage " />                                   
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.margin}"  />
                                     <h:outputText value="Pharmacy Margin Percentage " />                                   
                                     <p:inputText autocomplete="off"  value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"  />
-
                                     <h:outputText id="lblDept" value="Department Type" ></h:outputText>
-
                                     <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>
                                     <p:selectOneMenu id="cmbDept" value="#{departmentController.current.departmentType}" rendered="#{departmentController.current ne null}" >
                                         <f:selectItem itemLabel="Select the Department Type" />
@@ -106,7 +118,7 @@
                                     <h:outputText id="lblIns" value="Institution" ></h:outputText>
                                     <p:autoComplete  completeMethod="#{institutionController.completeCompany}" 
                                                      var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
-                                    
+
                                     <h:outputText id="lblcre" value="Creater" ></h:outputText>
                                     <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
 
@@ -116,14 +128,6 @@
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
-
-                        <h:panelGroup >
-                            <p:imageSwitch effect="turnUp" >
-                                <p:graphicImage library="image" name="department-icon.png" ></p:graphicImage>
-                                <p:graphicImage library="image" name="department-icon.png" ></p:graphicImage>
-                            </p:imageSwitch>
-                        </h:panelGroup>
-
 
                     </h:panelGrid>
                 </p:panel>

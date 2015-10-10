@@ -11,6 +11,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.ReportKeyWord;
@@ -238,6 +239,8 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
     }
+    
+    
 
     ReportKeyWord reportKeyWord;
 

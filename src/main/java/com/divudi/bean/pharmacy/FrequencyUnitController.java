@@ -97,6 +97,9 @@ public  class FrequencyUnitController implements Serializable {
     }
 
     public FrequencyUnit getCurrent() {
+        if(current==null){
+            current = new FrequencyUnit();
+        }
         return current;
     }
 
