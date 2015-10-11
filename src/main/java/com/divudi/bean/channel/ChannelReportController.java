@@ -60,6 +60,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.jfree.base.Library;
 
 /**
  *
@@ -92,6 +93,12 @@ public class ChannelReportController implements Serializable {
     double grantTotalRefund;
     double grantNetTotal;
     double doctorFeeTotal;
+    double doctorFeeBilledTotal;
+    double doctorFeeCancellededTotal;
+    double doctorFeeRefundededTotal;
+    double hospitalFeeBilledTotal;
+    double hospitalFeeCancellededTotal;
+    double hospitalFeeRefundededTotal;
     List<String1Value3> valueList;
     ReportKeyWord reportKeyWord;
     Date fromDate;
@@ -107,6 +114,9 @@ public class ChannelReportController implements Serializable {
     List<AgentHistoryWithDate> agentHistoryWithDate;
     List<BookingCountSummryRow> bookingCountSummryRows;
     List<DoctorPaymentSummeryRow> doctorPaymentSummeryRows;
+    List<Bill> channelBills;
+    List<Bill> channelBillsCancelled;
+    List<Bill> channelBillsRefunded;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -211,6 +221,54 @@ public class ChannelReportController implements Serializable {
 
     public void setDoctorPaymentSummeryRows(List<DoctorPaymentSummeryRow> doctorPaymentSummeryRows) {
         this.doctorPaymentSummeryRows = doctorPaymentSummeryRows;
+    }
+
+    public double getDoctorFeeBilledTotal() {
+        return doctorFeeBilledTotal;
+    }
+
+    public void setDoctorFeeBilledTotal(double doctorFeeBilledTotal) {
+        this.doctorFeeBilledTotal = doctorFeeBilledTotal;
+    }
+
+    public double getDoctorFeeCancellededTotal() {
+        return doctorFeeCancellededTotal;
+    }
+
+    public void setDoctorFeeCancellededTotal(double doctorFeeCancellededTotal) {
+        this.doctorFeeCancellededTotal = doctorFeeCancellededTotal;
+    }
+
+    public double getDoctorFeeRefundededTotal() {
+        return doctorFeeRefundededTotal;
+    }
+
+    public void setDoctorFeeRefundededTotal(double doctorFeeRefundededTotal) {
+        this.doctorFeeRefundededTotal = doctorFeeRefundededTotal;
+    }
+
+    public double getHospitalFeeBilledTotal() {
+        return hospitalFeeBilledTotal;
+    }
+
+    public void setHospitalFeeBilledTotal(double hospitalFeeBilledTotal) {
+        this.hospitalFeeBilledTotal = hospitalFeeBilledTotal;
+    }
+
+    public double getHospitalFeeCancellededTotal() {
+        return hospitalFeeCancellededTotal;
+    }
+
+    public void setHospitalFeeCancellededTotal(double hospitalFeeCancellededTotal) {
+        this.hospitalFeeCancellededTotal = hospitalFeeCancellededTotal;
+    }
+
+    public double getHospitalFeeRefundededTotal() {
+        return hospitalFeeRefundededTotal;
+    }
+
+    public void setHospitalFeeRefundededTotal(double hospitalFeeRefundededTotal) {
+        this.hospitalFeeRefundededTotal = hospitalFeeRefundededTotal;
     }
 
     ChannelReportColumnModelBundle rowBundle;
@@ -1033,6 +1091,22 @@ public class ChannelReportController implements Serializable {
         this.departmentRefundBillTotal = departmentRefundBillTotal;
     }
 
+    public List<Bill> getChannelBillsCancelled() {
+        return channelBillsCancelled;
+    }
+
+    public void setChannelBillsCancelled(List<Bill> channelBillsCancelled) {
+        this.channelBillsCancelled = channelBillsCancelled;
+    }
+
+    public List<Bill> getChannelBillsRefunded() {
+        return channelBillsRefunded;
+    }
+
+    public void setChannelBillsRefunded(List<Bill> channelBillsRefunded) {
+        this.channelBillsRefunded = channelBillsRefunded;
+    }
+
     public List<Department> getDepartments() {
         String sql;
         HashMap hm = new HashMap();
@@ -1694,18 +1768,18 @@ public class ChannelReportController implements Serializable {
             System.out.println("stf = " + stf);
 
             doctorPaymentSummeryRow.setConsultant(stf);
-            doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubs(bts, BillType.PaymentBill,stf, fromDate,toDate ));
-            
+            doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubs(bts, BillType.PaymentBill, stf, fromDate, toDate));
+
             doctorPaymentSummeryRows.add(doctorPaymentSummeryRow);
 
         }
 
     }
 
-    List<DoctorPaymentSummeryRowSub> getDoctorPaymentSummeryRowSubs(List<BillType> bts, BillType bt,Staff staff, Date fd, Date td) {
+    List<DoctorPaymentSummeryRowSub> getDoctorPaymentSummeryRowSubs(List<BillType> bts, BillType bt, Staff staff, Date fd, Date td) {
         List<DoctorPaymentSummeryRowSub> doctorPaymentSummeryRowSubs;
         doctorPaymentSummeryRowSubs = new ArrayList<>();
-        
+
         Date nowDate = fd;
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
@@ -1713,29 +1787,29 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(td)) {
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             String formattedDate = df.format(nowDate);
-            
-            DoctorPaymentSummeryRowSub doctorPaymentSummeryRowSub=new DoctorPaymentSummeryRowSub();
-            
+
+            DoctorPaymentSummeryRowSub doctorPaymentSummeryRowSub = new DoctorPaymentSummeryRowSub();
+
             doctorPaymentSummeryRowSub.setDate(nowDate);
-            
-            doctorPaymentSummeryRowSub.setBillFeeList(getChannelPaymentBillFeebyClassTypes(bts, bt, nowDate,staff));
-            
+
+            doctorPaymentSummeryRowSub.setBillFeeList(getChannelPaymentBillFeebyClassTypes(bts, bt, nowDate, staff));
+
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
             nc.add(Calendar.DATE, 1);
             nowDate = nc.getTime();
-            
+
             doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
-            
+
         }
 
         return doctorPaymentSummeryRowSubs;
     }
-    
-    public List<BillFee> getChannelPaymentBillFeebyClassTypes(List<BillType> bts, BillType bt, Date d,Staff stf) {
+
+    public List<BillFee> getChannelPaymentBillFeebyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf) {
         System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
-        
+
         Date fd = commonFunctions.getStartOfDay(d);
         Date td = commonFunctions.getEndOfDay(d);
 
@@ -1772,6 +1846,85 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
 
         return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
+    public void createAllChannelBillReportByCreatedDate(){
+        createAllChannelBillReport(true);
+    }
+    
+    public void createAllChannelBillReportBySessionDate(){
+        createAllChannelBillReport(false);
+    }
+    
+
+    public void createAllChannelBillReport(boolean createdDate) {
+        channelBills=new ArrayList<>();
+        channelBillsCancelled=new ArrayList<>();
+        channelBillsRefunded=new ArrayList<>();
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        
+        channelBills.addAll(channelBillListByBillType(createdDate, new BilledBill(), bts, fromDate, toDate));
+        channelBillsCancelled.addAll(channelBillListByBillType(createdDate, new CancelledBill(), bts, fromDate, toDate));
+        channelBillsRefunded.addAll(channelBillListByBillType(createdDate, new RefundBill(), bts, fromDate, toDate));
+        
+        doctorFeeBilledTotal=getStaffFeeTotal(channelBills);
+        doctorFeeCancellededTotal=getStaffFeeTotal(channelBillsCancelled);
+        doctorFeeRefundededTotal=getStaffFeeTotal(channelBillsRefunded);
+        
+        hospitalFeeBilledTotal=getHospitalFeeTotal(channelBills);
+        hospitalFeeCancellededTotal=getHospitalFeeTotal(channelBillsCancelled);
+        hospitalFeeRefundededTotal=getHospitalFeeTotal(channelBillsRefunded);
+    }
+    
+    public double getHospitalFeeTotal(List<Bill> bills){
+        double tot=0;
+        
+        for(Bill b:bills){
+            tot+=b.getHospitalFee();
+        }
+        return tot;
+    }
+    
+    public double getStaffFeeTotal(List<Bill> bills){
+        double tot=0;
+        
+        for(Bill b:bills){
+            tot+=b.getStaffFee();
+        }
+        return tot;
+    }
+
+    public List<Bill> channelBillListByBillType(boolean createdDate, Bill bill, List<BillType> billTypes, Date fd, Date td) {
+
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.retired=false "
+                ;
+        if (createdDate) {
+            sql += " and b.createdAt between :fDate and :tDate ";
+        } else {
+            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+        }        
+
+        if (!billTypes.isEmpty()) {
+            sql += " and b.billType in :bt ";
+            hm.put("bt", billTypes);
+        }
+        
+        if (bill!=null) {
+            sql +=  " and type(b)=:class";
+            hm.put("class", bill.getClass());
+        }
+        
+        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
+        
+        hm.put("fDate", fd);
+        hm.put("tDate", td);
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
     }
 
     public void createConsultantCountTableByCreatedDate() {
@@ -2098,8 +2251,6 @@ public class ChannelReportController implements Serializable {
     public void setDepBills(List<DepartmentBill> depBills) {
         this.depBills = depBills;
     }
-
-    List<Bill> channelBills;
 
     public void channelBillListCreatedDate() {
         channelBillList(true);
