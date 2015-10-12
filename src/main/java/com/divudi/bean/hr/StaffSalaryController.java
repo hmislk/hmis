@@ -567,6 +567,7 @@ public class StaffSalaryController implements Serializable {
 
 //            //System.out.println("i = " + i);
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTimeByDate(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
+            System.out.println("*** worked Within TimeFrameVarified(S) = " + workedWithinTimeFrameVarified );
             System.out.println("*** worked Within TimeFrameVarified(H) = " + workedWithinTimeFrameVarified / (60 * 60));
             System.out.println("*** worked Within TimeFrameVarified(M) = " + workedWithinTimeFrameVarified / 60);
 
@@ -577,7 +578,7 @@ public class StaffSalaryController implements Serializable {
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-//            //System.out.println("otSec = " + otSec);
+            System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
             System.err.println("OT Time : " + otSec / (60 * 60));
 
@@ -586,7 +587,7 @@ public class StaffSalaryController implements Serializable {
             toCal.add(Calendar.DATE, 7);
 
         }
-
+        System.out.println("overTimeSec = " + overTimeSec);
         System.err.println("OT Min " + (overTimeSec.longValue() / 60L));
         return (overTimeSec.longValue() / 60L);
     }
@@ -695,7 +696,9 @@ public class StaffSalaryController implements Serializable {
 //        if (current != null) {
 //            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
 //        } else {
-        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        //below commented value is corect but calculate with
+//        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        ss.setComponantValue(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()*humanResourceBean.calculateExtraWorkMinute(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
 //        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
