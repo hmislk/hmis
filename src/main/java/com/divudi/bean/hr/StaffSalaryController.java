@@ -696,8 +696,9 @@ public class StaffSalaryController implements Serializable {
 //        if (current != null) {
 //            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
 //        } else {
-        //below commented value is corect but calculate with
+        //below commented value is corect but calculate with seconds
 //        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        //new value calculate using miniuts
         ss.setComponantValue(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()*humanResourceBean.calculateExtraWorkMinute(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
 //        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
