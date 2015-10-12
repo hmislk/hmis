@@ -52,6 +52,12 @@ public class SearchKeyword {
     Department frmDepartment;
     Department tooDepartment;
     
+    boolean activeAdvanceOption;
+    boolean withRetiered;
+    String val1;
+    String val2;
+    String val3;
+    
 
     public String getServiceName() {
         return serviceName;
@@ -352,8 +358,44 @@ public class SearchKeyword {
     public void setTooDepartment(Department tooDepartment) {
         this.tooDepartment = tooDepartment;
     }
-    
-    
-    
-    
+
+    public boolean isActiveAdvanceOption() {
+        return activeAdvanceOption;
+    }
+
+    public void setActiveAdvanceOption(boolean activeAdvanceOption) {
+        this.activeAdvanceOption = activeAdvanceOption;
+    }
+
+    public String getVal1() {
+        return val1;
+    }
+
+    public void setVal1(String val1) {
+        this.val1 = val1;
+    }
+
+    public String getVal2() {
+        return val2;
+    }
+
+    public void setVal2(String val2) {
+        this.val2 = val2;
+    }
+
+    public String getVal3() {
+        return val3;
+    }
+
+    public void setVal3(String val3) {
+        this.val3 = val3;
+    }
+
+    public boolean isWithRetiered() {
+        return withRetiered;
+    }
+
+    public void setWithRetiered(boolean withRetiered) {
+        this.withRetiered = withRetiered;
+    }
 }

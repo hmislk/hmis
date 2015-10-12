@@ -59,17 +59,17 @@
                                     <p:commandButton ajax="false" process="tblVals" update=":#{p:component('tblCals')} :#{p:component('tblFlags')} :#{p:component('divPrint')}"  styleClass="nonPrintBlock"  value="Calculate" 
                                                      action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton styleClass="nonPrintBlock"  
                                                      ajax="false" 
                                                      value="Print" 
                                                      rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }"
                                                      onclick="window.print();" 
                                                      actionListener="#{patientReportController.printPatientReport()}"/>
-                                    
+
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
@@ -84,7 +84,7 @@
 
 
                                     <p:panel header="Enter Values"  rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'}" >
-                                        
+
                                         <table >
                                             <ui:repeat id="tblVals" value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                        var="pvv"  
@@ -262,6 +262,8 @@
                             <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
                                              rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
                         </div>
+
+
                         <h:panelGroup  id="divPrint" >
 
                             <div class="labBillPrintPanel" style="background:whitesmoke;color: black; width: 21cm;height: 28cm;margin: auto; margin-top: 1cm;margin-bottom: 1cm;" >
@@ -458,9 +460,67 @@
 
                         </h:panelGroup>
 
+
                     </h:form>
                 </div>
 
+                <h:panelGroup rendered="false" >
+                    <table>
+                        <tr>
+                            <th>
+                                ixItemType
+                            </th>
+                            <th>
+                                ixItemValueType
+                            </th>
+                            <td>
+                                    <h:outputLabel value="name" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="cssTop" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="riTop" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="cssLeft" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="riLeft" escape="false" />
+                                </td>
+                        </tr>
+
+                        <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.ixItemType}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.ixItemValueType}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.name}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.cssTop}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.riTop}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.cssLeft}" escape="false" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{prv.investigationItem.riLeft}" escape="false" />
+                                </td>
+                            </tr>
+                            <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
+                            </div>
+                        </ui:repeat>
+
+                    </table>
+                </h:panelGroup>
 
 
             </ui:define>
