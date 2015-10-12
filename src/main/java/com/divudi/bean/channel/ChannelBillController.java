@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -131,6 +132,9 @@ public class ChannelBillController implements Serializable {
     private BookingController bookingController;
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -920,6 +924,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
+        double hf=0.0;
+        double sf=0.0;
         for (BillFee bf : billFees) {
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
@@ -934,14 +940,19 @@ public class ChannelBillController implements Serializable {
 
                 if (bf.getFee().getFeeType() == FeeType.Staff) {
                     bt.setStaffFee(0 - bf.getTmpChangedValue());
+                    sf+=bt.getStaffFee();
                 }
 
                 if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
                     bt.setHospitalFee(0 - bf.getTmpChangedValue());
+                    hf+=bt.getHospitalFee();
                 }
 
             }
         }
+        b.setHospitalFee(hf);
+        b.setStaffFee(sf);
+        billFacade.edit(b);
 
         billItemFacade.edit(bt);
     }
@@ -1141,6 +1152,8 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
+        doctorSpecialityController.setSelectText("");
+        bookingController.setSelectText("");
     }
 
     @Inject
@@ -1209,8 +1222,9 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number is alredy Given.";
+                errorText = "This Reference Number( "+getAgentRefNo()+" ) is alredy Given.";
                 UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+                setAgentRefNo("");
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
@@ -1899,7 +1913,7 @@ public class ChannelBillController implements Serializable {
                 return;
             }
         }
-
+        setAgentRefNo("");
     }
 
     public void fetchRecentChannelBooks(Institution ins) {
@@ -1909,7 +1923,8 @@ public class ChannelBillController implements Serializable {
 
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
-                + " and a.institution=:ins "
+                + " and a.institution=:ins"
+                + " and a.deactivate=false "
                 + " order by a.id desc ";
 
         m.put("ins", ins);

@@ -42,6 +42,7 @@ public class ReportKeyWord {
     Patient patient;
     Institution institution;
     Institution bank;
+    Institution institutionBank;
     PaymentMethod paymentMethod;
     Item item;
     StaffShift staffShift;
@@ -250,6 +251,14 @@ public class ReportKeyWord {
         this.dayTypes = dayTypes;
     }
 
+    public Institution getInstitutionBank() {
+        return institutionBank;
+    }
+
+    public void setInstitutionBank(Institution institutionBank) {
+        this.institutionBank = institutionBank;
+    }
+
     public void resetKeyWord(){
         dayTypes = null;
         staff = null;
@@ -266,6 +275,7 @@ public class ReportKeyWord {
         patient = null;
         institution = null;
         bank = null;
+        institutionBank=null;
         paymentMethod = null;
         item = null;
         staffShift = null;

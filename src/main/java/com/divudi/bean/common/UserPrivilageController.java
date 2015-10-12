@@ -269,6 +269,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node910 = new PrivilageNode("HR Anistration", node91, Privileges.HrAdmin);
         TreeNode node911 = new PrivilageNode("HR Employee History Reports", node91, Privileges.EmployeeHistoryReport);
         TreeNode node912 = new PrivilageNode("HR Delete Late Leave", node91, Privileges.hrDeleteLateLeave);
+        TreeNode node913 = new PrivilageNode("HR Salary Generate", node91, Privileges.HrGenerateSalary);
 
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);

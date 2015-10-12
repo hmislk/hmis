@@ -15,10 +15,33 @@
                     <p:panelGrid columns="1" >
                         <p:panel header="Select Investigation and Field" >
                             <p:panelGrid columns="2" >
-                                <h:outputLabel value="Select Investigation" />
-                                <p:autoComplete  converter="ixcon" widgetVar="aIx" id="acIx" forceSelection="true" value="#{investigationItemDynamicLabelController.investigation}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                    <p:ajax process="acIx iif" update="iif tbl" event="itemSelect"/>
-                                </p:autoComplete>
+
+
+                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acPt" />
+                                </p:selectBooleanCheckbox>
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
+                                                value="#{investigationItemDynamicLabelController.investigation}" 
+                                                completeMethod="#{investigationController.completeInvest}" 
+                                                var="apt" itemLabel="#{apt.name}" 
+                                                itemValue="#{apt}" size="30"  style="width: 400px;">
+                                    <p:column>
+                                        #{apt.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.id}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.fullName}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.department.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.institution.name}
+                                    </p:column>
+                                    <p:ajax process="acPt iif" update="iif tbl" event="itemSelect"/>
+                                </p:autoComplete> 
 
                                 <h:outputLabel value="Select Dynamic Label" ></h:outputLabel>
                                 <p:selectOneMenu style="min-width: 230px;" id="iif" value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType}" >

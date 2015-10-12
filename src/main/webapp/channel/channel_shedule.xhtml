@@ -33,7 +33,7 @@
 
                         <h:outputLabel  value="Sessions" ></h:outputLabel>
                         <h:panelGrid id="gpSelectText" >
-                            <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="width: 400px; min-height: 200px;" >
+                            <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="width: 400px; min-height: 200px;"  >
                                 <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
                                 </f:ajax>

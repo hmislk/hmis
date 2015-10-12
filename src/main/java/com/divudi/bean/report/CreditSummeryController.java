@@ -49,9 +49,11 @@ public class CreditSummeryController implements Serializable {
     private Institution institution;
     private Date fromDate;
     private Date toDate;
+    Item item;
     ///////////////
     private List<DailyCash> dailyCash;
     List<DailyCredit> dailyCredit;
+    List<DailyCash> dailyCashSummery;
     /////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -81,22 +83,40 @@ public class CreditSummeryController implements Serializable {
         //   categoryWithItem = null;
     }
 
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
     private List<Department> findDepartment() {
+        System.out.println("department = " );
 
         String sql;
         Map temMap = new HashMap();
         sql = "select distinct(bi.item.department) "
                 + " FROM BillItem bi "
-                + " where  bi.bill.billType= :bTp "
-                + " and bi.bill.creditCompany=:credit"
+                + " where  bi.bill.billType= :bTp "                
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod = :pm ";
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        temMap.put("pm", PaymentMethod.Credit);        
+
+        if (item != null) {
+            sql += " and bi.item=:it ";
+            temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit";
+            temMap.put("credit", getInstitution());
+        }
 
         List<Department> tmp = getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
@@ -110,14 +130,23 @@ public class CreditSummeryController implements Serializable {
         }
         sql = "select distinct(bi.item.category) FROM BillItem bi where bi.bill.billType= :bTp "
                 + " and bi.item.department=:dep and  bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod = :pm and bi.bill.creditCompany=:credit";
+                + " and bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //   temMap.put("ins", getSessionController().getInstitution());
         temMap.put("dep", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+
+        if (item != null) {
+            sql += " and bi.item=:it ";
+            temMap.put("it", item);
+        }
+
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
+        }
 
         List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
@@ -133,7 +162,7 @@ public class CreditSummeryController implements Serializable {
         sql = "select distinct(bi.item) FROM BillItem bi where bi.item.department=:dep "
                 + " and  bi.bill.billType= :bTp  "
                 + " and bi.item.category=:cat and  bi.bill.createdAt between :fromDate and :toDate "
-                + "and  bi.bill.paymentMethod = :pm and bi.bill.creditCompany=:credit ";
+                + "and  bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //     temMap.put("ins", getSessionController().getInstitution());
@@ -141,7 +170,18 @@ public class CreditSummeryController implements Serializable {
         temMap.put("cat", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        
+
+        if (item != null) {
+            sql += " and bi.item=:it ";
+            temMap.put("it", item);
+        }
+
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
+        }
+
         List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
@@ -153,7 +193,7 @@ public class CreditSummeryController implements Serializable {
         Map temMap = new HashMap();
         String sql;
 
-        sql = "select count(bi) FROM BillItem bi where bi.item=:itm and bi.bill.creditCompany=:credit"
+        sql = "select count(bi) FROM BillItem bi where bi.item=:itm "
                 + " and bi.bill.paymentMethod = :pm "
                 + "and bi.bill.billType=:btp and type(bi.bill)=:billClass "
                 + "and bi.bill.createdAt between :fromDate and :toDate ";
@@ -164,8 +204,17 @@ public class CreditSummeryController implements Serializable {
         temMap.put("itm", i);
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("billClass", bill.getClass());
-        temMap.put("btp", BillType.OpdBill);
-        temMap.put("credit", getInstitution());
+        temMap.put("btp", BillType.OpdBill);        
+
+        if (item != null) {
+            sql += " and bi.item=:it ";
+            temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bi.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
+        }
 
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -176,7 +225,7 @@ public class CreditSummeryController implements Serializable {
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + "  and bf.billItem.item=:itm"
-                + " and bf.bill.paymentMethod = :pm and bf.bill.creditCompany=:credit ";
+                + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
         temMap.put("toDate", getToDate());
@@ -186,7 +235,18 @@ public class CreditSummeryController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ftp", feeType);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
+        
+
+        if (item != null) {
+            sql += " and bi.item=:it ";
+            temMap.put("it", item);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and bf.bill.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
+        }
+
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -204,8 +264,9 @@ public class CreditSummeryController implements Serializable {
     }
 
     public double getDepartmentTotal() {
+        System.out.println("Cal Total");
         double tmp = 0.0;
-        for (DailyCash d : getDailyCash()) {
+        for (DailyCash d : getDailyCashSummery()) {
             tmp += d.getDepartmentTotal();
         }
 
@@ -220,7 +281,22 @@ public class CreditSummeryController implements Serializable {
 
         return tmp;
     }
+
+    public List<DailyCash> getDailyCashSummery() {
+        return dailyCashSummery;
+    }
+
+    public void setDailyCashSummery(List<DailyCash> dailyCashSummery) {
+        this.dailyCashSummery = dailyCashSummery;
+    }
     
+    public void createDailyCashTable(){
+        dailyCashSummery=new ArrayList<>();
+        if(!getDailyCredit().isEmpty()){
+           dailyCashSummery.addAll(getDailyCredit()); 
+        }
+        
+    }
 
     public List<DailyCash> getDailyCredit() {
         // ////System.out.println("Starting : ");
@@ -229,20 +305,24 @@ public class CreditSummeryController implements Serializable {
 
             for (Department d : findDepartment()) {
                 DailyCash tmp = new DailyCash();
+                System.out.println("d = " + d);
                 tmp.setDepartment(d);
                 dailyCash.add(tmp);
             }
 
             for (DailyCash d : dailyCash) {
+                System.out.println("d = " + d);
                 List<CategoryWithItem> tmpCatList = new ArrayList<>();
 
                 for (Category cat : findCategory(d.getDepartment())) {
+                    System.out.println("cat = " + cat);
                     CategoryWithItem n = new CategoryWithItem();
                     n.setCategory(cat);
 
                     List<ItemWithFee> tmpItemList = new ArrayList<>();
 
                     for (Item i : findItem(cat, d.getDepartment())) {
+                        System.out.println("i = " + i);
                         ItemWithFee iwf = new ItemWithFee();
                         iwf.setItem(i);
                         iwf.setCount(getCount(iwf));
