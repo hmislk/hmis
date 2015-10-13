@@ -12,7 +12,7 @@
 
         <h:form>
 
-            <p:panel header="Statement Of Agent Account">
+            <p:panel header="Statement Of Agent Account Total And Count">
                 <f:facet name="header">
                     <p:outputLabel value="Statement Of Agent Account" />
                     <p:commandButton id="btnBack" value="Back" 
@@ -31,9 +31,24 @@
                         </p:calendar>
 
                     </h:panelGrid> 
-                    <h:panelGrid columns="2">
-                        <p:commandButton action="#{channelReportTempController.createAgentWiseAppoinmentTotalWithDocFee()}" value="With Doc Fee" ajax="false" />
-                        <p:commandButton action="#{channelReportTempController.createAgentWiseAppoinmentTotalWithoutDocFee()}" value="With Out Doc Fee" ajax="false" />
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="Count"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.count}" >
+                            <p:ajax event="change" process="@this" update="pan1 pan2 :#{p:component('pan3')} " />
+                        </p:selectBooleanCheckbox>
+                    </h:panelGrid> 
+                    <h:panelGrid columns="3">
+                        <h:panelGroup id="pan1">
+                            <h:panelGrid columns="2" rendered="#{channelReportTempController.count}" >
+                                <p:commandButton action="#{channelReportTempController.createAgentWiseAppoinmentCount()}" value="Count" ajax="false" />
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <h:panelGroup id="pan2">
+                            <h:panelGrid columns="2" rendered="#{!channelReportTempController.count}" >
+                                <p:commandButton action="#{channelReportTempController.createAgentWiseAppoinmentTotalWithDocFee()}" value="With Doc Fee" ajax="false" />
+                                <p:commandButton action="#{channelReportTempController.createAgentWiseAppoinmentTotalWithoutDocFee()}" value="With Out Doc Fee" ajax="false" />
+                            </h:panelGrid>
+                        </h:panelGroup>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
@@ -43,6 +58,12 @@
                     <p:dataTable value="#{channelReportTempController.agentWithSummerys}" var="s" id="tbl1" >
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br></br>
+                            <p:outputLabel value="Statement Of Agent Account " />
+                            <h:panelGroup id="pan3">
+                                <p:outputLabel value="(Totals)" rendered="#{!channelReportTempController.count}" />
+                                <p:outputLabel value="(Count)" rendered="#{channelReportTempController.count}" />
+                            </h:panelGroup>
                             <br></br>
                             <p:outputLabel value="From : " />
                             <p:outputLabel value="#{channelReportTempController.fromDate}" >
@@ -71,23 +92,43 @@
                                 <p:outputLabel value="#{a.date}" style="#{a.bold ? 'font-weight: bold':''}" >
                                 </p:outputLabel>
                             </p:column>
-                            <p:column styleClass="numberCol" >
-                                <p:outputLabel value="#{a.billedTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                            <p:column styleClass="numberCol" rendered="#{channelReportTempController.count}">
+                                <p:outputLabel value="#{a.billTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" rendered="#{channelReportTempController.count}">
+                                <p:outputLabel value="#{a.canceledTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" rendered="#{channelReportTempController.count}">
+                                <p:outputLabel value="#{a.refundTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" rendered="#{channelReportTempController.count}" >
+                                <p:outputLabel value="#{a.billTotal-(a.canceledTotal+a.refundTotal)}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" rendered="#{!channelReportTempController.count}">
+                                <p:outputLabel value="#{a.billTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
                                     <f:convertNumber pattern="##,##,##0.00" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column styleClass="numberCol" >
+                            <p:column styleClass="numberCol" rendered="#{!channelReportTempController.count}">
                                 <p:outputLabel value="#{a.canceledTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
                                     <f:convertNumber pattern="##,##,##0.00" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column styleClass="numberCol" >
+                            <p:column styleClass="numberCol" rendered="#{!channelReportTempController.count}">
                                 <p:outputLabel value="#{a.refundTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
                                     <f:convertNumber pattern="##,##,##0.00" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column styleClass="numberCol" >
-                                <p:outputLabel value="#{a.billedTotal+a.canceledTotal+a.refundTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                             <p:column styleClass="numberCol" rendered="#{!channelReportTempController.count}" >
+                                <p:outputLabel value="#{a.billTotal+a.canceledTotal+a.refundTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
                                     <f:convertNumber pattern="##,##,##0.00" />
                                 </p:outputLabel>
                             </p:column>
