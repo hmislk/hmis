@@ -15,6 +15,10 @@
                         <p:panel>
                             <f:facet name="header" >
                                 <p:outputLabel value="AGENT Deposit" />
+                                <p:commandButton id="btnBack" value="Back" 
+                                                 action="/channel/channel_reports" style="float: right;"
+                                                 ajax="false">
+                                </p:commandButton>
                             </f:facet>
                             <h:panelGroup>                               
                                 <h:panelGrid columns="5" >
@@ -50,7 +54,7 @@
                                         </h:outputLabel>
                                         <p:outputLabel value=" - To - " />
                                         <h:outputLabel value="#{channelReportTempController.toDate}" >
-                                            <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="yyyy MMMM dd - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <p:column>
@@ -77,7 +81,8 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Billed by" />
                                         </f:facet>
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}(#{bill.creater.code})" />                                      
+                                        <!--<h:outputLabel value="#{bill.creater.webUserPerson.name}(#{bill.creater.code})" />--> 
+                                        <h:outputLabel value="#{bill.creater.code}" /> 
                                     </p:column> 
                                     <p:column>
                                         <f:facet name="header">

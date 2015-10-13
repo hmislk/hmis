@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Doctor Leave Report" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <p:outputLabel value="Consultant" />
+                        <au:completeConsultant value="#{channelReportTempController.reportKeyWord.staff}" />
+                        <h:panelGrid columns="2">
+                            <p:commandButton action="#{channelReportTempController.createConsultantLeaves}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </h:panelGrid> 
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportTempController.serviceSessionLeaves}" var="d" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <h:panelGroup rendered="#{channelReportTempController.reportKeyWord.staff ne null}" >
+                                <br></br>
+                                <p:outputLabel value="Consultant - "  />
+                                <p:outputLabel value="#{channelReportTempController.reportKeyWord.staff.person.name}"/>
+                            </h:panelGroup>
+                            <br></br>
+                            <p:outputLabel value="From : " />
+                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            </p:outputLabel>
+                            <p:outputLabel value="  To : " />
+                            <p:outputLabel value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            </p:outputLabel>
+                        </f:facet>
+
+                        <p:column rendered="#{channelReportTempController.reportKeyWord.staff eq null}">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Consultant Name" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.staff.person.name}">
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Leave Date" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.sessionDate}">
+                                <f:convertDateTime parent="YYYY/MM/dd" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Leave Session" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.originatingSession.sessionTime}">
+                                <f:convertDateTime pattern="hh:mm a"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Leave Comment" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.deactivateComment}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Leave Creater" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.creater.code}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.createdAt}" >
+                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

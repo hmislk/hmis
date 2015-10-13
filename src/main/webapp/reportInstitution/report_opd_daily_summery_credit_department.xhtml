@@ -54,8 +54,7 @@
                     </h:panelGrid>
                     <h:panelGrid columns="3" >
                         <p:spacer width="90" height="1"/>
-                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" 
-                                         actionListener="#{creditSummeryController.makeNull}" />
+                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"  action="#{creditSummeryController.createDailyCashTable}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
@@ -63,7 +62,7 @@
                 </f:facet>
 
             </p:panel>
-            <p:dataGrid  value="#{creditSummeryController.dailyCredit}" var="d" columns="1">
+            <p:dataGrid  value="#{creditSummeryController.dailyCashSummery}" var="d" columns="1">
                 <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}"
 
                              paginator="false"
@@ -158,12 +157,7 @@
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
-                <f:facet name="footer">
-                    <h:outputLabel value="Total Collection" />
-                    <h:outputLabel value="#{creditSummeryController.departmentTotal}" style="float: right;">
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </f:facet>
+                
 
             </p:dataGrid>
 
