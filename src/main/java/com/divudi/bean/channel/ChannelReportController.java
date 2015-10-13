@@ -281,7 +281,6 @@ public class ChannelReportController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-    
 
     ChannelReportColumnModelBundle rowBundle;
     List<ChannelReportColumnModel> rows;
@@ -1817,18 +1816,18 @@ public class ChannelReportController implements Serializable {
         System.out.println("create doctor payment");
         doctorPaymentSummeryRows = new ArrayList<>();
 
-        BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
 
         System.out.println("getChannelPaymentStaffbyClassType(bts, BillType.PaymentBill, fromDate, toDate) = " + getChannelPaymentStaffbyClassType(bts, BillType.PaymentBill, fromDate, toDate));
-        List<Staff> staffs=new ArrayList<>();
-        
-        if(staff !=null){
+        List<Staff> staffs = new ArrayList<>();
+
+        if (staff != null) {
             staffs.add(staff);
-        }else{
+        } else {
             staffs.addAll(getChannelPaymentStaffbyClassType(bts, BillType.PaymentBill, fromDate, toDate));
         }
-        
+
         for (Staff stf : staffs) {
             DoctorPaymentSummeryRow doctorPaymentSummeryRow = new DoctorPaymentSummeryRow();
             System.out.println("stf = " + stf);
@@ -1864,15 +1863,15 @@ public class ChannelReportController implements Serializable {
             System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRowSub.getDate());
 
             doctorPaymentSummeryRowSub.setBills(getChannelPaymentBillListbyClassTypes(bts, bt, nowDate, staff));
-            
+
             doctorPaymentSummeryRowSub.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRowSub.getBills()));
             doctorPaymentSummeryRowSub.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRowSub.getBills()));
-            
+
             doctorPaymentSummeryRowSub.setCashCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Cash));
             doctorPaymentSummeryRowSub.setOnCallCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.OnCall));
             doctorPaymentSummeryRowSub.setAgentCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Agent));
             doctorPaymentSummeryRowSub.setStaffCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Staff));
-            
+
             System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
             System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
             System.out.println("doctorPaymentSummeryRowSub.getAgentCount() = " + doctorPaymentSummeryRowSub.getAgentCount());
@@ -1889,8 +1888,6 @@ public class ChannelReportController implements Serializable {
 
         return doctorPaymentSummeryRowSubs;
     }
-    
-   
 
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf) {
         System.out.println("Inside getStaffbyClassType");
@@ -1898,7 +1895,7 @@ public class ChannelReportController implements Serializable {
 
         Date fd = commonFunctions.getStartOfDay(d);
         Date td = commonFunctions.getEndOfDay(d);
-        
+
         System.out.println("td = " + td);
         System.out.println("fd = " + fd);
         System.out.println("stf = " + stf);
@@ -1923,23 +1920,23 @@ public class ChannelReportController implements Serializable {
         hm.put("td", td);
         hm.put("bts", bts);
         hm.put("st", stf);
-        
+
         System.out.println("Bill List = " + billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP));
 
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     public double getChannelPaymentBillCountbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
         System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
 
         Date fd = commonFunctions.getStartOfDay(d);
         Date td = commonFunctions.getEndOfDay(d);
-        
+
         System.out.println("td = " + td);
         System.out.println("fd = " + fd);
         System.out.println("stf = " + stf);
-        
+
         String sql = "SELECT count(bi.paidForBillFee.bill) FROM BillItem bi "
                 + " WHERE bi.retired = false "
                 + " and bi.bill.cancelled=false "
@@ -1947,8 +1944,13 @@ public class ChannelReportController implements Serializable {
                 + " and bi.bill.billType=:bt "
                 + " and bi.paidForBillFee.staff=:st "
                 + " and bi.paidForBillFee.bill.billType in :bts "
-                + " and bi.paidForBillFee.bill.paymentMethod=:pay"
                 + " and bi.createdAt between :fd and :td ";
+
+        if (pm == PaymentMethod.Staff || pm == PaymentMethod.OnCall) {
+            sql += " and bi.paidForBillFee.bill.referenceBill.paymentMethod=:pay";
+        } else {
+            sql += " and bi.paidForBillFee.bill.paymentMethod=:pay";
+        }
 
         hm.put("bt", bt);
         hm.put("fd", fd);
@@ -1956,7 +1958,7 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("pay", pm);
         hm.put("st", stf);
-        
+
         System.out.println("Bill List = " + billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP));
 
         return billFacade.findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
@@ -3887,12 +3889,11 @@ public class ChannelReportController implements Serializable {
         List<Bill> bills;
         double hospitalFeeTotal;
         double staffFeeTotal;
-        
+
         double cashCount;
         double onCallCount;
         double staffCount;
         double agentCount;
-        
 
         public Date getDate() {
             return date;
@@ -3957,9 +3958,7 @@ public class ChannelReportController implements Serializable {
         public void setAgentCount(double agentCount) {
             this.agentCount = agentCount;
         }
-        
-        
-        
+
     }
 
     public class DoctorPaymentSummeryRow {
