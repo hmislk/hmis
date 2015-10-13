@@ -2965,8 +2965,8 @@ public class HumanResourceBean {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 
-
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        System.out.println("timeSecond = " + timeSecond);
         if (timeSecond != null) {
             return (timeSecond.longValue() / 60);
         } else {
