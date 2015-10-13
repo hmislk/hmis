@@ -626,7 +626,8 @@ public class StaffSalaryController implements Serializable {
             double overTimePerMinute = getOverTimeValuePerMinute();
             System.out.println("overTimePerMinute = " + overTimePerMinute);
 
-            ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
+            ss.setComponantValue(overTimeMinute * roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()));
+            System.out.println("roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()) = " + roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()));
 
             getCurrent().setOverTimeMinute(overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
@@ -699,7 +700,8 @@ public class StaffSalaryController implements Serializable {
         //below commented value is corect but calculate with seconds
 //        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
         //new value calculate using miniuts
-        ss.setComponantValue(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()*humanResourceBean.calculateExtraWorkMinute(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        ss.setComponantValue(roundOff(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply())*humanResourceBean.calculateExtraWorkMinute(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        System.out.println("roundOff(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()) = " + roundOff(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()));
 //        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());

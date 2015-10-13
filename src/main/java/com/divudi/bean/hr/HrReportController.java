@@ -3662,13 +3662,13 @@ public class HrReportController implements Serializable {
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
             totalExtraDutyNormalMinute += totStaffSalary.getExtraDutyNormalMinute();
-            totalRatePerMinut += totStaffSalary.getOverTimeRatePerMinute() * 1.5;
+            totalRatePerMinut += totStaffSalary.getRpmWithMutiplingFactor1_5();
             totalOtValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue();
             totalPhOtMin += totStaffSalary.getExtraDutyPoyaMinute() + totStaffSalary.getExtraDutyMerchantileMinute();
-            totalRatePerMinutPhOt += totStaffSalary.getOverTimeMinute() * 1.5;
+            totalRatePerMinutPhOt += totStaffSalary.getRpmWithMutiplingFactor1_5();
             totalPhOtValue += totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue();
             totalOffDayOtMin += totStaffSalary.getExtraDutySleepingDayMinute() + totStaffSalary.getExtraDutyDayOffMinute();
-            totalRatePerMinuts += totStaffSalary.getOverTimeRatePerMinute() * 2.5;
+            totalRatePerMinuts += totStaffSalary.getRpmWithMutiplingFactor2_5();
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
