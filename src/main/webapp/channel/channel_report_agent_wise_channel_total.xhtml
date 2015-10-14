@@ -14,7 +14,7 @@
 
             <p:panel header="Statement Of Agent Account Total And Count">
                 <f:facet name="header">
-                    <p:outputLabel value="Statement Of Agent Account" />
+                    <p:outputLabel value="Agent Wise Appoinment Totals And Count" />
                     <p:commandButton id="btnBack" value="Back" 
                                      action="/channel/channel_reports" style="float: right;"
                                      ajax="false">
@@ -59,7 +59,7 @@
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
-                            <p:outputLabel value="Statement Of Agent Account " />
+                            <p:outputLabel value="Agent Wise Appoinment " />
                             <h:panelGroup id="pan3">
                                 <p:outputLabel value="(Totals)" rendered="#{!channelReportTempController.count}" />
                                 <p:outputLabel value="(Count)" rendered="#{channelReportTempController.count}" />
