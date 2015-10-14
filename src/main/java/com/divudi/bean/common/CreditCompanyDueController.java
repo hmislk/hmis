@@ -13,6 +13,7 @@ import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
@@ -47,6 +48,7 @@ public class CreditCompanyDueController implements Serializable {
     private Date toDate;
     Admission patientEncounter;
     boolean withOutDueUpdate;
+    Institution creditCompany;
 
     ////////////
     private List<InstitutionBills> items;
@@ -461,6 +463,29 @@ public class CreditCompanyDueController implements Serializable {
         }
 
     }
+    
+    public void createOpdCreditDueBillItem() {
+        List<Institution> setIns=new ArrayList<>();
+        if (creditCompany!=null) {
+            setIns.add(creditCompany);
+        } else {
+            setIns.addAll(getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true));
+        }
+        items = new ArrayList<>();
+        for (Institution ins : setIns) {
+            List<BillItem> billItems = getCreditBean().getCreditBillItems(ins, BillType.OpdBill, getFromDate(), getToDate(), true);
+            InstitutionBills newIns = new InstitutionBills();
+            newIns.setInstitution(ins);
+            newIns.setBillItems(billItems);
+
+            for (BillItem bi : billItems) {
+                newIns.setTotal(newIns.getTotal() + bi.getNetValue());
+            }
+
+            items.add(newIns);
+        }
+
+    }
 
     public void createOpdCreditAccess() {
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), false);
@@ -838,6 +863,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setWithOutDueUpdate(boolean withOutDueUpdate) {
         this.withOutDueUpdate = withOutDueUpdate;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
 }
