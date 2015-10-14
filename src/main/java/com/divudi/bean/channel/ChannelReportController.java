@@ -1697,7 +1697,7 @@ public class ChannelReportController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select sum(bf.feeValue) from BillFee  bf where "
+        sql = " select sum(distinct(bf.feeValue)) from BillFee  bf where "
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
