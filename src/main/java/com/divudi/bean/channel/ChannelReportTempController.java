@@ -90,7 +90,7 @@ public class ChannelReportTempController implements Serializable {
     Date toDate;
     SearchKeyword searchKeyword;
     ReportKeyWord reportKeyWord;
-
+    boolean count;
     /**
      * Creates a new instance of ChannelReportTempController
      */
@@ -136,15 +136,18 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
-    public double fetchBillsTotal(BillType[] billTypes,BillType bt, Class[] bills,Bill b, Date fd, Date td, Institution billedInstitution, Institution creditCompany, boolean withOutDocFee) {
+    public double fetchBillsTotal(BillType[] billTypes, BillType bt, Class[] bills, Class[] nbills, Bill b, Date fd, Date td, Institution billedInstitution, Institution creditCompany, boolean withOutDocFee, boolean count) {
 
         String sql;
         Map m = new HashMap();
-
-        if (withOutDocFee) {
-            sql = " select (b.netTotal-b.staffFee) ";
+        if (count) {
+            sql = " select count(b) ";
         } else {
-            sql = " select (b.netTotal) ";
+            if (withOutDocFee) {
+                sql = " select sum(b.netTotal-b.staffFee) ";
+            } else {
+                sql = " select sum(b.netTotal) ";
+            }
         }
 
         sql += " from Bill b "
@@ -165,6 +168,11 @@ public class ChannelReportTempController implements Serializable {
             List<Class> cs = Arrays.asList(bills);
             m.put("class", cs);
         }
+        if (nbills != null) {
+            sql += " and type(b) not in :nclass ";
+            List<Class> ncs = Arrays.asList(nbills);
+            m.put("nclass", ncs);
+        }
         if (b != null) {
             sql += " and type(b)=:class ";
             m.put("class", b.getClass());
@@ -178,53 +186,16 @@ public class ChannelReportTempController implements Serializable {
             m.put("cc", creditCompany);
         }
 
-        sql += " order by b.createdAt ";
-
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.out.println("creditCompany.getName() = " + creditCompany.getName());
         System.err.println("Sql " + sql);
         System.out.println("m = " + m);
-        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-
-    }
-    
-    public double fetchBillsTotal(BillType bt, Bill b, Date fd, Date td,  Institution creditCompany, boolean withOutDocFee) {
-
-        String sql;
-        Map m = new HashMap();
-
-        if (withOutDocFee) {
-            sql = " select (b.netTotal-b.staffFee) ";
+        if (count) {
+            return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
-            sql = " select (b.netTotal) ";
+            return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         }
-
-        sql += " from Bill b "
-                + " where b.retired=false "
-                + " and b.createdAt between :fromDate and :toDate ";
-
-        if (bt != null) {
-            sql += " and b.billType=:bt ";
-            m.put("bt", bt);
-        }
-        if (b != null) {
-            sql += " and type(b)=:class ";
-            m.put("class", b.getClass());
-        }
-        if (creditCompany != null) {
-            sql += " and b.creditCompany=:cc ";
-            m.put("cc", creditCompany);
-        }
-
-        sql += " order by b.createdAt ";
-
-        m.put("fromDate", fd);
-        m.put("toDate", td);
-        System.out.println("creditCompany.getName() = " + creditCompany.getName());
-        System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
-        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -327,7 +298,7 @@ public class ChannelReportTempController implements Serializable {
         serviceSessionLeaves = getServiceSessionLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public List<AgentChannelSummeryRow> fetchAgentChannelSummeryRows(Institution i, BillType bt, boolean withOutDoc) {
+    public List<AgentChannelSummeryRow> fetchAgentChannelSummeryRows(Institution i, BillType bt, boolean withOutDoc,boolean count) {
         List<AgentChannelSummeryRow> acsrs = new ArrayList<>();
         Date nowDate = getFromDate();
         double btot = 0.0;
@@ -346,14 +317,14 @@ public class ChannelReportTempController implements Serializable {
 
             AgentChannelSummeryRow acsr = new AgentChannelSummeryRow();
             acsr.setDate(formatedDate);
-            acsr.setBilledTotal(fetchBillsTotal(bt,new BilledBill(), fd, td, i, withOutDoc));
-            btot += acsr.getBilledTotal();
-            System.out.println("fetchBillsTotal(bt,new BilledBill(), fd, td, i, withOutDoc) = " + fetchBillsTotal(bt,new BilledBill(), fd, td, i, withOutDoc));
-            System.out.println("acsr.getBilledTotal() = " + acsr.getBilledTotal());
-            acsr.setCanceledTotal(fetchBillsTotal(null,bt, null,new CancelledBill(), fd, td, null, i, withOutDoc));
+
+            acsr.setCanceledTotal(fetchBillsTotal(null, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc,count));
             ctot += acsr.getCanceledTotal();
-            acsr.setRefundTotal(fetchBillsTotal(null,bt, null,new RefundBill(), fd, td, null, i, withOutDoc));
+            acsr.setRefundTotal(fetchBillsTotal(null, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc,count));
             rtot += acsr.getRefundTotal();
+            acsr.setBillTotal(fetchBillsTotal(null, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc,count));
+            btot += acsr.getBillTotal();
+
             acsrs.add(acsr);
 
             Calendar cal = Calendar.getInstance();
@@ -364,7 +335,7 @@ public class ChannelReportTempController implements Serializable {
         }
         AgentChannelSummeryRow acsr = new AgentChannelSummeryRow();
         acsr.setDate("Total");
-        acsr.setBilledTotal(btot);
+        acsr.setBillTotal(btot);
         acsr.setCanceledTotal(ctot);
         acsr.setRefundTotal(rtot);
         acsr.setBold(true);
@@ -372,22 +343,26 @@ public class ChannelReportTempController implements Serializable {
         return acsrs;
     }
 
-    public void fetchAgentWiseChannelTotal(boolean withOutDocPayment) {
+    public void fetchAgentWiseChannelTotal(boolean withOutDocPayment,boolean count) {
         agentWithSummerys = new ArrayList<>();
         for (Institution a : getInstitutionController().getAgencies()) {
             AgentWithSummery aws = new AgentWithSummery();
             aws.setAgency(a);
-            aws.setAgentChannelSummeryRows(fetchAgentChannelSummeryRows(a,BillType.ChannelAgent, withOutDocPayment));
+            aws.setAgentChannelSummeryRows(fetchAgentChannelSummeryRows(a, BillType.ChannelAgent, withOutDocPayment,count));
             agentWithSummerys.add(aws);
         }
     }
     
-    public void createAgentWiseAppoinmentTotalWithoutDocFee(){
-        fetchAgentWiseChannelTotal(true);
+    public void createAgentWiseAppoinmentCount() {
+        fetchAgentWiseChannelTotal(true,true);
     }
-    
-    public void createAgentWiseAppoinmentTotalWithDocFee(){
-        fetchAgentWiseChannelTotal(false);
+
+    public void createAgentWiseAppoinmentTotalWithoutDocFee() {
+        fetchAgentWiseChannelTotal(true,false);
+    }
+
+    public void createAgentWiseAppoinmentTotalWithDocFee() {
+        fetchAgentWiseChannelTotal(false,false);
     }
 
     //inner Classes
@@ -416,17 +391,12 @@ public class ChannelReportTempController implements Serializable {
     public class AgentChannelSummeryRow {
 
         String date;
-        double billedTotal;
+        double billTotal;
         double canceledTotal;
         double refundTotal;
         boolean bold;
 
-        public double getBilledTotal() {
-            return billedTotal;
-        }
-
-        public void setBilledTotal(double billedTotal) {
-            this.billedTotal = billedTotal;
+        public AgentChannelSummeryRow() {
         }
 
         public double getCanceledTotal() {
@@ -459,6 +429,14 @@ public class ChannelReportTempController implements Serializable {
 
         public void setDate(String date) {
             this.date = date;
+        }
+
+        public double getBillTotal() {
+            return billTotal;
+        }
+
+        public void setBillTotal(double billTotal) {
+            this.billTotal = billTotal;
         }
     }
 
@@ -633,6 +611,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setInstitutionController(InstitutionController institutionController) {
         this.institutionController = institutionController;
+    }
+
+    public boolean isCount() {
+        return count;
+    }
+
+    public void setCount(boolean count) {
+        this.count = count;
     }
 
 }
