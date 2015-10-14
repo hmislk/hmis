@@ -1651,7 +1651,7 @@ public class ChannelReportController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select count(bf) from BillFee  bf where "
+        sql = " select count(distinct(bf.bill)) from BillFee  bf where "
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
@@ -1867,10 +1867,43 @@ public class ChannelReportController implements Serializable {
             doctorPaymentSummeryRowSub.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRowSub.getBills()));
             doctorPaymentSummeryRowSub.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRowSub.getBills()));
 
-            doctorPaymentSummeryRowSub.setCashCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Cash));
-            doctorPaymentSummeryRowSub.setOnCallCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.OnCall));
-            doctorPaymentSummeryRowSub.setAgentCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Agent));
-            doctorPaymentSummeryRowSub.setStaffCount(getChannelPaymentBillCountbyClassTypes(bts, bt, nowDate, staff, PaymentMethod.Staff));
+            double cashCount = 0;
+            double onCallCount = 0;
+            double agentCount = 0;
+            double staffCount = 0;
+
+            for (Bill b : doctorPaymentSummeryRowSub.getBills()) {
+                if (b.getReferenceBill() == null) {
+                    if (b.getPaymentMethod() == PaymentMethod.Cash) {
+                        cashCount ++;
+                    }
+
+                    if (b.getPaymentMethod() == PaymentMethod.Agent) {
+                        agentCount ++;                        
+                    }
+                }
+
+                if (b.getReferenceBill() != null) {
+                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
+                        onCallCount ++;                        
+                    }
+
+                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
+                        agentCount ++;                        
+                    }
+                }
+                
+                System.out.println("cashCount = " + cashCount);
+                System.out.println("agentCount = " + agentCount);
+                System.out.println("onCallCount = " + onCallCount);
+                System.out.println("staffCount = " + staffCount);
+                
+                   doctorPaymentSummeryRowSub.setCashCount(cashCount);
+                   doctorPaymentSummeryRowSub.setAgentCount(agentCount);
+                   doctorPaymentSummeryRowSub.setOnCallCount(onCallCount);
+                   doctorPaymentSummeryRowSub.setStaffCount(staffCount);
+
+            }
 
             System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
             System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
@@ -1926,7 +1959,7 @@ public class ChannelReportController implements Serializable {
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
-    public double getChannelPaymentBillCountbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
+    public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
         System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
 
@@ -1946,10 +1979,16 @@ public class ChannelReportController implements Serializable {
                 + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fd and :td ";
 
-        if (pm == PaymentMethod.Staff || pm == PaymentMethod.OnCall) {
-            sql += " and bi.paidForBillFee.bill.referenceBill.paymentMethod=:pay";
-        } else {
+        if (b.getReferenceBill() == null) {
+            System.out.println("b.getPaymentMethod()1 = " + b.getPaymentMethod());
+            System.out.println("b.getInsId()1 = " + b.getInsId());
             sql += " and bi.paidForBillFee.bill.paymentMethod=:pay";
+        }
+
+        if (b.getReferenceBill() != null) {
+            System.out.println("b.getReferenceBill().getPaymentMethod()2 = " + b.getReferenceBill().getPaymentMethod());
+            System.out.println("b.getReferenceBill().getInsId()2 = " + b.getReferenceBill().getInsId());
+            sql += " and bi.paidForBillFee.bill.referenceBill.paymentMethod=:pay";
         }
 
         hm.put("bt", bt);

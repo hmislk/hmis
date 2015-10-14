@@ -94,7 +94,8 @@
                                 </p:column>
 
                                 <p:column style="text-align: center;">
-                                    <p:outputLabel value="#{sub.paidBill.paymentMethod}" />
+                                    <p:outputLabel value="#{sub.paymentMethod}" rendered="#{sub.referenceBill eq null}"/>
+                                    <p:outputLabel value="#{sub.referenceBill.paymentMethod}" rendered="#{sub.referenceBill ne null}"/>
                                 </p:column>
 
                                 <p:columnGroup type="footer">
