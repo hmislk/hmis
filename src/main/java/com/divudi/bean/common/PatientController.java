@@ -228,7 +228,10 @@ public class PatientController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
                 + " and ( upper(p.person.name) like  :q "
-                + " or upper(p.code) like  :q )"
+                + " or upper(p.code) like  :q "
+                + " or upper(p.person.nic) like  :q "
+                + " or upper(p.person.mobile) like  :q "
+                + " or upper(p.person.phone) like  :q )"
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);

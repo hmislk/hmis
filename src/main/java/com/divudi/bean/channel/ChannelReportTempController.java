@@ -27,6 +27,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
@@ -65,6 +66,8 @@ public class ChannelReportTempController implements Serializable {
     @EJB
     DepartmentFacade departmentFacade;
     @EJB
+    InstitutionFacade institutionFacade;
+    @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     ServiceSessionLeaveFacade serviceSessionLeaveFacade;
@@ -91,6 +94,7 @@ public class ChannelReportTempController implements Serializable {
     SearchKeyword searchKeyword;
     ReportKeyWord reportKeyWord;
     boolean count;
+    boolean billedAgencys;
     /**
      * Creates a new instance of ChannelReportTempController
      */
@@ -199,6 +203,31 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
+    public List<Institution> fetchBillsAgencys() {
+
+        Date fd = commonFunctions.getStartOfMonth(fromDate);
+        Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
+        System.err.println("td = " + td);
+        System.err.println("fd = " + fd);
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select distinct(b.creditCompany) from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.creditCompany is not null "
+                + " order by b.creditCompany.name ";
+
+        m.put("fromDate", fd);
+        m.put("toDate", td);
+        System.err.println("Sql " + sql);
+        System.out.println("m = " + m);
+        
+        return getInstitutionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public void createAgentPaymentTable() {
         bills = new ArrayList<>();
         BillType[] bts = {BillType.AgentPaymentReceiveBill};
@@ -298,7 +327,7 @@ public class ChannelReportTempController implements Serializable {
         serviceSessionLeaves = getServiceSessionLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public List<AgentChannelSummeryRow> fetchAgentChannelSummeryRows(Institution i, BillType bt, boolean withOutDoc,boolean count) {
+    public List<AgentChannelSummeryRow> fetchAgentChannelSummeryRows(Institution i, BillType bt, boolean withOutDoc, boolean count) {
         List<AgentChannelSummeryRow> acsrs = new ArrayList<>();
         Date nowDate = getFromDate();
         double btot = 0.0;
@@ -318,11 +347,11 @@ public class ChannelReportTempController implements Serializable {
             AgentChannelSummeryRow acsr = new AgentChannelSummeryRow();
             acsr.setDate(formatedDate);
 
-            acsr.setCanceledTotal(fetchBillsTotal(null, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc,count));
+            acsr.setCanceledTotal(fetchBillsTotal(null, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count));
             ctot += acsr.getCanceledTotal();
-            acsr.setRefundTotal(fetchBillsTotal(null, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc,count));
+            acsr.setRefundTotal(fetchBillsTotal(null, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count));
             rtot += acsr.getRefundTotal();
-            acsr.setBillTotal(fetchBillsTotal(null, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc,count));
+            acsr.setBillTotal(fetchBillsTotal(null, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count));
             btot += acsr.getBillTotal();
 
             acsrs.add(acsr);
@@ -343,26 +372,33 @@ public class ChannelReportTempController implements Serializable {
         return acsrs;
     }
 
-    public void fetchAgentWiseChannelTotal(boolean withOutDocPayment,boolean count) {
+    public void fetchAgentWiseChannelTotal(boolean withOutDocPayment, boolean count) {
         agentWithSummerys = new ArrayList<>();
-        for (Institution a : getInstitutionController().getAgencies()) {
+        List<Institution> institutions=new ArrayList<>();
+        if (billedAgencys) {
+            institutions.addAll(fetchBillsAgencys());
+        } else {
+            institutions.addAll(getInstitutionController().getAgencies());
+        }
+        System.out.println("institutions.size() = " + institutions.size());
+        for (Institution a : institutions) {
             AgentWithSummery aws = new AgentWithSummery();
             aws.setAgency(a);
-            aws.setAgentChannelSummeryRows(fetchAgentChannelSummeryRows(a, BillType.ChannelAgent, withOutDocPayment,count));
+            aws.setAgentChannelSummeryRows(fetchAgentChannelSummeryRows(a, BillType.ChannelAgent, withOutDocPayment, count));
             agentWithSummerys.add(aws);
         }
     }
-    
+
     public void createAgentWiseAppoinmentCount() {
-        fetchAgentWiseChannelTotal(true,true);
+        fetchAgentWiseChannelTotal(true, true);
     }
 
     public void createAgentWiseAppoinmentTotalWithoutDocFee() {
-        fetchAgentWiseChannelTotal(true,false);
+        fetchAgentWiseChannelTotal(true, false);
     }
 
     public void createAgentWiseAppoinmentTotalWithDocFee() {
-        fetchAgentWiseChannelTotal(false,false);
+        fetchAgentWiseChannelTotal(false, false);
     }
 
     //inner Classes
@@ -619,6 +655,22 @@ public class ChannelReportTempController implements Serializable {
 
     public void setCount(boolean count) {
         this.count = count;
+    }
+
+    public InstitutionFacade getInstitutionFacade() {
+        return institutionFacade;
+    }
+
+    public void setInstitutionFacade(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
+    }
+
+    public boolean isBilledAgencys() {
+        return billedAgencys;
+    }
+
+    public void setBilledAgencys(boolean billedAgencys) {
+        this.billedAgencys = billedAgencys;
     }
 
 }

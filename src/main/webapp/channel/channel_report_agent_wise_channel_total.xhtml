@@ -36,6 +36,8 @@
                         <p:selectBooleanCheckbox value="#{channelReportTempController.count}" >
                             <p:ajax event="change" process="@this" update="pan1 pan2 :#{p:component('pan3')} " />
                         </p:selectBooleanCheckbox>
+                        <h:outputLabel value="Only Billed Agencies"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.billedAgencys}" />
                     </h:panelGrid> 
                     <h:panelGrid columns="3">
                         <h:panelGroup id="pan1">
@@ -67,11 +69,11 @@
                             <br></br>
                             <p:outputLabel value="From : " />
                             <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="dd,MMMM yyyy" />
+                                <f:convertDateTime pattern="MMMM yyyy" />
                             </p:outputLabel>
                             <p:outputLabel value="  To : " />
                             <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="dd,MMMM yyyy" />
+                                <f:convertDateTime pattern="MMMM yyyy" />
                             </p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
