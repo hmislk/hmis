@@ -27,7 +27,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
-                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance"  />
+                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_details"  />
                         </p:commandButton>
                     </h:panelGrid> 
                 </h:panelGrid>
@@ -36,7 +36,7 @@
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
-                            <p:outputLabel value="Agency Balance" />
+                            <p:outputLabel value="Agency Details" />
                             <br></br>
                             <p:outputLabel value="Print Time" />
                             <p:outputLabel value="#{commonController.currentDateTime}" >
@@ -54,48 +54,55 @@
                                 <p:outputLabel value="Agent Code" />
                             </f:facet>
                             <p:outputLabel value="#{a.institutionCode}" />
-
                         </p:column>
                         <p:column sortBy="#{a.name}">
                             <f:facet name="header">
                                 <p:outputLabel value="Agent Name" />
                             </f:facet>
-                            <p:outputLabel value="#{a.name}" >
-                            </p:outputLabel>
+                            <p:outputLabel value="#{a.name}" />
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column>
                             <f:facet name="header">
-                                <p:outputLabel value="Allowed Max C.L." />
+                                <p:outputLabel value="Address" />
                             </f:facet>
-                            <p:outputLabel value="#{a.maxCreditLimit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
+                            <p:outputLabel value="#{a.address}" />
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column>
                             <f:facet name="header">
-                                <p:outputLabel value="Standerd C.L." />
+                                <p:outputLabel value="Phone" />
                             </f:facet>
-                            <p:outputLabel value="#{a.standardCreditLimit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
+                            <p:outputLabel value="#{a.phone}" />
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column>
                             <f:facet name="header">
-                                <p:outputLabel value="Allowed C.L." />
+                                <p:outputLabel value="Fax" />
                             </f:facet>
-                            <p:outputLabel value="#{a.allowedCredit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
+                            <p:outputLabel value="#{a.fax}" />
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column>
                             <f:facet name="header">
-                                <p:outputLabel value="Balance" />
+                                <p:outputLabel value="E-Mail" />
                             </f:facet>
-                            <p:outputLabel value="#{a.ballance}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
+                            <p:outputLabel value="#{a.email}" />
                         </p:column>
-
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="C. P. Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.contactPerson.name}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="C. P. Phone" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.contactPerson.mobile}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="C. P. E-Mail" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.contactPerson.email}" />
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
 

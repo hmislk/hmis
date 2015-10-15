@@ -34,6 +34,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +87,8 @@ public class BookingController implements Serializable {
     ChannelBillController channelBillController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelStaffPaymentBillController channelStaffPaymentBillController;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -835,6 +838,25 @@ public class BookingController implements Serializable {
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
         //absentCount=billSessions.size();
 
+    }
+    
+    public String paySelectedDoctor(){
+        if (getSpeciality()==null) {
+            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+            return "";
+        }
+        if (getStaff()==null) {
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        channelStaffPaymentBillController.setSpeciality(getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.setConsiderDate(true);
+        channelStaffPaymentBillController.calculateDueFees();
+        
+        
+        return "/channel/channel_payment_staff_bill";
+        
     }
 
     public void onEditItem(RowEditEvent event) {
