@@ -60,6 +60,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Session;
 import javax.persistence.TemporalType;
 
 /**
@@ -1976,6 +1977,9 @@ public class ChannelReportController implements Serializable {
         return doctorPaymentSummeryRowSubs;
     }
 
+//    public List<ServiceSession> getServiceSessionByConsultantDate(){
+//        
+//    }
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf) {
         System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
@@ -2011,6 +2015,35 @@ public class ChannelReportController implements Serializable {
         System.out.println("Bill List = " + billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP));
 
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public void createAbsentPatientTable() {
+        channelBills = new ArrayList<>();
+        channelBills.addAll(getChannelBillsAbsentPatient(staff));
+    }
+
+    public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
+        HashMap hm = new HashMap();
+        String sql = " select b from Bill b "
+                + " where b.retired=false "
+                + " and b.singleBillSession.absent=true "
+                + " and b.createdAt between :fd and :td";
+
+        if (stf != null) {
+            sql += " and b.staff=:st";
+            hm.put("st", stf);
+        }
+        
+        sql+=" order by b.insId ";
+
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        
+        List<Bill> b=getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        
+        doctorFeeTotal=getStaffFeeTotal(b);
+
+        return b;
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
@@ -3985,6 +4018,7 @@ public class ChannelReportController implements Serializable {
     public class DoctorPaymentSummeryRowSub {
 
         Date date;
+        List<ServiceSession> serviceSessions;
         List<Bill> bills;
         double hospitalFeeTotal;
         double staffFeeTotal;
@@ -4000,6 +4034,14 @@ public class ChannelReportController implements Serializable {
 
         public void setDate(Date date) {
             this.date = date;
+        }
+
+        public List<ServiceSession> getServiceSessions() {
+            return serviceSessions;
+        }
+
+        public void setServiceSessions(List<ServiceSession> serviceSessions) {
+            this.serviceSessions = serviceSessions;
         }
 
         public List<Bill> getBills() {
