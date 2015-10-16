@@ -1692,16 +1692,16 @@ public class ChannelReportController implements Serializable {
         return d;
     }
 
-    public double hospitalTotalBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean sessoinDate, boolean paid) {
+    public double hospitalTotalBillByBillTypeAndFeeType(Bill bill, FeeType fts, BillType bt, boolean sessoinDate, boolean paid) {
 
         String sql;
         Map m = new HashMap();
 
-        sql = " select sum(distinct(bf.feeValue)) from BillFee  bf where "
+        sql = " select distinct(bf.bill) from BillFee  bf where "
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
-                + " and bf.fee.feeType !=:ftp "
+                + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
 
         if (bill.getClass().equals(CancelledBill.class)) {
@@ -1726,11 +1726,20 @@ public class ChannelReportController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("class", BilledBill.class);
-        m.put("ftp", ft);
+        m.put("ft", fts);
         m.put("bt", bt);
 //        m.put("fn", "Scan Fee");
 
-        double d = getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> b = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        double d = 0;
+
+        for (Bill b1 : b) {
+            for (BillFee bf : b1.getBillFees()) {
+                if (bf.getFee().getFeeType() != FeeType.Staff) {
+                    d += bf.getFeeValue();
+                }
+            }
+        }
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
@@ -1738,6 +1747,51 @@ public class ChannelReportController implements Serializable {
         return d;
     }
 
+//    public double hospitalTotalBillByBillTypeAndFeeType(Bill bill, List<String> ftps, BillType bt, boolean sessoinDate, boolean paid) {
+//
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select sum(bf.bill.hospitalFee) from BillFee  bf "
+//                + "where bf.bill.retired=false "
+//                + " and bf.bill.billType=:bt "
+//                + " and type(bf.bill)=:class "
+//                + " and bf.fee.name not in :ftp "
+//                + " and bf.feeValue>0 ";
+//
+//        if (bill.getClass().equals(CancelledBill.class)) {
+//            sql += " and bf.bill.cancelled=true";
+//            System.err.println("cancel");
+//        }
+//        if (bill.getClass().equals(RefundBill.class)) {
+//            sql += " and bf.bill.refunded=true";
+//            System.err.println("Refund");
+//        }
+//
+//        if (paid) {
+//            sql += " and bf.bill.paidBill is not null "
+//                    + " and bf.bill.paidAmount!=0 ";
+//        }
+//        if (sessoinDate) {
+//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+//        } else {
+//            sql += " and bf.bill.createdAt between :fd and :td ";
+//        }
+//
+//        m.put("fd", getFromDate());
+//        m.put("td", getToDate());
+//        m.put("class", BilledBill.class);
+//        m.put("ftp", ftps);
+//        m.put("bt", bt);
+////        m.put("fn", "Scan Fee");
+//
+//        double d = getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+//
+//        System.out.println("sql = " + sql);
+//        System.out.println("m = " + m);
+//        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
+//        return d;
+//    }
     public double countBillByBillType(Bill bill, BillType bt, boolean sessoinDate, Staff st) {
 
         String sql;
@@ -1875,33 +1929,33 @@ public class ChannelReportController implements Serializable {
             for (Bill b : doctorPaymentSummeryRowSub.getBills()) {
                 if (b.getReferenceBill() == null) {
                     if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                        cashCount ++;
+                        cashCount++;
                     }
 
                     if (b.getPaymentMethod() == PaymentMethod.Agent) {
-                        agentCount ++;                        
+                        agentCount++;
                     }
                 }
 
                 if (b.getReferenceBill() != null) {
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
-                        onCallCount ++;                        
+                        onCallCount++;
                     }
 
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
-                        agentCount ++;                        
+                        agentCount++;
                     }
                 }
-                
+
                 System.out.println("cashCount = " + cashCount);
                 System.out.println("agentCount = " + agentCount);
                 System.out.println("onCallCount = " + onCallCount);
                 System.out.println("staffCount = " + staffCount);
-                
-                   doctorPaymentSummeryRowSub.setCashCount(cashCount);
-                   doctorPaymentSummeryRowSub.setAgentCount(agentCount);
-                   doctorPaymentSummeryRowSub.setOnCallCount(onCallCount);
-                   doctorPaymentSummeryRowSub.setStaffCount(staffCount);
+
+                doctorPaymentSummeryRowSub.setCashCount(cashCount);
+                doctorPaymentSummeryRowSub.setAgentCount(agentCount);
+                doctorPaymentSummeryRowSub.setOnCallCount(onCallCount);
+                doctorPaymentSummeryRowSub.setStaffCount(staffCount);
 
             }
 
@@ -2243,18 +2297,24 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createSmmeryRowsHospitalIncome(List<BillType> bts, boolean sessionDate, FeeType ft) {
+//        String[] ftpForScan = {"Doctor Fee", "Hospital Fee"};
+//        List<String> ftpsForScan = Arrays.asList(ftpForScan);
+//
+//        String[] ftpForOnlyHos = {"Doctor Fee", "Scan Fee"};
+//        List<String> ftpsForForOnlyHos = Arrays.asList(ftpForOnlyHos);
+
         for (BillType bt : bts) {
             BookingCountSummryRow row = new BookingCountSummryRow();
             if (ft == FeeType.Service) {
                 row.setBookingType("Scan " + bt.getLabel());
-                row.setBilledCount(hospitalTotalBillByBillTypeAndFeeType(new BilledBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
-                row.setCancelledCount(hospitalTotalBillByBillTypeAndFeeType(new CancelledBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
-                row.setRefundCount(hospitalTotalBillByBillTypeAndFeeType(new RefundBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
-            } else {
-                row.setBookingType(bt.getLabel());
                 row.setBilledCount(hospitalTotalBillByBillTypeAndFeeType(new BilledBill(), FeeType.Service, bt, sessionDate, paid));
                 row.setCancelledCount(hospitalTotalBillByBillTypeAndFeeType(new CancelledBill(), FeeType.Service, bt, sessionDate, paid));
                 row.setRefundCount(hospitalTotalBillByBillTypeAndFeeType(new RefundBill(), FeeType.Service, bt, sessionDate, paid));
+            } else {
+                row.setBookingType(bt.getLabel());
+                row.setBilledCount(hospitalTotalBillByBillTypeAndFeeType(new BilledBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
+                row.setCancelledCount(hospitalTotalBillByBillTypeAndFeeType(new CancelledBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
+                row.setRefundCount(hospitalTotalBillByBillTypeAndFeeType(new RefundBill(), FeeType.OwnInstitution, bt, sessionDate, paid));
             }
 
             bookingCountSummryRows.add(row);
