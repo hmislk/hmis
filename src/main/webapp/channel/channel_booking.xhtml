@@ -1083,6 +1083,14 @@
                             </h:panelGrid>
 
                         </p:tab>
+                        <p:tab title="Doctor Payment">
+                            <p:panel header="Selected Session">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton value="Pay Selected Doctor" action="#{bookingController.paySelectedDoctor}" 
+                                                     ajax="false" onclick="onSubmitButton();" />                                        
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:tab>
                     </p:tabView>
                 </p:panel>
                 <p:spacer width="100px"></p:spacer>

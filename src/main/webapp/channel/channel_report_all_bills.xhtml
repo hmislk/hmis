@@ -1,0 +1,293 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Channel Bill List">
+                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="4"> 
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createAllChannelBillReportByCreatedDate}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" id="btnRefresh2" value="Process Session Date" action="#{channelReportController.createAllChannelBillReportBySessionDate}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="billFeeReport"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl1 tbl2 tbl3" fileName="channel_all_List"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Bill Summary" />
+                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                        <h:outputLabel  value="#{channelReportController.fromDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel  value="#{channelReportController.toDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Billed Bill" />                                
+                        </f:facet>
+
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Reciept No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.insId}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.patient.person.name}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.staffFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Hospital Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.hospitalFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Payment Type" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.paymentMethod}" rendered="#{b.billType eq 'ChannelCash'}"/>
+                            <p:outputLabel value="#{b.referenceBill.paymentMethod}" rendered="#{b.billType ne 'ChannelCash'}"/>
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+
+                            <p:row>
+                                <p:column colspan="1"/>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.doctorFeeBilledTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.doctorFeeBilledTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column footerText="#{channelReportController.hospitalFeeBilledTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.hospitalFeeBilledTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:row>
+
+                        </p:columnGroup>
+
+                    </p:dataTable>
+                    <p:spacer height="20"/>
+
+
+                    <p:dataTable value="#{channelReportController.channelBillsCancelled}" var="b" id="tbl2" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Cancelled Bill" />                                
+                        </f:facet>
+
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Reciept No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.insId}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.person.name}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.staffFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Hospital Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.hospitalFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Payment Type" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.paymentMethod}" rendered="#{b.billType eq 'ChannelCash'}"/>
+                            <p:outputLabel value="#{b.referenceBill.paymentMethod}" rendered="#{b.billType ne 'ChannelCash'}"/>                                    
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+
+                            <p:row>
+                                <p:column colspan="1"/>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.doctorFeeCancellededTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.doctorFeeCancellededTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column footerText="#{channelReportController.hospitalFeeCancellededTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.hospitalFeeCancellededTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:row>
+
+                        </p:columnGroup>
+
+                    </p:dataTable>
+
+                    <p:spacer height="20"/>
+
+                    <p:dataTable value="#{channelReportController.channelBillsRefunded}" var="b" id="tbl3" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Refunded Bill" />                                
+                        </f:facet>
+
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Reciept No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.insId}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.person.name}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.staffFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Hospital Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.hospitalFee}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Payment Type" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.paymentMethod}" rendered="#{b.billType eq 'ChannelCash'}"/>
+                            <p:outputLabel value="#{b.referenceBill.paymentMethod}" rendered="#{b.billType ne 'ChannelCash'}"/>                                    
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+
+                            <p:row>
+                                <p:column colspan="1"/>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.doctorFeeRefundededTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.doctorFeeRefundededTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column footerText="#{channelReportController.hospitalFeeRefundededTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.hospitalFeeRefundededTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:row>
+
+                        </p:columnGroup>
+
+                    </p:dataTable>
+
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Staff Fee Total"/>
+                        <p:outputLabel value="#{channelReportController.doctorFeeBilledTotal+(channelReportController.doctorFeeCancellededTotal+hospitalFeeRefundededTotal)}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                        
+                        <p:outputLabel value="Hospital Fee Total"/>
+                        <p:outputLabel value="#{channelReportController.hospitalFeeBilledTotal+
+                                                (channelReportController.hospitalFeeCancellededTotal+hospitalFeeRefundededTotal)}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                    </p:panelGrid>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

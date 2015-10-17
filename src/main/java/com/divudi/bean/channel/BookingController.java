@@ -34,6 +34,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,9 +62,34 @@ import org.primefaces.model.ScheduleModel;
 @SessionScoped
 public class BookingController implements Serializable {
 
-    /**
-     * EJBs
-     */
+    private Speciality speciality;
+    private Staff staff;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date channelDay;
+    private ServiceSession selectedServiceSession;
+    private BillSession selectedBillSession;
+    ////////////////////
+    private List<ServiceSession> serviceSessions;
+    private List<BillSession> billSessions;
+    ////////////////////
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private ChannelBillController channelCancelController;
+    @Inject
+    private ChannelReportController channelReportController;
+    @Inject
+    private ChannelSearchController channelSearchController;
+    @Inject
+    ServiceSessionLeaveController serviceSessionLeaveController;
+    @Inject
+    ChannelBillController channelBillController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelStaffPaymentBillController channelStaffPaymentBillController;
+    ///////////////////
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -84,42 +110,10 @@ public class BookingController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     ItemFeeFacade ItemFeeFacade;
+    /////////////////////////
     @EJB
     private ChannelBean channelBean;
 
-    
-    /**
-     * Controllers
-     */
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    private ChannelBillController channelCancelController;
-    @Inject
-    private ChannelReportController channelReportController;
-    @Inject
-    private ChannelSearchController channelSearchController;
-    @Inject
-    ServiceSessionLeaveController serviceSessionLeaveController;
-    @Inject
-    ChannelBillController channelBillController;
-    @Inject
-    DoctorSpecialityController doctorSpecialityController;
-    
-    
-    /**
-     * Properties
-     */
-    
-    private Speciality speciality;
-    private Staff staff;
-
-    @Temporal(javax.persistence.TemporalType.DATE)
-    Date channelDay;
-    private ServiceSession selectedServiceSession;
-    private BillSession selectedBillSession;
-    private List<ServiceSession> serviceSessions;
-    private List<BillSession> billSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
     boolean printPreview;
@@ -127,9 +121,7 @@ public class BookingController implements Serializable {
     int serealNo;
     Date date;
     Date sessionStartingDate;
-    String selectTextSpeciality = "";
-    String selectTextConsultant = "";
-    String selectTextSession = "";
+    String selectText = "";
 
     private ScheduleModel eventModel;
 
@@ -341,12 +333,12 @@ public class BookingController implements Serializable {
     }
 
     public List<Staff> getSelectedConsultants() {
-        System.out.println("selectText.length() = " + selectTextConsultant.length());
+        System.out.println("selectText.length() = " + selectText.length());
         String sql;
         Map m = new HashMap();
 
 //        //System.out.println("consultants = " + consultants);
-        if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
+        if (selectText == null || selectText.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {
                 if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
@@ -368,14 +360,14 @@ public class BookingController implements Serializable {
                 consultants = getStaffFacade().findBySQL(sql, m);
             }
         } else {
-            if (selectTextConsultant.length() > 4) {
+            if (selectText.length() > 4) {
                 doctorSpecialityController.setSelectText("");
                 if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and upper(pi.staff.person.name) like '%" + selectTextConsultant.toUpperCase() + "%' "
+                            + " and upper(pi.staff.person.name) like '%" + getSelectText().toUpperCase() + "%' "
                             + " order by pi.staff.person.name ";
 
                     m.put("ins", getSessionController().getInstitution());
@@ -386,7 +378,7 @@ public class BookingController implements Serializable {
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
-                            + " and upper(p.person.name) like '%" + selectTextConsultant.toUpperCase() + "%' "
+                            + " and upper(p.person.name) like '%" + getSelectText().toUpperCase() + "%' "
                             + " order by p.person.name";
                     System.out.println("sql = " + sql);
                     consultants = getStaffFacade().findBySQL(sql);
@@ -401,7 +393,7 @@ public class BookingController implements Serializable {
                                 + " and pi.type=:typ "
                                 + " and pi.institution=:ins "
                                 + " and pi.staff.speciality=:sp "
-                                + " and upper(pi.staff.person.name) like '%" + selectTextConsultant.toUpperCase() + "%' "
+                                + " and upper(pi.staff.person.name) like '%" + getSelectText().toUpperCase() + "%' "
                                 + " order by pi.staff.person.name ";
 
                         m.put("ins", getSessionController().getInstitution());
@@ -409,7 +401,7 @@ public class BookingController implements Serializable {
 
                     } else {
                         sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and upper(p.person.name) like '%" + selectTextConsultant.toUpperCase() + "%' "
+                                + " and upper(p.person.name) like '%" + getSelectText().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
                     System.out.println("m = " + m);
@@ -436,8 +428,8 @@ public class BookingController implements Serializable {
     }
 
     public List<Staff> getConsultants() {
-        if (consultants == null) {
-            consultants = new ArrayList<>();
+        if (consultants==null) {
+            consultants=new ArrayList<>();
         }
         return consultants;
     }
@@ -847,6 +839,25 @@ public class BookingController implements Serializable {
         //absentCount=billSessions.size();
 
     }
+    
+    public String paySelectedDoctor(){
+        if (getSpeciality()==null) {
+            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+            return "";
+        }
+        if (getStaff()==null) {
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        channelStaffPaymentBillController.setSpeciality(getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.setConsiderDate(true);
+        channelStaffPaymentBillController.calculateDueFees();
+        
+        
+        return "/channel/channel_payment_staff_bill";
+        
+    }
 
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
@@ -868,14 +879,6 @@ public class BookingController implements Serializable {
         setSelectedServiceSession(null);
         serviceSessionLeaveController.setSelectedServiceSession(null);
         serviceSessionLeaveController.setCurrentStaff(staff);
-    }
-
-    public void listnerSessionRowSelect() {
-        for (ServiceSession ss : serviceSessions) {
-            if (ss.getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
-                selectedServiceSession = ss;
-            }
-        }
     }
 
     public void listnerStaffListForSpecilitySelectedText() {
@@ -1083,30 +1086,12 @@ public class BookingController implements Serializable {
         this.sessionStartingDate = sessionStartingDate;
     }
 
-    public String getSelectTextSpeciality() {
-        return selectTextSpeciality;
+    public String getSelectText() {
+        return selectText;
     }
 
-    public void setSelectTextSpeciality(String selectTextSpeciality) {
-        this.selectTextSpeciality = selectTextSpeciality;
+    public void setSelectText(String selectText) {
+        this.selectText = selectText;
     }
 
-    public String getSelectTextConsultant() {
-        return selectTextConsultant;
-    }
-
-    public void setSelectTextConsultant(String selectTextConsultant) {
-        this.selectTextConsultant = selectTextConsultant;
-    }
-
-    public String getSelectTextSession() {
-        return selectTextSession;
-    }
-
-    public void setSelectTextSession(String selectTextSession) {
-        this.selectTextSession = selectTextSession;
-    }
-
-    
-    
 }

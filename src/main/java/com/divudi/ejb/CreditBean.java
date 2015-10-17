@@ -8,6 +8,8 @@ package com.divudi.ejb;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.facade.BillFacade;
@@ -64,6 +66,37 @@ public class CreditBean {
         List<Bill> bills = getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         return bills;
+    }
+    
+    public List<BillItem> getCreditBillItems(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
+        String sql = "Select bi From BillItem bi join  bi.bill b"
+                + " where b.retired=false "
+                + " and b.createdAt  between :frm and :to ";
+
+        if (lessThan) {
+            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+        } else {
+            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+        }
+
+        sql += " and b.cancelledBill is null  "
+                + " and b.refundedBill is null"
+                + " and b.creditCompany=:cc "
+                + " and b.paymentMethod= :pm "
+                + " and b.billType=:tp "
+                + " and type(b)=:cla ";
+
+        HashMap hm = new HashMap();
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("cc", ins);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("tp", billType);
+        hm.put("val", 0.1);
+        hm.put("cla", BilledBill.class);
+        List<BillItem> billItems = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+        return billItems;
     }
 
     public List<Institution> getCreditInstitution(BillType billType, Date fromDate, Date toDate, boolean lessThan) {

@@ -26,7 +26,7 @@
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="Supplier" ></h:outputLabel>
                                         <p:autoComplete 
-                                            completeMethod="#{institutionController.completeSupplier}" 
+                                            completeMethod="#{institutionController.completeSuppliers}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reorderController.institution}"
                                             converter="institutionConverter" >
