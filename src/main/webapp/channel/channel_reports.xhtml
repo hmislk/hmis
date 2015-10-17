@@ -71,7 +71,10 @@
                             <h:panelGrid columns="1">
                                 <p:panel header="Consutant Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report" action="/channel/channel_report_doctor_leave"/>                                        
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report()" action="/channel/channel_report_doctor_leave"/>  
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)" action="/channel/channel_report_consultant_month_count"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -80,7 +83,7 @@
                                 <p:panel header="Payment Report" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report" action="/channel/channel_payment_report"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count"/>
+                                        
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
