@@ -184,7 +184,8 @@
                 <p:panel id="panelArrivals" header="Arrivals" >
 
                     <h:panelGroup rendered="#{bookingController.arrivalRecord eq null}" >
-                        <h:outputText value="NOT YET ARRIVED" ></h:outputText>
+                        <h:outputText value="NOT YET ARRIVED." ></h:outputText>
+                        <br/>
                         <p:commandButton value="Mark Arrival" update="panelArrivals" action="#{bookingController.markAsArrived()}" ></p:commandButton>
                     </h:panelGroup>
 
@@ -194,21 +195,26 @@
                             <f:convertDateTime pattern="hh:mm a" >
                             </f:convertDateTime>
                         </h:outputText>
+                        <h:outputText value="." ></h:outputText>
+                        <br/>
                         <p:commandButton value="Mark Departure" update="panelArrivals" action="#{bookingController.markAsLeft()}" ></p:commandButton>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved eq false}" >
+                    <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved ne false}" >
                         <h:outputText value="ARRIVED AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.recordTimeStamp}" >
                             <f:convertDateTime pattern="hh:mm a" >
                             </f:convertDateTime>
                         </h:outputText>
+                        <h:outputText value="." ></h:outputText>
                         <br/>
                         <h:outputText value="Left AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.approvedAt}" >
                             <f:convertDateTime pattern="hh:mm a" >
                             </f:convertDateTime>
                         </h:outputText>
+                        <h:outputText value="." ></h:outputText>
+                        <br/>
                         <p:commandButton value="Mark Arrival Again" update="panelArrivals" action="#{bookingController.markAsArrived()}" ></p:commandButton>
                     </h:panelGroup>
 

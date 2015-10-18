@@ -835,7 +835,7 @@ public class BookingController implements Serializable {
         }
         arrivalRecord.setRecordTimeStamp(new Date());
         arrivalRecord.setApproved(false);
-        fpFacade.editAndCommit(arrivalRecord);
+        fpFacade.edit(arrivalRecord);
     }
 
     public void markAsLeft() {
@@ -859,6 +859,7 @@ public class BookingController implements Serializable {
         arrivalRecord.setApproved(true);
         arrivalRecord.setApprovedAt(new Date());
         arrivalRecord.setApprover(sessionController.getLoggedUser());
+        fpFacade.edit(arrivalRecord);
     }
 
     public void fillBillSessions() {
