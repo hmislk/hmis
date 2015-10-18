@@ -1153,7 +1153,9 @@ public class ChannelBillController implements Serializable {
         toStaff = null;
         paymentScheme = null;
         doctorSpecialityController.setSelectText("");
-        bookingController.setSelectText("");
+        bookingController.setSelectTextSpeciality("");
+        bookingController.setSelectTextConsultant("");
+        bookingController.setSelectTextSession("");
     }
 
     @Inject

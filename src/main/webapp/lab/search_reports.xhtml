@@ -39,7 +39,7 @@
                                                value="#{pi.billItem.bill.deptId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
                             </p:column>
-                            
+
                             <p:column  headerText="Ins Id" styleClass="alignTop" >
                                 <h:outputLabel id="lblInsId" 
                                                value="#{pi.billItem.bill.insId}" 
@@ -105,15 +105,19 @@
                             </p:column>
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
-                                <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
+                                <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid alignTop"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
+
+
+
                                     <p:commandLink process="btnSample" update="tblBills"  
                                                    disabled="#{pi.collected}"   
-                                                   id="btnSample" 
+                                                   id="btnSample" style="padding: 1px; margin: auto;"
                                                    action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
+
                                     <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive" action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
