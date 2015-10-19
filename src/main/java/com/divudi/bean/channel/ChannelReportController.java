@@ -41,6 +41,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -62,6 +63,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.Session;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -146,6 +148,8 @@ public class ChannelReportController implements Serializable {
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
 
     public Institution getInstitution() {
         return institution;
@@ -1977,9 +1981,26 @@ public class ChannelReportController implements Serializable {
         return doctorPaymentSummeryRowSubs;
     }
 
-//    public List<ServiceSession> getServiceSessionByConsultantDate(){
-//        
-//    }
+    public List<ServiceSession> getServiceSessions(Date d, Staff s) {
+        HashMap hm = new HashMap();
+        String sql = "";
+
+        Date fd = commonFunctions.getStartOfDay(d);
+        Date td = commonFunctions.getEndOfDay(d);
+
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and s.staff=:stf "
+                + " and s.sessionDate between :fd and :td ";
+
+        hm.put("stf", s);
+        hm.put("fd", fd);
+        hm.put("td", td);
+
+        return serviceSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf) {
         System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
@@ -2033,15 +2054,15 @@ public class ChannelReportController implements Serializable {
             sql += " and b.staff=:st";
             hm.put("st", stf);
         }
-        
-        sql+=" order by b.insId ";
+
+        sql += " order by b.insId ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
-        
-        List<Bill> b=getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        
-        doctorFeeTotal=getStaffFeeTotal(b);
+
+        List<Bill> b = getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+        doctorFeeTotal = getStaffFeeTotal(b);
 
         return b;
     }
@@ -4018,8 +4039,8 @@ public class ChannelReportController implements Serializable {
     public class DoctorPaymentSummeryRowSub {
 
         Date date;
-        List<ServiceSession> serviceSessions;
         List<Bill> bills;
+        ServiceSession serviceSession;
         double hospitalFeeTotal;
         double staffFeeTotal;
 
@@ -4036,20 +4057,20 @@ public class ChannelReportController implements Serializable {
             this.date = date;
         }
 
-        public List<ServiceSession> getServiceSessions() {
-            return serviceSessions;
-        }
-
-        public void setServiceSessions(List<ServiceSession> serviceSessions) {
-            this.serviceSessions = serviceSessions;
-        }
-
         public List<Bill> getBills() {
             return bills;
         }
 
         public void setBills(List<Bill> bills) {
             this.bills = bills;
+        }
+
+        public ServiceSession getServiceSession() {
+            return serviceSession;
+        }
+
+        public void setServiceSession(ServiceSession serviceSession) {
+            this.serviceSession = serviceSession;
         }
 
         public double getHospitalFeeTotal() {
