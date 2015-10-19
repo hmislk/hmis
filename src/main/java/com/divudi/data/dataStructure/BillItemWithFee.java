@@ -25,6 +25,7 @@ public class BillItemWithFee {
     double outSideFeeDiscount;
     private double proFee;
     private double total;
+    String staffsNames;
 
  
 
@@ -131,7 +132,13 @@ public class BillItemWithFee {
     public void setReagentFee(double reagentFee) {
         this.reagentFee = reagentFee;
     }
-    
-    
+
+    public String getStaffsNames() {
+        return staffsNames;
+    }
+
+    public void setStaffsNames(String staffsNames) {
+        this.staffsNames = staffsNames;
+    }
     
 }
