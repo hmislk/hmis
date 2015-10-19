@@ -20,6 +20,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -304,6 +305,24 @@ public class SheduleController implements Serializable {
         return items;
     }
 
+    public List<ItemFee> fetchStaffServiceSessions() {
+        String sql;
+        HashMap m = new HashMap();
+        sql = "Select i From ItemFee i join i.serviceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.originatingSession is null ";
+        if (currentStaff != null) {
+            sql += " and s.staff=:stf ";
+            m.put("stf", currentStaff);
+        }
+        sql += " order by s.staff.person.name,s.sessionWeekday,s.startingTime ";
+
+        m.put("class", ServiceSession.class);
+        
+        return itemFeeFacade.findBySQL(sql, m);
+    }
+
     public void prepareAdd() {
         current = null;
         itemFees = null;
@@ -398,7 +417,6 @@ public class SheduleController implements Serializable {
         if (getItemFees() == null) {
             return;
         }
-
 
         for (ItemFee i : getItemFees()) {
             i.setServiceSession(serviceSession);

@@ -95,6 +95,16 @@
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
+                            
+                            <h:panelGrid columns="1">
+                                <p:panel header="Session Report" style="width: 400px;margin: auto;"  toggleable="true">  
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" 
+                                                         value="Entered Shedule Report" action="/channel/channel_report_channel_shedule" 
+                                                         actionListener="#{sheduleController.makeNull()}" />                                        
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
 
                         </h:panelGrid>
                     </p:panel>
