@@ -96,6 +96,13 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.item.name}" />
                 </p:column>
+                
+                <p:column headerText="Doctor Name">
+                    <f:facet name="header">
+                        <h:outputLabel value="Doctor Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.staffsNames}" />
+                </p:column>
 
                 <p:column headerText="Hospital Fee" style="text-align: right;">
                     <f:facet name="header">
@@ -117,7 +124,7 @@
                         </p:column>
 
 
-                        <p:column colspan="3" footerText="COUNT  (#{serviceSummery.count})">
+                        <p:column colspan="4" footerText="COUNT  (#{serviceSummery.count})">
                             <f:facet name="footer">
                                 <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
                                 </h:outputLabel>
