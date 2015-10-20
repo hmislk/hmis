@@ -29,7 +29,7 @@
                         <au:completeConsultant value="#{channelReportController.staff}"/>
                     </h:panelGrid>
                     <h:panelGrid columns="4"> 
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createChannelDoctorPayment}">
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createChannelDoctorPaymentTableBySession}">
                         </p:commandButton>                        
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="tbl"  />
@@ -60,6 +60,7 @@
 
                             <p:subTable value="#{da.bills}" var="sub">
                                 <f:facet name="header">
+                                    <p:outputLabel value="#{da.serviceSession.name}"/>&nbsp;&nbsp;&nbsp;&nbsp;
                                     <p:outputLabel value="#{da.date}">
                                         <f:convertDateTime pattern="dd-MMM-yyyy"/>
                                     </p:outputLabel>&nbsp;&nbsp;&nbsp;&nbsp;
