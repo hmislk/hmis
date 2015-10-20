@@ -11,6 +11,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
@@ -100,6 +101,7 @@ public class ChannelReportTempController implements Serializable {
     List<ServiceSessionLeave> serviceSessionLeaves;
     List<ChannelSummeryDateRangeBillTotalTable> channelSummeryDateRangeBillTotalTables;
     List<ItemFee> itemFees;
+    List<Institution> agencies;
     //
     Date fromDate;
     Date toDate;
@@ -675,9 +677,21 @@ public class ChannelReportTempController implements Serializable {
     public void createSpecilityWiseDoctorAppoinmentCount() {
         fetchSpecilityWiseDoctorAppoinmentCount();
     }
-    
+
     public void createStaffShedules() {
-        itemFees=getSheduleController().fetchStaffServiceSessions();
+        itemFees = getSheduleController().fetchStaffServiceSessions();
+    }
+
+    public void createAgencyBalanceTable() {
+        String sql;
+        HashMap m = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType=:typ ";
+
+        m.put("typ", InstitutionType.Agency);
+        
+        agencies=getInstitutionFacade().findBySQL(sql, m);
     }
 
     //inner Classes(Data Structures)
@@ -1069,6 +1083,17 @@ public class ChannelReportTempController implements Serializable {
 
     public void setItemFees(List<ItemFee> itemFees) {
         this.itemFees = itemFees;
+    }
+
+    public List<Institution> getAgencies() {
+        if (agencies==null) {
+            agencies=new ArrayList<>();
+        }
+        return agencies;
+    }
+
+    public void setAgencies(List<Institution> agencies) {
+        this.agencies = agencies;
     }
 
 }
