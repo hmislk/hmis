@@ -280,6 +280,36 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
+    public double fetchBillsCount(Staff s, BillType bt) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select count(b) from BilledBill b "
+                + " where b.retired=false "
+                + " and b.refunded=false "
+                + " and b.cancelled=false "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (s != null) {
+            sql += " and b.staff=:s ";
+            m.put("s", s);
+        }
+        if (bt != null) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", bt);
+        }
+        sql += " order by b.staff.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        System.err.println("Sql " + sql);
+        System.out.println("m = " + m);
+
+        return getStaffFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public List<Speciality> fetchBillsSpecilitys() {
 
         Date fd = commonFunctions.getStartOfMonth(fromDate);
@@ -601,6 +631,17 @@ public class ChannelReportTempController implements Serializable {
         return acsrs;
     }
 
+    public double[] fetchChannelBillTypeBilCounts(Staff s, List<BillType> bts) {
+        double[] d = new double[4];
+        int i = 0;
+        for (BillType bt : bts) {
+            d[i] = fetchBillsCount(s, bt);
+            i++;
+        }
+
+        return d;
+    }
+
     public void fetchAgentWiseChannelTotal() {
         channelSummeryDateRangeBillTotalTables = new ArrayList<>();
         List<Institution> institutions = new ArrayList<>();
@@ -650,6 +691,27 @@ public class ChannelReportTempController implements Serializable {
         }
     }
 
+    public void fetchStaffWiseChannelBillTypeCount() {
+        channelSummeryDateRangeBillTotalTables = new ArrayList<>();
+        double[] d = new double[4];
+        for (Staff s : fetchBillsStaffs(null)) {
+            ChannelSummeryDateRangeBillTotalTable sws = new ChannelSummeryDateRangeBillTotalTable();
+            sws.setStaff(s);
+            BillType[] bts = new BillType[]{BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
+            List<BillType> billTypes = Arrays.asList(bts);
+            sws.setCount(fetchChannelBillTypeBilCounts(s, billTypes));
+            for (int i = 0; i < 4; i++) {
+                d[i]+=sws.count[i];
+            }
+            channelSummeryDateRangeBillTotalTables.add(sws);
+        }
+
+        ChannelSummeryDateRangeBillTotalTable sws = new ChannelSummeryDateRangeBillTotalTable();
+        sws.setStaff(null);
+        sws.setCount(d);
+        channelSummeryDateRangeBillTotalTables.add(sws);
+    }
+
     public void createAgentWiseAppoinmentCount() {
         fetchAgentWiseChannelTotal();
     }
@@ -690,8 +752,12 @@ public class ChannelReportTempController implements Serializable {
                 + " and c.institutionType=:typ ";
 
         m.put("typ", InstitutionType.Agency);
-        
-        agencies=getInstitutionFacade().findBySQL(sql, m);
+
+        agencies = getInstitutionFacade().findBySQL(sql, m);
+    }
+    
+    public void createStaffWiseChannelBillTypeCountTable(){
+        fetchStaffWiseChannelBillTypeCount();
     }
 
     //inner Classes(Data Structures)
@@ -700,6 +766,8 @@ public class ChannelReportTempController implements Serializable {
         Institution Agency;
         Staff staff;
         Speciality speciality;
+        double[] count;
+
         List<ChannelSummeryDateRangeBillTotalRow> channelSummeryDateRangeBillTotalRows;
 
         public Institution getAgency() {
@@ -732,6 +800,14 @@ public class ChannelReportTempController implements Serializable {
 
         public void setSpeciality(Speciality speciality) {
             this.speciality = speciality;
+        }
+
+        public double[] getCount() {
+            return count;
+        }
+
+        public void setCount(double[] count) {
+            this.count = count;
         }
 
     }
@@ -1086,8 +1162,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public List<Institution> getAgencies() {
-        if (agencies==null) {
-            agencies=new ArrayList<>();
+        if (agencies == null) {
+            agencies = new ArrayList<>();
         }
         return agencies;
     }
