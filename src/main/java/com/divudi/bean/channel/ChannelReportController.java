@@ -84,6 +84,7 @@ public class ChannelReportController implements Serializable {
     private List<BillSession> billSessionsReturn;
     private List<BillSession> billSessionsCancelled;
     List<BillSession> selectedBillSessions;
+    List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     double netTotal;
     double cancelTotal;
@@ -321,6 +322,14 @@ public class ChannelReportController implements Serializable {
 
     public void setSelectedBillSessions(List<BillSession> selectedBillSessions) {
         this.selectedBillSessions = selectedBillSessions;
+    }
+
+    public List<ServiceSession> getServiceSessions() {
+        return serviceSessions;
+    }
+
+    public void setServiceSessions(List<ServiceSession> serviceSessions) {
+        this.serviceSessions = serviceSessions;
     }
 
     public void fillIncomeWithAgentBookings() {
@@ -1907,8 +1916,9 @@ public class ChannelReportController implements Serializable {
             } else {
                 doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubs(bts, BillType.PaymentBill, stf, fromDate, toDate));
             }
-
-            doctorPaymentSummeryRows.add(doctorPaymentSummeryRow);
+            if (!doctorPaymentSummeryRow.getDoctorPaymentSummeryRowSubs().isEmpty()) {
+                doctorPaymentSummeryRows.add(doctorPaymentSummeryRow);
+            }
 
         }
 
@@ -1987,7 +1997,9 @@ public class ChannelReportController implements Serializable {
             nc.add(Calendar.DATE, 1);
             nowDate = nc.getTime();
 
-            doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
+            if (!doctorPaymentSummeryRowSub.getBills().isEmpty()) {
+                doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
+            }
 
         }
 
@@ -1999,6 +2011,8 @@ public class ChannelReportController implements Serializable {
         List<DoctorPaymentSummeryRowSub> doctorPaymentSummeryRowSubs;
         doctorPaymentSummeryRowSubs = new ArrayList<>();
 
+        List<ServiceSession> sessions = new ArrayList<>();
+
         Date nowDate = fd;
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
@@ -2009,11 +2023,16 @@ public class ChannelReportController implements Serializable {
             System.out.println("formattedDate = " + formattedDate);
             System.out.println("nowDate = " + nowDate);
 
-            
+            if (serviceSession != null) {
+                sessions.add(serviceSession);
+            } else {
+                sessions.addAll(getServiceSessions(nowDate, staff));
+            }
+
             System.out.println("getServiceSessions(nowDate, staff) = " + getServiceSessions(nowDate, staff));
 
-            for (ServiceSession ss : getServiceSessions(nowDate, staff)) {
-                
+            for (ServiceSession ss : sessions) {
+
                 DoctorPaymentSummeryRowSub doctorPaymentSummeryRowSub = new DoctorPaymentSummeryRowSub();
                 doctorPaymentSummeryRowSub.setServiceSession(ss);
                 doctorPaymentSummeryRowSub.setDate(nowDate);
@@ -2072,7 +2091,10 @@ public class ChannelReportController implements Serializable {
                 nc.add(Calendar.DATE, 1);
                 nowDate = nc.getTime();
 
-                doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
+                if(!doctorPaymentSummeryRowSub.getBills().isEmpty()){
+                 doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);   
+                }
+                
             }
 
         }
@@ -2098,6 +2120,22 @@ public class ChannelReportController implements Serializable {
 
         return serviceSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
+    }
+
+    public void fillSessions() {
+        System.out.println("Inside");
+        String sql;
+        Map m = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.staff=:doc "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime";
+        m.put("doc", staff);
+        m.put("class", ServiceSession.class);
+        System.out.println("currentStaff = " + staff);
+        serviceSessions = serviceSessionFacade.findBySQL(sql, m);
     }
 
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Staff stf, ServiceSession ss) {
