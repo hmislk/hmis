@@ -379,6 +379,19 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", getToDate());
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        totalPurchaseValue=getFreeQtyByPurchaseRateTotal(billItems);
+    }
+    
+    public double getFreeQtyByPurchaseRateTotal(List<BillItem> items){
+        double tot=0;
+        if(items.isEmpty()){
+            return 0;
+        }
+        for(BillItem bi: items){
+            tot+=(bi.getPharmaceuticalBillItem().getFreeQty()*bi.getPharmaceuticalBillItem().getPurchaseRate());
+        }
+        return tot;
     }
 
     private double getSaleValueByDepartmentByBill(Date date, Bill bill) {

@@ -12,7 +12,7 @@
 
     <ui:define name="content">
 
-        <h:form>
+        <h:form id="form">
 
 
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
@@ -21,6 +21,16 @@
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
                         <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
+                    <h:outputScript>
+                        $(document.getElementById('form:txtSearch')).keypress(function (event) {
+                        var keycode = (event.keyCode ? event.keyCode : event.which);
+                        if (keycode == '13') {
+                        document.getElementById("form:txtSearch2").focus();
+                        return false;
+                        }
+
+                        });
+                    </h:outputScript>
                     <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
                                   selection="#{bookingController.speciality}"
@@ -39,9 +49,19 @@
                 </h:panelGrid>
 
                 <h:panelGroup id="scStaff" >
-                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectText}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
+                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
                         <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
                     </p:inputText>
+                    <h:outputScript>
+                        $(document.getElementById('form:txtSearch2')).keypress(function (event) {
+                        var keycode = (event.keyCode ? event.keyCode : event.which);
+                        if (keycode == '13') {
+                        document.getElementById("form:txtSearch3").focus();
+                        return false;
+                        }
+
+                        });
+                    </h:outputScript>
                     <p:dataTable id="tblCon"  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
                                  selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
                                  style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
@@ -63,7 +83,19 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
+                    <p:inputText autocomplete="off" id="txtSearch3" value="#{bookingController.selectTextSession}" style="width: 176px;margin-left: 2px;" placeholder="Session" >
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerSessionRowSelect}"/> 
+                    </p:inputText>
+                    <h:outputScript>
+                        $(document.getElementById('form:txtSearch3')).keypress(function (event) {
+                        var keycode = (event.keyCode ? event.keyCode : event.which);
+                        if (keycode == '13') {
+                        document.getElementById("form:cmbPs_focus").focus();
+                        return false;
+                        }
 
+                        });
+                    </h:outputScript>
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
                                  id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
@@ -76,8 +108,8 @@
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                 listener="#{bookingController.fillBillSessions}" />
 
-                        <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                            <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                        <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                           <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                 <f:convertDateTime pattern="E"/>
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
@@ -220,13 +252,26 @@
                             </h:panelGroup>
 
                             <p:outputLabel value="Payment Method"/>
-                            <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
-                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl 
-                                        creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank 
-                                        lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessions}" />
-                            </p:selectOneMenu>
+                            <h:panelGroup >
+                                <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
+                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl 
+                                            creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank 
+                                            lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessions}" />
+                                </p:selectOneMenu>
+                                <h:outputScript>
+                                    $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
+                                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                                    alert("sdf");
+                                    if (keycode == '13') {
+                                    document.getElementById("form:txtSearch3").focus();
+                                    return false;
+                                    }
+
+                                    });
+                                </h:outputScript>
+                            </h:panelGroup>
                             <p:outputLabel value="Discount Scheme"/>
                             <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
                                 <f:selectItem itemLabel="Select Discount Scheme"/>
@@ -329,7 +374,7 @@
                         <p:tab id="tabNewPt" title="New Pateint">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
-                                <p:selectOneMenu  value="#{channelBillController.newPatient.person.title}"  >
+                                <p:selectOneMenu id="somNewPtTitle" value="#{channelBillController.newPatient.person.title}"  >
                                     <f:selectItem itemLabel="Select Title"/>
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
@@ -906,7 +951,7 @@
                                              process="txtBsSearch calFrom calTo btnBsSearch" 
                                              update="bSessionSearch">
 
-                                
+
                             </p:commandButton>
 
                             <p:dataTable id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
@@ -1056,6 +1101,14 @@
                                 </p:panel>
                             </h:panelGrid>
 
+                        </p:tab>
+                        <p:tab title="Doctor Payment">
+                            <p:panel header="Selected Session">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton value="Pay Selected Doctor" action="#{bookingController.paySelectedDoctor}" 
+                                                     ajax="false" onclick="onSubmitButton();" />                                        
+                                </h:panelGrid>
+                            </p:panel>
                         </p:tab>
                     </p:tabView>
                 </p:panel>

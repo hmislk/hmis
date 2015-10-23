@@ -239,7 +239,7 @@ public class PatientReportController implements Serializable {
                 String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
-                //System.out.println("ixcals size is " + ixCals.size());
+                System.out.println("ixcals size is " + ixCals.size());
                 String calString = "";
                 for (IxCal c : ixCals) {
                     if (c.getCalculationType() == CalculationType.Constant) {
@@ -287,7 +287,7 @@ public class PatientReportController implements Serializable {
                     if (c.getCalculationType() == CalculationType.Comma) {
                         calString = calString + ",";
                     }
-                    
+
                     if (c.getCalculationType() == CalculationType.AgeInDays) {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeDays();
                     }
@@ -297,17 +297,19 @@ public class PatientReportController implements Serializable {
                     if (c.getCalculationType() == CalculationType.AgeInYears) {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
                     }
-                    ScriptEngineManager mgr = new ScriptEngineManager();
-                    ScriptEngine engine = mgr.getEngineByName("JavaScript");
                     System.out.println("calString = " + calString);
-                    try {
-                        result = (double) engine.eval(calString);
-                    } catch (ScriptException ex) {
-                        Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
-                        result = 0.0;
-                    }
-                    priv.setDoubleValue(result);
                 }
+                ScriptEngineManager mgr = new ScriptEngineManager();
+                ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                System.err.println("calString = " + calString);
+                try {
+                    result = (double) engine.eval(calString);
+                } catch (Exception ex) {
+                    Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+                    result = 0.0;
+                }
+                priv.setDoubleValue(result);
+
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
@@ -317,8 +319,7 @@ public class PatientReportController implements Serializable {
         }
 //        getFacade().edit(currentPatientReport);
     }
- 
-    
+
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
 //        ////System.out.println("pr is " + pr + " and details");
 //        ////System.out.println("ii is " + ii);

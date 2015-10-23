@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Channel &amp; Scan Count" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy" >
+                        </p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pg1" >
+                        <h:outputLabel value="Scan"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.scan}" >
+                            <p:ajax event="change" process="@this" update=":#{p:component('pan3')} pg1" />
+                        </p:selectBooleanCheckbox>
+                        <h:outputLabel value="Session Date"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.sessoinDate}" />
+                        <h:outputLabel value="Only Paid"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.paid}" />
+                    </h:panelGrid> 
+                    <h:panelGrid columns="3">
+                        <h:panelGroup id="pan2">
+                            <h:panelGrid columns="2" >
+                                <p:commandButton action="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Process" ajax="false" />
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton> 
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportTempController.channelSummeryDateRangeBillTotalTables}" var="s" id="tbl1" >
+                        <f:facet name="header">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br></br>
+                            <h:panelGroup id="pan3">
+                                <p:outputLabel value="Channel " rendered="#{!channelReportTempController.scan}" />
+                                <p:outputLabel value="Scan " rendered="#{channelReportTempController.scan}" />
+                            </h:panelGroup>
+                            <p:outputLabel value="Count" />
+                            <br></br>
+                            <p:outputLabel value="From : " />
+                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="MMMM yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="  To : " />
+                            <p:outputLabel value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="MMMM yyyy" />
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header" >
+                            <p:row>
+                                <p:column headerText="Consultant" />
+                                <p:column headerText="Count" />
+                                <p:column headerText="Staff Fee" />
+                                <p:column headerText="Hos Fee" />
+                                <p:column headerText="Total" />
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{s.channelSummeryDateRangeBillTotalRows}" var="a" >
+                            <f:facet name="header">
+                                <p:outputLabel value="#{s.speciality.name}" >
+                                </p:outputLabel>
+                            </f:facet>
+                            <p:column>
+                                <p:outputLabel value="#{a.staff.person.name}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <p:outputLabel value="#{a.billTotal}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <p:outputLabel value="#{a.totalHosFee}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <p:outputLabel value="#{a.totalDocFee}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.totalDocFee+a.totalHosFee}" style="#{a.bold ? 'font-weight: bold':''}" >
+                                    <f:convertNumber pattern="##,##,##0" />
+                                </p:outputLabel>
+                            </p:column>
+
+                        </p:subTable>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

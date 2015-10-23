@@ -34,7 +34,7 @@
                 </h:panelGrid>
                 
                 <h:panelGroup id="scStaff" >
-                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectText}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
+                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextSpeciality}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
                         <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
                     </p:inputText>
                     <p:dataTable id="tblCon"  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"

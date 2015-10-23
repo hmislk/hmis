@@ -16,12 +16,12 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel  header="Casheir Session Report Detail">
+                <p:panel>
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
 
-                            <h:outputLabel value="Channel Patient Count"/>
+                            <h:outputLabel value="Channel Hospital Income"/>
                             <p:commandButton id="btnBack" value="Back" 
                                              action="/channel/channel_reports" style="float: right;"
                                              ajax="false">
@@ -42,23 +42,23 @@
                         </h:panelGrid>
                         <p:panel id="reportPrint">
                             <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountByCreatedDate}"/>
+                            <p:commandButton id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeByCreatedDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountBySessionDate}"/>
+                            <p:commandButton id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeBySessionDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
+                                <pe:exporter type="xlsx" target="tbl" fileName="channel_hospital_income"  />
                             </p:commandButton> 
 
 
                             <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
 
                                 <h:panelGroup>
-                                    
+
                                     <h:outputLabel value="From" />
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
                                         <f:convertDateTime pattern="dd MM yyyy"/>
@@ -74,15 +74,12 @@
 
                             <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
-                                    <h:outputLabel value="Channel Patient Count"/><br/>
-                                    <h:outputLabel value=" From :"/>
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                     </h:outputLabel>                          
-                                    <h:outputLabel value=" To :"/>
+                                    <h:outputLabel value="&emsp;&emsp;To :"/>
                                     <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column style="text-align: left;" >
@@ -91,27 +88,27 @@
                                     </f:facet>
                                     <p:outputLabel value="#{b.bookingType}" />
                                 </p:column>
-                                <p:column>
+                                <p:column style="text-align: right;">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Bill Count" />
+                                        <p:outputLabel value="Total Channel" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.billedCount}" />
                                 </p:column>
-                                <p:column>
+                                <p:column style="text-align: right;">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Cancel Bill Count" />
+                                        <p:outputLabel value="Cancel" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.cancelledCount}" />
                                 </p:column>
-                                <p:column>
+                                <p:column style="text-align: right;">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Rerfund Bill Count" />
+                                        <p:outputLabel value="Rerfund" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.refundCount}" />
                                 </p:column>
-                                <p:column>
+                                <p:column style="text-align: right;">
                                     <f:facet name="header" >
-                                        <p:outputLabel value="Total Count" />
+                                        <p:outputLabel value="Total" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.billedCount-(b.cancelledCount+b.refundCount)}" />
                                 </p:column>

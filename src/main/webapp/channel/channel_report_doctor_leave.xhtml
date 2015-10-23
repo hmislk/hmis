@@ -44,11 +44,11 @@
                     <p:dataTable value="#{channelReportTempController.serviceSessionLeaves}" var="d" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
-                            <h:panelGrid rendered="#{channelReportTempController.reportKeyWord.staff ne null}" >
+                            <h:panelGroup rendered="#{channelReportTempController.reportKeyWord.staff ne null}" >
                                 <br></br>
                                 <p:outputLabel value="Consultant - "  />
-                                <p:outputLabel value="#{channelReportTempController.reportKeyWord.staff}"/>
-                            </h:panelGrid>
+                                <p:outputLabel value="#{channelReportTempController.reportKeyWord.staff.person.name}"/>
+                            </h:panelGroup>
                             <br></br>
                             <p:outputLabel value="From : " />
                             <p:outputLabel value="#{channelReportTempController.fromDate}" >
@@ -64,7 +64,7 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Consultant Name" />
                             </f:facet>
-                            <h:outputLabel value="#{d.staff}">
+                            <h:outputLabel value="#{d.staff.person.name}">
                             </h:outputLabel>
                         </p:column>
 

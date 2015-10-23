@@ -484,9 +484,66 @@ public class BillNumberGenerator {
         return result.toString();
 
     }
-    
-    public String institutionBillNumberGenerator(Institution institution, List<BillType>billTypes,BillClassType billClassType,String suffix) {
+
+    public String institutionBillNumberGenerator(Institution institution, List<BillType> billTypes, BillClassType billClassType, String suffix) {
         BillNumber billNumber = fetchLastBillNumber(institution, billTypes, billClassType);
+        StringBuilder result = new StringBuilder();
+        Long b = billNumber.getLastBillNumber();
+
+        result.append(suffix);
+
+        result.append("/");
+
+        result.append(++b);
+
+        billNumber.setLastBillNumber(b);
+
+        billNumberFacade.edit(billNumber);
+
+        return result.toString();
+
+    }
+
+    public String institutionBillNumberGenerator(Institution institution, BillType billType, BillClassType billClassType, String suffix) {
+        BillNumber billNumber = fetchLastBillNumber(institution, billType, billClassType);
+        StringBuilder result = new StringBuilder();
+        Long b = billNumber.getLastBillNumber();
+
+        result.append(suffix);
+
+        result.append("/");
+
+        result.append(++b);
+
+        billNumber.setLastBillNumber(b);
+
+        billNumberFacade.edit(billNumber);
+
+        return result.toString();
+
+    }
+
+    public String departmentBillNumberGenerator(Institution institution, Department department, List<BillType> billTypes, BillClassType billClassType, String suffix) {
+        BillNumber billNumber = fetchLastBillNumber(institution, department, billTypes, billClassType);
+        StringBuilder result = new StringBuilder();
+        Long b = billNumber.getLastBillNumber();
+
+        result.append(suffix);
+
+        result.append("/");
+
+        result.append(++b);
+
+        billNumber.setLastBillNumber(b);
+
+        billNumberFacade.edit(billNumber);
+
+        return result.toString();
+
+    }
+
+    public String departmentBillNumberGenerator(Institution institution, Department department, BillType billType, BillClassType billClassType, String suffix) {
+        BillNumber billNumber = fetchLastBillNumber(institution, billType, billClassType, department);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
 
@@ -799,6 +856,69 @@ public class BillNumberGenerator {
         return billNumber;
 
     }
+    
+    private BillNumber fetchLastBillNumber(Institution institution, BillType billType, BillClassType billClassType,Department department) {
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
+                + " and b.billClassType=:bcl"
+                + " and b.institution=:ins "
+                + " and b.department=:dep ";
+        HashMap hm = new HashMap();
+        hm.put("bTp", billType);
+        hm.put("bcl", billClassType);
+        hm.put("ins", institution);
+        hm.put("dep", department);
+        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillType(billType);
+            billNumber.setBillClassType(billClassType);
+            billNumber.setInstitution(institution);
+            billNumber.setDepartment(department);
+
+            sql = "SELECT count(b) FROM Bill b "
+                    + " where b.billType=:bTp "
+                    + " and b.retired=false "
+                    + " and type(b)=:class "
+                    + " and b.institution=:ins "
+                    + " and b.department=:dep  ";
+            hm = new HashMap();
+            hm.put("bTp", billType);
+            hm.put("ins", institution);
+            hm.put("dep", department);
+
+            switch (billClassType) {
+                case BilledBill:
+                    hm.put("class", BilledBill.class);
+                    break;
+                case CancelledBill:
+                    hm.put("class", CancelledBill.class);
+                    break;
+                case RefundBill:
+                    hm.put("class", RefundBill.class);
+                    break;
+                case PreBill:
+                    hm.put("class", PreBill.class);
+                    break;
+            }
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+
+            if (dd == null) {
+                dd = 0l;
+            }
+
+            billNumber.setLastBillNumber(dd);
+
+            billNumberFacade.create(billNumber);
+        }
+
+        return billNumber;
+
+    }
 
     private BillNumber fetchLastBillNumber(Institution institution, List<BillType> billTypes, BillClassType billClassType) {
         String sql = "SELECT b FROM "
@@ -824,9 +944,72 @@ public class BillNumberGenerator {
                     + " and b.institution=:ins "
                     + " and b.billType in :bt "
                     + " and b.createdAt is not null";
-            
+
             hm.put("ins", institution);
             hm.put("bt", billTypes);
+
+            switch (billClassType) {
+                case BilledBill:
+                    hm.put("class", BilledBill.class);
+                    break;
+                case CancelledBill:
+                    hm.put("class", CancelledBill.class);
+                    break;
+                case RefundBill:
+                    hm.put("class", RefundBill.class);
+                    break;
+                case PreBill:
+                    hm.put("class", PreBill.class);
+                    break;
+            }
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+
+            if (dd == null) {
+                dd = 0l;
+            }
+
+            billNumber.setLastBillNumber(dd);
+
+            billNumberFacade.create(billNumber);
+        }
+
+        return billNumber;
+
+    }
+    
+    private BillNumber fetchLastBillNumber(Institution institution,Department department, List<BillType> billTypes, BillClassType billClassType) {
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billClassType=:class "
+                + " and b.institution=:ins "
+                + " and b.department=:dep "
+                + " and b.billType is null ";
+        HashMap hm = new HashMap();
+        hm.put("class", billClassType);
+        hm.put("ins", institution);
+        hm.put("dep", department);
+        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillClassType(billClassType);
+            billNumber.setInstitution(institution);
+            billNumber.setDepartment(department);
+            HashMap m = new HashMap();
+
+            sql = "SELECT count(b) FROM Bill b"
+                    + "  where type(b)=:class "
+                    + " and b.retired=false"
+                    + " and b.institution=:ins "
+                    + " and b.department=:dep "
+                    + " and b.billType in :bt "
+                    + " and b.createdAt is not null";
+
+            hm.put("ins", institution);
+            hm.put("bt", billTypes);
+            hm.put("dep", department);
 
             switch (billClassType) {
                 case BilledBill:
