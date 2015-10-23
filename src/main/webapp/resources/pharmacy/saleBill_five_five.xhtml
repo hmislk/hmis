@@ -268,7 +268,7 @@
                         </td>
                     </tr>
                     
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                         <tr>
                             <td  style="overflow: visible;">
@@ -300,7 +300,7 @@
                     </ui:repeat>
                     </h:panelGroup>
                     
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                         <tr>
                             <td  style="overflow: visible;">
@@ -317,7 +317,7 @@
                                 </h:outputLabel>
                             </td>
                             <td    style="text-align: right;" >
-                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate+(bip.marginValue/bip.qty)}">
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.netValue/bip.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -357,7 +357,7 @@
                             <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 15px; font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -370,7 +370,7 @@
                             <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 15px; font-weight: bold;">
+                            <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -411,6 +411,28 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    
+<!--                    <tr>
+                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <h:outputLabel value="Cash paid" />
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <h:outputLabel value="#{cc.attrs.bill.cashPaid}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <h:outputLabel value="Net Total" />
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>-->
                     
 <!--                    <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
