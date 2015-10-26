@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.PersonRelationship;
+import com.divudi.data.clinical.PersonRelationship;
 import com.divudi.facade.PersonRelationshipFacade;
 import java.io.Serializable;
 import java.util.Date;
