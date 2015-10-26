@@ -323,54 +323,54 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-        Class[] classes = new Class[]{Amp.class};
-        return completeItem(query, classes, dts, 30);
+//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+//        Class[] classes = new Class[]{Amp.class};
+//        return completeItem(query, classes, dts, 30);
 //        
-//        String sql;
-//        HashMap tmpMap = new HashMap();
-//        if (query == null) {
-//            suggestions = new ArrayList<>();
-//        } else {
-//
-//            sql = "select c from Item c where c.retired=false "
-//                    + " and (type(c)= :amp) and "
-//                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-//                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
-//                    + " upper(c.barcode) like :str ) order by c.name";
-//            ////System.out.println(sql);
-//            tmpMap.put("dep", DepartmentType.Store);
-//            tmpMap.put("amp", Amp.class);
-//            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
-//        }
-//        return suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+
+            sql = "select c from Item c where c.retired=false "
+                    + " and (type(c)= :amp) and "
+                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
+                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
+                    + " upper(c.barcode) like :str ) order by c.name";
+            ////System.out.println(sql);
+            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
 
     }
 
     public List<Item> completeAmpItemAll(String query) {
-        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-        Class[] classes = new Class[]{Amp.class};
-        return completeItem(query, classes, dts, 0);
-//        String sql;
-//        HashMap tmpMap = new HashMap();
-//        if (query == null) {
-//            suggestions = new ArrayList<>();
-//        } else {
-//
-//            sql = "select c from Item c where "
-//                    + " (type(c)= :amp) and "
-//                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-//                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
-//                    + " upper(c.barcode) like :str ) order by c.name";
-//            ////System.out.println(sql);
-//            tmpMap.put("dep", DepartmentType.Store);
-//            tmpMap.put("amp", Amp.class);
-//            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
-//        }
-//        return suggestions;
-//
+//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+//        Class[] classes = new Class[]{Amp.class};
+//        return completeItem(query, classes, dts, 0);
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+
+            sql = "select c from Item c where "
+                    + " (type(c)= :amp) and "
+                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
+                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
+                    + " upper(c.barcode) like :str ) order by c.name";
+            ////System.out.println(sql);
+            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
     }
 
     public List<Item> completeStoreItem(String query) {
