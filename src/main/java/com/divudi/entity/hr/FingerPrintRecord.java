@@ -23,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -50,7 +51,7 @@ public class FingerPrintRecord implements Serializable {
     Roster roster;
     
 
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     Date recordTimeStamp;
     @Column(name = "allowedOverTime")
     boolean allowedExtraDuty;
@@ -61,20 +62,20 @@ public class FingerPrintRecord implements Serializable {
     //Created Properties
     @ManyToOne
     private WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
     //Approving Properties
     private boolean approved;
     @ManyToOne
     private WebUser approver;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date approvedAt;
     private String approveComments;
     

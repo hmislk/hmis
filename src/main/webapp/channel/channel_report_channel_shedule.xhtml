@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+
+
+            <h:panelGrid columns="1">
+                <p:panel header="Session Detail Report" >
+                    <h:panelGrid columns="2">
+                        <h:outputLabel  value="Speciality" ></h:outputLabel>
+                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                                         completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="specilityCon"   >
+                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
+                        </p:autoComplete>
+
+
+
+                        <h:outputLabel  value="Doctor" ></h:outputLabel>
+                        <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
+                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          converter="stfcon"   >   
+                        </p:autoComplete>  
+                        <p:commandButton value="Fill Shedules" action="#{channelReportTempController.createStaffShedules()}" ajax="false" />
+                        <h:panelGroup >
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
+                            </p:commandButton>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
+                        <p:dataTable value="#{channelReportTempController.itemFees}" var="i" id="tbl">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Session Detail Report" />
+                                <br></br>
+                                <p:outputLabel value="Doctor : #{sheduleController.currentStaff.person.name}" rendered="#{sheduleController.currentStaff ne null}" />
+                            </f:facet>
+                            <p:column rendered="#{sheduleController.currentStaff eq null}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Staff" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.staff.person.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Session Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Starting Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.startingTime}" >
+                                    <f:convertDateTime pattern="HH:mm" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Ending Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.endingTime}" >
+                                    <f:convertDateTime pattern="HH:mm" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="WeekDays" />
+                                </f:facet>
+                                <p:outputLabel value="Sunday" rendered="#{i.serviceSession.sessionWeekday eq 1}"/>
+                                <p:outputLabel value="Monday" rendered="#{i.serviceSession.sessionWeekday eq 2}"/>
+                                <p:outputLabel value="Tuesday" rendered="#{i.serviceSession.sessionWeekday eq 3}"/>
+                                <p:outputLabel value="Wednesday" rendered="#{i.serviceSession.sessionWeekday eq 4}"/>
+                                <p:outputLabel value="Thursday" rendered="#{i.serviceSession.sessionWeekday eq 5}"/>
+                                <p:outputLabel value="Friday" rendered="#{i.serviceSession.sessionWeekday eq 6}"/>
+                                <p:outputLabel value="Sutarday" rendered="#{i.serviceSession.sessionWeekday eq 7}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Refundable" />
+                                </f:facet>
+                                <p:outputLabel value="Refundable" rendered="#{i.serviceSession.refundable}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Max No" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.maxNo}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Max Row No" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.maxTableRows}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.feeType}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.fee}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Forign Fee" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.ffee}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                </p:panel>
+
+
+
+            </h:panelGrid>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

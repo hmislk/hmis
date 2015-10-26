@@ -90,6 +90,19 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column headerText="Purchase Rate" style="text-align: right;">
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column headerText="Free Qty Value" style="text-align: right;">
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate*i.pharmaceuticalBillItem.freeQty}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column headerText="Order Quantity" style="text-align: right;">
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
@@ -99,7 +112,31 @@
                         <h:outputLabel value="#{i.bill.department.name}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column> 
+                    </p:column>
+                    
+                    
+                    <p:columnGroup type="footer">  
+                <p:row>                                 
+                    <p:column colspan="7"/>                    
+                    <p:column footerText="Total" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total">
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    
+                    <p:column footerText="#{pharmacySaleReport.totalPurchaseValue}" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalPurchaseValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>  
+            </p:columnGroup>
+                    
+                    
+                    
                 </p:dataTable>
 
             </p:panel>         

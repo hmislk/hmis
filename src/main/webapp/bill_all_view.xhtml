@@ -111,7 +111,7 @@
 
                                         <h:outputLabel value="Bill Type :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billType}" ></h:outputLabel>
-
+                                        
                                         <h:outputLabel value="Bill Class :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billClass}" ></h:outputLabel>
 
@@ -130,7 +130,8 @@
                                         <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                         value="#{billSearch.billSearch.department}" converter="departmentConverter"/>
-
+                                        <h:outputLabel value="Staff :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"
@@ -158,7 +159,8 @@
                                         <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                         value="#{billSearch.billSearch.toDepartment}" converter="departmentConverter"/>
-
+                                        <h:outputLabel value="To Staff :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.toStaff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
                                         <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"
@@ -175,7 +177,8 @@
                                         <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                         value="#{billSearch.billSearch.fromDepartment}" converter="departmentConverter"/>
-
+                                        <h:outputLabel value="From Staff :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.fromStaff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="Company Name : " />  
                                         <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
                                                         value="#{billSearch.creditCompany}"  
@@ -324,6 +327,10 @@
                                     <p:column>
                                         <f:facet name="header">Fee Name</f:facet>
                                         <h:outputLabel value="#{bip.fee.name}"/>
+                                    </p:column> 
+                                    <p:column>
+                                        <f:facet name="header">Fee Name</f:facet>
+                                        <h:outputLabel value="#{bip.fee.feeType}"/>
                                     </p:column> 
                                     <p:column>
                                         <f:facet name="header">Speciality</f:facet>

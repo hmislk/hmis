@@ -9,13 +9,16 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="data" />
+        <cc:attribute name="agent" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:dataTable id="inward" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
-                <h:outputLabel value="Channel Billed Bills" />
+                <h:outputLabel value="Channel Billed Bills" rendered="#{!cc.attrs.agent}"/>
+                <h:outputLabel value="Channel Agency Billed Bills" rendered="#{cc.attrs.agent}"/>
+                <h:outputLabel value="** Not Consider For Totals **" style="color: red;" rendered="#{cc.attrs.agent}"/>
             </f:facet> 
             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                 <f:facet name="header">  
@@ -31,11 +34,23 @@
                 </f:facet>
                 <h:outputLabel value="#{b.insId}"/>
             </p:column>
+            <p:column headerText="Id" rendered="#{cc.attrs.agent}" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Agent Code"/>
+                </f:facet>
+                <h:outputLabel value="#{b.creditCompany.institutionCode}"/>
+            </p:column>
             <p:column headerText="Patient"  >
                 <f:facet name="header">  
                     <h:outputLabel value="Patient"/>
                 </f:facet>
                 <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+            </p:column>
+            <p:column headerText="Consultant" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Consultant"/>
+                </f:facet>
+                <h:outputLabel value="#{b.staff.person.name}"/>
             </p:column>
             <p:column headerText="Cash" style=" text-align: right"  >
                 <f:facet name="header">  
@@ -50,10 +65,10 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                <h:outputLabel rendered="#{b.paymentMethod=='Credit' or b.paymentMethod=='Agent'}" value="#{b.netTotal}"  >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
-                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                <h:outputLabel rendered="#{b.paymentMethod!='Credit' and b.paymentMethod!='Agent'}" value="0.00"/>
 
             </p:column>
             <p:column headerText="C Card" style=" text-align: right" >
@@ -91,7 +106,8 @@
             </p:column>
             <p:columnGroup type="footer"> 
                 <p:row>                                 
-                    <p:column colspan="3"/>
+                    <p:column colspan="4"/>
+                    <p:column rendered="#{cc.attrs.agent}" />
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">

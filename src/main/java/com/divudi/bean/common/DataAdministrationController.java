@@ -7,15 +7,19 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillEntryFacade;
@@ -24,6 +28,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
@@ -54,6 +59,9 @@ import javax.persistence.TemporalType;
 @ApplicationScoped
 public class DataAdministrationController {
 
+    /**
+     * EJBs
+     */
     @EJB
     PatientInvestigationItemValueFacade patientInvestigationItemValueFacade;
     @EJB
@@ -76,13 +84,16 @@ public class DataAdministrationController {
     BillNumberFacade billNumberFacade;
     @EJB
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     @Inject
     SessionController sessionController;
     @Inject
     BillSearch billSearch;
+    @Inject
+    InstitutionController institutionController;
     @EJB
     ItemFacade itemFacade;
-
     @EJB
     CategoryFacade categoryFacade;
     @EJB
@@ -90,6 +101,18 @@ public class DataAdministrationController {
 
     List<Bill> bills;
     List<Bill> selectedBills;
+    List<Institution> institutions;
+    List<Institution> selectedInstitutions;
+
+    double val1;
+    double val2;
+    double val3;
+    double val4;
+
+    boolean bool1;
+    boolean bool2;
+    boolean bool3;
+    boolean bool4;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -217,6 +240,21 @@ public class DataAdministrationController {
         }
     }
 
+    public void makeAllAmpsWithNullDepartmentTypeToPharmacyType() {
+        String j = "Select a from Amp a where a.retired=false and a.departmentType is null";
+        List<Item> amps = itemFacade.findBySQL(j);
+        for (Item a : amps) {
+            if (a instanceof Amp) {
+                Amp amp = (Amp) a;
+                if (amp.getDepartmentType() == null) {
+                    System.out.println("amp.getName() = " + amp.getName());
+                    amp.setDepartmentType(DepartmentType.Pharmacy);
+                    itemFacade.edit(amp);
+                }
+            }
+        }
+    }
+
     public void addOPDBillFeesToProfessionalCancelBills() {
         List<Bill> bills;
         String s;
@@ -246,11 +284,11 @@ public class DataAdministrationController {
                 System.out.println("bi.isRetired() = " + bi.isRetired());
                 System.out.println("bi.getBill().getBillType() = " + bi.getBill().getBillType());
                 System.out.println("bi.getReferenceBill() = " + bi.getReferenceBill());
-                if (bi.getReferanceBillItem()!=null) {
-                    if (bi.getReferanceBillItem().getBill()!=null) {
-                    }else{
+                if (bi.getReferanceBillItem() != null) {
+                    if (bi.getReferanceBillItem().getBill() != null) {
+                    } else {
                     }
-                }else{
+                } else {
                 }
                 if (bi.getReferenceBill() != null) {
                 }
@@ -414,6 +452,72 @@ public class DataAdministrationController {
         createInwardServiceBillWithPaymentmethord();
     }
 
+    public void fillAgencies() {
+        institutions = institutionController.getAgencies();
+    }
+
+    public void changeCreditLimts() {
+        if (selectedInstitutions.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Update");
+        }
+        if (bool1) {
+            if (val1 == 0.0) {
+                JsfUtil.addErrorMessage("U can't add 0.0 For S.C.L");
+            }
+        }
+        if (bool2) {
+            if (val2 == 0.0) {
+                JsfUtil.addErrorMessage("U can't add 0.0 For A.C.L");
+            }
+        }
+        if (bool3) {
+            if (val3 == 0.0) {
+                JsfUtil.addErrorMessage("U can't add 0.0 For M.C.L");
+            }
+        }
+        if (bool4) {
+            if (val4 == 0.0) {
+                JsfUtil.addErrorMessage("U can't add 0.0 For Balance");
+            }
+        }
+        for (Institution a : selectedInstitutions) {
+            System.out.println("a.getName() = " + a.getName());
+            if (bool1) {
+                if (val1 != 0.0) {
+                    System.out.println("a.getStandardCreditLimit() = " + a.getStandardCreditLimit());
+                    System.out.println("val1 = " + val1);
+                    a.setStandardCreditLimit(val1);
+                    System.out.println("a.getStandardCreditLimit() = " + a.getStandardCreditLimit());
+                }
+            }
+            if (bool2) {
+                if (val2 != 0.0) {
+                    System.out.println("a.getAllowedCredit() = " + a.getAllowedCredit());
+                    System.out.println("val2 = " + val2);
+                    a.setAllowedCredit(val2);
+                    System.out.println("a.getAllowedCredit() = " + a.getAllowedCredit());
+                }
+            }
+            if (bool3) {
+                if (val3 != 0.0) {
+                    System.out.println("a.getMaxCreditLimit() = " + a.getMaxCreditLimit());
+                    System.out.println("val3 = " + val3);
+                    a.setMaxCreditLimit(val3);
+                    System.out.println("a.getMaxCreditLimit() = " + a.getMaxCreditLimit());
+                }
+            }
+            if (bool4) {
+                if (val4 != 0.0) {
+                    System.out.println("a.getBallance() = " + a.getBallance());
+                    System.out.println("val4 = " + val4);
+                    a.setBallance(val4);
+                    System.out.println("a.getBallance() = " + a.getBallance());
+                }
+            }
+            institutionFacade.edit(a);
+        }
+    }
+
     /**
      * Creates a new instance of DataAdministrationController
      */
@@ -522,6 +626,92 @@ public class DataAdministrationController {
 
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
+    }
+
+    public List<Institution> getInstitutions() {
+        if (institutions == null) {
+            institutions = new ArrayList<>();
+        }
+        return institutions;
+    }
+
+    public void setInstitutions(List<Institution> institutions) {
+        this.institutions = institutions;
+    }
+
+    public List<Institution> getSelectedInstitutions() {
+        if (selectedInstitutions == null) {
+            selectedInstitutions = new ArrayList<>();
+        }
+        return selectedInstitutions;
+    }
+
+    public void setSelectedInstitutions(List<Institution> selectedInstitutions) {
+        this.selectedInstitutions = selectedInstitutions;
+    }
+
+    public double getVal1() {
+        return val1;
+    }
+
+    public void setVal1(double val1) {
+        this.val1 = val1;
+    }
+
+    public double getVal2() {
+        return val2;
+    }
+
+    public void setVal2(double val2) {
+        this.val2 = val2;
+    }
+
+    public double getVal3() {
+        return val3;
+    }
+
+    public void setVal3(double val3) {
+        this.val3 = val3;
+    }
+
+    public double getVal4() {
+        return val4;
+    }
+
+    public void setVal4(double val4) {
+        this.val4 = val4;
+    }
+
+    public boolean isBool1() {
+        return bool1;
+    }
+
+    public void setBool1(boolean bool1) {
+        this.bool1 = bool1;
+    }
+
+    public boolean isBool2() {
+        return bool2;
+    }
+
+    public void setBool2(boolean bool2) {
+        this.bool2 = bool2;
+    }
+
+    public boolean isBool3() {
+        return bool3;
+    }
+
+    public void setBool3(boolean bool3) {
+        this.bool3 = bool3;
+    }
+
+    public boolean isBool4() {
+        return bool4;
+    }
+
+    public void setBool4(boolean bool4) {
+        this.bool4 = bool4;
     }
 
 }

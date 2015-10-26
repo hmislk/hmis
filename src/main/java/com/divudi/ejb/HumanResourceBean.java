@@ -180,10 +180,10 @@ public class HumanResourceBean {
 
     public boolean checkStaff(PaysheetComponent paysheetComponentType, Staff staff, Date frmDate, Date toDate) {
 
-        //System.out.println("paysheetComponent = " + paysheetComponentType);
-        //System.out.println("staff = " + staff);
-        //System.out.println("fromDate = " + frmDate);
-        //System.out.println("toDate = " + toDate);
+        System.out.println("paysheetComponent = " + paysheetComponentType);
+        System.out.println("staff = " + staff);
+        System.out.println("fromDate = " + frmDate);
+        System.out.println("toDate = " + toDate);
         if (frmDate == null) {
             return true;
         }
@@ -2965,8 +2965,8 @@ public class HumanResourceBean {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 
-
         Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        System.out.println("timeSecond = " + timeSecond);
         if (timeSecond != null) {
             return (timeSecond.longValue() / 60);
         } else {
@@ -3146,6 +3146,7 @@ public class HumanResourceBean {
 
         if (list != null) {
             for (StaffShift s : list) {
+                System.out.println("s = " + s);
                 lg += s.getShift().isHalfShift() ? 0.5 : 1;
             }
 

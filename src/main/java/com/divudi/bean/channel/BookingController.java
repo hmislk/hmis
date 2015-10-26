@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -23,16 +24,19 @@ import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.ArrivalRecord;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,30 +64,9 @@ import org.primefaces.model.ScheduleModel;
 @SessionScoped
 public class BookingController implements Serializable {
 
-    private Speciality speciality;
-    private Staff staff;
-
-    @Temporal(javax.persistence.TemporalType.DATE)
-    Date channelDay;
-    private ServiceSession selectedServiceSession;
-    private BillSession selectedBillSession;
-    ////////////////////
-    private List<ServiceSession> serviceSessions;
-    private List<BillSession> billSessions;
-    ////////////////////
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    private ChannelBillController channelCancelController;
-    @Inject
-    private ChannelReportController channelReportController;
-    @Inject
-    private ChannelSearchController channelSearchController;
-    @Inject
-    ServiceSessionLeaveController serviceSessionLeaveController;
-    @Inject
-    ChannelBillController channelBillController;
-    ///////////////////
+    /**
+     * EJBs
+     */
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -104,10 +87,42 @@ public class BookingController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     ItemFeeFacade ItemFeeFacade;
-    /////////////////////////
     @EJB
     private ChannelBean channelBean;
+    @EJB
+    FingerPrintRecordFacade fpFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private ChannelBillController channelCancelController;
+    @Inject
+    private ChannelReportController channelReportController;
+    @Inject
+    private ChannelSearchController channelSearchController;
+    @Inject
+    ServiceSessionLeaveController serviceSessionLeaveController;
+    @Inject
+    ChannelBillController channelBillController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelStaffPaymentBillController channelStaffPaymentBillController;
 
+    /**
+     * Properties
+     */
+    private Speciality speciality;
+    private Staff staff;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date channelDay;
+    private ServiceSession selectedServiceSession;
+    private BillSession selectedBillSession;
+    private List<ServiceSession> serviceSessions;
+    private List<BillSession> billSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
     boolean printPreview;
@@ -115,6 +130,10 @@ public class BookingController implements Serializable {
     int serealNo;
     Date date;
     Date sessionStartingDate;
+    String selectTextSpeciality = "";
+    String selectTextConsultant = "";
+    String selectTextSession = "";
+    ArrivalRecord arrivalRecord;
 
     private ScheduleModel eventModel;
 
@@ -325,7 +344,105 @@ public class BookingController implements Serializable {
         setStaff(null);
     }
 
+    public List<Staff> getSelectedConsultants() {
+        System.out.println("selectText.length() = " + selectTextConsultant.length());
+        String sql;
+        Map m = new HashMap();
+
+//        //System.out.println("consultants = " + consultants);
+        if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
+            m.put("sp", getSpeciality());
+            if (getSpeciality() != null) {
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and pi.staff.speciality=:sp "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("typ", PersonInstitutionType.Channelling);
+
+                } else {
+                    sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
+                }
+                System.out.println("m = " + m);
+                System.out.println("sql = " + sql);
+                consultants = getStaffFacade().findBySQL(sql, m);
+            }
+        } else {
+            if (selectTextConsultant.length() > 4) {
+                doctorSpecialityController.setSelectText("");
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("typ", PersonInstitutionType.Channelling);
+                    System.out.println("m = " + m);
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql, m);
+
+                } else {
+                    sql = "select p from Staff p where p.retired=false "
+                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " order by p.person.name";
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql);
+                }
+
+            } else {
+                m.put("sp", getSpeciality());
+                if (getSpeciality() != null) {
+                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                                + " and pi.type=:typ "
+                                + " and pi.institution=:ins "
+                                + " and pi.staff.speciality=:sp "
+                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " order by pi.staff.person.name ";
+
+                        m.put("ins", getSessionController().getInstitution());
+                        m.put("typ", PersonInstitutionType.Channelling);
+
+                    } else {
+                        sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
+                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " order by p.person.name";
+                    }
+                    System.out.println("m = " + m);
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql, m);
+                }
+            }
+        }
+        if (consultants == null) {
+            consultants = new ArrayList<>();
+        }
+
+        if (consultants.size() > 0) {
+            System.out.println("consultants.size() = " + consultants.size());
+            setStaff(consultants.get(0));
+            setSpeciality(getStaff().getSpeciality());
+            generateSessions();
+        } else {
+
+            setStaff(null);
+        }
+
+        return consultants;
+    }
+
     public List<Staff> getConsultants() {
+        if (consultants == null) {
+            consultants = new ArrayList<>();
+        }
         return consultants;
     }
 
@@ -345,23 +462,29 @@ public class BookingController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-        fillConsultants();
-        setStaff(null);
     }
 
+//    public void setSpeciality(Speciality speciality) {
+//        this.speciality = speciality;
+//        fillConsultants();
+//        setStaff(null);
+//    }
     public Staff getStaff() {
         return staff;
     }
 
     public void setStaff(Staff staff) {
-//        System.err.println("CLIKED");
         this.staff = staff;
-        //generateSessions();
-        setSelectedServiceSession(null);
-        serviceSessionLeaveController.setSelectedServiceSession(null);
-        serviceSessionLeaveController.setCurrentStaff(staff);
     }
 
+//    public void setStaff(Staff staff) {
+////        System.err.println("CLIKED");
+//        this.staff = staff;
+//        //generateSessions();
+//        setSelectedServiceSession(null);
+//        serviceSessionLeaveController.setSelectedServiceSession(null);
+//        serviceSessionLeaveController.setCurrentStaff(staff);
+//    }
     public Date getDate() {
         return date;
     }
@@ -681,6 +804,64 @@ public class BookingController implements Serializable {
 //        System.out.println("billSessions" + billSessions);
 //
 //    }
+    public void findArrivals() {
+
+        String sql = "Select bs From ArrivalRecord bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.sessionDate= :ssDate ";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
+        hh.put("ss", getSelectedServiceSession());
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+    }
+
+    public void markAsArrived() {
+        if (selectedServiceSession == null) {
+            System.out.println("selectedServiceSession is null");
+            return;
+        }
+        if (selectedServiceSession.getSessionDate() == null) {
+            System.out.println("selectedServiceSession.date is null");
+            return;
+        }
+        if (arrivalRecord == null) {
+            arrivalRecord = new ArrivalRecord();
+            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
+            arrivalRecord.setServiceSession(selectedServiceSession);
+            arrivalRecord.setCreatedAt(new Date());
+            arrivalRecord.setCreater(sessionController.getLoggedUser());
+            fpFacade.create(arrivalRecord);
+        }
+        arrivalRecord.setRecordTimeStamp(new Date());
+        arrivalRecord.setApproved(false);
+        fpFacade.edit(arrivalRecord);
+    }
+
+    public void markAsLeft() {
+        if (selectedServiceSession == null) {
+            System.out.println("selectedServiceSession is null");
+            return;
+        }
+        if (selectedServiceSession.getSessionDate() == null) {
+            System.out.println("selectedServiceSession.date is null");
+            return;
+        }
+        if (arrivalRecord == null) {
+            arrivalRecord = new ArrivalRecord();
+            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
+            arrivalRecord.setServiceSession(selectedServiceSession);
+            arrivalRecord.setCreatedAt(new Date());
+            arrivalRecord.setCreater(sessionController.getLoggedUser());
+            fpFacade.create(arrivalRecord);
+        }
+        
+        arrivalRecord.setApproved(true);
+        arrivalRecord.setApprovedAt(new Date());
+        arrivalRecord.setApprover(sessionController.getLoggedUser());
+        fpFacade.edit(arrivalRecord);
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
 //        selectedServiceSession = ((ServiceSession) event.getObject());
@@ -729,6 +910,24 @@ public class BookingController implements Serializable {
 
     }
 
+    public String paySelectedDoctor() {
+        if (getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+            return "";
+        }
+        if (getStaff() == null) {
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        channelStaffPaymentBillController.setSpeciality(getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.setConsiderDate(true);
+        channelStaffPaymentBillController.calculateDueFees();
+
+        return "/channel/channel_payment_staff_bill";
+
+    }
+
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
         ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
@@ -737,6 +936,33 @@ public class BookingController implements Serializable {
             tmp.setEditer(getSessionController().getLoggedUser());
         }
         getServiceSessionFacade().edit(tmp);
+    }
+
+    public void listnerStaffListForRowSelect() {
+        getSelectedConsultants();
+        setStaff(null);
+    }
+
+    public void listnerStaffRowSelect() {
+        getSelectedConsultants();
+        setSelectedServiceSession(null);
+        serviceSessionLeaveController.setSelectedServiceSession(null);
+        serviceSessionLeaveController.setCurrentStaff(staff);
+    }
+
+    public void listnerSessionRowSelect() {
+        for (ServiceSession ss : serviceSessions) {
+            if (ss.getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
+                selectedServiceSession = ss;
+            }
+        }
+    }
+
+    public void listnerStaffListForSpecilitySelectedText() {
+        if (doctorSpecialityController.getSelectedItems().size() > 0) {
+            setSpeciality(doctorSpecialityController.getSelectedItems().get(0));
+            listnerStaffListForRowSelect();
+        }
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
@@ -937,4 +1163,58 @@ public class BookingController implements Serializable {
         this.sessionStartingDate = sessionStartingDate;
     }
 
+    public String getSelectTextSpeciality() {
+        return selectTextSpeciality;
+    }
+
+    public void setSelectTextSpeciality(String selectTextSpeciality) {
+        this.selectTextSpeciality = selectTextSpeciality;
+    }
+
+    public String getSelectTextConsultant() {
+        return selectTextConsultant;
+    }
+
+    public void setSelectTextConsultant(String selectTextConsultant) {
+        this.selectTextConsultant = selectTextConsultant;
+    }
+
+    public String getSelectTextSession() {
+        return selectTextSession;
+    }
+
+    public void setSelectTextSession(String selectTextSession) {
+        this.selectTextSession = selectTextSession;
+    }
+
+    public ArrivalRecord getArrivalRecord() {
+        return arrivalRecord;
+    }
+
+    public void setArrivalRecord(ArrivalRecord arrivalRecord) {
+        this.arrivalRecord = arrivalRecord;
+    }
+
+    public FingerPrintRecordFacade getFpFacade() {
+        return fpFacade;
+    }
+
+    public ServiceSessionLeaveController getServiceSessionLeaveController() {
+        return serviceSessionLeaveController;
+    }
+
+    public ChannelBillController getChannelBillController() {
+        return channelBillController;
+    }
+
+    public DoctorSpecialityController getDoctorSpecialityController() {
+        return doctorSpecialityController;
+    }
+
+    public ChannelStaffPaymentBillController getChannelStaffPaymentBillController() {
+        return channelStaffPaymentBillController;
+    }
+
+    
+    
 }

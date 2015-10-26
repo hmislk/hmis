@@ -457,12 +457,12 @@
                                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingBookedList')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Leave"  action="/channel/channel_doctor_leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Leave By Service Session"  action="/channel/channel_doctor_leave_by_service_session" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
-
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
                                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard" rendered="false"/>
-                                    <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
+
                                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_search" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
@@ -470,10 +470,8 @@
                                         <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
 
                                     </p:submenu>  
-                                    <p:submenu label="Channel Books">
-                                        <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"/>
-                                        <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"/>
-                                    </p:submenu>
+                                    <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
+                                    <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Management"  action="/channel/management_index"/>
                                 </p:submenu>
 
@@ -574,10 +572,10 @@
 
                                         </p:submenu>                                       
                                     </p:submenu>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" 
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"
                                                  value="Staff Salary Advace"   
                                                  actionListener="#{staffSalaryController.clear}"/>
-                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"   
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
                                                  actionListener="#{staffSalaryController.clear}"/>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
@@ -590,6 +588,7 @@
                                     <p:menuitem ajax="false" action="/clinical/clinical_patient_for_receptionist" value="Patients"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_queue" value="Queue"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_reports_index" value="Reports"/>
+                                    <p:menuitem ajax="false" action="/clinical/favourite_index" value="Favourites"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_administration" value="Administration"/>
                                 </p:submenu>
 
@@ -746,12 +745,24 @@
                             <h:panelGrid columns="3" >
                                 <h:outputText value="Department" ></h:outputText>
                                 <p:spacer height="1" width="30" ></p:spacer>
-                                <p:selectOneMenu value="#{sessionController.department}" required="true" >
+                                <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" >
                                     <f:selectItems value="#{sessionController.departments}"
                                                    var="dept"
                                                    itemLabel="#{dept.name}"
                                                    itemValue="#{dept}" >
                                     </f:selectItems>
+                                    <p:column  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Department" ></h:outputText>
+                                        </f:facet>
+                                        <h:outputText value="#{d.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Institution" ></h:outputText>
+                                        </f:facet>
+                                        <h:outputText value="#{d.institution.name}" ></h:outputText>
+                                    </p:column>
                                 </p:selectOneMenu>
 
                                 <p:spacer height="1" width="30" ></p:spacer>

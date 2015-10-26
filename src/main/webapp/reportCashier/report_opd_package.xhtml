@@ -64,7 +64,7 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
-                                         action="#{billPackageMedicalController.createOtherPackageBillItems}"
+                                         action="#{billPackageMedicalController.createOtherPackageBillItemsOld}"
                                          onclick="onSubmitButton();" />
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
@@ -73,15 +73,15 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
-                            <pe:exporter type="xlsx" target="tbl1 tbl2 tbl3" fileName="Package_Bill_Detail_Report" />
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="Package_Bill_Detail_Report" />
                         </p:commandButton>
 
                     </p:panel>
                 </h:panelGrid>   
 
                 <p:panel id="gpBillPreview">
-                    <p:dataTable id="tbl1" value="#{billPackageMedicalController.billedBillItemLst}" rowIndexVar="i" var="bi">
+                    <p:dataTable id="tbl1" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
                         <f:facet name="header">
                             <p:outputLabel value="Package Bill Detail Report - By Bill Item" /><br/>
                             <p:outputLabel value="From : "/>
@@ -111,6 +111,8 @@
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.insId}" />
+                            <p:outputLabel value=" - " rendered="#{bi.bill.cancelledBill ne null}" />
+                            <p:outputLabel value="#{bi.bill.cancelledBill.insId}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" />
                         </p:column> 
                         <p:column headerText="Institution">
                             <f:facet name="header">
@@ -136,6 +138,10 @@
                             </f:facet>
                             <p:outputLabel value="#{bi.createdAt}" >
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                                <p:outputLabel value=" - " rendered="#{bi.bill.cancelledBill ne null}" />
+                                <p:outputLabel value="#{bi.bill.cancelledBill.createdAt}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                                </p:outputLabel>
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Payment Methord">     
@@ -150,6 +156,7 @@
                                 <p:outputLabel value="Package" />
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.billPackege.name}" />
+                            <p:outputLabel value="#{bill.billedBill.billPackege.name}" />
                         </p:column>
                         <p:column headerText="Net Value" styleClass="averageNumericColumn">
                             <f:facet name="header">
@@ -176,7 +183,7 @@
                             </p:row>
                         </p:columnGroup>
                     </p:dataTable>
-                    
+
                     <p:dataTable id="tbl2" value="#{billPackageMedicalController.canceledBillItemLst}" rowIndexVar="i" var="bi">
                         <f:facet name="header">                            
                             <p:outputLabel value="Cacelled BillItem"/>
@@ -257,7 +264,7 @@
                             </p:row>
                         </p:columnGroup>
                     </p:dataTable>
-                    
+
                     <p:dataTable id="tbl3" value="#{billPackageMedicalController.refundedBillItemLst}" rowIndexVar="i" var="bi">
                         <f:facet name="header">                            
                             <p:outputLabel value="Refunded BillItem"/>

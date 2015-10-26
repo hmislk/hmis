@@ -8,11 +8,15 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,10 +40,66 @@ public class AgencyController implements Serializable {
     SessionController sessionController;
     @EJB
     private InstitutionFacade ejbFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+
+    public void randomlySetAgencyBalances() {
+        List<Institution> suggestions;
+        String sql;
+        Map m = new HashMap();
+        double b1 = 50000;
+        double b2 = 30000;
+        m.put("it", InstitutionType.Agency);
+        sql = "select p from Institution p where"
+                + "  p.retired=false and "
+                + " p.institutionType=:it "
+                + " order by p.name";
+        suggestions = getFacade().findBySQL(sql, m);
+
+        Collections.shuffle(suggestions);
+        List<Institution> b1s = suggestions.subList(0, suggestions.size() / 2);
+        List<Institution> b2s = suggestions.subList(suggestions.size() / 2, suggestions.size());
+
+        for (Institution i : b1s) {
+            double pb = i.getBallance();
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(getSessionController().getLoggedUser());
+            agentHistory.setBill(null);
+            agentHistory.setBeforeBallance(pb);
+            agentHistory.setTransactionValue(b1);
+            agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
+            agentHistoryFacade.create(agentHistory);
+            System.out.println("Agency = " + i.getName());
+            System.out.println("Previous Balance = " + i.getBallance());
+            i.setBallance(b1);
+            System.out.println("New Balance = " + i.getBallance());
+            ejbFacade.edit(i);
+        }
+
+        for (Institution i : b2s) {
+            double pb = i.getBallance();
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(getSessionController().getLoggedUser());
+            agentHistory.setBill(null);
+            agentHistory.setBeforeBallance(pb);
+            agentHistory.setTransactionValue(b2);
+            agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
+            agentHistoryFacade.create(agentHistory);
+            System.out.println("Agency = " + i.getName());
+            System.out.println("Previous Balance = " + i.getBallance());
+            i.setBallance(b2);
+            System.out.println("New Balance = " + i.getBallance());
+            ejbFacade.edit(i);
+        }
+
+        
+    }
 
     public List<Institution> completeAgency(String query) {
         List<Institution> suggestions;

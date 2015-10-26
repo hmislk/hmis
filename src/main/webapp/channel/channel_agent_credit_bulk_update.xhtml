@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                template="/resources/template/template.xhtml">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Manage Person Institutions(Channeling)" >
+                <p:panel>
+                    <h:panelGrid columns="2">
+                        <p:commandButton value="Fill Agents" action="#{dataAdministrationController.fillAgencies}" 
+                                         ajax="false" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="3">
+                        <h:outputText value="Standerd Credit Limit" >                                        
+                        </h:outputText>
+                        <p:selectBooleanCheckbox value="#{dataAdministrationController.bool1}" >
+                            <f:ajax execute="@this" event="change" render="txt"  />
+                        </p:selectBooleanCheckbox>
+                        <p:inputText autocomplete="off" disabled="#{!dataAdministrationController.bool1}" id="txt" value="#{dataAdministrationController.val1}"  >
+                        </p:inputText>
+
+                        <h:outputText value="Allowed Credit Limit" >                                        
+                        </h:outputText>
+                        <p:selectBooleanCheckbox value="#{dataAdministrationController.bool2}" >
+                            <f:ajax execute="@this" event="change" render="txt1"  />
+                        </p:selectBooleanCheckbox>
+                        <p:inputText autocomplete="off" disabled="#{!dataAdministrationController.bool2}" id="txt1" value="#{dataAdministrationController.val2}"  >
+                        </p:inputText>
+
+                        <h:outputText value="Allowed Maximum Credit Limit" >                                        
+                        </h:outputText>
+                        <p:selectBooleanCheckbox value="#{dataAdministrationController.bool3}" >
+                            <f:ajax execute="@this" event="change" render="txt2"  />
+                        </p:selectBooleanCheckbox>
+                        <p:inputText autocomplete="off" disabled="#{!dataAdministrationController.bool3}" id="txt2" value="#{dataAdministrationController.val3}"  >
+                        </p:inputText>
+
+                        <h:outputText value="Balance" >                                        
+                        </h:outputText>
+                        <p:selectBooleanCheckbox value="#{dataAdministrationController.bool4}" >
+                            <f:ajax execute="@this" event="change" render="txt3"  />
+                        </p:selectBooleanCheckbox>
+                        <p:inputText autocomplete="off" disabled="#{!dataAdministrationController.bool4}" id="txt3" value="#{dataAdministrationController.val4}" >
+                        </p:inputText>
+                        <p:commandButton value="Update" action="#{dataAdministrationController.changeCreditLimts}" 
+                                         ajax="false" />
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel>
+                    <p:dataTable  value="#{dataAdministrationController.institutions}" 
+                                  var="a" 
+                                  rowKey="#{a.id}" 
+                                  selection="#{dataAdministrationController.selectedInstitutions}"
+                                  rowIndexVar="i">
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="No" />
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Agency Code"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.institutionCode}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Agency Name"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.name}"/>
+                        </p:column>
+                        <p:column styleClass="numberCol">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Standard Credit Limit"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.standardCreditLimit}">
+                                <f:convertNumber parent="#,###,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Allowed Credit"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.allowedCredit}">
+                                <f:convertNumber parent="#,###,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Max Credit Limit"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.maxCreditLimit}">
+                                <f:convertNumber parent="#,###,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Ballance"  />
+                            </f:facet>
+                            <h:outputLabel value="#{a.ballance}">
+                                <f:convertNumber parent="#,###,##0.##" />
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

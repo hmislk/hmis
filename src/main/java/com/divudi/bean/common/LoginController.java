@@ -8,6 +8,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
 import com.divudi.facade.LoginsFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,12 +42,10 @@ public class LoginController implements Serializable {
     public LoginController() {
     }
 
-    private void recreate() {
-        logins = null;
-    }
-
     public Date getFromDate() {
-
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -59,7 +58,6 @@ public class LoginController implements Serializable {
     }
 
     public void setFromDate(Date fromDate) {
-        recreate();
         this.fromDate = fromDate;
     }
 
@@ -68,7 +66,9 @@ public class LoginController implements Serializable {
     }
 
     public void setToDate(Date toDate) {
-        recreate();
+        if(toDate==null){
+            toDate=CommonFunctions.getEndOfDay();
+        }
         this.toDate = toDate;
     }
 
@@ -80,15 +80,17 @@ public class LoginController implements Serializable {
         this.longin = longin;
     }
 
+    public void fillLogins() {
+        String sql;
+        Map m = new HashMap();
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        sql = "select l from Logins l where l.logedAt between :fromDate and :toDate or l.logoutAt between :fromDate and :toDate  order by l.logedAt, l.logoutAt";
+        logins = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    
     public List<Logins> getLogins() {
-        if (logins == null) {
-            String sql;
-            Map m = new HashMap();
-            m.put("fromDate", fromDate);
-            m.put("toDate", toDate);
-            sql = "select l from Logins l where l.logedAt between :fromDate and :toDate or l.logoutAt between :fromDate and :toDate  order by l.logedAt, l.logoutAt";
-            logins = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        }
         return logins;
     }
 
@@ -101,7 +103,6 @@ public class LoginController implements Serializable {
     }
 
     public void setDepartment(Department department) {
-        recreate();
         this.department = department;
     }
 
@@ -110,7 +111,6 @@ public class LoginController implements Serializable {
     }
 
     public void setInstitution(Institution institution) {
-        recreate();
         this.institution = institution;
     }
 }

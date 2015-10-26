@@ -45,13 +45,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ChannelSearchController implements Serializable {
 
-    Bill bill;
-    private Date date;
-    List<BillItem> billItems;
-    List<BillComponent> billComponents;
-    private List<BillSession> billSessions;
-    private List<BillSession> filteredbillSessions;  
-    ///////////
+    /**
+     * EJBs
+     */
     @EJB
     private BillSessionFacade billSessionFacade;
     @EJB
@@ -66,7 +62,10 @@ public class ChannelSearchController implements Serializable {
     CashTransactionBean cashTransactionBean;
     @EJB
     BillNumberGenerator billNumberBean;
-    ///////////
+
+    /**
+     * Controllers
+     */
     @Inject
     private BookingController bookingController;
     @Inject
@@ -77,9 +76,24 @@ public class ChannelSearchController implements Serializable {
     WebUserController webUserController;
     @Inject
     BillController billController;
-    
+
+    /**
+     * Properties
+     */
+    Bill bill;
+    private Date date;
+    Date fromDate;
+    Date toDate;
+
+    List<BillItem> billItems;
+    List<BillComponent> billComponents;
+    private List<BillSession> billSessions;
+    private List<BillSession> searchedBillSessions;
+    private List<BillSession> filteredbillSessions;
+
     PaymentMethod paymentMethod;
     String comment;
+    String txtSearch;
     boolean printPreview = false;
 
     /**
@@ -101,6 +115,30 @@ public class ChannelSearchController implements Serializable {
         filteredbillSessions = null;
     }
 
+    public void searchForBillSessions() {
+        
+            String sql = "Select bs From BillSession bs "
+                    + " where bs.retired=false "
+                    + " and bs.sessionDate between :fd and :td "
+                    + " and bs.bill.insId=:ts"
+                    + " order by bs.id desc";
+            HashMap hh = new HashMap();
+            
+//            BillSession bs = new BillSession();
+//            bs.getBill().getInsId();
+//            bs.getBill().getDeptId();
+            
+            
+            hh.put("fd", getFromDate());
+            hh.put("td", getToDate());
+            hh.put("ts", txtSearch);
+            
+            searchedBillSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+            System.out.println("searchedBillSessions = " + searchedBillSessions);
+
+        
+    }
+
     public List<BillSession> getBillSessions() {
 
         if (billSessions == null) {
@@ -119,10 +157,9 @@ public class ChannelSearchController implements Serializable {
             }
         }
 
-
         return billSessions;
     }
-    
+
     public void cancelPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
@@ -148,7 +185,7 @@ public class ChannelSearchController implements Serializable {
             return;
         }
     }
-    
+
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -182,7 +219,6 @@ public class ChannelSearchController implements Serializable {
 //                return true;
 //            }
 //        }
-
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please select a payment scheme.");
             return true;
@@ -195,7 +231,7 @@ public class ChannelSearchController implements Serializable {
 
         return false;
     }
-    
+
     private CancelledBill createCancelBill() {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
@@ -224,7 +260,7 @@ public class ChannelSearchController implements Serializable {
 
         return cb;
     }
-    
+
     private List<BillItem> cancelBillItems(Bill can) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : getBillItems()) {
@@ -250,7 +286,7 @@ public class ChannelSearchController implements Serializable {
 
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
-            
+
             b.setPaidForBillFee(nB.getPaidForBillFee());
 
             getBillItemFacede().create(b);
@@ -269,7 +305,7 @@ public class ChannelSearchController implements Serializable {
 
         return list;
     }
-    
+
     private void cancelPaymentItems(Bill pb) {
         List<BillItem> pbis;
         pbis = getBillItemFacede().findBySQL("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
@@ -280,7 +316,7 @@ public class ChannelSearchController implements Serializable {
             }
         }
     }
-    
+
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
         List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
@@ -293,7 +329,7 @@ public class ChannelSearchController implements Serializable {
         }
         return false;
     }
-    
+
     private void cancelBillComponents(Bill can, BillItem bt) {
         for (BillComponent nB : getBillComponents()) {
             BillComponent bC = new BillComponent();
@@ -317,7 +353,7 @@ public class ChannelSearchController implements Serializable {
         }
 
     }
-    
+
     private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
@@ -339,7 +375,7 @@ public class ChannelSearchController implements Serializable {
             getBillFeeFacade().create(bf);
         }
     }
-    
+
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
@@ -350,7 +386,7 @@ public class ChannelSearchController implements Serializable {
         }
         return billComponents;
     }
-    
+
     private void createBillItems() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -374,7 +410,6 @@ public class ChannelSearchController implements Serializable {
         this.filteredbillSessions = filteredbillSessions;
     }
 
-   
     public BillSessionFacade getBillSessionFacade() {
         return billSessionFacade;
     }
@@ -507,4 +542,37 @@ public class ChannelSearchController implements Serializable {
     public void setBillCommponentFacade(BillComponentFacade billCommponentFacade) {
         this.billCommponentFacade = billCommponentFacade;
     }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public String getTxtSearch() {
+        return txtSearch;
+    }
+
+    public void setTxtSearch(String txtSearch) {
+        this.txtSearch = txtSearch;
+    }
+
+    public List<BillSession> getSearchedBillSessions() {
+        return searchedBillSessions;
+    }
+
+    public void setSearchedBillSessions(List<BillSession> searchedBillSessions) {
+        this.searchedBillSessions = searchedBillSessions;
+    }
+
 }

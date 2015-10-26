@@ -5,10 +5,13 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
+import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -130,6 +133,9 @@ public class ChannelBillController implements Serializable {
     private BookingController bookingController;
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -220,12 +226,16 @@ public class ChannelBillController implements Serializable {
         temp.setBalance(0.0);
         temp.setPaymentMethod(settlePaymentMethod);
         temp.setReferenceBill(getBillSession().getBill());
-        temp.setInsId(getBillSession().getBill().getInsId());
-        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
         temp.setBillType(BillType.ChannelPaid);
+        String insId = generateBillNumberInsId(temp);
+        temp.setInsId(insId);
+        String deptId=generateBillNumberDeptId(temp);
+        temp.setDeptId(deptId);
+//        temp.setInsId(getBillSession().getBill().getInsId());
+        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
+
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
-
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setCreatedAt(new Date());
@@ -317,7 +327,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Already Refunded");
             return;
         }
-       if (getCommentR() == null || getCommentR().trim().equals("")) {
+        if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
@@ -511,6 +521,11 @@ public class ChannelBillController implements Serializable {
         listBillFees = billFeeFacade.findBySQL(sql, hm);
         billSession = bs;
 
+        for (BillFee bf : billSession.getBill().getBillFees()) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                bf.setTmpChangedValue(bf.getFeeValue());
+            }
+        }
     }
 
     public BookingController getBookingController() {
@@ -839,6 +854,13 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         cb.setInsId(insId);
+        
+        String deptId = generateBillNumberDeptId(cb);
+
+        if (deptId.equals("")) {
+            return null;
+        }
+        cb.setDeptId(deptId);
         getBillFacade().create(cb);
 
         if (bill.getPaymentMethod() == PaymentMethod.Agent) {
@@ -914,6 +936,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
+        double hf = 0.0;
+        double sf = 0.0;
         for (BillFee bf : billFees) {
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
@@ -928,14 +952,19 @@ public class ChannelBillController implements Serializable {
 
                 if (bf.getFee().getFeeType() == FeeType.Staff) {
                     bt.setStaffFee(0 - bf.getTmpChangedValue());
+                    sf += bt.getStaffFee();
                 }
 
                 if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
                     bt.setHospitalFee(0 - bf.getTmpChangedValue());
+                    hf += bt.getHospitalFee();
                 }
 
             }
         }
+        b.setHospitalFee(hf);
+        b.setStaffFee(sf);
+        billFacade.edit(b);
 
         billItemFacade.edit(bt);
     }
@@ -958,23 +987,24 @@ public class ChannelBillController implements Serializable {
             }
         }
     }
-    
+
     public void checkRefundTotal() {
         refundableTotal = 0;
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getTmpChangedValue() != null) {
-                if (bf.getTmpChangedValue()>bf.getFeeValue()) {
+                if (bf.getTmpChangedValue() > bf.getFeeValue()) {
                     bf.setTmpChangedValue(bf.getFeeValue());
                 }
             }
         }
-        
+
         calRefundTotal();
     }
 
     private Bill createRefundBill(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
+        rb.setBilledBill(bill);
         Date bd = Calendar.getInstance().getTime();
         rb.setBillDate(bd);
         rb.setBillTime(bd);
@@ -995,6 +1025,13 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         rb.setInsId(insId);
+        
+        String deptId = generateBillNumberDeptId(rb);
+        
+        if (deptId.equals("")) {
+            return null;
+        }
+        rb.setDeptId(deptId);
 
         getBillFacade().create(rb);
 
@@ -1134,6 +1171,10 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
+        doctorSpecialityController.setSelectText("");
+        bookingController.setSelectTextSpeciality("");
+        bookingController.setSelectTextConsultant("");
+        bookingController.setSelectTextSession("");
     }
 
     @Inject
@@ -1202,8 +1243,9 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number is alredy Given.";
+                errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                 UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+                setAgentRefNo("");
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
@@ -1594,6 +1636,13 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         bill.setInsId(insId);
+        
+        String deptId=generateBillNumberDeptId(bill);
+        
+        if (deptId.equals("")) {
+            return null;
+        }
+        bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
             bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
@@ -1683,57 +1732,87 @@ public class ChannelBillController implements Serializable {
     }
 
     private String generateBillNumberInsId(Bill bill) {
-        String suffix = "";
+        String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        BillType billType = null;
+        String insId = null;
         if (bill instanceof BilledBill) {
-            suffix = "CHANN";
+
             billClassType = BillClassType.BilledBill;
+            if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
+                billType = bill.getBillType();
+                if (billType == BillType.ChannelOnCall) {
+                    suffix += "BKONCALL";
+                } else {
+                    suffix += "BKSTAFF";
+                }
+                insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), billType, billClassType, suffix);
+            } else {
+                suffix += "CHANN";
+                insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
+            }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CHANNCAN";
+            suffix += "CHANNCAN";
             billClassType = BillClassType.CancelledBill;
+            insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CHANNREF";
+            suffix += "CHANNREF";
             billClassType = BillClassType.RefundBill;
+            insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
 
         System.out.println("billClassType = " + billClassType);
+        System.out.println("insId = " + insId);
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
-        List<BillType> bts = Arrays.asList(billTypes);
-
-        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         return insId;
     }
 
     private String generateBillNumberDeptId(Bill bill) {
-        String suffix = "";
+        String suffix = getSessionController().getDepartment().getDepartmentCode();
         BillClassType billClassType = null;
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        BillType billType = null;
+        String deptId = null;
         if (bill instanceof BilledBill) {
-            suffix = "CHANN";
+
             billClassType = BillClassType.BilledBill;
+            if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
+                billType = bill.getBillType();
+                if (billType == BillType.ChannelOnCall) {
+                    suffix += "BKONCALL";
+                } else {
+                    suffix += "BKSTAFF";
+                }
+                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), billType, billClassType, suffix);
+            } else {
+                suffix += "CHANN";
+                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
+            }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CHANNCAN";
+            suffix += "CHANNCAN";
             billClassType = BillClassType.CancelledBill;
+            deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CHANNREF";
+            suffix += "CHANNREF";
             billClassType = BillClassType.RefundBill;
+            deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
 
         System.out.println("billClassType = " + billClassType);
+        System.out.println("deptId = " + deptId);
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
-        List<BillType> bts = Arrays.asList(billTypes);
-
-        String insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
-        return insId;
+        return deptId;
     }
 
     public List<BillFee> getBillFee() {
@@ -1892,7 +1971,7 @@ public class ChannelBillController implements Serializable {
                 return;
             }
         }
-
+        setAgentRefNo("");
     }
 
     public void fetchRecentChannelBooks(Institution ins) {
@@ -1902,7 +1981,8 @@ public class ChannelBillController implements Serializable {
 
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
-                + " and a.institution=:ins "
+                + " and a.institution=:ins"
+                + " and a.deactivate=false "
                 + " order by a.id desc ";
 
         m.put("ins", ins);

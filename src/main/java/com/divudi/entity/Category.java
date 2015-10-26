@@ -69,6 +69,10 @@ public class Category implements Serializable {
     @Transient
     private String entityClass;
     boolean filled;
+    @ManyToOne
+    Institution institution;
+    @ManyToOne
+    Department department;
 
     // @ManyToOne
     //   private Department department;
@@ -294,12 +298,23 @@ public class Category implements Serializable {
     public void setEntityClass(String entityClass) {
         this.entityClass = entityClass;
     }
-//
-//    public Department getDepartment() {
-//        return department;
-//    }
-//
-//    public void setDepartment(Department department) {
-//        this.department = department;
-//    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    
+    
 }

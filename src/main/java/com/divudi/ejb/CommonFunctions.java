@@ -292,7 +292,24 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static Date getEndOfMonth() {
+        return getStartOfMonth(new Date());
+    }
     
+    public static Date getEndOfMonth(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MONTH, 1);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+        calendar.set(year, month, 1, 0, 0, 0);
+        System.out.println("calendar.getTime() = " + calendar.getTime());
+        return calendar.getTime();
+    }
 
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();

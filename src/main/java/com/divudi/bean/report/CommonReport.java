@@ -186,6 +186,9 @@ public class CommonReport implements Serializable {
     BillsTotals channelCancellAgnPayment;
     BillsTotals channelBilledAgnPayment;
     BillsTotals channelRefundAgnPayment;
+    BillsTotals channelCancellsAgent;
+    BillsTotals channelBilledAgent;
+    BillsTotals channelRefundsAgent;
     List<Bill> bills;
 
     public List<Bill> getBills() {
@@ -2483,6 +2486,9 @@ public class CommonReport implements Serializable {
         getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
 //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        
+        getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+        getChannelBilledAgent().setCredit(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
         getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
         getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -2492,6 +2498,9 @@ public class CommonReport implements Serializable {
         getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        
+        getChannelCancellsAgent().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+        getChannelCancellsAgent().setCredit(calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
         getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
         getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -2501,6 +2510,9 @@ public class CommonReport implements Serializable {
         getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        
+        getChannelRefundsAgent().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+        getChannelRefundsAgent().setCredit(calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
         //channel professional payment        
         getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
@@ -4263,6 +4275,39 @@ public class CommonReport implements Serializable {
 
     public void setBilledPhWholeSale(BillsTotals billedPhWholeSale) {
         this.billedPhWholeSale = billedPhWholeSale;
+    }
+
+    public BillsTotals getChannelCancellsAgent() {
+        if (channelCancellsAgent==null) {
+            channelCancellsAgent=new BillsTotals();
+        }
+        return channelCancellsAgent;
+    }
+
+    public void setChannelCancellsAgent(BillsTotals channelCancellsAgent) {
+        this.channelCancellsAgent = channelCancellsAgent;
+    }
+
+    public BillsTotals getChannelBilledAgent() {
+        if (channelBilledAgent==null) {
+            channelBilledAgent=new BillsTotals();
+        }
+        return channelBilledAgent;
+    }
+
+    public void setChannelBilledAgent(BillsTotals channelBilledAgent) {
+        this.channelBilledAgent = channelBilledAgent;
+    }
+
+    public BillsTotals getChannelRefundsAgent() {
+        if (channelRefundsAgent==null) {
+            channelRefundsAgent=new BillsTotals();
+        }
+        return channelRefundsAgent;
+    }
+
+    public void setChannelRefundsAgent(BillsTotals channelRefundsAgent) {
+        this.channelRefundsAgent = channelRefundsAgent;
     }
 
 }
