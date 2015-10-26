@@ -63,7 +63,7 @@
 
                     <p:dataTable id="tbl" value="#{channelReportController.doctorPaymentSummeryRows}" var="da">
                             <f:facet name="header">
-                                <p:outputLabel value="#{row.consultant.person.name}" style="text-align: left;"/>
+                                <p:outputLabel value="#{da.consultant.person.name}" style="text-align: left;"/>
                             </f:facet>
                             <p:columnGroup  type="header">
                                 <p:row>
@@ -76,35 +76,31 @@
                             <p:subTable value="#{da.doctorPaymentSummeryRowSubs}" var="sub">
                                 
                                 <p:column>
-                                    <p:outputLabel value="#{da.serviceSession}"/>
-                                </p:column>
-
-                                <p:column style="text-align: center;">
-                                    <p:outputLabel/>
-                                </p:column>
-
-                                <p:column style="text-align: left;">
-                                    <p:outputLabel/>
+                                    <p:outputLabel value="#{sub.serviceSession.sessionDate}">
+                                        <f:convertDateTime pattern="dd-MMMM-yyyy"/>
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column style="text-align: right;">
-                                    
+                                    <p:outputLabel value="#{sub.staffFeeTotal}"/>
                                 </p:column>
 
                                 <p:column style="text-align: right;">
-                                    
-                                </p:column>
-
-                                <p:column style="text-align: center;">
-                                    
-                                </p:column>
+                                    <p:outputLabel value="#{sub.cashCount+sub.agentCount+sub.onCallCount+sub.staffCount}"/>
+                                </p:column>                               
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="2"/>
+                                        <p:column colspan="1"/>
                                         <p:column footerText="Total" style=" text-align: right">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total"/>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{sub.totalCount}" style=" text-align: right">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{sub.totalCount}"/>
                                             </f:facet>
                                         </p:column>
                                         
