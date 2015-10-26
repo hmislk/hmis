@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Channel Bill List">
+                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="Consultant"/>
+                        <p:autoComplete minQueryLength="2"  style="width: 400px;"
+                                        forceSelection="true" 
+                                        value="#{channelReportController.staff}" id="scStaff"
+                                        completeMethod="#{staffController.completeConsultant}" var="mys" 
+                                        itemLabel="#{mys.person.nameWithTitle}" 
+                                        itemValue="#{mys}"
+                                        converter="stfcon">
+                            
+<!--                            <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
+                                    listener="#{channelReportController.fillSessions}"></p:ajax>-->
+                        </p:autoComplete>
+
+<!--                        <p:outputLabel value="Session" />
+                        <p:selectOneMenu  id="lstSelect" converter="sscon"  
+                                          value="#{channelReportController.serviceSession}" style="min-width: 100%;" >
+                            <f:selectItem itemLabel="Select"  ></f:selectItem>
+                            <f:selectItems  value="#{channelReportController.serviceSessions}" var="ses" 
+                                            itemValue="#{ses}" 
+                                            itemLabel="#{ses.name}" ></f:selectItems>
+                        </p:selectOneMenu>-->
+                    </h:panelGrid>
+                    <h:panelGrid columns="4"> 
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createDoctorPaymentBySession}">
+                        </p:commandButton>                        
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="tbl"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+
+                    <p:dataTable id="tbl" value="#{channelReportController.doctorPaymentSummeryRows}" var="da">
+                            <f:facet name="header">
+                                <p:outputLabel value="#{row.consultant.person.name}" style="text-align: left;"/>
+                            </f:facet>
+                            <p:columnGroup  type="header">
+                                <p:row>
+                                    <p:column headerText="Date"/>
+                                    <p:column headerText="Doc. Fee" style="text-align: right;"/>
+                                    <p:column headerText="Patient Count" style="text-align: center;"/>
+                                </p:row>
+                            </p:columnGroup>                            
+
+                            <p:subTable value="#{da.doctorPaymentSummeryRowSubs}" var="sub">
+                                
+                                <p:column>
+                                    <p:outputLabel value="#{da.serviceSession}"/>
+                                </p:column>
+
+                                <p:column style="text-align: center;">
+                                    <p:outputLabel/>
+                                </p:column>
+
+                                <p:column style="text-align: left;">
+                                    <p:outputLabel/>
+                                </p:column>
+
+                                <p:column style="text-align: right;">
+                                    
+                                </p:column>
+
+                                <p:column style="text-align: right;">
+                                    
+                                </p:column>
+
+                                <p:column style="text-align: center;">
+                                    
+                                </p:column>
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="2"/>
+                                        <p:column footerText="Total" style=" text-align: right">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total"/>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                    </p:row>
+
+                                </p:columnGroup>
+
+                            </p:subTable>
+
+
+
+                        </p:dataTable>
+
+                    
+
+
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
