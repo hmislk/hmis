@@ -1977,20 +1977,24 @@ public class ChannelReportController implements Serializable {
                 if (b.getReferenceBill() == null) {
                     if (b.getPaymentMethod() == PaymentMethod.Cash) {
                         cashCount++;
+                        ptCount++;
                     }
 
                     if (b.getPaymentMethod() == PaymentMethod.Agent) {
                         agentCount++;
+                        ptCount++;
                     }
                 }
 
                 if (b.getReferenceBill() != null) {
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
                         onCallCount++;
+                        ptCount++;
                     }
 
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
-                        agentCount++;
+                        staffCount++;
+                        ptCount++;
                     }
                 }
 
@@ -2004,9 +2008,16 @@ public class ChannelReportController implements Serializable {
                 dpsrs.setOnCallCount(onCallCount);
                 dpsrs.setStaffCount(staffCount);
 
-                ptCount+=(cashCount + agentCount + onCallCount + staffCount);
+                //ptCount+=(cashCount + agentCount + onCallCount + staffCount);
+                System.out.println("ptCount1 = " + ptCount);
 
             }
+            System.out.println("dpsrs.getCashCount() = " + dpsrs.getCashCount());
+            System.out.println("dpsrs.getOnCallCount() = " + dpsrs.getOnCallCount());
+            System.out.println("dpsrs.getAgentCount() = " + dpsrs.getAgentCount());
+            System.out.println("dpsrs.getStaffCount() = " + dpsrs.getStaffCount());
+            
+            System.out.println("ptCount2 = " + ptCount);
             dpsrs.setTotalCount(ptCount);
             
 
@@ -2051,22 +2062,30 @@ public class ChannelReportController implements Serializable {
 
             for (Bill b : doctorPaymentSummeryRowSub.getBills()) {
                 if (b.getReferenceBill() == null) {
+                    System.out.println("b.getPaymentMethod() = " + b.getPaymentMethod());
+                    System.out.println("b.getInsId() = " + b.getInsId());
                     if (b.getPaymentMethod() == PaymentMethod.Cash) {
                         cashCount++;
+                        System.out.println("cashCount1 = " + cashCount);
                     }
 
                     if (b.getPaymentMethod() == PaymentMethod.Agent) {
                         agentCount++;
+                        System.out.println("agentCount1 = " + agentCount);
                     }
                 }
 
                 if (b.getReferenceBill() != null) {
+                    System.out.println("b.getReferenceBill().getPaymentMethod() = " + b.getReferenceBill().getPaymentMethod());
+                    System.out.println("b.getReferenceBill().getInsId() = " + b.getInsId());
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
                         onCallCount++;
+                        System.out.println("onCallCount1 = " + onCallCount);
                     }
 
                     if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
-                        agentCount++;
+                        staffCount++;
+                        System.out.println("staffCount = " + staffCount);
                     }
                 }
 
