@@ -35,6 +35,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +80,7 @@ public class PatientEncounterController implements Serializable {
     private List<PatientEncounter> items = null;
     List<PatientEncounter> currentPatientEncounters;
     List<Bill> currentBills;
+    List<Bill> currentChannelBills;
     List<PatientInvestigation> currentPatientInvestigations;
     String selectText = "";
 
@@ -148,10 +151,10 @@ public class PatientEncounterController implements Serializable {
                 completeEx(qry);
                 break;
             case Investigations:
-                 completeIx(qry);
+                completeIx(qry);
                 break;
             case Treatments:
-                 completeRx(qry);
+                completeRx(qry);
                 break;
             default:
                 completeStrings = completeItem(qry);
@@ -222,7 +225,7 @@ public class PatientEncounterController implements Serializable {
                 + "order by c.name";
         Map tmpMap = new HashMap();
         tmpMap.put("q", qry.toUpperCase() + "%");
-        completeStrings =  getFacade().findString(sql, tmpMap, TemporalType.TIMESTAMP);
+        completeStrings = getFacade().findString(sql, tmpMap, TemporalType.TIMESTAMP);
     }
 
     public void completeRx(String qry) {
@@ -340,6 +343,7 @@ public class PatientEncounterController implements Serializable {
     public void fillCurrentPatientLists(Patient patient) {
         fillPatientEncounters(patient);
         fillPatientBills(patient);
+        fillPatientChannelBills(patient);
         fillPatientInvestigations(patient);
     }
 
@@ -355,6 +359,22 @@ public class PatientEncounterController implements Serializable {
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
         currentBills = getBillFacade().findBySQL(sql, m);
+    }
+
+    public void fillPatientChannelBills(Patient patient) {
+        currentChannelBills=new ArrayList<>();
+        Map m = new HashMap();
+        m.put("p", patient);
+        BillType[] bts = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelStaff, BillType.ChannelOnCall};
+        List<BillType> billTypes = Arrays.asList(bts);
+        m.put("bts", billTypes);
+        String sql;
+        sql = "Select b from Bill b where b.patient=:p and b.billType in :bts order by b.id desc";
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
+
+        currentChannelBills = getBillFacade().findBySQL(sql, m);
+
     }
 
     public void fillPatientInvestigations(Patient patient) {
@@ -703,6 +723,14 @@ public class PatientEncounterController implements Serializable {
 
     public void setCompleteStrings(List<String> completeStrings) {
         this.completeStrings = completeStrings;
+    }
+
+    public List<Bill> getCurrentChannelBills() {
+        return currentChannelBills;
+    }
+
+    public void setCurrentChannelBills(List<Bill> currentChannelBills) {
+        this.currentChannelBills = currentChannelBills;
     }
 
 }
