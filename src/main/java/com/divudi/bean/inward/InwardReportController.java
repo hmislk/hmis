@@ -882,7 +882,8 @@ public class InwardReportController implements Serializable {
         String sql = " Select b FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt "
-                + " and type(b.bill)=:bclass"
+                + " and type(b.bill)=:bclass "
+                + " and b.paidForBillFee.bill.patientEncounter is null "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (admissionType != null) {
@@ -917,7 +918,8 @@ public class InwardReportController implements Serializable {
         String sql = " Select sum(b.netValue) FROM BillItem b  "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt "
-                + " and type(b.bill)=:bclass"
+                + " and type(b.bill)=:bclass "
+                + " and b.paidForBillFee.bill.patientEncounter is null"
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (admissionType != null) {
