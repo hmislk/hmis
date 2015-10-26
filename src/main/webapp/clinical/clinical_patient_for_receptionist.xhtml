@@ -47,11 +47,11 @@
                                     </f:facet>
 
                                     <h:panelGrid columns="1" >
-                                        <h:outputLabel value="Search by Name/Address" />
+                                        <h:outputLabel value="Search by Name/Code/Phone/NIC" />
                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                         value="#{patientController.current}" 
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                        var="apt" itemLabel="#{apt.person.name}" 
+                                                        var="apt" itemLabel="#{apt.person.nameWithTitle}" 
                                                         itemValue="#{apt}" size="30"  style="width: 400px;">
                                             <p:column headerText="Name">
                                                 <h:outputLabel value="#{apt.person.nameWithTitle}" />
@@ -180,7 +180,7 @@
                                                 </p:inputText>
 
                                                 <h:outputLabel value="Comments"/>
-                                                <p:inputTextarea id="txtNewPtComments" value="#{patientController.current.comments}" style="width: 200px;">
+                                                <p:inputTextarea id="txtNewPtComments" value="#{patientController.current.comments}" style="width: 200px; height: 125px;">
                                                 </p:inputTextarea>
 
 
@@ -239,7 +239,10 @@
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge"/>
                                                 </p:calendar>
+                                                <h:outputLabel value="NIC"/>
+                                                <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
                                                 <h:outputLabel value=""/>
+                                                
                                                 <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>
 
                                             </h:panelGrid>

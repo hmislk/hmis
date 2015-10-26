@@ -832,6 +832,9 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
+        
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -868,6 +871,9 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
+        
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -918,8 +924,8 @@ public class InwardReportController implements Serializable {
         String sql = " Select sum(b.netValue) FROM BillItem b  "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt "
-                + " and type(b.bill)=:bclass "
-                + " and b.paidForBillFee.bill.patientEncounter is null"
+                + " and type(b.bill)=:bclass"
+                + " and b.paidForBillFee.bill.patientEncounter is null "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (admissionType != null) {

@@ -109,7 +109,7 @@
                                 listener="#{bookingController.fillBillSessions}" />
 
                         <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                           <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                            <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
                                 <f:convertDateTime pattern="E"/>
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
@@ -402,19 +402,45 @@
                         <p:tab  id="tabSearchPt" title="Search Pateint">
                             <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{channelBillController.searchPatient}" 
-                                            completeMethod="#{patientController.completePatient}" 
+                                            completeMethod="#{patientController.completePatientByNameOrCode}" 
                                             var="apt" itemLabel="#{apt.person.name}" 
                                             itemValue="#{apt}" size="30"  styleClass="mediuminput">
-                                <p:ajax event="itemSelect" process="@this" update="panSearch"/>
-                            </p:autoComplete>   
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                </p:column>
 
+                                <p:column headerText="Age">
+                                    <h:outputLabel value="#{apt.age}" />
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{apt.code}" />
+                                </p:column>
+                                <p:column headerText="Sex">
+                                    <h:outputLabel value="#{apt.person.sex}" />
+                                </p:column>
+                                <p:column headerText="Address">
+                                    <h:outputLabel value="#{apt.person.address}" />
+                                </p:column>
+                                <p:column headerText="Date of Birth">
+                                    <h:outputLabel value="#{apt.person.dob}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:ajax event="itemSelect" process="@this" update="panSearch"/>
+                            </p:autoComplete>
                             <h:panelGrid id="panSearch" columns="2" >
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Name" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.nameWithTitle}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.nameWithTitle}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Code" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.code}" />
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Phone" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.phone}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.phone}" />
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Sex" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.sex}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.sex}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Address" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.address}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Age" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.age}" />
                             </h:panelGrid>   
                         </p:tab>
                     </p:tabView>

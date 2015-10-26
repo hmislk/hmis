@@ -28,7 +28,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
@@ -61,9 +60,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.Session;
 import javax.persistence.TemporalType;
-import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -3087,13 +3084,23 @@ public class ChannelReportController implements Serializable {
                     + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
                     + " order by bs.serialNo";
             HashMap hh = new HashMap();
-            hh.put("ssDate", serviceSession.getSessionAt());
+            hh.put("ssDate", serviceSession.getSessionDate());
             List<BillType> bts = new ArrayList<>();
             bts.add(BillType.ChannelAgent);
             bts.add(BillType.ChannelCash);
             bts.add(BillType.ChannelOnCall);
+            bts.add(BillType.ChannelStaff);
             hh.put("tbs", bts);
             doctorViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            System.out.println("hh = " + hh);
+            System.out.println("sql = " + sql);
+            System.out.println("doctorViewSessions.size() = " + doctorViewSessions.size());
+            netTotal=0.0;
+            grantNetTotal=0.0;
+            for (BillSession bs : doctorViewSessions) {
+                netTotal+=bs.getBill().getStaffFee();
+                grantNetTotal+=bs.getBill().getNetTotal();
+            }
         }
     }
 
