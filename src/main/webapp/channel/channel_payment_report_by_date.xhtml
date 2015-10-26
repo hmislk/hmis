@@ -34,21 +34,21 @@
                                         itemValue="#{mys}"
                                         converter="stfcon">
                             
-                            <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
-                                    listener="#{channelReportController.fillSessions}"></p:ajax>
+<!--                            <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
+                                    listener="#{channelReportController.fillSessions}"></p:ajax>-->
                         </p:autoComplete>
 
-                        <p:outputLabel value="Session" />
+<!--                        <p:outputLabel value="Session" />
                         <p:selectOneMenu  id="lstSelect" converter="sscon"  
                                           value="#{channelReportController.serviceSession}" style="min-width: 100%;" >
                             <f:selectItem itemLabel="Select"  ></f:selectItem>
                             <f:selectItems  value="#{channelReportController.serviceSessions}" var="ses" 
                                             itemValue="#{ses}" 
                                             itemLabel="#{ses.name}" ></f:selectItems>
-                        </p:selectOneMenu>
+                        </p:selectOneMenu>-->
                     </h:panelGrid>
                     <h:panelGrid columns="4"> 
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createChannelDoctorPaymentTableBySession}">
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createDoctorPaymentBySession}">
                         </p:commandButton>                        
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="tbl"  />
@@ -61,86 +61,49 @@
                 </p:panel>
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
 
-                    <p:dataGrid value="#{channelReportController.doctorPaymentSummeryRows}" var="row" id="tbl" columns="1">
-                        <p:dataTable value="#{row.doctorPaymentSummeryRowSubs}" var="da">
+                    <p:dataTable id="tbl" value="#{channelReportController.doctorPaymentSummeryRows}" var="da">
                             <f:facet name="header">
-                                <p:outputLabel value="#{row.consultant.person.name}" style="text-align: left;"/>
+                                <p:outputLabel value="#{da.consultant.person.name}" style="text-align: left;"/>
                             </f:facet>
                             <p:columnGroup  type="header">
                                 <p:row>
-                                    <p:column headerText="Reciept No"/>
-                                    <p:column headerText="App. No" style="text-align: center;"/>
-                                    <p:column headerText="Patient Name" style="text-align: left;"/>
-                                    <p:column headerText="Hospital Fee" style="text-align: right;"/>
+                                    <p:column headerText="Date"/>
                                     <p:column headerText="Doc. Fee" style="text-align: right;"/>
-                                    <p:column headerText="Paymentmethod" style="text-align: center;"/>
+                                    <p:column headerText="Patient Count" style="text-align: center;"/>
                                 </p:row>
                             </p:columnGroup>                            
 
-                            <p:subTable value="#{da.bills}" var="sub">
-                                <f:facet name="header">
-                                    <p:outputLabel value="#{da.serviceSession.name}"/>&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="#{da.date}">
-                                        <f:convertDateTime pattern="dd-MMM-yyyy"/>
-                                    </p:outputLabel>&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="No of Patient:#{da.cashCount+da.onCallCount+da.staffCount+da.agentCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Cash: #{da.cashCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Oncall: #{da.onCallCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Staff: #{da.staffCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Agent: #{da.agentCount}"/>
-                                </f:facet>
+                            <p:subTable value="#{da.doctorPaymentSummeryRowSubs}" var="sub">
+                                
                                 <p:column>
-                                    <p:outputLabel value="#{sub.insId}"/>
-                                </p:column>
-
-                                <p:column style="text-align: center;">
-                                    <p:outputLabel value="#{sub.singleBillSession.serialNo}"/>
-                                </p:column>
-
-                                <p:column style="text-align: left;">
-                                    <p:outputLabel value="#{sub.patient.person.name}"/>
+                                    <p:outputLabel value="#{sub.serviceSession.sessionDate}">
+                                        <f:convertDateTime pattern="dd-MMMM-yyyy"/>
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column style="text-align: right;">
-                                    <p:outputLabel value="#{sub.hospitalFee}"/>
+                                    <p:outputLabel value="#{sub.staffFeeTotal}"/>
                                 </p:column>
 
                                 <p:column style="text-align: right;">
-                                    <p:outputLabel value="#{sub.staffFee}"/>
-                                </p:column>
-
-                                <p:column style="text-align: center;">
-                                    <p:outputLabel value="#{sub.paymentMethod}" rendered="#{sub.referenceBill eq null}"/>
-                                    <p:outputLabel value="#{sub.referenceBill.paymentMethod}" rendered="#{sub.referenceBill ne null}"/>
-                                </p:column>
+                                    <p:outputLabel value="#{sub.cashCount+sub.agentCount+sub.onCallCount+sub.staffCount}"/>
+                                </p:column>                               
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="2"/>
+                                        <p:column colspan="1"/>
                                         <p:column footerText="Total" style=" text-align: right">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total"/>
                                             </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{da.hospitalFeeTotal}" style=" text-align: right">
+                                        
+                                        <p:column footerText="#{sub.totalCount}" style=" text-align: right">
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{da.hospitalFeeTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                <h:outputLabel value="#{sub.totalCount}"/>
                                             </f:facet>
                                         </p:column>
-
-                                        <p:column footerText="#{da.staffFeeTotal}" style=" text-align: right">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{da.staffFeeTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
+                                        
                                     </p:row>
 
                                 </p:columnGroup>
@@ -151,7 +114,7 @@
 
                         </p:dataTable>
 
-                    </p:dataGrid>
+                    
 
 
 
