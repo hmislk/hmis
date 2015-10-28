@@ -6,10 +6,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.clinical.FavouriteItemType;
+import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.entity.Item;
-import com.divudi.entity.clinical.FavouriteItem;
-import com.divudi.facade.FavouriteItemFacade;
+import com.divudi.entity.clinical.ItemUsage;
+import com.divudi.facade.ItemUsageFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ public class FavouriteController implements Serializable {
      * EJBs
      */
     @EJB
-    FavouriteItemFacade favouriteItemFacade;
+    ItemUsageFacade favouriteItemFacade;
     /**
      * Controllers
      */
@@ -42,27 +42,27 @@ public class FavouriteController implements Serializable {
      * Properties
      */
     Item item;
-    FavouriteItem current;
-    FavouriteItem selected;
-    List<FavouriteItem> items;
+    ItemUsage current;
+    ItemUsage selected;
+    List<ItemUsage> items;
 
     /**
      * Methods
      */
     
     public void fillFavouriteMedicines(){
-        fillFavouriteItems(FavouriteItemType.FavoutireMedicine);
+        fillFavouriteItems(ItemUsageType.FavoutireMedicine);
     }
     
     public void fillFavouriteDisgnosis(){
-        fillFavouriteItems(FavouriteItemType.FavouriteDiagnosis);
+        fillFavouriteItems(ItemUsageType.FavouriteDiagnosis);
     }
     
     /**
      * 
      * @param type 
      */
-    public void fillFavouriteItems(FavouriteItemType type) {
+    public void fillFavouriteItems(ItemUsageType type) {
         String j;
         Map m = new HashMap();
         j = "select i "
@@ -84,7 +84,7 @@ public class FavouriteController implements Serializable {
     }
 
     public void prepareAddingFavouriteItem(){
-        current = new FavouriteItem();
+        current = new ItemUsage();
     }
     
     public void addToFavouriteMedicine() {
@@ -96,12 +96,12 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("Favourite Item is not create by getter. Please contact vendor.");
             return;
         }
-        current.setType(FavouriteItemType.FavoutireMedicine);
+        current.setType(ItemUsageType.FavoutireMedicine);
         current.setForItem(item);
         current.setForWebUser(sessionController.getLoggedUser());
         favouriteItemFacade.create(current);
         current=null;
-        fillFavouriteItems(FavouriteItemType.FavoutireMedicine);
+        fillFavouriteItems(ItemUsageType.FavoutireMedicine);
         JsfUtil.addSuccessMessage("Saved");
 
     }
@@ -110,7 +110,7 @@ public class FavouriteController implements Serializable {
         updateSelected(selected);
     }
     
-    public void updateSelected(FavouriteItem updatingItem){
+    public void updateSelected(ItemUsage updatingItem){
         if(updatingItem!=null){
             favouriteItemFacade.edit(updatingItem);
             JsfUtil.addSuccessMessage("Updated");
@@ -135,23 +135,23 @@ public class FavouriteController implements Serializable {
         this.item = item;
     }
 
-    public List<FavouriteItem> getItems() {
+    public List<ItemUsage> getItems() {
         return items;
     }
 
-    public void setItems(List<FavouriteItem> items) {
+    public void setItems(List<ItemUsage> items) {
         this.items = items;
     }
 
-    public FavouriteItem getCurrent() {
+    public ItemUsage getCurrent() {
         if (current == null) {
-            current = new FavouriteItem();
+            current = new ItemUsage();
             current.setItem(item);
         }
         return current;
     }
 
-    public void setCurrent(FavouriteItem current) {
+    public void setCurrent(ItemUsage current) {
         this.current = current;
     }
 

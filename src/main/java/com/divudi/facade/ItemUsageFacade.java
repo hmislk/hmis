@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.clinical.FavouriteItem;
+import com.divudi.entity.clinical.ItemUsage;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  * @author buddhika
  */
 @Stateless
-public class FavouriteItemFacade extends AbstractFacade<FavouriteItem> {
+public class ItemUsageFacade extends AbstractFacade<ItemUsage> {
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
@@ -24,8 +24,8 @@ public class FavouriteItemFacade extends AbstractFacade<FavouriteItem> {
         if(em == null){}return em;
     }
 
-    public FavouriteItemFacade() {
-        super(FavouriteItem.class);
+    public ItemUsageFacade() {
+        super(ItemUsage.class);
     }
 
 

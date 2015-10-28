@@ -15,6 +15,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.SymanticType;
+import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
@@ -23,12 +24,14 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.clinical.ClinicalFindingItem;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.clinical.ItemUsage;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.ClinicalFindingItemFacade;
+import com.divudi.facade.ItemUsageFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
@@ -56,12 +59,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class PatientEncounterController implements Serializable {
 
-    @Inject
-    private CommonFunctionsController commonFunctions;
-    List<String> completeStrings = null;
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    /**
+     * EJBs
+     */
     @EJB
     private PatientEncounterFacade ejbFacade;
     @EJB
@@ -74,12 +74,32 @@ public class PatientEncounterController implements Serializable {
     BillFacade billFacade;
     @EJB
     PatientInvestigationFacade piFacade;
+    @EJB
+    ItemUsageFacade itemUsageFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    private CommonFunctionsController commonFunctions;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
+    @Inject
+    BillController billController;
+
+    /**
+     * Properties
+     */
+    List<String> completeStrings = null;
+    private static final long serialVersionUID = 1L;
     //
     List<PatientEncounter> selectedItems;
     private PatientEncounter current;
     private List<PatientEncounter> items = null;
     List<PatientEncounter> currentPatientEncounters;
-    List<Bill> currentBills;
+    List<ItemUsage> currentPatientAllergies;
+    List<Bill> currentPatientBills;
     List<Bill> currentChannelBills;
     List<PatientInvestigation> currentPatientInvestigations;
     String selectText = "";
@@ -89,10 +109,6 @@ public class PatientEncounterController implements Serializable {
     Investigation investigation;
 
     ClinicalFindingValue removingCfv;
-    @Inject
-    PharmacySaleController pharmacySaleController;
-    @Inject
-    BillController billController;
 
     PatientEncounter encounterToDisplay;
     PatientEncounter startedEncounter;
@@ -328,26 +344,42 @@ public class PatientEncounterController implements Serializable {
         return currentPatientEncounters;
     }
 
-    public void fillCurrentPatientEncounters() {
+    public List<ItemUsage> getCurrentPatientAllergies() {
+        return currentPatientAllergies;
+    }
+
+
+    public List<PatientEncounter> fillCurrentPatientEncounters(PatientEncounter pe) {
         Map m = new HashMap();
-        m.put("p", current.getPatient());
-        m.put("pe", current);
+        m.put("p", pe.getPatient());
+        m.put("pe", pe);
         String sql;
         sql = "Select e from PatientEncounter e where e.patient=:p and e!=:pe order by e.id desc";
-        currentPatientEncounters = getFacade().findBySQL(sql, m);
+        return getFacade().findBySQL(sql, m);
+    }
 
-        fillPatientBills(current.getPatient());
-        fillPatientInvestigations(current.getPatient());
+    public List<ItemUsage> fillCurrentPatientAllergies() {
+        Map m = new HashMap();
+        m.put("p", current.getPatient());
+        m.put("t", ItemUsageType.Allergies);
+        String sql;
+        sql = "Select e "
+                + " from ItemUsage e "
+                + " where e.patient=:p "
+                + " and e.type=:t "
+                + " order by e.id desc";
+        return itemUsageFacade.findBySQL(sql, m);
     }
 
     public void fillCurrentPatientLists(Patient patient) {
-        fillPatientEncounters(patient);
-        fillPatientBills(patient);
-        fillPatientChannelBills(patient);
-        fillPatientInvestigations(patient);
+        currentPatientEncounters = fillPatientEncounters(patient);
+        currentPatientBills = fillPatientBills(patient);
+        currentChannelBills = fillPatientChannelBills(patient);
+        currentPatientInvestigations= fillPatientInvestigations(patient);
+        currentPatientAllergies = fillCurrentPatientAllergies();
     }
 
-    public void fillPatientBills(Patient patient) {
+    public List<Bill> fillPatientBills(Patient patient) {
         Map m = new HashMap();
         m.put("p", patient);
         m.put("bt1", BillType.OpdBill);
@@ -356,13 +388,10 @@ public class PatientEncounterController implements Serializable {
         Bill b = new Bill();
         b.getBillType();
         sql = "Select e from Bill e where e.patient=:p and (e.billType=:bt1 or e.billType=:bt2 ) order by e.id desc";
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-        currentBills = getBillFacade().findBySQL(sql, m);
+        return getBillFacade().findBySQL(sql, m);
     }
 
-    public void fillPatientChannelBills(Patient patient) {
-        currentChannelBills=new ArrayList<>();
+    public List<Bill> fillPatientChannelBills(Patient patient) {
         Map m = new HashMap();
         m.put("p", patient);
         BillType[] bts = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelStaff, BillType.ChannelOnCall};
@@ -370,30 +399,24 @@ public class PatientEncounterController implements Serializable {
         m.put("bts", billTypes);
         String sql;
         sql = "Select b from Bill b where b.patient=:p and b.billType in :bts order by b.id desc";
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-
-        currentChannelBills = getBillFacade().findBySQL(sql, m);
-
+        return getBillFacade().findBySQL(sql, m);
     }
 
-    public void fillPatientInvestigations(Patient patient) {
+    public List<PatientInvestigation> fillPatientInvestigations(Patient patient) {
         Map m = new HashMap();
         m.put("p", patient);
         String sql;
         sql = "Select e from PatientInvestigation e where e.patient=:p order by e.id desc";
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-        currentPatientInvestigations = getPiFacade().findBySQL(sql, m);
+        return getPiFacade().findBySQL(sql, m);
     }
 
-    public void fillPatientEncounters(Patient patient) {
+    public List<PatientEncounter> fillPatientEncounters(Patient patient) {
         //   //System.out.println("fill current patient encounters");
         Map m = new HashMap();
         m.put("p", patient);
         String sql;
         sql = "Select e from PatientEncounter e where e.patient=:p order by e.id desc";
-        currentPatientEncounters = getFacade().findBySQL(sql, m);
+        return getFacade().findBySQL(sql, m);
     }
 
     public void removeCfv() {
@@ -709,8 +732,8 @@ public class PatientEncounterController implements Serializable {
         return piFacade;
     }
 
-    public List<Bill> getCurrentBills() {
-        return currentBills;
+    public List<Bill> getCurrentPatientBills() {
+        return currentPatientBills;
     }
 
     public List<PatientInvestigation> getCurrentPatientInvestigations() {

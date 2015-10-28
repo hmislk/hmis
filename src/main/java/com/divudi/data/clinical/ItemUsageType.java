@@ -9,7 +9,11 @@ package com.divudi.data.clinical;
  *
  * @author buddhika
  */
-public enum FavouriteItemType {
+public enum ItemUsageType {
     FavoutireMedicine,
     FavouriteDiagnosis,
+    Allergies,
+    EncounterItems,
+    PatientItems,
+    PatientAllergies,
 }
