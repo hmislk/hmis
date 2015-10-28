@@ -13,8 +13,8 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" >
-            <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
+        <h:panelGrid columns="1" >
+            <!--<h:outputLabel value="Company Name : " style="min-width: 100px;"  />-->  
             <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
                             value="#{cc.attrs.patientEncounter.creditCompany}"  
                             completeMethod="#{creditCompanyController.completeCredit}" 
@@ -22,22 +22,27 @@
                             itemValue="#{ix}" size="30" >  
                 <f:ajax event="itemSelect" execute="@this" render=":#{p:component('panelCompanyDesc')}" ></f:ajax>
             </p:autoComplete>
-            <h:outputLabel value="Credit Limit : " style="min-width: 100px;" />
-            <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.creditLimit}" />
+            <!--<h:outputLabel value="Credit Limit : " style="min-width: 100px;" />-->
+            <p:inputText id="creditLimit" autocomplete="off" value="#{cc.attrs.patientEncounter.creditLimit}" />
             <h:outputLabel value="Description "  rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" />                            
             <h:outputText id="panelCompanyDesc"  
                           rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" 
                           value="#{cc.attrs.patientEncounter.creditCompany.descreption}" />
-            <h:outputLabel value="Ploicy Number : " style="min-width: 100px;" />
-            <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.policyNo}" />
-            <h:outputLabel value="Referance Number : " style="min-width: 100px;" />
-            <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.referanceNo}" />
+            <!--<h:outputLabel value="Ploicy Number : " style="min-width: 100px;" />-->
+            <p:inputText id="pno" autocomplete="off" value="#{cc.attrs.patientEncounter.policyNo}" />
+            <!--<h:outputLabel value="Referance Number : " style="min-width: 100px;" />-->
+            <p:inputText id="rno" autocomplete="off" value="#{cc.attrs.patientEncounter.referanceNo}" />
 <!--            <p:outputLabel value="Credit Paid By Credit company" rendered="#{webUserController.hasPrivilege('Developers')}"/>
             <p:inputText value="#{bhtEditController.current.paidByCreditCompany}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>
             <p:outputLabel value="Credit Paid Amount" rendered="#{webUserController.hasPrivilege('Developers')}"/>
             <p:inputText value="#{bhtEditController.current.creditPaidAmount}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>
             <p:outputLabel value="Credit Used Amount" rendered="#{webUserController.hasPrivilege('Developers')}"/>
             <p:inputText value="#{bhtEditController.current.creditUsedAmount}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>-->
+        
+            <p:watermark value="Company Name" for="acCreditCompany" />
+            <p:watermark value="Credit Limit" for="creditLimit" />
+            <p:watermark value="Policy Number" for="pno" />
+            <p:watermark value="Reerance Number" for="rno" />
         </h:panelGrid>
     </cc:implementation>
 </html>

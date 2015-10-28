@@ -1366,26 +1366,31 @@ public class BillController implements Serializable {
     }
 
     public void addToBill() {
-
+        System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
+            System.out.println("noting to add");
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
+            System.out.println("an item ?");
             UtilityController.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
+            System.out.println("fee ?");
             UtilityController.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
+            System.out.println("dept?");
             UtilityController.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
+            System.out.println("cat ?");
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
@@ -1394,6 +1399,8 @@ public class BillController implements Serializable {
 
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+        
+        System.out.println("to get current bill items");
         lastBillItem = getCurrentBillItem();
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
@@ -1405,6 +1412,7 @@ public class BillController implements Serializable {
         getCurrentBillItem().setQty(1.0);
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
 
+        System.out.println("to cal totals");
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
