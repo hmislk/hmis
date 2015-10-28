@@ -562,7 +562,7 @@ public class SheduleController implements Serializable {
                 + " fc.retired=false "
                 + " and fc.validFrom=:ed ";
         m.put("ed", effectiveDate);
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
         System.out.println("changes.size() = " + changes.size());
         for (FeeChange fc : feeChanges) {
             if ((fc.getFee().getFee()==0)&& (fc.getFee().getFfee()==0)) {
@@ -620,11 +620,20 @@ public class SheduleController implements Serializable {
         String sql;
         Map m = new HashMap();
         sql = " select fc from FeeChange fc where "
-                + " fc.retired=false "
-                + " and fc.validFrom>:ed ";
-        m.put("ed", effectiveDate);
-        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+                + " fc.retired=false ";
+//                + " and fc.validFrom>:ed ";
+//        m.put("ed", effectiveDate);
+//        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        feeChangesList = getFeeChangeFacade().findBySQL(sql, m);
         System.out.println("feeChangesList.size() = " + feeChangesList.size());
+    }
+    
+    public void removeAddFee(FeeChange fc){
+        fc.setRetired(true);
+        fc.setRetiredAt(new Date());
+        fc.setRetirer(getSessionController().getLoggedUser());
+        getFeeChangeFacade().edit(fc);
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public SessionController getSessionController() {

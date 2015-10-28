@@ -104,7 +104,9 @@ public class StockHistoryRecorder {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
         for (FeeChange fc : fetchFeeChanges()) {
-            for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType())) {
+            System.err.println("fc.getFee().getName() = " + fc.getFee().getName());
+            System.err.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
+            for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(),fc.getFee().getName())) {
                 System.out.println("1.f.getFee() = " + f.getFee());
                 f.setFee(f.getFee() + fc.getFee().getFee());
                 System.out.println("2.f.getFee() = " + f.getFee());
@@ -183,22 +185,26 @@ public class StockHistoryRecorder {
                 + " and fc.validFrom=:ed "
                 + " and fc.done!=true ";
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m,TemporalType.TIMESTAMP);
+        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m,TemporalType.DATE);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         System.out.println("changes.size() = " + changes.size());
         return changes;
     }
 
-    public List<ItemFee> fetchServiceSessionFees(FeeType ft) {
+    public List<ItemFee> fetchServiceSessionFees(FeeType ft,String s) {
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
                 + " where f.retired=false "
                 + " and type(f.serviceSession)=:type"
                 + " and f.serviceSession.originatingSession is null"
-                + " and f.feeType=:ft "
+                + " and f.feeType=:ft"
+                + " and f.name=:a "
                 + " order by f.id";
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
+         m.put("a", s);
         List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
         System.out.println("itemFees.size() = " + itemFees.size());
         return itemFees;
