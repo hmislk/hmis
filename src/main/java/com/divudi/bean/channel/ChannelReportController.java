@@ -2145,74 +2145,74 @@ public class ChannelReportController implements Serializable {
             doctorPaymentSummeryRow.setDate(nowDate);
             System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRow.getDate());
 
-            doctorPaymentSummeryRowSub.setBills(getChannelPaymentBillListbyClassTypes(bts, bt, nowDate, null, null, staff, null));
-
-            doctorPaymentSummeryRowSub.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRowSub.getBills()));
-            doctorPaymentSummeryRowSub.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRowSub.getBills()));
+//            doctorPaymentSummeryRow.setBills(getChannelPaymentBillListbyClassTypes(bts, bt, nowDate, null, null, staff, null));
+//
+//            doctorPaymentSummeryRow.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRow.getBills()));
+//            doctorPaymentSummeryRow.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRow.getBills()));
 
             double cashCount = 0;
             double onCallCount = 0;
             double agentCount = 0;
             double staffCount = 0;
 
-            for (Bill b : doctorPaymentSummeryRowSub.getBills()) {
-                if (b.getReferenceBill() == null) {
-                    System.out.println("b.getPaymentMethod() = " + b.getPaymentMethod());
-                    System.out.println("b.getInsId() = " + b.getInsId());
-                    if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                        cashCount++;
-                        System.out.println("cashCount1 = " + cashCount);
-                    }
+//            for (Bill b : doctorPaymentSummeryRowSub.getBills()) {
+//                if (b.getReferenceBill() == null) {
+//                    System.out.println("b.getPaymentMethod() = " + b.getPaymentMethod());
+//                    System.out.println("b.getInsId() = " + b.getInsId());
+//                    if (b.getPaymentMethod() == PaymentMethod.Cash) {
+//                        cashCount++;
+//                        System.out.println("cashCount1 = " + cashCount);
+//                    }
+//
+//                    if (b.getPaymentMethod() == PaymentMethod.Agent) {
+//                        agentCount++;
+//                        System.out.println("agentCount1 = " + agentCount);
+//                    }
+//                }
+//
+//                if (b.getReferenceBill() != null) {
+//                    System.out.println("b.getReferenceBill().getPaymentMethod() = " + b.getReferenceBill().getPaymentMethod());
+//                    System.out.println("b.getReferenceBill().getInsId() = " + b.getInsId());
+//                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
+//                        onCallCount++;
+//                        System.out.println("onCallCount1 = " + onCallCount);
+//                    }
+//
+//                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
+//                        staffCount++;
+//                        System.out.println("staffCount = " + staffCount);
+//                    }
+//                }
+//
+//                System.out.println("cashCount = " + cashCount);
+//                System.out.println("agentCount = " + agentCount);
+//                System.out.println("onCallCount = " + onCallCount);
+//                System.out.println("staffCount = " + staffCount);
+//
+//                doctorPaymentSummeryRowSub.setCashCount(cashCount);
+//                doctorPaymentSummeryRowSub.setAgentCount(agentCount);
+//                doctorPaymentSummeryRowSub.setOnCallCount(onCallCount);
+//                doctorPaymentSummeryRowSub.setStaffCount(staffCount);
+//
+//            }
 
-                    if (b.getPaymentMethod() == PaymentMethod.Agent) {
-                        agentCount++;
-                        System.out.println("agentCount1 = " + agentCount);
-                    }
-                }
-
-                if (b.getReferenceBill() != null) {
-                    System.out.println("b.getReferenceBill().getPaymentMethod() = " + b.getReferenceBill().getPaymentMethod());
-                    System.out.println("b.getReferenceBill().getInsId() = " + b.getInsId());
-                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.OnCall) {
-                        onCallCount++;
-                        System.out.println("onCallCount1 = " + onCallCount);
-                    }
-
-                    if (b.getReferenceBill().getPaymentMethod() == PaymentMethod.Staff) {
-                        staffCount++;
-                        System.out.println("staffCount = " + staffCount);
-                    }
-                }
-
-                System.out.println("cashCount = " + cashCount);
-                System.out.println("agentCount = " + agentCount);
-                System.out.println("onCallCount = " + onCallCount);
-                System.out.println("staffCount = " + staffCount);
-
-                doctorPaymentSummeryRowSub.setCashCount(cashCount);
-                doctorPaymentSummeryRowSub.setAgentCount(agentCount);
-                doctorPaymentSummeryRowSub.setOnCallCount(onCallCount);
-                doctorPaymentSummeryRowSub.setStaffCount(staffCount);
-
-            }
-
-            System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
-            System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
-            System.out.println("doctorPaymentSummeryRowSub.getAgentCount() = " + doctorPaymentSummeryRowSub.getAgentCount());
-            System.out.println("doctorPaymentSummeryRowSub.getStaffCount() = " + doctorPaymentSummeryRowSub.getStaffCount());
+//            System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
+//            System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
+//            System.out.println("doctorPaymentSummeryRowSub.getAgentCount() = " + doctorPaymentSummeryRowSub.getAgentCount());
+//            System.out.println("doctorPaymentSummeryRowSub.getStaffCount() = " + doctorPaymentSummeryRowSub.getStaffCount());
 
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
             nc.add(Calendar.DATE, 1);
             nowDate = nc.getTime();
 
-            if (!doctorPaymentSummeryRowSub.getBills().isEmpty()) {
-                doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
-            }
+//            if (!doctorPaymentSummeryRowSub.getBills().isEmpty()) {
+//                doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
+//            }
 
         }
 
-        return doctorPaymentSummeryRowSubs;
+        //return doctorPaymentSummeryRowSubs;
     }
 
     List<DoctorPaymentSummeryRowSub> getDoctorPaymentSummeryRowSubsBySession(List<BillType> bts, BillType bt, Staff staff, Date fd, Date td) {
