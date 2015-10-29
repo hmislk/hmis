@@ -16,11 +16,11 @@
                     <h:panelGrid columns="1" id="pg1" >
                         <h:panelGrid columns="2">
                             <h:outputLabel  value="Effective Date" />
-                            <p:calendar   value="#{sheduleController.effectiveDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                            <p:calendar   value="#{sheduleController.effectiveDate}" pattern="yyyy MM dd" />
                         </h:panelGrid>
                         <h:outputLabel  value="Fees" />
                         <p:dataTable value="#{sheduleController.feeChanges}" var="f">
-                            <p:column>
+                            <p:column rendered="false">
                                 <f:facet name="header">
                                     <p:outputLabel value="ID" />
                                 </f:facet>
@@ -95,6 +95,9 @@
                         <p:column headerText="Statuse">
                             <h:outputLabel value="Done" rendered="#{i.done}"/>
                             <h:outputLabel value="Not Done" rendered="#{!i.done}"/>
+                        </p:column>
+                        <p:column headerText="Remove">
+                            <p:commandButton value="Remove" action="#{sheduleController.removeAddFee(i)}" ajax="false" />
                         </p:column>
                     </p:dataTable>
 

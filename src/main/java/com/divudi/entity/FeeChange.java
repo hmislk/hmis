@@ -27,7 +27,7 @@ public class FeeChange implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.DATE)
     Date validFrom;
     Fee fee;
     boolean done;
