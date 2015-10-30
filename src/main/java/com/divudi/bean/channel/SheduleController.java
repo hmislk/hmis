@@ -585,7 +585,7 @@ public class SheduleController implements Serializable {
                         System.out.println("c.getFee().getFee() = " + c.getFee().getFee());
                         System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
                         System.out.println("c.getFee().getFfee() = " + c.getFee().getFfee());
-                        if ((fc.getFee().getFee() > 0 || fc.getFee().getFfee() > 0)&&(fc.getFee().getFee()!=c.getFee().getFee()||fc.getFee().getFfee()!=fc.getFee().getFfee())) {
+                        if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0)&&(fc.getFee().getFee()!=c.getFee().getFee()||fc.getFee().getFfee()!=fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
                             fc.setCreater(getSessionController().getLoggedUser());
@@ -600,7 +600,7 @@ public class SheduleController implements Serializable {
 
                 }
             } else {
-                if (fc.getFee().getFee() > 0 || fc.getFee().getFfee() > 0) {
+                if (fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) {
                     fc.setValidFrom(effectiveDate);
                     fc.setCreatedAt(new Date());
                     fc.setCreater(getSessionController().getLoggedUser());
