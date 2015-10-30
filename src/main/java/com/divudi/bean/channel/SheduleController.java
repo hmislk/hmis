@@ -553,8 +553,9 @@ public class SheduleController implements Serializable {
         Date nowDate = getCommonFunctions().getEndOfDay(new Date());
         System.out.println("nowDate = " + nowDate);
         System.out.println("effectiveDate = " + effectiveDate);
-        if (nowDate.after(effectiveDate)) {
+        if (nowDate.before(effectiveDate)) {
             JsfUtil.addErrorMessage("Please Select Future Date");
+            return;
         }
         String sql;
         Map m = new HashMap();
@@ -620,11 +621,10 @@ public class SheduleController implements Serializable {
         String sql;
         Map m = new HashMap();
         sql = " select fc from FeeChange fc where "
-                + " fc.retired=false ";
-//                + " and fc.validFrom>:ed ";
-//        m.put("ed", effectiveDate);
-//        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        feeChangesList = getFeeChangeFacade().findBySQL(sql, m);
+                + " fc.retired=false "
+                + " and fc.validFrom>:ed ";
+        m.put("ed", effectiveDate);
+        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("feeChangesList.size() = " + feeChangesList.size());
     }
     
