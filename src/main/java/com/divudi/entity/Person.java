@@ -27,6 +27,9 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
 
 /**
  *
@@ -97,12 +100,76 @@ public class Person implements Serializable {
     @ManyToOne
     private MembershipScheme membershipScheme;
 
+    @Transient
+    int ageMonths;
+    @Transient
+    int ageDays;
+    @Transient
+    int ageYears;
+    @Transient
+    String age;
+    @Transient
+    long ageInDays;
+    
     public boolean isForeigner() {
         return foreigner;
     }
 
     public void setForeigner(boolean foreigner) {
         this.foreigner = foreigner;
+    }
+
+    public void calAgeFromDob() {
+        age = "";
+        ageInDays = 0l;
+        ageMonths = 0;
+        ageDays = 0;
+        ageYears = 0;
+        if (getDob() == null) {
+            return;
+        }
+
+        LocalDate dob = new LocalDate(getDob());
+        LocalDate date = new LocalDate(new Date());
+
+        Period period = new Period(dob, date, PeriodType.yearMonthDay());
+        ageYears = period.getYears();
+        ageMonths = period.getMonths();
+        ageDays = period.getDays();
+        if (ageYears > 12) {
+            age = period.getYears() + " years.";
+        } else if (ageYears > 0) {
+            age = period.getYears() + " years and " + period.getMonths() + " months.";
+        } else {
+            age = period.getMonths() + " months and " + period.getDays() + " days.";
+        }
+        period = new Period(dob, date, PeriodType.days());
+        ageInDays = (long) period.getDays();
+    }
+
+    public String getAge() {
+        calAgeFromDob();
+        return age;
+    }
+
+    public Long getAgeInDays() {
+        calAgeFromDob();
+        return ageInDays;
+    }
+
+    public int getAgeMonths() {
+        calAgeFromDob();
+        return ageMonths;
+    }
+
+    public int getAgeDays() {
+        calAgeFromDob();
+        return ageDays;
+    }
+
+    public int getAgeYears() {
+        calAgeFromDob();
+        return ageYears;
     }
 
     public String getNameWithTitle() {
