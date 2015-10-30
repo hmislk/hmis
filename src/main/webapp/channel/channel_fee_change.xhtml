@@ -97,7 +97,7 @@
                             <h:outputLabel value="Not Done" rendered="#{!i.done}"/>
                         </p:column>
                         <p:column headerText="Remove">
-                            <p:commandButton value="Remove" action="#{sheduleController.removeAddFee(i)}" ajax="false" />
+                            <p:commandButton value="Remove" action="#{sheduleController.removeAddFee(i)}" disabled="#{i.done}" ajax="false" />
                         </p:column>
                     </p:dataTable>
 

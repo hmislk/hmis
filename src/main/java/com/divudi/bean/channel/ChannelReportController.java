@@ -1677,6 +1677,11 @@ public class ChannelReportController implements Serializable {
             sql += " and bf.bill.refunded=true";
             System.err.println("Refund");
         }
+        
+        if (ft==FeeType.OwnInstitution) {
+            sql+= " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
 
         if (paid) {
             sql += " and bf.bill.paidBill is not null "
@@ -1696,7 +1701,7 @@ public class ChannelReportController implements Serializable {
 //        m.put("fn", "Scan Fee");
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-
+        
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
