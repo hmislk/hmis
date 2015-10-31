@@ -26,7 +26,7 @@
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="text-align: center;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                        <p:graphicImage style="width: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
                     </div>
                     <div style="text-align: center; font-size: 15px!important;">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>
@@ -346,7 +346,7 @@
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="text-align: center;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                        <p:graphicImage style="width: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
                     </div>
                     <div style="text-align: center; font-size: 15px!important;">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>
@@ -364,7 +364,7 @@
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
                         <br></br>
-                        <h:outputLabel value="(Customer Copy)"   style="text-align: center;"/> 
+                        <h:outputLabel value="(Hospital Copy)"   style="text-align: center;"/> 
                     </div>
                     <div style="text-align: center;">
                         <h:outputLabel value="--------------------------" style="text-align: center;"></h:outputLabel>
