@@ -22,6 +22,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Person;
 import com.divudi.entity.clinical.ClinicalFindingItem;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.clinical.ItemUsage;
@@ -360,7 +361,7 @@ public class PatientEncounterController implements Serializable {
 
     public List<ItemUsage> fillCurrentPatientAllergies() {
         Map m = new HashMap();
-        m.put("p", current.getPatient());
+        m.put("p", getCurrent().getPatient());
         m.put("t", ItemUsageType.Allergies);
         String sql;
         sql = "Select e "
@@ -598,6 +599,13 @@ public class PatientEncounterController implements Serializable {
     }
 
     public PatientEncounter getCurrent() {
+        if(current==null){
+            current=new PatientEncounter();
+            Patient pt = new Patient();
+            Person p = new Person();
+            pt.setPerson(p);
+            current.setPatient(pt);
+        }
         return current;
     }
 

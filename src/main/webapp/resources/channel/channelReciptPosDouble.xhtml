@@ -25,34 +25,29 @@
 
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
-                    <div style="position: absolute; padding-left: 165px;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                    <div style="text-align: center;">
+                        <p:graphicImage style="width: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
                     </div>
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                    <div style="text-align: center; font-size: 15px!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>
                     </div>
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                    <div style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.address} " style="text-align: center;"></h:outputLabel>
+                        <div style="text-align: center;">
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" style="text-align: center;"></h:outputLabel>
                         </div>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone2}" ></h:outputLabel>
-                        </div>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
-                        </div>
+
                     </div>
                     <p:spacer height="15"/>
-                    <div style="font-weight: bold;">
-                        <h:outputLabel value="Channell Bill"   />    
-                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
-                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <div style="font-weight: bold; text-align: center;">
+                        <h:outputLabel value="Channell Bill"   style="text-align: center;"/>    
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
                         <br></br>
-                        <h:outputLabel value="(Customer Copy)"   /> 
+                        <h:outputLabel value="(Customer Copy)"   style="text-align: center;"/> 
                     </div>
-                    <div>
-                        <h:outputLabel value="--------------------------" ></h:outputLabel>
+                    <div style="text-align: center;">
+                        <h:outputLabel value="--------------------------" style="text-align: center;"></h:outputLabel>
                     </div>
                     <p:spacer height="30"/>
 
@@ -193,10 +188,10 @@
                                 <h:outputLabel value=":" ></h:outputLabel>
                             </td>
                             <td>
-                                <b>
-                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" >
+                                
+                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-weight: bold;">
                                     </h:outputLabel>
-                                </b>
+                                
                             </td>
 
                         </tr>
@@ -310,7 +305,7 @@
                             </td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.code}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
                             </td>
                         </tr>
                         <tr>
@@ -343,50 +338,36 @@
                                 <p:spacer width="10" ></p:spacer>
                             </td>                            
                         </tr>
-                        <tr>
-                            <td>
-                                <p:spacer width="10" ></p:spacer>
-                            </td>                            
-                        </tr>
-                        <tr>
-                            <td>
-                                <p:spacer width="10" ></p:spacer>
-                            </td>                            
-                        </tr>
+                        
                     </table>
 
                 </div>
 
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
-                    <div style="position: absolute; padding-left: 165px;">
-                        <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
+                    <div style="text-align: center;">
+                        <p:graphicImage style="width: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
                     </div>
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                    <div style="text-align: center; font-size: 15px!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>
                     </div>
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                    <div style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.address} " style="text-align: center;"></h:outputLabel>
+                        <div style="text-align: center;">
+                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" style="text-align: center;"></h:outputLabel>
                         </div>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone2}" ></h:outputLabel>
-                        </div>
-                        <div>
-                            <h:outputLabel value="Tel:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
-                        </div>
+
                     </div>
                     <p:spacer height="15"/>
-                    <div style="font-weight: bold;">
-                        <h:outputLabel value="Channell Bill"   />    
-                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
-                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                    <div style="font-weight: bold; text-align: center;">
+                        <h:outputLabel value="Channell Bill"   style="text-align: center;"/>    
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
                         <br></br>
-                        <h:outputLabel value="(Hospital Copy)"   />  
+                        <h:outputLabel value="(Hospital Copy)"   style="text-align: center;"/> 
                     </div>
-                    <div>
-                        <h:outputLabel value="--------------------------" ></h:outputLabel>
+                    <div style="text-align: center;">
+                        <h:outputLabel value="--------------------------" style="text-align: center;"></h:outputLabel>
                     </div>
                     <p:spacer height="30"/>
 
@@ -407,7 +388,7 @@
                             <td>
                                 <b>
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                        <h:outputLabel value="#{cbi.billSession.serialNo}" ></h:outputLabel>
+                                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important;  font-weight: bold; margin: 5px;padding: 5px;border: 1px solid black; color: red;" ></h:outputLabel>
                                     </ui:repeat>
                                 </b>
                             </td>
@@ -527,13 +508,37 @@
                                 <h:outputLabel value=":" ></h:outputLabel>
                             </td>
                             <td>
-                                <b>
-                                    <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" >
+                                
+                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-weight: bold;">
                                     </h:outputLabel>
-                                </b>
+                                
                             </td>
 
                         </tr>
+
+
+
+                        <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
+                                </td>
+                                <td>
+                                    <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{cbif.feeValue}" rendered="#{cbif.feeValue ne 0.0}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+
+
+
 
 
                         <tr>
@@ -620,12 +625,40 @@
                             </td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
-
+                                <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.code}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
                             </td>
                         </tr>
-
-
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>                            
+                        </tr>
+                        
                     </table>
 
                 </div>

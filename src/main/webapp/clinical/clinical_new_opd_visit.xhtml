@@ -9,6 +9,8 @@
 
     <h:body>
 
+        
+        
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
@@ -48,7 +50,17 @@
                         <h:panelGrid columns="2" styleClass="alignTop" >
 
                             <h:panelGroup>
-                                <p:panel header="Comments" styleClass="alignTop" >
+                                <p:panel styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Prescreption" >
+                                           
+                                        </h:outputText>
+                                        <p:spacer width="30" height="1" ></p:spacer>
+                                        <p:commandButton ajax="false" value="Print" >
+                                            <p:printer target="txtComments" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    
                                     <p:inputTextarea id="txtComments" 
                                                      queryDelay="0"
                                                      style="width: 420px;height: 300px;" 

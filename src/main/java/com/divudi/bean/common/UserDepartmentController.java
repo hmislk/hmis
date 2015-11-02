@@ -18,7 +18,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -255,15 +257,18 @@ public  class UserDepartmentController implements Serializable {
     public List<Department> getCurrentInsDepartments() {
         if (currentInstituion == null) {
             ////System.out.println("1");
-            return new ArrayList<Department>();
+            return new ArrayList<>();
         }
         ////System.out.println("2");
-        String sql = "SELECT i FROM Department i where i.retired=false and i.institution.id=" + getCurrentInstituion().getId() + " order by i.name";
-        currentInsDepartments = getDepartmentFacade().findBySQL(sql);
+        Map m = new HashMap();
+        m.put("ins", currentInstituion);
+        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+        currentInsDepartments = getDepartmentFacade().findBySQL(sql,m);
+        System.out.println("sql = " + sql);
         ////System.out.println("3");
         if (currentInsDepartments == null) {
             ////System.out.println("4");
-            currentInsDepartments = new ArrayList<Department>();
+            currentInsDepartments = new ArrayList<>();
         }
         return currentInsDepartments;
     }
