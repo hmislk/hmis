@@ -5,17 +5,17 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.Relationship;
+import com.divudi.entity.FeeChange;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author buddhika
+ * @author Sniper619
  */
 @Stateless
-public class RelationshipFacade extends AbstractFacade<Relationship> {
+public class FeeChangeFacade extends AbstractFacade<FeeChange> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -24,8 +24,8 @@ public class RelationshipFacade extends AbstractFacade<Relationship> {
         return em;
     }
 
-    public RelationshipFacade() {
-        super(Relationship.class);
+    public FeeChangeFacade() {
+        super(FeeChange.class);
     }
     
 }

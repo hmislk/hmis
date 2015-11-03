@@ -43,6 +43,7 @@ import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -330,6 +331,15 @@ public class PracticeBookingController implements Serializable {
         opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
         if (opdVisit == null) {
             newOpdVisit();
+            String tt = "" ;
+            SimpleDateFormat sm = new SimpleDateFormat("dd MMMM yyyy");
+            tt= sm.format(new Date());
+            tt += "\n\n";
+            tt += billSession.getBill().getPatient().getPerson().getNameWithTitle();
+            tt+="\n";
+            tt += billSession.getBill().getPatient().getAge();
+            tt+="\n";
+            opdVisit.setComments(tt);
         }
     }
 

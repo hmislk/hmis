@@ -67,8 +67,30 @@
                 </h:form>
 
                 <h:form >
-                    <bi:staffBill_1  bill="#{channelSearchController.bill}" dup="true" controller="#{channelSearchController}" >
-                    </bi:staffBill_1>
+
+                    <h:panelGroup id="gpBillPreview">
+
+                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}">
+                                <bi:staffBill  controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                <bi:paymentReciptPosDouble controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+<!--                    <bi:staffBill  bill="#{channelSearchController.bill}" dup="true" controller="#{channelSearchController}" >
+                    </bi:staffBill>-->
+                    
                 </h:form>
 
             </ui:define>

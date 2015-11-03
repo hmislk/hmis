@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+
+
+            <h:panelGrid columns="1" class="alignTop">
+                <p:panel header="Fees Change">
+
+                    <h:panelGrid columns="1" id="pg1" >
+                        <h:panelGrid columns="2">
+                            <h:outputLabel  value="Effective Date" />
+                            <p:calendar   value="#{sheduleController.effectiveDate}" pattern="yyyy MM dd" />
+                        </h:panelGrid>
+                        <h:outputLabel  value="Fees" />
+                        <p:dataTable value="#{sheduleController.feeChanges}" var="f">
+                            <p:column rendered="false">
+                                <f:facet name="header">
+                                    <p:outputLabel value="ID" />
+                                </f:facet>
+                                <p:outputLabel value="#{f}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Fee Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{f.fee.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Fee Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{f.fee.feeType}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Local Fee" />
+                                </f:facet>
+                                <p:inputText value="#{f.fee.fee}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Foriegn Fee" />
+                                </f:facet>
+                                <p:inputText value="#{f.fee.ffee}" />
+                            </p:column>
+                        </p:dataTable>
+
+                    </h:panelGrid>
+
+                    <h:panelGrid id="gpSelectButtons" columns="3"  >                     
+                        <p:commandButton ajax="false" id="btnAdd" value="Clear" action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            <f:ajax render="btnAdd  pg1 btnSave" execute="" >
+                            </f:ajax>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" id="btnSave" value="Save"  
+                                         action="#{sheduleController.saveFeeChanges()}"
+                                         styleClass="buttons" onclick="onSubmitButton();">
+
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+
+                <p:panel id="gpDetail" header="Added Changing Fees">  
+                    <p:commandButton value="Fill" action="#{sheduleController.createFeeChangeTable}" ajax="false" />
+                    <p:dataTable value="#{sheduleController.feeChangesList}" var="i" >
+                        <p:column headerText="Name">
+                            <h:outputLabel value="#{i.fee.name}"/> 
+                        </p:column>
+                        <p:column headerText="Fee Type">
+                            #{i.fee.feeType}
+                        </p:column>
+                        <p:column headerText="Institution">
+                            #{i.fee.institution.name}
+                        </p:column>
+                        <p:column headerText="Local Fee">
+                            <h:outputLabel value="#{i.fee.fee}"/>
+                        </p:column>
+                        <p:column headerText="Foriegn Fee">
+                            <h:outputLabel value="#{i.fee.ffee}"/>
+                        </p:column>
+                        <p:column headerText="Effective Date">
+                            <h:outputLabel value="#{i.validFrom}"/>
+                        </p:column>
+                        <p:column headerText="Created Date">
+                            <h:outputLabel value="#{i.createdAt}"/>
+                        </p:column>
+                        <p:column headerText="Statuse">
+                            <h:outputLabel value="Done" rendered="#{i.done}"/>
+                            <h:outputLabel value="Not Done" rendered="#{!i.done}"/>
+                        </p:column>
+                        <p:column headerText="Remove">
+                            <p:commandButton value="Remove" action="#{sheduleController.removeAddFee(i)}" disabled="#{i.done}" ajax="false" />
+                        </p:column>
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:panelGrid>
+            
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

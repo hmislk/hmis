@@ -267,6 +267,7 @@
                                         <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
                                             <f:ajax execute="acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                         </h:commandButton>
+                                        <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
                                         <p:defaultCommand target="btnAddIx" />
                                         <p:panel header="Session"  >
                                             <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
