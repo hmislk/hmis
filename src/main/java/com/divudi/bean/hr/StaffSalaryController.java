@@ -1326,7 +1326,7 @@ public class StaffSalaryController implements Serializable {
             staffShiftFacade.edit(s);
         }
 
-        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
+//        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {

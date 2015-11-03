@@ -340,7 +340,7 @@ public class SheduleController implements Serializable {
         current = null;
         itemFees = null;
         createFees();
-        createChangeFees();
+        //createChangeFees();
     }
 
     public ServiceSessionFacade getFacade() {
