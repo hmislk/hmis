@@ -75,7 +75,7 @@
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
-                                    
+
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
 
@@ -96,13 +96,13 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Channel on">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Appoinment At">
                                         <h:outputLabel value="#{bf.bill.appointmentAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
@@ -149,17 +149,34 @@
                         </p:panel>
                     </h:panelGroup>
 
-                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
+<!--                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
                         <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
 
                         <bi:staffBill  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                    </h:panelGroup>-->
+
+                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
+                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}">
+                                <bi:staffBill  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                <bi:paymentReciptPosDouble controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
                     </h:panelGroup>
-
-
-
                 </h:form>
 
 
