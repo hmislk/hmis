@@ -478,7 +478,9 @@
 
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
+                            
                             <div >
+                                
                                 <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
                                     <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                         <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>

@@ -267,6 +267,10 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
+        if(getCurrent().getPerson().getName().trim().equals("")){
+            UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());

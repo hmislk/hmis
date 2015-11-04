@@ -6,15 +6,19 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Department;
+import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FeeChangeFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -31,6 +35,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -47,17 +52,25 @@ public class SheduleController implements Serializable {
     @EJB
     private FeeFacade feeFacade;
     @EJB
+    FeeChangeFacade feeChangeFacade;
+    @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonFunctions commonFunctions;
     private Speciality speciality;
     ServiceSession current;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
     List<SessionNumberGenerator> lstSessionNumberGenerator;
     List<ItemFee> itemFees;
+    //change Fee
+    Date effectiveDate;
+    List<FeeChange> feeChanges;
+    List<FeeChange> feeChangesList;
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -319,7 +332,7 @@ public class SheduleController implements Serializable {
         sql += " order by s.staff.person.name,s.sessionWeekday,s.startingTime ";
 
         m.put("class", ServiceSession.class);
-        
+
         return itemFeeFacade.findBySQL(sql, m);
     }
 
@@ -327,6 +340,7 @@ public class SheduleController implements Serializable {
         current = null;
         itemFees = null;
         createFees();
+        //createChangeFees();
     }
 
     public ServiceSessionFacade getFacade() {
@@ -521,6 +535,107 @@ public class SheduleController implements Serializable {
         return tot;
     }
 
+    public void createChangeFees() {
+        feeChanges = new ArrayList<>();
+        for (ItemFee f : itemFees) {
+            FeeChange fc = new FeeChange();
+            fc.setFee(f);
+            fc.getFee().setStaff(null);
+            fc.getFee().setSpeciality(null);
+            fc.getFee().setServiceSession(null);
+            fc.setFeeChangeType(FeeChangeType.Channel);
+            fc.setDone(false);
+            feeChanges.add(fc);
+        }
+    }
+
+    public void saveFeeChanges() {
+        Date nowDate = getCommonFunctions().getEndOfDay(new Date());
+        System.out.println("nowDate = " + nowDate);
+        System.out.println("effectiveDate = " + effectiveDate);
+        if (nowDate.before(effectiveDate)) {
+            JsfUtil.addErrorMessage("Please Select Future Date");
+            return;
+        }
+        String sql;
+        Map m = new HashMap();
+        sql = " select fc from FeeChange fc where "
+                + " fc.retired=false "
+                + " and fc.validFrom=:ed ";
+        m.put("ed", effectiveDate);
+        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("changes.size() = " + changes.size());
+        for (FeeChange fc : feeChanges) {
+            if ((fc.getFee().getFee()==0)&& (fc.getFee().getFfee()==0)) {
+                continue;
+            }
+            fc.setValidFrom(effectiveDate);
+            if (changes.size() > 0) {
+                for (FeeChange c : changes) {
+                    if ((fc.getFee().getFeeType() == c.getFee().getFeeType()) && (fc.getFee().getName().equals(c.getFee().getName())) && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
+                        JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
+                    } else {
+                        System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
+                        System.out.println("c.getFee().getName() = " + c.getFee().getName());
+                        System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
+                        System.out.println("c.getFee().getFeeType() = " + c.getFee().getFeeType());
+                        System.out.println("fc.getValidFrom() = " + fc.getValidFrom());
+                        System.out.println("c.getValidFrom() = " + c.getValidFrom());
+                        System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
+                        System.out.println("c.getFee().getFee() = " + c.getFee().getFee());
+                        System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
+                        System.out.println("c.getFee().getFfee() = " + c.getFee().getFfee());
+                        if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0)&&(fc.getFee().getFee()!=c.getFee().getFee()||fc.getFee().getFfee()!=fc.getFee().getFfee())) {
+                            fc.setValidFrom(effectiveDate);
+                            fc.setCreatedAt(new Date());
+                            fc.setCreater(getSessionController().getLoggedUser());
+                            getFeeFacade().create(fc.getFee());
+                            getFeeChangeFacade().create(fc);
+                            JsfUtil.addSuccessMessage("Fee Change Added - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
+                        } else {
+                            JsfUtil.addErrorMessage("Already Added");
+                        }
+
+                    }
+
+                }
+            } else {
+                if (fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) {
+                    fc.setValidFrom(effectiveDate);
+                    fc.setCreatedAt(new Date());
+                    fc.setCreater(getSessionController().getLoggedUser());
+                    getFeeFacade().create(fc.getFee());
+                    getFeeChangeFacade().create(fc);
+                    JsfUtil.addSuccessMessage("Fee Change Added - " + fc.getFee().getName() + " , " + fc.getFee().getFeeType() + " , " + fc.getValidFrom());
+                } else {
+                    JsfUtil.addErrorMessage("Fees Zero");
+                }
+            }
+
+        }
+        prepareAdd();
+
+    }
+
+    public void createFeeChangeTable() {
+        String sql;
+        Map m = new HashMap();
+        sql = " select fc from FeeChange fc where "
+                + " fc.retired=false "
+                + " and fc.validFrom>:ed ";
+        m.put("ed", effectiveDate);
+        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("feeChangesList.size() = " + feeChangesList.size());
+    }
+    
+    public void removeAddFee(FeeChange fc){
+        fc.setRetired(true);
+        fc.setRetiredAt(new Date());
+        fc.setRetirer(getSessionController().getLoggedUser());
+        getFeeChangeFacade().edit(fc);
+        JsfUtil.addSuccessMessage("Removed");
+    }
+
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -559,6 +674,54 @@ public class SheduleController implements Serializable {
 
     public void setFilteredValue(List<ServiceSession> filteredValue) {
         this.filteredValue = filteredValue;
+    }
+
+    public Date getEffectiveDate() {
+        if (effectiveDate == null) {
+            effectiveDate = getCommonFunctions().getEndOfDay(new Date());
+        } else {
+            effectiveDate = getCommonFunctions().getEndOfDay(effectiveDate);
+        }
+        return effectiveDate;
+    }
+
+    public void setEffectiveDate(Date effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
+
+    public List<FeeChange> getFeeChanges() {
+        if (feeChanges == null) {
+            feeChanges = new ArrayList<>();
+        }
+        return feeChanges;
+    }
+
+    public void setFeeChanges(List<FeeChange> feeChanges) {
+        this.feeChanges = feeChanges;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public FeeChangeFacade getFeeChangeFacade() {
+        return feeChangeFacade;
+    }
+
+    public void setFeeChangeFacade(FeeChangeFacade feeChangeFacade) {
+        this.feeChangeFacade = feeChangeFacade;
+    }
+
+    public List<FeeChange> getFeeChangesList() {
+        return feeChangesList;
+    }
+
+    public void setFeeChangesList(List<FeeChange> feeChangesList) {
+        this.feeChangesList = feeChangesList;
     }
 
 }

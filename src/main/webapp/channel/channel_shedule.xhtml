@@ -76,7 +76,13 @@
                     <p:panelGrid columns="2">  
 
                         <p:outputLabel value="Session Name"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.name}(#{sheduleController.current})"/>
+                        
+                        <p:outputLabel value="Selected Speciality"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.speciality}"/>
+                        
+                        <p:outputLabel value="Selected Staff"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.currentStaff}"/>
 
 
                         <h:outputText value="Institution" ></h:outputText>
@@ -187,6 +193,9 @@
                         <p:column headerText="Name">
 <!--                            <h:inputText value="#{i.name}"/>                            -->
                             <h:outputLabel value="#{i.name}"/> 
+                        </p:column>
+                        <p:column headerText="ID">
+                            #{i}
                         </p:column>
                         <p:column headerText="Fee Type">
                             #{i.feeType}
