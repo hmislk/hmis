@@ -340,7 +340,11 @@ public class SheduleController implements Serializable {
         current = null;
         itemFees = null;
         createFees();
-        //createChangeFees();
+    }
+    
+    public void prepareAddShedule() {
+        prepareAdd();
+        createChangeFees();
     }
 
     public ServiceSessionFacade getFacade() {
@@ -481,9 +485,13 @@ public class SheduleController implements Serializable {
         getCurrent().setTotalFfee(calFTot());
 
         facade.edit(getCurrent());
-
+        
         prepareAdd();
         getItems();
+    }
+    
+    public void updateCreatedServicesesions(ServiceSession ss){
+        
     }
 
     public void createOnCallFeeOldSession() {
