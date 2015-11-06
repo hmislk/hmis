@@ -10,6 +10,7 @@ import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
@@ -340,7 +341,11 @@ public class SheduleController implements Serializable {
         current = null;
         itemFees = null;
         createFees();
-        //createChangeFees();
+    }
+
+    public void prepareAddFeeChange() {
+        prepareAdd();
+        createChangeFees();
     }
 
     public ServiceSessionFacade getFacade() {
@@ -352,6 +357,11 @@ public class SheduleController implements Serializable {
     }
 
     public void delete() {
+        
+        if (checkError(current)) {
+            JsfUtil.addErrorMessage("you can't Remove This Shedule.Because This Shedule has Channeling Bills");
+            return;
+        }
 
         if (current != null) {
             current.setRetired(true);
@@ -394,6 +404,21 @@ public class SheduleController implements Serializable {
         }
 
         return false;
+    }
+    
+    private boolean checkError(ServiceSession ss){
+        BillSession bs;
+        
+        String sql;
+        Map m=new HashMap();
+        sql=" select bs.serviceSession from BillSession bs where "
+                + " bs.retired=false "
+                + " and bs.serviceSession.originatingSession=:ss ";
+        m.put("ss", ss);
+        List<ServiceSession> sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("sss.size() = " + sss.size());
+        return sss.size()>0;
     }
 
     public SessionNumberGenerator saveSessionNumber() {
@@ -481,9 +506,70 @@ public class SheduleController implements Serializable {
         getCurrent().setTotalFfee(calFTot());
 
         facade.edit(getCurrent());
-
+        updateCreatedServicesesions(getCurrent());
         prepareAdd();
         getItems();
+    }
+
+    public void updateCreatedServicesesions(ServiceSession ss) {
+        System.out.println("ss.getName() = " + ss.getName());
+        System.out.println("ss.getInstitution() = " + ss.getInstitution());
+        System.out.println("ss.getDepartment() = " + ss.getDepartment());
+        System.out.println("ss.getStartingTime() = " + ss.getStartingTime());
+        System.out.println("ss.getEndingTime() = " + ss.getEndingTime());
+        System.out.println("ss.getMaxNo() = " + ss.getMaxNo());
+        for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getInstitution() = " + i.getInstitution());
+            System.out.println("i.getDepartment() = " + i.getDepartment());
+            System.out.println("i.getStartingTime() = " + i.getStartingTime());
+            System.out.println("i.getEndingTime() = " + i.getEndingTime());
+            System.out.println("i.getMaxNo() = " + i.getMaxNo());
+            System.out.println("i.getDuration() = " + i.getDuration());
+            System.out.println("i.getRoomNo() = " + i.getRoomNo());
+            
+
+            i.setName(ss.getName());
+            i.setInstitution(ss.getInstitution());
+            i.setDepartment(ss.getDepartment());
+            i.setStartingTime(ss.getStartingTime());
+            i.setEndingTime(ss.getEndingTime());
+            i.setMaxNo(ss.getMaxNo());
+            i.setDuration(ss.getDuration());
+            i.setRoomNo(ss.getRoomNo());
+            i.setAfterSession(ss.getAfterSession());
+            i.setBeforeSession(ss.getBeforeSession());
+            i.setDisplayCount(ss.getDisplayCount());
+            i.setDisplayPercent(ss.getDisplayPercent());
+            i.setRefundable(ss.isRefundable());
+            i.setCreditNumbers(ss.getCreditNumbers());
+            i.setCashNumbers(ss.getCashNumbers());
+            i.setAgencyNumbers(ss.getAgencyNumbers());
+            i.setReserveNumbers(ss.getReserveNumbers());
+            i.setReserveName(ss.getReserveName());
+            i.setMaxTableRows(ss.getMaxTableRows());
+            i.setSessionWeekday(ss.getSessionWeekday());
+            
+            getFacade().edit(i);
+        }
+    }
+
+    public List<ServiceSession> fetchCreatedServiceSessions(ServiceSession ss) {
+        List<ServiceSession> items;
+        String sql;
+        HashMap m = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.originatingSession=:ss"
+                + " and s.sessionDate>=:sd "
+                + " order by s.sessionWeekday,s.startingTime ";
+        m.put("ss", ss);
+        m.put("class", ServiceSession.class);
+        m.put("sd", commonFunctions.getStartOfDay());
+        items = getFacade().findBySQL(sql, m);
+        System.out.println("items.size() = " + items.size());
+        return items;
     }
 
     public void createOnCallFeeOldSession() {
@@ -566,7 +652,7 @@ public class SheduleController implements Serializable {
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
         System.out.println("changes.size() = " + changes.size());
         for (FeeChange fc : feeChanges) {
-            if ((fc.getFee().getFee()==0)&& (fc.getFee().getFfee()==0)) {
+            if ((fc.getFee().getFee() == 0) && (fc.getFee().getFfee() == 0)) {
                 continue;
             }
             fc.setValidFrom(effectiveDate);
@@ -585,7 +671,7 @@ public class SheduleController implements Serializable {
                         System.out.println("c.getFee().getFee() = " + c.getFee().getFee());
                         System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
                         System.out.println("c.getFee().getFfee() = " + c.getFee().getFfee());
-                        if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0)&&(fc.getFee().getFee()!=c.getFee().getFee()||fc.getFee().getFfee()!=fc.getFee().getFfee())) {
+                        if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
                             fc.setCreater(getSessionController().getLoggedUser());
@@ -627,8 +713,8 @@ public class SheduleController implements Serializable {
         feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("feeChangesList.size() = " + feeChangesList.size());
     }
-    
-    public void removeAddFee(FeeChange fc){
+
+    public void removeAddFee(FeeChange fc) {
         fc.setRetired(true);
         fc.setRetiredAt(new Date());
         fc.setRetirer(getSessionController().getLoggedUser());
