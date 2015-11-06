@@ -1246,7 +1246,7 @@ public class SalaryCycleController implements Serializable {
                 + " and spc.blocked=false "
                 + " and spc.department=:dep "
                 + " order by spc.staff.codeInterger ";
-
+        
         m.put("sc", current);
         m.put("dep", d);
 
