@@ -368,6 +368,12 @@ public class SheduleController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
+            if (checkSessionNumberGenerater(current)) {
+                current.getSessionNumberGenerator().setRetired(true);
+                current.getSessionNumberGenerator().setRetiredAt(new Date());
+                current.getSessionNumberGenerator().setRetirer(getSessionController().getLoggedUser());
+                sessionNumberGeneratorFacade.edit(current.getSessionNumberGenerator());
+            }
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
@@ -407,8 +413,6 @@ public class SheduleController implements Serializable {
     }
     
     private boolean checkError(ServiceSession ss){
-        BillSession bs;
-        
         String sql;
         Map m=new HashMap();
         sql=" select bs.serviceSession from BillSession bs where "
@@ -417,8 +421,27 @@ public class SheduleController implements Serializable {
         m.put("ss", ss);
         List<ServiceSession> sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("sss.size() = " + sss.size());
+        System.out.println("1.sss.size() = " + sss.size());
         return sss.size()>0;
+    }
+    
+    public boolean checkSessionNumberGenerater(ServiceSession ss){
+        String sql;
+        Map m=new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.sessionNumberGenerator=:sg"
+                + " and s!=:ss "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime ";
+        m.put("sg", ss.getSessionNumberGenerator());
+        m.put("ss", ss);
+        m.put("class", ServiceSession.class);
+        List<ServiceSession> sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("2.sss.size() = " + sss.size());
+        return sss.isEmpty();
     }
 
     public SessionNumberGenerator saveSessionNumber() {
