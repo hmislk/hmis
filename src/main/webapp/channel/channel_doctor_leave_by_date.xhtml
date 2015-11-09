@@ -66,12 +66,12 @@
                         </tr>
                         <tr>
                             <td>
-                                <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
+                                <p:calendar id="date" mode="inline" value="#{bookingController.sessionStartingDate}" navigator="true"
                                             styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
                                     
                                     <p:ajax event="dateSelect" 
                                             process="@this date" 
-                                            update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('spec')} :#{p:component('a')} tbl"  
+                                            update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('spec')} :#{p:component('a')} :#{p:component('aa')} tbl"  
                                             listener="#{serviceSessionLeaveController.fillLeaveItems}" 
                                             />
                                 </p:calendar>
@@ -93,18 +93,18 @@
                     <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
                         <tr>
                             <th>
-                                <p:outputLabel value="Sessions From - " ></p:outputLabel>
-                                <h:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
+                                <p:outputLabel value="Session Date - " ></p:outputLabel>
+                                <p:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
                                     <f:convertDateTime pattern="yyyy MMMM dd" />
-                                </h:outputLabel>
+                                </p:outputLabel>
                             </th>
                         </tr>
                         <tr>
                             <td>
                                 <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
                                              id="tblSessionsOfSelectedConsultant" var="ses"
-                                             selectionMode="single" rowStyleClass="#{ses.deactivated ? 'redText':''}"
-                                             selection="#{serviceSessionLeaveController.selectedServiceSession}" scrollable="true" scrollHeight="275">
+                                             rowStyleClass="#{ses.deactivated ? 'redText':''}"
+                                             scrollable="true" scrollHeight="275">
 
                                     <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                                         <h:outputText value="* " rendered="#{ses.deactivated}" />
@@ -178,9 +178,25 @@
                         </tr>
                         <tr>
                             <td>
+                                <br></br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p:outputLabel value="Session Date - " ></p:outputLabel>
+                                <p:outputLabel id="aa" value="#{bookingController.sessionStartingDate}" >
+                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                </p:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
                                 <p:watermark for="inComment" value="Comment" />
-                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Add Leave To Date" 
+                                                 action="#{serviceSessionLeaveController.addLeaveForServiceSessionByDate}" 
+                                                 onclick="if (!confirm('Really want to add leave to #{bookingController.sessionStartingDate} date?'))
+                                            return false"/>
                             </td>
                         </tr>
                     </table>

@@ -41,7 +41,8 @@
                     </h:panelGrid> 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable value="#{channelReportTempController.serviceSessionLeaves}" var="d" id="tbl1" rowIndexVar="i">
+                    <p:dataTable value="#{channelReportTempController.serviceSessionLeaves}" var="d" id="tbl1" rowIndexVar="i"
+                                 rowStyleClass="#{d.retired ? 'crossLine':''}">
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <h:panelGroup rendered="#{channelReportTempController.reportKeyWord.staff ne null}" >
@@ -95,12 +96,19 @@
                                 <p:outputLabel value="Leave Creater" />
                             </f:facet>
                             <h:outputLabel value="#{d.creater.code}"/>
+                            <h:outputLabel value=" - #{d.retirer.code}" rendered="#{d.retired}" style="color: red;" />
                         </p:column>
                         <p:column>
                             <f:facet name="header" >
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{d.createdAt}" >
+                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            </p:outputLabel>
+                            <h:panelGrid rendered="#{d.retired}">
+                                <br></br>
+                            </h:panelGrid>
+                            <p:outputLabel value="#{d.retiredAt}" rendered="#{d.retired}" style="color: red;" >
                                 <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
                             </p:outputLabel>
                         </p:column>

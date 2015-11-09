@@ -520,8 +520,7 @@ public class ChannelReportTempController implements Serializable {
         String sql;
         HashMap m = new HashMap();
 
-        sql = "Select s From ServiceSessionLeave s Where s.retired=false "
-                + " and s.sessionDate between :fd and :td ";
+        sql = "Select s From ServiceSessionLeave s Where s.sessionDate between :fd and :td ";
 
         if (getReportKeyWord().getStaff() != null) {
             sql += "  and s.staff=:st";
