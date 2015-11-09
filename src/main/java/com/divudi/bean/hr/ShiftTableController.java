@@ -85,21 +85,22 @@ public class ShiftTableController implements Serializable {
     PhDateController phDateController;
 
     public void fetchAndSetDayType(StaffShift ss) {
-        DayType dayType=ss.getDayType();
+        DayType dayType=null;
+        if (ss.getShift() != null) {
+           dayType = ss.getShift().getDayType();
+        }
         
         System.out.println("ss.getDayType() = " + ss.getDayType());
-        
-        
+
         ss.setDayType(null);
-        
+
         DayType dtp;
         if (dayType != null || dayType == DayType.DayOff) {
-             dtp= dayType;
-        }else{            
-            dtp= phDateController.getHolidayType(ss.getShiftDate());
+            dtp = dayType;
+        } else {
+            dtp = phDateController.getHolidayType(ss.getShiftDate());
         }
 
-        
         ss.setDayType(dtp);
         if (ss.getDayType() == null) {
             if (ss.getShift() != null) {
@@ -185,7 +186,7 @@ public class ShiftTableController implements Serializable {
 
         saveStaffShift();
         saveStaffShift();
-        
+
     }
 
     public void createShiftTable() {
@@ -622,7 +623,6 @@ public class ShiftTableController implements Serializable {
                 value = ss.getShift().getDurationMin() * 60;
             }
         }
-
 
         return value;
 

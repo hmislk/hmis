@@ -52,6 +52,11 @@ public class StaffSalary implements Serializable {
     private Staff staff;
     @Transient
     private boolean exist;
+    @Transient
+    double rpmWithMutiplingFactor1_5;
+    @Transient
+    double rpmWithMutiplingFactor2_5;
+    
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -360,6 +365,28 @@ public class StaffSalary implements Serializable {
         basicRatePerMinute = roundOff(basicRatePerMinute);
         this.basicRatePerMinute = basicRatePerMinute;
     }
+
+    public double getRpmWithMutiplingFactor1_5() {
+        rpmWithMutiplingFactor1_5=roundOff(getBasicRatePerMinute()*1.5);
+        return rpmWithMutiplingFactor1_5;
+    }
+
+    public void setRpmWithMutiplingFactor1_5(double rpmWithMutiplingFactor1_5) {
+        rpmWithMutiplingFactor1_5=roundOff(getBasicRatePerMinute()*1.5);
+        this.rpmWithMutiplingFactor1_5 = rpmWithMutiplingFactor1_5;
+    }
+
+    public double getRpmWithMutiplingFactor2_5() {
+        rpmWithMutiplingFactor2_5=roundOff(getBasicRatePerMinute()*2.5);
+        return rpmWithMutiplingFactor2_5;
+    }
+
+    public void setRpmWithMutiplingFactor2_5(double rpmWithMutiplingFactor2_5) {
+        rpmWithMutiplingFactor2_5=roundOff(getBasicRatePerMinute()*2.5);
+        this.rpmWithMutiplingFactor2_5 = rpmWithMutiplingFactor2_5;
+    }
+    
+    
 
     public Department getDepartment() {
         return department;
