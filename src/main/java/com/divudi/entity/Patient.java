@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.validation.constraints.Size;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -79,6 +80,17 @@ public class Patient implements Serializable {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
+    @Size(max = 10)
+    String phn;
+
+    public String getPhn() {
+        return phn;
+    }
+
+    public void setPhn(String phn) {
+        this.phn = phn;
+    }
+    
 
     public Date getFromDate() {
         return fromDate;

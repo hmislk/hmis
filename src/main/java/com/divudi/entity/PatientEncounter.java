@@ -496,6 +496,9 @@ public class PatientEncounter implements Serializable {
     }
 
     public Patient getPatient() {
+        if(patient==null){
+            patient=new Patient();
+        }
         return patient;
     }
 

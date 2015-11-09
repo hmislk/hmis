@@ -49,6 +49,7 @@ public class InstitutionController implements Serializable {
      * Properties
      */
     List<Institution> selectedItems;
+    List<Institution> selectedAgencies;
     private Institution current;
     private List<Institution> items = null;
     private List<Institution> itemsToRemove = null;
@@ -69,6 +70,15 @@ public class InstitutionController implements Serializable {
         }
         return selectedItems;
     }
+    
+    public void fetchSelectedAgencys() {
+        InstitutionType[] types={InstitutionType.Agency};
+        if (selectText.trim().equals("")) {
+            selectedAgencies = completeInstitution(null, types);
+        } else {
+            selectedAgencies = completeInstitution(selectText, types);
+        }
+    }
 
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
@@ -80,7 +90,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and upper(c.name) like :qry ";
+            sql += " and (upper(c.name) like :qry or upper(c.institutionCode) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -445,6 +455,17 @@ public class InstitutionController implements Serializable {
         }
         itemsToRemove = null;
         items = null;
+    }
+
+    public List<Institution> getSelectedAgencies() {
+        if (selectedAgencies==null) {
+            fetchSelectedAgencys();
+        }
+        return selectedAgencies;
+    }
+
+    public void setSelectedAgencies(List<Institution> selectedAgencies) {
+        this.selectedAgencies = selectedAgencies;
     }
 
     @FacesConverter("institutionConverter")

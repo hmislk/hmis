@@ -58,7 +58,7 @@
                             <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
 
                                 <h:panelGroup>
-
+                                    
                                     <h:outputLabel value="From" />
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
                                         <f:convertDateTime pattern="dd MM yyyy"/>
@@ -74,12 +74,15 @@
 
                             <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
+                                    <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
+                                    <h:outputLabel value="Channel Patient Count"/><br/>
+                                    <h:outputLabel value=" From :"/>
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
+                                    <h:outputLabel value=" To :"/>
                                     <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column style="text-align: left;" >

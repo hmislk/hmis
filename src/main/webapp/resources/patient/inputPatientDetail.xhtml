@@ -4,7 +4,8 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:poue="http://primefaces.org/ui/extensions">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -13,13 +14,13 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
-            <p:outputLabel value="Title"/>
+        <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="3" >
+<!--            <p:outputLabel value="Title"/>-->
             <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{enumController.title}"/>
             </p:selectOneMenu>
-            <p:outputLabel value="Name"/>
+<!--            <p:outputLabel value="Name"/>-->
             <p:inputText rendered="true" 
                          required="true"
                          requiredMessage="Please enter the name"
@@ -28,48 +29,66 @@
                          value="#{cc.attrs.patient.person.name}" 
                          style="width:300px;text-transform:uppercase;">
             </p:inputText>
-            <p:outputLabel value="NIC"/>
-            <p:inputText autocomplete="off" value="#{cc.attrs.patient.person.nic}"/>
-            <p:outputLabel value="Sex"/>
+<!--            <p:outputLabel value="NIC"/>-->
+            <p:inputText autocomplete="off" id="nic" value="#{cc.attrs.patient.person.nic}"/>
+            <!--<p:outputLabel value="Sex"/>-->
             <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>
                 <f:selectItems value="#{enumController.sex}"/>
             </p:selectOneMenu>
 
-            <p:outputLabel value="Age"/>
+            <!--<p:outputLabel value="Age"/>-->
             <h:panelGroup>
                 <p:inputText autocomplete="off"  id="year" style="width: 80px;"  value="#{admissionController.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText autocomplete="off" id="month"  style="width: 80px;"   value="#{admissionController.yearMonthDay.month}">
+                <p:inputText autocomplete="off" id="month"  style="width: 80px; margin-left: 5px;"   value="#{admissionController.yearMonthDay.month}">
                     <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText autocomplete="off" id="day"  style="width: 80px;"   value="#{admissionController.yearMonthDay.day}">
+                <p:inputText autocomplete="off" id="day"  style="width: 80px;  margin-left: 5px;"   value="#{admissionController.yearMonthDay.day}">
                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}" />
                 </p:inputText>
                 <br/>
                 <p:outputLabel value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
             </h:panelGroup>
-            <p:outputLabel value="Date of Birth"/>
+            <!--<p:outputLabel value="Date of Birth"/>-->
             <p:calendar  value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
             </p:calendar>
 
-            <p:outputLabel value="Address"/>
-            <p:inputTextarea  value="#{cc.attrs.patient.person.address}"/>                                  
+            <!--<p:outputLabel value="Address"/>-->
+            <p:inputTextarea  id="address" value="#{cc.attrs.patient.person.address}"/>                                  
 
-            <p:outputLabel value="Mobile Phone"/>
-            <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.mobile}" required="true" requiredMessage="Please Enter A Mobile Number">
-            </p:inputMask>
-            <p:outputLabel value="Home Phone"/>
-            <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.phone}" required="true" requiredMessage="Please enter a home phone number">
-            </p:inputMask>
-        </p:panelGrid>
+            <h:panelGroup>
+                <!--<p:outputLabel value="Mobile Phone"/>-->
+                <p:inputMask id="mno" mask="999-9999999" autocomplete="off" maxlength="11" 
+                             value="#{cc.attrs.patient.person.mobile}" required="true" requiredMessage="Please Enter A Mobile Number">
+                </p:inputMask>
+                <!--<p:outputLabel value="Home Phone"/>-->
+                <p:inputMask id="hno" mask="999-9999999" autocomplete="off" maxlength="11" style="margin-top: 8px;"
+                             value="#{cc.attrs.patient.person.phone}" required="true" requiredMessage="Please enter a home phone number">
+                </p:inputMask>
+            </h:panelGroup>
+         </p:panelGrid>    
+                <poue:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="nic" value="NIC No"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="calNewPtDob" value="Date Of Birth"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="address" value="Address"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="mno" value="Mobile Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="hno" value="Home Phone Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="txtNewSex" value="Sex"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                <poue:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                
+       
 
+        <p:watermark value="Patient Name" for="txtNewPtName" />
+        <p:watermark value="Date of Birth" for="calNewPtDob" />
+        <p:watermark value="Address" for="address" />
+        <p:watermark value="Mobile Phone" for="mno" />
+        <p:watermark value="Home Phone" for="hno" />
+        <p:watermark value="NIC" for="nic" />
         <p:watermark value="YEAR" for="year" />
         <p:watermark value="MONTH" for="month" />
         <p:watermark value="DAYS" for="day" />

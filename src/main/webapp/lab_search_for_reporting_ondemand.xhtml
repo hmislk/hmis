@@ -185,6 +185,12 @@
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image/icon" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
                                         </p:commandLink>
+                                        <p:commandLink process="btnEmail" update="tblBills"  
+                                                       id="btnEmail" 
+                                                       action="#" >
+                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                            <p:graphicImage library="image/icon" styleClass="standedicon" name="email.jpg" ></p:graphicImage>
+                                        </p:commandLink>
                                     </h:panelGroup>
                                 </h:panelGrid>
 

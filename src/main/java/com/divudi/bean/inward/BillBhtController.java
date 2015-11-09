@@ -347,6 +347,11 @@ public class BillBhtController implements Serializable {
         if (getBatchBill().getFromDepartment() == null) {
             return;
         }
+        
+        if (getBatchBill().getPatientEncounter().isDischarged()) {
+            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
 
         settleBill(getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
 
@@ -435,6 +440,11 @@ public class BillBhtController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return true;
+        }
+        
+        if(getPatientEncounter().isDischarged()){
+            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
 

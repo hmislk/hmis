@@ -105,7 +105,7 @@
                                                                 <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                                 <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                             </p:selectOneMenu>
-                                                            <p:inputText id="txtValDbl" autocomplete="off" value="#{pvv.doubleValue}" 
+                                                            <p:inputText id="txtValDbl" autocomplete="off" value="#{pvv.doubleValue}" validatorMessage="Entered value not valid. Please recheck." converterMessage="Entered value not valid. Please recheck."
                                                                          rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" >
                                                                 <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                             </p:inputText>

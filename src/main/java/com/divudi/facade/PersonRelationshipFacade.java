@@ -5,7 +5,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.PersonRelationship;
+import com.divudi.data.clinical.PersonRelationship;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

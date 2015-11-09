@@ -26,14 +26,14 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.sample.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime pattern="dd/MMM/yy hh:mm a"/>
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime pattern="dd/MMM/yy hh:mm a"/>
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
@@ -44,7 +44,7 @@
                     <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime pattern="dd/MMM/yy hh:mm a"/>
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 

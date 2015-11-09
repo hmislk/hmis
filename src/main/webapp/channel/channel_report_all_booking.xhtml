@@ -54,12 +54,12 @@
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                 </h:outputLabel>
                             </f:facet>
-                            <p:column style="text-align: left;" >
+                            <p:column style="text-align: left;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" >
@@ -67,7 +67,7 @@
                                     <p:outputLabel value="Crteated Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
@@ -92,12 +92,26 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Appointment Number" />
+                                    <p:outputLabel value="Hos Fee" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.singleBillSession.serialNo}" >
+                                <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Staff Fee" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.staffFee}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Fee" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.netTotal}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Type" />
                                 </f:facet>
@@ -113,12 +127,12 @@
                                 <p:outputLabel value="(#{b.creditCompany.institutionCode})" rendered="#{b.paymentMethod=='Agent'}" >
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Status" >
+<!--                            <p:column headerText="Status" >
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelAgent'}" value="Agent" style="color: green;"/>
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelStaff'}" value="Staff" style="color: green;"/>
-                                <p:outputLabel rendered="#{b.billType eq 'ChannelCash'}" value="Paid"/>
-                            </p:column>
+                                <p:outputLabel rendered="#{b.billType eq 'ChannelCash'}" value="Cash"/>
+                            </p:column>-->
                             <p:column headerText="C/R" >
                                 <p:outputLabel value="Cancelled" rendered="#{b.cancelled==true}"/>
                                 <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        

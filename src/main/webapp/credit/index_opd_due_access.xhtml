@@ -18,6 +18,7 @@
                             <p:panel header="OPD Credit Due" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                 <h:panelGrid columns="1">
                                     <p:commandButton action="/credit/credit_company_opd_due" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
+                                    <p:commandButton action="/credit/credit_company_opd_due_by_bill_item" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search (Bill Item)" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
                                     <p:commandButton  action="/credit/credit_company_opd_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>
                                 </h:panelGrid>
                             </p:panel>
