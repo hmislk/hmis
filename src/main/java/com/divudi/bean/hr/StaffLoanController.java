@@ -175,8 +175,13 @@ public class StaffLoanController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "Select ss from StaffPaysheetComponent ss "
-                + " where ss.retired=false "
-                + " and ss.fromDate <=:fd ";
+                + " where ss.retired=false ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
         if (paysheetComponent != null) {
             sql += " and ss.paysheetComponent=:tp ";
@@ -218,7 +223,6 @@ public class StaffLoanController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        hm.put("fd", getFromDate());
 
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,

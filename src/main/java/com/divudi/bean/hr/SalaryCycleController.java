@@ -237,10 +237,10 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
-            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
-            return true;
-        }
+//        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
+//            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
+//            return true;
+//        }
 
         return false;
     }

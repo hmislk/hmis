@@ -114,6 +114,15 @@
                     <p:column >
                         <p:outputLabel value="#{sts.id}" ></p:outputLabel>
                     </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.multiplyingFactorSalary}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.shift.dayType}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.dayType}"/>
+                    </p:column>
                     <p:column headerText="Shift" styleClass="fixedColumn75" >
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >
