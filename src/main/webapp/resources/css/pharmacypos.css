@@ -28,6 +28,19 @@
         font-size: 130%;
         text-transform: capitalize!important;
     }
+    
+    .channelRecipt_24_2x9_3{
+        position: relative!important;
+        padding: 5px!important;
+        width: 24.2cm!important;
+        height: 9.3cm!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+/*        border: 1px solid!important;*/
+        text-transform: capitalize!important;
+    }
 
     .posbillBreak{
         position: relative!important;  
@@ -124,18 +137,16 @@
 
     }
     
-    .fiveinchbill{
+    .channelRecipt_24_2x9_3{
         position: relative!important;
         padding: 5px!important;
-        width: 12cm!important;
-        height: 13cm!important;
+        width: 24.2cm!important;
+        height: 9.3cm!important;
         overflow:hidden!important; 
         font-family: sans-serif!important; 
-        font-size: 11px!important; 
         margin: auto!important; 
         background-size: 100% auto!important; 
         border: 1px solid!important;
-        font-size: 130%;
         text-transform: capitalize!important;
     }
 
