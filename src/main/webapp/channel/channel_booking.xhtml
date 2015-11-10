@@ -478,7 +478,7 @@
 
 
                             <div>
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'Paper24_2x9_3'}">
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'Paper24_2x9_3'}">
                                     <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
