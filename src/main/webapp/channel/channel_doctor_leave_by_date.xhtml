@@ -32,7 +32,7 @@
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
-                
+
                 <h:panelGroup id="scStaff" >
                     <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextSpeciality}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
                         <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
@@ -68,7 +68,7 @@
                             <td>
                                 <p:calendar id="date" mode="inline" value="#{bookingController.sessionStartingDate}" navigator="true"
                                             styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
-                                    
+
                                     <p:ajax event="dateSelect" 
                                             process="@this date" 
                                             update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('spec')} :#{p:component('a')} :#{p:component('aa')} tbl"  
@@ -89,8 +89,8 @@
 
                 </h:panelGroup>
 
-                <h:panelGroup >
-                    <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                <h:panelGroup id="pgSess" >
+                    <table id="tblData" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
                         <tr>
                             <th>
                                 <p:outputLabel value="Session Date - " ></p:outputLabel>
@@ -187,16 +187,25 @@
                                 <p:outputLabel id="aa" value="#{bookingController.sessionStartingDate}" >
                                     <f:convertDateTime pattern="yyyy MMMM dd" />
                                 </p:outputLabel>
+                                <p:outputLabel value=" - Remove Leave" ></p:outputLabel>
+                                <p:selectBooleanCheckbox value="#{serviceSessionLeaveController.removeLeave}" >
+                                    <p:ajax event="change" process="@this" update=":#{p:component('pgSess')}" />
+                                </p:selectBooleanCheckbox>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
-                                <p:watermark for="inComment" value="Comment" />
-                                <p:commandButton ajax="false" value="Add Leave To Date" 
+                                <p:watermark for="inComment" value="Comment" rendered="#{!serviceSessionLeaveController.removeLeave}" />
+                                <p:watermark for="inComment" value="Leave Remove Comment" rendered="#{serviceSessionLeaveController.removeLeave}"/>
+                                <p:commandButton ajax="false" value="Add Leave To Selected Date" rendered="#{!serviceSessionLeaveController.removeLeave}"
                                                  action="#{serviceSessionLeaveController.addLeaveForServiceSessionByDate}" 
-                                                 onclick="if (!confirm('Really want to add leave to #{bookingController.sessionStartingDate} date?'))
-                                            return false"/>
+                                                 onclick="if (!confirm('Really want to add leave ?'))
+                                                             return false"/>
+                                <p:commandButton ajax="false" value="Remove Leave To Selected Date" rendered="#{serviceSessionLeaveController.removeLeave}"
+                                                 action="#{serviceSessionLeaveController.removeLeaveAndActiveServiceSessionByDate}" 
+                                                 onclick="if (!confirm('Really want to Remove leave ?'))
+                                                             return false"/>
                             </td>
                         </tr>
                     </table>
@@ -248,20 +257,19 @@
                         <f:facet name="header" >
                             <p:outputLabel value="Leave Remove Comment" />
                         </f:facet>
-                        <p:inputText id="inComment" value="#{d.retireComments}" disabled="#{d.retired eq true}" />
-                        <p:watermark for="inComment" value="Leave Remove Comment" />
+                        <p:outputLabel id="inComment" value="#{d.retireComments}" />
                     </p:column>
-                    <p:column>
-                        <f:facet name="header" >
-                            <p:outputLabel value="Remove" />
-                        </f:facet>
-                        <p:commandButton value="Remove" 
-                                         ajax="false" action="#{serviceSessionLeaveController.removeLeaveAndActiveServiceSession(d)}" 
-                                         disabled="#{d.retired eq true}"
-                                         >
-                            <!--<f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>-->
-                        </p:commandButton>
-                    </p:column>
+                    <!--                    <p:column>
+                                            <f:facet name="header" >
+                                                <p:outputLabel value="Remove" />
+                                            </f:facet>
+                                            <p:commandButton value="Remove" 
+                                                             ajax="false" action="#{serviceSessionLeaveController.removeLeaveAndActiveServiceSession(d)}" 
+                                                             disabled="#{d.retired eq true}"
+                                                             >
+                                                <f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>
+                                            </p:commandButton>
+                                        </p:column>-->
 
                 </p:dataTable>
             </h:panelGrid>

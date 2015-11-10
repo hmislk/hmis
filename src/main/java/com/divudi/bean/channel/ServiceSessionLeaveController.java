@@ -18,7 +18,6 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,8 @@ public class ServiceSessionLeaveController implements Serializable {
     private Staff currentStaff;
     private Speciality speciality;
     ServiceSession selectedServiceSession;
+    boolean removeLeave;
+
     List<ServiceSessionLeave> serviceSessionLeaves;
     ///////////////////////
     @EJB
@@ -150,13 +151,44 @@ public class ServiceSessionLeaveController implements Serializable {
         ssl.setRetiredAt(new Date());
         ssl.setRetirer(getSessionController().getLoggedUser());
         getFacade().edit(ssl);
-        bookingController.generateSessions();
+        fillLeaveItems();
+    }
+
+    public void removeLeaveAndActiveServiceSessionByDate() {
+        if (bookingController.getStaff()==null) {
+            JsfUtil.addErrorMessage("Please Select Staff.");
+            return;
+        }
+        if (current.getDeactivateComment() == null || current.getDeactivateComment().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter Remove Comment.");
+            return;
+        }
+        List<ServiceSessionLeave> serviceSessionLeaves=fetchCreatedLeaveServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
+        if (serviceSessionLeaves.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select Correct Date This Date hasn't Any Leave");
+            return;
+        }
+        for (ServiceSessionLeave ssl : serviceSessionLeaves) {
+            ssl.getOriginatingSession().setDeactivated(false);
+            getServiceSessionFacade().edit(ssl.getOriginatingSession());
+
+            ssl.setRetired(true);
+            ssl.setRetiredAt(new Date());
+            ssl.setRetirer(getSessionController().getLoggedUser());
+            ssl.setRetireComments(getCurrent().getDeactivateComment());
+            getFacade().edit(ssl);
+        }
+        current = null;
+        fillLeaveItems();
     }
 
     public void fillLeaveItems() {
         setCurrentStaff(bookingController.getStaff());
 
-        String slq = "Select s From ServiceSessionLeave s Where s.sessionDate>= :dt and s.staff=:st";
+        String slq = "Select s From ServiceSessionLeave s Where "
+                + " s.sessionDate>= :dt "
+                + " and s.staff=:st "
+                + " order by s.sessionDate";
         HashMap hm = new HashMap();
         hm.put("dt", bookingController.getSessionStartingDate());
         hm.put("st", getCurrentStaff());
@@ -208,8 +240,12 @@ public class ServiceSessionLeaveController implements Serializable {
         if (errorCheckForServiceSessoinLeaveByDate()) {
             return;
         }
-
-        for (ServiceSession s : fetchCreatedServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff())) {
+        List<ServiceSession> serviceSessions=fetchCreatedServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
+        if (serviceSessions.isEmpty()) {
+            UtilityController.addErrorMessage("Selected Date Haven't Sessions or This Date Already Added Leave");
+            return;
+        }
+        for (ServiceSession s : serviceSessions) {
             //deactive Service Session
             s.setDeactivated(true);
             getServiceSessionFacade().edit(s);
@@ -224,7 +260,7 @@ public class ServiceSessionLeaveController implements Serializable {
             ss.setSessionDate(s.getSessionDate());//leave date
             ss.setDeactivateComment(getCurrent().getDeactivateComment());
             getFacade().create(ss);
-            
+
         }
         current = null;
         fillLeaveItems();
@@ -238,12 +274,27 @@ public class ServiceSessionLeaveController implements Serializable {
                 + " and s.staff=:staff "
                 + " and s.originatingSession is not null "
                 + " and s.sessionDate=:d "
-                + " and type(s)=:class "
+                + " and type(s)=:class"
+                + " and s.deactivated=false "
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        return tmp;
+    }
+
+    public List<ServiceSessionLeave> fetchCreatedLeaveServiceSession(Date d, Staff s) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select s From ServiceSessionLeave s where s.retired=false "
+                + " and s.staff=:staff "
+                + " and s.sessionDate=:d "
+                + " and type(s)=:class ";
+        m.put("d", d);
+        m.put("staff", s);
+        m.put("class", ServiceSessionLeave.class);
+        List<ServiceSessionLeave> tmp = getFacade().findBySQL(sql, m, TemporalType.DATE);
         return tmp;
     }
 
@@ -331,6 +382,14 @@ public class ServiceSessionLeaveController implements Serializable {
 
     public void setServiceSessionLeaves(List<ServiceSessionLeave> serviceSessionLeaves) {
         this.serviceSessionLeaves = serviceSessionLeaves;
+    }
+
+    public boolean isRemoveLeave() {
+        return removeLeave;
+    }
+
+    public void setRemoveLeave(boolean removeLeave) {
+        this.removeLeave = removeLeave;
     }
 
 }
