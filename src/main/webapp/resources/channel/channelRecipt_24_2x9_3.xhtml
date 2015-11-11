@@ -75,13 +75,13 @@
                     </div>
                     
                     <div style="position: absolute!important; font-size: 15px!important; left: 30%!important; top: 82.75%!important;">                        
-                        <h:outputLabel value="#{cc.attrs.bill.hospitalFee}" style="font-size: 14px!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
                             <f:convertNumber pattern="0.00"/>
                         </h:outputLabel>                        
                     </div>
                     
                     <div style="position: absolute!important; font-size: 15px!important; left: 10%!important; top: 92.75%!important;">                        
-                        <h:outputLabel value="#{cc.attrs.bill.hospitalFee+cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 14px!important;">
                             <f:convertNumber pattern="0.00"/>
                         </h:outputLabel>                        
                     </div>
