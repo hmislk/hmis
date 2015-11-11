@@ -1160,7 +1160,7 @@ public class BillBeanController implements Serializable {
         return netTotal;
     }
 
-    public double calInstitutionSale(Date fromDate, Date toDate, Institution institution) {
+    public double calInstitutionSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
                 + " where b.retired=false"
@@ -1172,7 +1172,7 @@ public class BillBeanController implements Serializable {
                 + " or  b.paymentMethod = :pm3 "
                 + " or  b.paymentMethod = :pm4)";
         HashMap hm = new HashMap();
-        hm.put("bType", BillType.PharmacySale);
+        hm.put("bType", billType);
         hm.put("ins", institution);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
@@ -1181,6 +1181,8 @@ public class BillBeanController implements Serializable {
         hm.put("pm3", PaymentMethod.Cheque);
         hm.put("pm4", PaymentMethod.Slip);
         double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("billType"+billType);
+        System.out.println("netTotal"+netTotal);
 
         return netTotal;
     }
@@ -1298,7 +1300,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution) {
+    public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
         String sql = "Select b.referenceBill.department,"
@@ -1313,7 +1315,7 @@ public class BillBeanController implements Serializable {
                 + " group by b.referenceBill.department"
                 + " order by b.referenceBill.department.name";
         HashMap hm = new HashMap();
-        hm.put("bType", BillType.PharmacySale);
+        hm.put("bType", billType);
         hm.put("cl", PreBill.class);
         hm.put("ins", institution);
         hm.put("fromDate", fromDate);

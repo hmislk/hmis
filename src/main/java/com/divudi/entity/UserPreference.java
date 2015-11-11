@@ -75,12 +75,16 @@ public class UserPreference implements Serializable {
     boolean fiveFivePaperWithHeadings;
     boolean showOnlyMarkedDoctors=false;
     boolean channelSettleWithoutPatientPhoneNumber=false;
+    boolean opdSettleWithoutPatientPhoneNumber=false;
+    boolean channelBillDouble=false;
     String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     @Enumerated(EnumType.STRING)
     PaperType pharmacyBillPaperType;
+    @Enumerated(EnumType.STRING)
+    PaperType channelBillPaperType;
     @Enumerated(EnumType.STRING)
     ApplicationInstitution applicationInstitution;
     @Enumerated(EnumType.STRING)
@@ -95,8 +99,7 @@ public class UserPreference implements Serializable {
 
     public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
         this.applicationInstitution = applicationInstitution;
-    }   
-    
+    }
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {
         return paymentMethodAllowedInInwardMatrix;
@@ -106,7 +109,13 @@ public class UserPreference implements Serializable {
         this.paymentMethodAllowedInInwardMatrix = paymentMethodAllowedInInwardMatrix;
     }
 
-    
+    public boolean isChannelBillDouble() {
+        return channelBillDouble;
+    }
+
+    public void setChannelBillDouble(boolean channelBillDouble) {
+        this.channelBillDouble = channelBillDouble;
+    }
     
     public boolean isPartialPaymentOfOpdBillsAllowed() {
         return partialPaymentOfOpdBillsAllowed;
@@ -142,6 +151,17 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillPaperType(PaperType opdBillPaperType) {
         this.opdBillPaperType = opdBillPaperType;
+    }
+
+    public PaperType getChannelBillPaperType() {
+        return channelBillPaperType;
+    }
+
+    public void setChannelBillPaperType(PaperType channelBillPaperType) {
+        if(opdBillPaperType==null){
+            opdBillPaperType = PaperType.Paper24_2x9_3;
+        }
+        this.channelBillPaperType = channelBillPaperType;
     }
 
     public PaperType getPharmacyBillPaperType() {
@@ -469,6 +489,16 @@ public class UserPreference implements Serializable {
     public void setChannelSettleWithoutPatientPhoneNumber(boolean channelSettleWithoutPatientPhoneNumber) {
         this.channelSettleWithoutPatientPhoneNumber = channelSettleWithoutPatientPhoneNumber;
     }
+
+    public boolean isOpdSettleWithoutPatientPhoneNumber() {
+        return opdSettleWithoutPatientPhoneNumber;
+    }
+
+    public void setOpdSettleWithoutPatientPhoneNumber(boolean opdSettleWithoutPatientPhoneNumber) {
+        this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
+    }
+    
+    
     
     
     
