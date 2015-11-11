@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -53,6 +54,7 @@ public class InwardRefundController implements Serializable {
     @Inject
     private SessionController sessionController;
     private double paidAmount;
+    double netTotal;
     private Bill current;
     private PaymentMethodData paymentMethodData;
     @EJB
@@ -220,6 +222,14 @@ public class InwardRefundController implements Serializable {
         this.current = current;
     }
 
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+
     public void calculatePaidAmount() {
 
         HashMap map = new HashMap();
@@ -255,10 +265,12 @@ public class InwardRefundController implements Serializable {
 
         if (b == null) {
             paidAmount = 0;
+            netTotal = 0;
             return;
         }
 
         paidAmount = b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
+        netTotal = b.getNetTotal();
 
 //        double paidByPatient = Math.abs(b.getPaidAmount());
 //

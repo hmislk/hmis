@@ -75,6 +75,7 @@ public class UserPreference implements Serializable {
     boolean fiveFivePaperWithHeadings;
     boolean showOnlyMarkedDoctors=false;
     boolean channelSettleWithoutPatientPhoneNumber=false;
+    boolean opdSettleWithoutPatientPhoneNumber=false;
     boolean channelBillDouble=false;
     String microBiologyFont;
     String logoName;
@@ -488,6 +489,16 @@ public class UserPreference implements Serializable {
     public void setChannelSettleWithoutPatientPhoneNumber(boolean channelSettleWithoutPatientPhoneNumber) {
         this.channelSettleWithoutPatientPhoneNumber = channelSettleWithoutPatientPhoneNumber;
     }
+
+    public boolean isOpdSettleWithoutPatientPhoneNumber() {
+        return opdSettleWithoutPatientPhoneNumber;
+    }
+
+    public void setOpdSettleWithoutPatientPhoneNumber(boolean opdSettleWithoutPatientPhoneNumber) {
+        this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
+    }
+    
+    
     
     
     
