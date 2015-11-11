@@ -72,6 +72,7 @@ public class SheduleController implements Serializable {
     Date effectiveDate;
     List<FeeChange> feeChanges;
     List<FeeChange> feeChangesList;
+    boolean feeChangeStaff;
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -357,7 +358,7 @@ public class SheduleController implements Serializable {
     }
 
     public void delete() {
-        
+
         if (checkError(current)) {
             JsfUtil.addErrorMessage("you can't Remove This Shedule.Because This Shedule has Channeling Bills");
             return;
@@ -411,23 +412,23 @@ public class SheduleController implements Serializable {
 
         return false;
     }
-    
-    private boolean checkError(ServiceSession ss){
+
+    private boolean checkError(ServiceSession ss) {
         String sql;
-        Map m=new HashMap();
-        sql=" select bs.serviceSession from BillSession bs where "
+        Map m = new HashMap();
+        sql = " select bs.serviceSession from BillSession bs where "
                 + " bs.retired=false "
                 + " and bs.serviceSession.originatingSession=:ss ";
         m.put("ss", ss);
-        List<ServiceSession> sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         System.out.println("1.sss.size() = " + sss.size());
-        return sss.size()>0;
+        return sss.size() > 0;
     }
-    
-    public boolean checkSessionNumberGenerater(ServiceSession ss){
+
+    public boolean checkSessionNumberGenerater(ServiceSession ss) {
         String sql;
-        Map m=new HashMap();
+        Map m = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and type(s)=:class "
@@ -438,8 +439,8 @@ public class SheduleController implements Serializable {
         m.put("sg", ss.getSessionNumberGenerator());
         m.put("ss", ss);
         m.put("class", ServiceSession.class);
-        List<ServiceSession> sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        sss=getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("2.sss.size() = " + sss.size());
         return sss.isEmpty();
     }
@@ -550,7 +551,6 @@ public class SheduleController implements Serializable {
             System.out.println("i.getMaxNo() = " + i.getMaxNo());
             System.out.println("i.getDuration() = " + i.getDuration());
             System.out.println("i.getRoomNo() = " + i.getRoomNo());
-            
 
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -572,7 +572,7 @@ public class SheduleController implements Serializable {
             i.setReserveName(ss.getReserveName());
             i.setMaxTableRows(ss.getMaxTableRows());
             i.setSessionWeekday(ss.getSessionWeekday());
-            
+
             getFacade().edit(i);
         }
     }
@@ -666,11 +666,32 @@ public class SheduleController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Future Date");
             return;
         }
+        if (feeChangeStaff) {
+            if (speciality == null) {
+                JsfUtil.addErrorMessage("Please Select Specility");
+                return;
+            }
+            if (currentStaff == null) {
+                JsfUtil.addErrorMessage("Please Select Staff");
+                return;
+            }
+            for (FeeChange fc : feeChanges) {
+                fc.getFee().setStaff(currentStaff);
+                fc.getFee().setSpeciality(speciality);
+                System.err.println("setstaff");
+            }
+        }
         String sql;
         Map m = new HashMap();
         sql = " select fc from FeeChange fc where "
                 + " fc.retired=false "
                 + " and fc.validFrom=:ed ";
+        if (feeChangeStaff) {
+            sql +=" and fc.fee.staff=:s "
+                    + " and fc.fee.speciality=:sp ";
+            m.put("s", currentStaff);
+            m.put("sp", speciality);
+        }
         m.put("ed", effectiveDate);
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
         System.out.println("changes.size() = " + changes.size());
@@ -681,7 +702,11 @@ public class SheduleController implements Serializable {
             fc.setValidFrom(effectiveDate);
             if (changes.size() > 0) {
                 for (FeeChange c : changes) {
-                    if ((fc.getFee().getFeeType() == c.getFee().getFeeType()) && (fc.getFee().getName().equals(c.getFee().getName())) && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
+                    if ((fc.getFee().getFeeType() == c.getFee().getFeeType()) 
+                            && (fc.getFee().getName().equals(c.getFee().getName()))
+                            && (fc.getFee().getStaff().equals(c.getFee().getStaff()))
+                            && (fc.getFee().getSpeciality().equals(c.getFee().getSpeciality()))
+                            && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
                         System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
@@ -743,6 +768,13 @@ public class SheduleController implements Serializable {
         fc.setRetirer(getSessionController().getLoggedUser());
         getFeeChangeFacade().edit(fc);
         JsfUtil.addSuccessMessage("Removed");
+    }
+
+    public void feeChangeListner() {
+        if (!feeChangeStaff) {
+            speciality = null;
+            currentStaff = null;
+        }
     }
 
     public SessionController getSessionController() {
@@ -831,6 +863,14 @@ public class SheduleController implements Serializable {
 
     public void setFeeChangesList(List<FeeChange> feeChangesList) {
         this.feeChangesList = feeChangesList;
+    }
+
+    public boolean isFeeChangeStaff() {
+        return feeChangeStaff;
+    }
+
+    public void setFeeChangeStaff(boolean feeChangeStaff) {
+        this.feeChangeStaff = feeChangeStaff;
     }
 
 }
