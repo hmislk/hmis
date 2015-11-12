@@ -239,6 +239,14 @@ public class InvestigationController implements Serializable {
         return "/lab/lab_investigation_list";
     }
 
+    public List<Investigation> getInvestigationItems() {
+        String sql;
+        sql = "Select i from Investigation i "
+                + " where i.retired=false ";
+
+        return getFacade().findBySQL(sql);
+    }
+
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         ////System.out.println("gettin ins dep ");
@@ -356,14 +364,13 @@ public class InvestigationController implements Serializable {
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
 //        }
-
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         return suggestions;
     }
-    
+
     public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
         System.out.println("master" + listMasterItemsOnly);
         if (query == null || query.trim().equals("")) {
@@ -392,19 +399,18 @@ public class InvestigationController implements Serializable {
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
 //        }
-
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         List<InvestigationWithCount> ics = new ArrayList<>();
-        for(Investigation ix:suggestions){
+        for (Investigation ix : suggestions) {
             InvestigationWithCount ic = new InvestigationWithCount(ix, investigationItemController.findItemCount(ix));
             ics.add(ic);
         }
-        
+
         return ics;
-        
+
     }
 
     public List<Investigation> completeInvestWithout(String query) {
@@ -447,7 +453,7 @@ public class InvestigationController implements Serializable {
         }
         return listMasterItemsOnly;
     }
-    
+
     public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
             if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
