@@ -682,6 +682,23 @@ public class PatientReportController implements Serializable {
         return currentPatientReport;
     }
 
+    public PatientReport getLastPatientReport(Investigation ix) {
+        String j;
+        PatientReport pr = new PatientReport();
+        pr.getItem();
+        Map m = new HashMap();
+        if (ix.getReportedAs() == null) {
+            m.put("ix", ix);
+        } else {
+            Investigation ixr = (Investigation) ix.getReportedAs();
+            m.put("ix", ixr);
+        }
+        j = "select pr from PatientReport pr"
+                + " where pr.item=:ix "
+                + " order by pr.id desc";
+        return getFacade().findFirstBySQL(j, m);
+    }
+
     public void createNewReport(PatientInvestigation pi) {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
