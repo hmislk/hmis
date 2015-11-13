@@ -51,6 +51,7 @@ public class ReportKeyWord {
     Double to;
     Sex sex;
     EmployeeStatus employeeStatus;
+    boolean additionalDetails;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -60,8 +61,6 @@ public class ReportKeyWord {
         this.paysheetComponent = paysheetComponent;
     }
     
-    
-
     public Institution getBank() {
         return bank;
     }
@@ -78,8 +77,6 @@ public class ReportKeyWord {
     public void setSalaryCycle(SalaryCycle salaryCycle) {
         this.salaryCycle = salaryCycle;
     }
-    
-    
 
     public Sex getSex() {
         return sex;
@@ -88,15 +85,11 @@ public class ReportKeyWord {
     public void setSex(Sex sex) {
         this.sex = sex;
     }
-    
-    
-    
 
     public Double getFrom() {
         if (from == null) {
             from = 0.0;
         }
-
         return from;
     }
 
@@ -259,6 +252,14 @@ public class ReportKeyWord {
         this.institutionBank = institutionBank;
     }
 
+    public boolean isAdditionalDetails() {
+        return additionalDetails;
+    }
+
+    public void setAdditionalDetails(boolean additionalDetails) {
+        this.additionalDetails = additionalDetails;
+    }
+
     public void resetKeyWord(){
         dayTypes = null;
         staff = null;
@@ -284,11 +285,7 @@ public class ReportKeyWord {
         to = null;
         sex = null;
         employeeStatus = null;
+        additionalDetails=false;
     }
-    
-    
-
-    
-    
     
 }

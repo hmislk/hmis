@@ -30,7 +30,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import  org.primefaces.event.RowEditEvent;
+import org.primefaces.event.RowEditEvent;
+
 /**
  *
  * @author safrin
@@ -75,7 +76,6 @@ public class StaffBasicController implements Serializable {
         makeNull();
     }
 
-    
     public void onEdit(RowEditEvent event) {
         StaffPaysheetComponent tmp = (StaffPaysheetComponent) event.getObject();
         tmp.setLastEditedAt(new Date());
@@ -100,8 +100,8 @@ public class StaffBasicController implements Serializable {
             return true;
         }
 
-        if (humanResourceBean.checkStaff(getCurrent(),getCurrent().getPaysheetComponent(),getCurrent().getStaff(),getCurrent().getFromDate(),getCurrent().getToDate())) {
-           UtilityController.addErrorMessage("There is Some component in Same Date Range");
+        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+            UtilityController.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
@@ -203,8 +203,6 @@ public class StaffBasicController implements Serializable {
         selectedStaffComponent = null;
         repeatedComponent = null;
     }
-    
-    
 
     public void makeNullWithoutFromDate() {
         current = null;
@@ -220,20 +218,17 @@ public class StaffBasicController implements Serializable {
     }
 
     public void createBasicTable() {
-
-        String sql = "Select ss from StaffPaysheetComponent ss"
-                + " where ss.retired=false "
-                + " and ss.paysheetComponent.componentType=:tp"
-                //                + " and ss.staff=:st"
-                + " and ss.fromDate <=:fd";
-//                + " and ss.toDate >=:fd ";
-        //and (s.toDate>= :td or s.toDate is null)
         HashMap hm = new HashMap();
-//        hm.put("td", getToDate());
-        hm.put("fd", getFromDate());
-//        hm.put("st", getCurrent().getStaff());
-        hm.put("tp", PaysheetComponentType.BasicSalary);
-//        hm.put("ins", getStaffInstitution());
+        String sql;
+        sql = "Select ss from StaffPaysheetComponent ss"
+                + " where ss.retired=false "
+                + " and ss.paysheetComponent.componentType=:tp";
+
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
         if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:stf ";
@@ -244,8 +239,7 @@ public class StaffBasicController implements Serializable {
             sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
-        
-        
+
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.institution=:ins";
             hm.put("ins", getReportKeyWord().getInstitution());
@@ -262,9 +256,13 @@ public class StaffBasicController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
+        
+        sql+=" order by ss.staff.codeInterger ";
+        
+        hm.put("tp", PaysheetComponentType.BasicSalary);
 
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
@@ -327,7 +325,7 @@ public class StaffBasicController implements Serializable {
             sql += " and s.paysheetComponent=:tp2 ";
             hm.put("tp2", paysheetComponent2);
         }
-        
+
         if (getReportKeyWord().getStaff() != null) {
             sql += " and s.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());

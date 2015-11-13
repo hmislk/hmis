@@ -101,6 +101,11 @@
                                         <p:autoComplete  converter="vmp" 
                                                          completeMethod="#{vmpController.completeVmp}"
                                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{ampController.current.vmp}" ></p:autoComplete>
+                                        
+                                        <h:outputLabel/>
+                                        <h:outputText  value="Discount Allowed" ></h:outputText>
+                                        <h:selectBooleanCheckbox value="#{ampController.current.discountAllowed}" />
+                                        
                                         <p:commandLink id="btnAddVmp" 
                                                          value="Create New Product" 
                                                          action="/pharmacy/pharmacy_vmp"/>  

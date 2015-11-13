@@ -32,11 +32,11 @@
 
 
         <h:outputLabel  value="#{sessionController.currentPreference.id}"/>
-        
+
         <h:panelGrid columns="3" styleClass="alignTop" >
 
-            
-            
+
+
             <p:panel header="Institution" >
                 <h:panelGrid columns="2" styleClass="alignTop" >
                     <h:outputLabel value="Institution" ></h:outputLabel>
@@ -96,6 +96,9 @@
 
                     <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
+                    
+                    <h:outputLabel value="OPD Settle Without Patient Phone Number"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 
                 </h:panelGrid>
 
@@ -124,6 +127,12 @@
                 <h:panelGrid columns="2" styleClass="alignTop" >
 
 
+                    <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
+                    <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
+                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Channel Bill Double"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelBillDouble}"/>
                     <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
                     <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
@@ -152,13 +161,13 @@
                 </h:panelGrid>
 
             </p:panel>
-            
+
             <p:panel header="Lab" >
                 <h:panelGrid columns="2" styleClass="alignTop" >
                     <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
                     <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
                     <p:watermark for="fontName" value="Eg- Courier New" />
-                    
+
                 </h:panelGrid>
             </p:panel>
 
