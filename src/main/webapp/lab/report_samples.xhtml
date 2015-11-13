@@ -20,20 +20,12 @@
             <p:panel id="panIx" styleClass="nonPrintBlock" >
 
                 <f:facet name="header" >
-                    <h:outputLabel value="List of All Investigations"></h:outputLabel>
-                    <p:commandButton ajax="false" value="Generate Report Samples" action="#{investigationController.prepareSelectedReportSamples}" styleClass="noPrintButton" onclick="onSubmitButton();"  />
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                        <p:printer target="panIx" />
-                    </p:commandButton>
-                    <p:commandButton id="excel" ajax="false" value="Excel" onclick="onSubmitButton();"  >
-                        <p:dataExporter target="tbl" type="xls" fileName="List of All Investigations"  />
-                    </p:commandButton>
+                    <h:outputLabel value="Sample Reports" styleClass="nonPrintBlock" ></h:outputLabel>
                 </f:facet>
-                <div id="printHeader" style="text-align: center; font-family: serif;">
-                    <h:outputLabel value="#{sessionController.institution.name}" style="font-size: 20px;"></h:outputLabel>
-                    <br> </br>
-                    <h:outputLabel value="Lab Investigation List" style="font-family: serif;" ></h:outputLabel>
-                </div>
+                <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
+                                 styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
+
                 <p:dataTable id="tbl" rowIndexVar="rowIndex" 
                              value="#{investigationController.allIxs}" 
                              var="ix" rowKey="#{ix.id}" 
@@ -41,6 +33,7 @@
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="10,20,50,100,500,1000"
+                             styleClass="nonPrintBlock"            
                              >
                     <p:column headerText="Select" selectionMode="multiple" >
                     </p:column> 
@@ -64,22 +57,23 @@
 
 
 
+                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >
+                    <div >
+                        <ez:patient_report patientReport="#{pr}"/>
+                    </div>
+                </ui:repeat>
+
+                <p:dataTable value="#{investigationController.ixWithoutSamples}" var="ixw" style="width: 600px;"
+                             styleClass="nonPrintBlock"  >
+                    <f:facet name="header" >
+                        List of Investigations without Samples
+                    </f:facet>
+                    <p:column >
+                        #{ixw.name}
+                    </p:column>
+                </p:dataTable>
 
             </p:panel>
-
-            <div class="nonPrintBlock" >
-                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
-            </div>
-
-            <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >
-
-                <div >
-
-                    <ez:patient_report patientReport="#{pr}"/>
-
-                </div>
-            </ui:repeat>
-
 
         </h:form>
 

@@ -683,9 +683,9 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport getLastPatientReport(Investigation ix) {
+        System.err.println("getLastPatientReport");
         String j;
-        PatientReport pr = new PatientReport();
-        pr.getItem();
+        PatientReport pr ;
         Map m = new HashMap();
         if (ix.getReportedAs() == null) {
             m.put("ix", ix);
@@ -696,7 +696,11 @@ public class PatientReportController implements Serializable {
         j = "select pr from PatientReport pr"
                 + " where pr.item=:ix "
                 + " order by pr.id desc";
-        return getFacade().findFirstBySQL(j, m);
+        System.err.println("j = " + j);
+        System.err.println("m = " + m);
+        pr = getFacade().findFirstBySQL(j, m);
+        System.err.println("pr = " + pr);
+        return pr;
     }
 
     public void createNewReport(PatientInvestigation pi) {

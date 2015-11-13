@@ -245,9 +245,12 @@ public class InvestigationController implements Serializable {
     }
     
     public void prepareSelectedReportSamples(){
+        System.out.println("prepareSelectedReportSamples");
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
+        System.err.println("selectedIxs.size() = " + selectedIxs.size());
         for(Investigation ix:selectedIxs){
+            System.err.println("ix.getName() = " + ix.getName());
             PatientReport pr = patientReportController.getLastPatientReport(ix);
             if(pr!=null){
                 selectedPatientReports.add(pr);
