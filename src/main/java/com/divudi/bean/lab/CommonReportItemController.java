@@ -87,11 +87,13 @@ public class CommonReportItemController implements Serializable {
     }
     
     public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
+        System.err.println("commenReportFormat = " + commenReportFormat);
         String temSql;
-
         temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
         Map m = new HashMap();
         m.put("cat", commenReportFormat);
+        System.err.println("temSql = " + temSql);
+        System.err.println("m = " + m);
         items = getFacade().findBySQL(temSql, m);
         return items;
     }
