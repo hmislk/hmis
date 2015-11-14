@@ -1,12 +1,13 @@
-
 package com.divudi.bean.common;
 
-
+import com.divudi.bean.channel.SheduleController;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -15,7 +16,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 
 /**
  *
@@ -28,9 +28,11 @@ public class SessionNumberGenerateConrtroller implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    SheduleController sheduleController;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
-    
+
     List<SessionNumberGenerator> SessionNumberGeneratorlst;
 
     public SessionController getSessionController() {
@@ -56,23 +58,24 @@ public class SessionNumberGenerateConrtroller implements Serializable {
     public void setSessionNumberGeneratorlst(List<SessionNumberGenerator> SessionNumberGeneratorlst) {
         this.SessionNumberGeneratorlst = SessionNumberGeneratorlst;
     }
-    
-    
-    
-    public List<SessionNumberGenerator> completeSessionNumberGenerator(String qry){
-        
+
+    public List<SessionNumberGenerator> completeSessionNumberGenerator(String qry) {
+
         String sql;
-        sql= " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
-            +" and upper(sg.name) like '%" + qry.toUpperCase() + "%' order by sg.name";
+        Map m=new HashMap();
+        sql = " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
+                + " and upper(sg.name) like '%" + qry.toUpperCase() + "%' "
+                + " and sg.speciality=:sp"
+                + " and sg.staff=:s "
+                + " order by sg.name";
         
-        
-        
-        SessionNumberGeneratorlst=sessionNumberGeneratorFacade.findBySQL(sql);
-    
+        m.put("sp", sheduleController.getSpeciality());
+        m.put("s", sheduleController.getCurrentStaff());
+
+        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findBySQL(sql,m);
+
         return SessionNumberGeneratorlst;
     }
-    
-    
 
     /**
      *
