@@ -100,7 +100,7 @@
                                         <f:convertDateTime pattern="dd MMMM" />
                                     </h:outputLabel>
                                 </p:column>
-                                 <p:column headerText="Staff Code">
+                                <p:column headerText="Staff Code">
                                     <h:outputLabel value="#{i.staff.codeInterger}"/>
                                 </p:column>
                                 <p:column headerText="Staff">
@@ -126,16 +126,16 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                               
-                              
+
+
                                 <p:column>
                                     <p:commandButton process="@this" 
                                                      update=":#{p:component('lst')} " 
                                                      value="View"  
-                                                    actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                                     </p:commandButton>                          
                                 </p:column>
-                              
+
 
                             </p:dataTable>
                         </p:panel>
@@ -216,7 +216,7 @@
                             <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
                         </h:panelGroup>
                     </p:tab>
-                    
+
                     <p:tab id="printPaysheet" title="Paysheet">
                         <p:commandButton value="Print" ajax="false" action="#"
                                          disabled="#{staffSalaryController.current.blocked}">
@@ -226,7 +226,7 @@
                             <salary:pay_sheet bill="#{staffSalaryController.current}"></salary:pay_sheet>
                         </h:panelGroup>
                     </p:tab>
-                    
+
 
                 </p:tabView>
             </p:panel>
@@ -237,9 +237,13 @@
                 </p:commandButton>
                 <p:commandButton value="Back" ajax="false" action="#{staffSalaryController.recreateModel()}" >                    
                 </p:commandButton>
-                <ui:repeat value="#{staffSalaryController.getSelectedStaffSalaryList}" var="b" id="gpBillPreviewAll">
-                    <salary:pay_slip bill="#{b}"></salary:pay_slip>                        
-                </ui:repeat>
+                <h:panelGroup id="gpBillPreviewAll">
+                    <div style="page-break-after: always;">
+                        <ui:repeat value="#{staffSalaryController.getSelectedStaffSalaryList}" var="b">
+                            <salary:pay_slip bill="#{b}"></salary:pay_slip>                        
+                        </ui:repeat>
+                    </div>                                
+                </h:panelGroup>
             </p:panel>
 
         </h:form>        

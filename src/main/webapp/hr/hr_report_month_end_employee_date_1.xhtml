@@ -13,11 +13,11 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
+                
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Employee Worked Day Report" />
+                            <h:outputLabel value="Employee Salary Detail Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycal" />
@@ -28,7 +28,6 @@
                                              filter="true" 
                                              filterMatchMode="startsWith"  >
 
-                                <f:selectItem itemLabel="Slect Cycle"/>
                                 <f:selectItems value="#{salaryCycleController.salaryCycles}" 
                                                var="theme" 
                                                itemLabel="#{theme.name}" 
@@ -57,6 +56,8 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:outputLabel value="Additional Details: "/>
+                            <p:selectBooleanCheckbox value="#{hrReportController.reportKeyWord.additionalDetails}" />
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndReportNew()}"/>
@@ -66,19 +67,63 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" style="font-size: 12px;">                     
-                            <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
+                        <p:panel id="gpBillPreview" style="font-size: 12px;"  >                     
+                            <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss" styleClass="noBorder summeryBorder">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Employee Worked Date Report"/>
+                                    <h:outputLabel value="Employee Salary Detail Report"/>
                                     <br/>
-                                    <h:outputLabel value="#{hrReportController.fromDate}">
+                                    <p:outputLabel value="Salary Date - From : " />
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>
+                                    <p:outputLabel value="To : " />
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>
+                                    <br/>
+                                    <p:outputLabel value="OT Date - From : " />
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.dayOffPhFromDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    To
-                                    <h:outputLabel value="#{hrReportController.fromDate}">
+                                    <p:outputLabel value="To : " />
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.dayOffPhToDate}">
                                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                                        <br />
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
 
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                                        <br />
+                                        <h:outputLabel value="Employee #{hrReportController.reportKeyWord.staff.person.name}" rendered="#{hrReportController.reportKeyWord.staff ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                                        <br />
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" rendered="#{hrReportController.reportKeyWord.institution ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                                        <br />
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.department.name} Department" rendered="#{hrReportController.reportKeyWord.department ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staffCategory ne null}">
+                                        <br />
+                                        <h:outputLabel value="Staff Category #{hrReportController.reportKeyWord.staffCategory.name}" rendered="#{hrReportController.reportKeyWord.staffCategory ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.designation ne null}">
+                                        <br />
+                                        <h:outputLabel value="Staff Designation #{hrReportController.reportKeyWord.designation.name}" rendered="#{hrReportController.reportKeyWord.designation ne null}"/>
+                                        <br />
+                                    </h:panelGroup>
                                 </f:facet>
                                 <p:column headerText="Staff Code" style="text-align: left;">
                                     <f:facet name="header" >
@@ -98,19 +143,19 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.workedDays}" style="font-size: 12px;"/>
                                 </p:column>
-                                <p:column headerText="Annual Leave" style="text-align: right;">
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Annual Leave" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Annual Leave" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.leave_annual}" style="font-size: 12px;"/>
                                 </p:column>
-                                <p:column headerText="Casual Leave" style="text-align: right;">
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Casual Leave" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Casual Leave" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.leave_casual}" style="font-size: 12px;"/>
                                 </p:column>
-                                <p:column headerText="Medical Leave" style="text-align: right;">
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Medical Leave" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Medical Leave" />
                                     </f:facet>
@@ -128,29 +173,11 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.lateNoPays}" style="font-size: 12px;"/>
                                 </p:column>
-                                <p:column headerText="Late Days" style="text-align: right;">
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Late Days" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Late Days" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.latedays}" style="font-size: 12px;"/>
-                                </p:column>
-                                <p:column headerText="Off Days" style="text-align: right;">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Off Days" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.dayoff}" style="font-size: 12px;"/>
-                                </p:column>
-                                <p:column headerText="Sleeping Days" style="text-align: right;">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Sleeping Days" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.sleepingDays}" style="font-size: 12px;"/>
-                                </p:column>
-                                <p:column headerText="Poya Days" style="text-align: right;">
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Poya Days" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.poyaDays}" style="font-size: 12px;"/>
                                 </p:column>
                                 <p:column headerText="Merhcantile Days" style="text-align: right;">
                                     <f:facet name="header" >
@@ -158,12 +185,118 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.merhchantileDays}" style="font-size: 12px;"/>
                                 </p:column>
-                                <!--                                <p:column headerText="Extra Duty Days">
-                                #{ss.extraDutyDays}
-                            </p:column>-->
-
-
+                                <p:column headerText="Poya Days" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Poya Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.poyaDays}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Poya Days(Leave)" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Poya Days(Leave)" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.poyaDaysLeave}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column headerText="Off Days" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Off Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.dayoff}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Sleeping Days" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sleeping Days" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.sleepingDays}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column rendered="#{hrReportController.reportKeyWord.additionalDetails}" headerText="Remarks" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Remarks" />
+                                    </f:facet>
+                                    <p:outputLabel value="......................................................................."/>
+                                </p:column>
                             </p:dataTable>
+                            <p:panel header="New Comer" >
+                                <table rendered="#{hrReportController.reportKeyWord.additionalDetails}" border="1px solid black" align="center" >
+                                    <tr>
+                                        <td width="50" style="font-size: 9px">E.No</td>
+                                        <td width="50" style="font-size: 9px">EPF No</td>
+                                        <td width="60" style="font-size: 9px">Date Of Join</td>
+                                        <td style="font-size: 9px">Basic Salary+BR</td>
+                                        <td style="font-size: 9px">T. Allowance </td>
+                                        <td style="font-size: 9px">Per. Allowance</td>
+                                        <td width="200" style="font-size: 9px">Name</td>
+                                        <td width="100" style="font-size: 9px">Designation</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </table>
+
+                                <h:panelGrid columns="3" styleClass="noBorder" >
+                                    <p:outputLabel value="Checked By" style="text-decoration: overline;" />
+                                    <p:spacer width="400px" height="100px"/>
+                                    <p:outputLabel value="Authorized By" style="text-decoration: overline; " />
+                                </h:panelGrid>
+
+                            </p:panel>
                         </p:panel>
 
 

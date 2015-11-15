@@ -591,7 +591,7 @@ public class InvestigationItemController implements Serializable {
                     ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
                     if(ri.getRiWidth()< 20) ri.setRiWidth(20);
                 } catch (Exception e) {
-                    ri.setRiWidth(20);
+                    ri.setRiWidth(40);
                     System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
                 }
 

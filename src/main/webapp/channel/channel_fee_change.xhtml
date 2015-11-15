@@ -17,8 +17,26 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel  value="Effective Date" />
                             <p:calendar   value="#{sheduleController.effectiveDate}" pattern="yyyy MM dd" />
+                            <h:outputLabel  value="Shedule To Staff" ></h:outputLabel>
+                            <p:selectBooleanCheckbox value="#{sheduleController.feeChangeStaff}" >
+                                <p:ajax event="change" update="pg1" process="@this" listener="#{sheduleController.feeChangeListner}" />
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel  value="Speciality" rendered="#{sheduleController.feeChangeStaff}" ></h:outputLabel>
+                            <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                                             completeMethod="#{doctorSpecialityController.completeSpeciality}" rendered="#{sheduleController.feeChangeStaff}"
+                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                             converter="specilityCon"   >
+                                <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
+                            </p:autoComplete>
+
+                            <h:outputLabel  value="Doctor" rendered="#{sheduleController.feeChangeStaff}" ></h:outputLabel>
+                            <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
+                                              completeMethod="#{sheduleController.completeStaff}" rendered="#{sheduleController.feeChangeStaff}"
+                                              var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                              converter="stfcon"   >   
+                            </p:autoComplete>
                         </h:panelGrid>
-                        <h:outputLabel  value="Fees" />
+                        
                         <p:dataTable value="#{sheduleController.feeChanges}" var="f">
                             <p:column rendered="false">
                                 <f:facet name="header">
@@ -86,6 +104,12 @@
                         <p:column headerText="Foriegn Fee">
                             <h:outputLabel value="#{i.fee.ffee}"/>
                         </p:column>
+                        <p:column headerText="Staff">
+                            <h:outputLabel value="#{i.fee.staff.person.name}"/>
+                        </p:column>
+                        <p:column headerText="Specility">
+                            <h:outputLabel value="#{i.fee.speciality.name}"/>
+                        </p:column>
                         <p:column headerText="Effective Date">
                             <h:outputLabel value="#{i.validFrom}"/>
                         </p:column>
@@ -96,6 +120,9 @@
                             <h:outputLabel value="Done" rendered="#{i.done}"/>
                             <h:outputLabel value="Not Done" rendered="#{!i.done}"/>
                         </p:column>
+                        <p:column headerText="Done At">
+                            <h:outputLabel value="#{i.doneAt}"/>
+                        </p:column>
                         <p:column headerText="Remove">
                             <p:commandButton value="Remove" action="#{sheduleController.removeAddFee(i)}" disabled="#{i.done}" ajax="false" />
                         </p:column>
@@ -104,7 +131,7 @@
                 </p:panel>
 
             </h:panelGrid>
-            
+
         </h:form>
     </ui:define>
 

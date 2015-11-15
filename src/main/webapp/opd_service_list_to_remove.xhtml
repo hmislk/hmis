@@ -20,7 +20,7 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="panIx" />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
+                        <p:commandButton ajax="false" value="Export Excel" styleClass="noPrintButton" >
                             <p:dataExporter target="dtF" type="xls" fileName="All Services" />
                         </p:commandButton>
                     </f:facet>
@@ -46,40 +46,61 @@
 
                             <p:column headerText="Category" 
                                       style="font-weight:normal ;color: black;text-align: left;" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Category" />
+                                </f:facet>
                                 <h:outputLabel value="#{sv.category.name}" />
                             </p:column>
                             <p:column headerText="Sub Category" style="font-weight:normal ;color: black;text-align: left;">
+                                <f:facet name="header" >
+                                    <h:outputText value="sub Category" />
+                                </f:facet>
                                 <h:outputLabel value="#{sv.category.parentCategory.name}" rendered="#{sv.category ne null}" />
                             </p:column>
                             <p:column headerText="Instiution" filterBy="#{sv.institution.name}" filterMatchMode="contains"
-                                       style="font-weight:normal ;color: black;text-align: left;">
+                                      style="font-weight:normal ;color: black;text-align: left;">
+                                <f:facet name="header" >
+                                    <h:outputText value="Institution" />
+                                </f:facet>
                                 <h:outputLabel value="#{sv.institution.name}" rendered="#{sv.category ne null}" />
                             </p:column>
                             <p:column headerText="Department" filterMatchMode="contains" filterBy="#{sv.department.name}" style="font-weight:normal ;color: black;text-align: left;">
+                                <f:facet name="header" >
+                                    <h:outputText value="Department" />
+                                </f:facet>
                                 <h:outputLabel value="#{sv.department.name}" rendered="#{sv.category ne null}" />
                             </p:column>
                             <p:column headerText="Item" filterMatchMode="contains"
                                       filterBy="#{sv.name}" style="font-weight:normal ;color: black;text-align: left;">
+                                <f:facet name="header" >
+                                    <h:outputText value="Item" />
+                                </f:facet>
                                 <h:outputLabel value="#{sv.name}" />
                             </p:column>
-                             <p:column headerText="Created By" 
-                                       style="font-weight:normal ;color: black;text-align: left;"
-                                       filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains">
-                                 <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
+                            <p:column headerText="Created By" 
+                                      style="font-weight:normal ;color: black;text-align: left;"
+                                      filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Created By" />
+                                </f:facet>
+                                <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
                             </p:column>
-                            
+
                             <p:column headerText="Service Date Created"
                                       sortBy="#{sv.createdAt}">
+                                
                                 <h:outputLabel value="#{sv.createdAt}" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Fee Date Created" sortBy="#{sv.createdAt}">
                                 <h:outputLabel value="#{sv.itemFee.createdAt}" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
+
+
                         </p:dataTable>
 
 
