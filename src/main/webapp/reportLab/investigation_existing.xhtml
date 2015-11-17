@@ -27,19 +27,23 @@
                         <p:commandButton ajax="false"  value="Process"  
                                          action="#{investigationMonthSummeryOwnControllerSession.createInvestigationExistTable}"
                                          styleClass="noPrintButton" style="float: right;" />
-                        
+
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation_exist"/>
-                                    </p:commandButton>
-                        
+                            <pe:exporter type="xlsx" target="tbl" fileName="Investigation_exist"/>
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
                     </h:panelGrid>
 
 
-                    <p:panel id="panelPrint" styleClass="noBorder">
+                    <p:panel id="panelPrint" styleClass="noBorder summeryBorder" >
 
                         <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
                                      rowIndexVar="i">
-                            
+
                             <f:facet name="header" >
                                 <h:outputLabel value="Investigation Exist Report"/>
                             </f:facet>
@@ -51,6 +55,18 @@
 
                             </p:column>
 
+                            <p:column headerText="Test ID" 
+                                      sortBy="#{c.investigation.id}" 
+                                      filterBy="#{c.investigation.id}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Test ID"/>
+                                </f:facet>
+
+                                <h:outputLabel value="#{c.investigation.id}"  />
+
+                            </p:column>
+
                             <p:column headerText="Test Name" 
                                       sortBy="#{c.investigation.name}" 
                                       filterBy="#{c.investigation.name}"
@@ -58,7 +74,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Test Name"/>
                                 </f:facet>
-                                
+
                                 <h:outputLabel value="#{c.investigation.name}"  />
 
                             </p:column>

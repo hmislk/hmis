@@ -25,7 +25,7 @@
                     <div id="divReport"  style="width:21cm;height: 28cm; position: relative;">
 
 
-
+                        <h:outputLabel value="#{cc.attrs.patientReport.item.name} - #{cc.attrs.patientReport.item.id}" style="top: 10%;left: 10%" />
                         <ez:common_report commonReportFormat="#{cc.attrs.patientReport.transInvestigation.reportFormat}"
                                           patientReport="#{cc.attrs.patientReport}"/>
 
@@ -84,7 +84,7 @@
 
                     <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; ">
 
-
+                        <h:outputLabel value="#{cc.attrs.patientReport.item.name} - #{cc.attrs.patientReport.item.id}" style="top: 10%;left: 10%" />
                         <ez:common_report commonReportFormat="#{cc.attrs.patientReport.transInvestigation.reportFormat}"
                                           patientReport="#{cc.attrs.patientReport}"/>
 
