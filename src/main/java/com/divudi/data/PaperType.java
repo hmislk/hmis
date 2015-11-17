@@ -14,4 +14,5 @@ public enum PaperType {
     FiveFivePaper,
     FiveFivePrintedPaper,
     A4Paper,
+    Paper24_2x9_3,
 }

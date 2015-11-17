@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:poue="http://primefaces.org/ui/extensions"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="content">
+
+
+        <h:form id="form"  >
+
+            <p:growl autoUpdate="true" />
+            <p:panel id="panIx">
+
+                <f:facet name="header" >
+                    <h:outputLabel value="Sample Reports" styleClass="nonPrintBlock" ></h:outputLabel>
+                </f:facet>
+                <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
+                                 styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
+
+                <p:dataTable id="tbl" rowIndexVar="rowIndex" 
+                             value="#{investigationController.allIxs}" 
+                             var="ix" rowKey="#{ix.id}" 
+                             rows="20" selection="#{investigationController.selectedIxs}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100,500,1000"
+                             styleClass="nonPrintBlock"            
+                             >
+                    <p:column headerText="Select" selectionMode="multiple" >
+                    </p:column> 
+                    <p:column headerText="No." >
+                        <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
+                    </p:column>  
+                    <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains" >
+                        <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Category" sortBy="#{ix.category.name}" filterBy="#{ix.category.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Institution" sortBy="#{ix.institution.name}" filterBy="#{ix.institution.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Department" sortBy="#{ix.department.name}" filterBy="#{ix.department.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+
+
+
+                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >                    
+                    <div style="page-break-after: always!important;">
+                        <ez:patient_report patientReport="#{pr}"/>
+                    </div>
+                </ui:repeat>
+
+                <p:dataTable value="#{investigationController.ixWithoutSamples}" var="ixw" style="width: 600px;"
+                             styleClass="nonPrintBlock"  >
+                    <f:facet name="header" >
+                        List of Investigations without Samples
+                    </f:facet>
+                    <p:column >
+                        #{ixw.name}
+                    </p:column>
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+
+
+
+
+
+    </ui:define>
+
+</ui:composition>
