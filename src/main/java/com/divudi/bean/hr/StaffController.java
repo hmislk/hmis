@@ -11,7 +11,6 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.BillType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.ReportKeyWord;
@@ -77,6 +76,10 @@ public class StaffController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    HrReportController hrReportController;
+    @Inject
+    StaffSalaryController staffSalaryController;
     ////
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
@@ -340,6 +343,27 @@ public class StaffController implements Serializable {
         System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
+        for (Staff s : staffWithCode) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+        }
+    }
+    
+    public void createActiveStaffOnylSalaryGeneratedTable(){
+        staffWithCode=new ArrayList<>();
+        hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
+        staffWithCode=hrReportController.fetchOnlySalaryGeneratedStaff();
+    }
+    
+    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate){
+        List<Staff> salaryGeneratedStaff=new ArrayList<>();
+        hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
+        salaryGeneratedStaff=hrReportController.fetchOnlySalaryGeneratedStaff();
+        createActiveStaffTable(ssDate);
+        System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        staffWithCode.removeAll(salaryGeneratedStaff);
     }
 
     public void createActiveStaffTable() {
