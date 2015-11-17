@@ -252,7 +252,7 @@
                                                 <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
-
+                                            
                                             <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 

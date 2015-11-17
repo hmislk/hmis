@@ -36,7 +36,7 @@
                                        value=" THIS BILL IS NOT VALID PLEASE CANCEL."/>
                     </div>
 
-                    <div style="font-size: 16px!important;">
+                    <div style="font-size: 18px!important;">
 
                         <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"
                                        styleClass="opdRefNo"/>
@@ -62,31 +62,31 @@
                     <div class="opdAppNo" style="font-size: 16px;
                          position: absolute;
                          left: 25%;
-                         top: 20%;" >                       
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                         top: 30%;" >                       
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}" style="font-size: 16px;">
                             <f:convertDateTime pattern="dd/MM/yy"/>
                         </h:outputLabel>
                     </div>
 
                    
-                    <div class="opdConsultant" style="font-size: 16px;
+                    <div class="opdConsultant" style="font-size: 18px;
                          position: absolute;
                          left: 33%;
-                         top: 31%;" >
+                         top: 41%;" >
                         <h:panelGroup>
-                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"/>                              
+                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" style="font-size: 18px;"/>                              
                         </h:panelGroup>
                     </div>
 
                     
-                    <div class="opdPatientName" style="font-size: 16px;
+                    <div class="opdPatientName" style="font-size: 18px;
                          position: absolute;
                          left: 28%;
-                         top: 38%;">
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                         top: 48%;">
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="font-size: 20px;" >
                         </h:outputLabel>
                         
-                        <h:outputLabel value="#{cc.attrs.bill.patient.age}" style="margin-left: 15px;" >
+                        <h:outputLabel value="#{cc.attrs.bill.patient.age}" style="margin-left: 15px; font-size: 20px;">
                         </h:outputLabel>
                     </div>
 
@@ -104,11 +104,11 @@
                     <div style="font-size: 16px!important;
                          position: absolute;
                          left: 15%;
-                         top: 45%;" >
+                         top: 55%;" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <h:column >
 
-                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 16px!important;" >
+                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 20px!important;" >
                                 </h:outputLabel>
                                 
                                 
@@ -124,7 +124,7 @@
                             </h:column>
                         </h:dataTable>
                         <div style="margin-top: 20px; margin-left: 15px;">
-                            <h:outputLabel style="font-size: 15px!important; font-weight: bold;" value="TOTAL " />
+                            <h:outputLabel style="font-size: 22px!important; font-weight: bold;" value="TOTAL " />
                         </div>
                         
                     </div>
@@ -132,17 +132,17 @@
                     <div style="position: absolute;
                          font-size: 20px;
                          left: 70%;
-                         top: 45%;
+                         top: 55%;
                          text-align: right;"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 16px!important;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 20px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                         <div style="margin-top: 20px;">
-                            <h:outputLabel style="font-size: 15px!important; font-weight: bold;" value="#{cc.attrs.bill.total}">
+                            <h:outputLabel style="font-size: 22px!important; font-weight: bold;" value="#{cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </div>
