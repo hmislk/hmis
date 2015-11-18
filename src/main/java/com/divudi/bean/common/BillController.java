@@ -1213,7 +1213,7 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (!sessionController.userPreference.isOpdSettleWithoutPatientPhoneNumber()) {
+        if (!sessionController.getUserPreference().isOpdSettleWithoutPatientPhoneNumber()) {
             if (getNewPatient().getPerson().getPhone() == null) {
                 UtilityController.addErrorMessage("Please Insert a Phone Number");
                 return true;
