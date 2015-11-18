@@ -98,7 +98,19 @@
                                 <h:outputLabel value="#{i+1}"  />
                                 
                             </p:column>
-
+                            <p:column headerText="Test ID" 
+                                      sortBy="#{c.investigation.id}" 
+                                      filterBy="#{c.investigation.id}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Test ID"/>
+                                </f:facet>
+                                <h:outputLabel value="#{c.investigation.id}"  />
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total">
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
                             <p:column headerText="Test Name" 
                                       sortBy="#{c.investigation.name}" 
                                       filterBy="#{c.investigation.name}"
