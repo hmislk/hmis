@@ -239,7 +239,7 @@ public class PatientReportController implements Serializable {
                 String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
-                //System.out.println("ixcals size is " + ixCals.size());
+                System.out.println("ixcals size is " + ixCals.size());
                 String calString = "";
                 for (IxCal c : ixCals) {
                     if (c.getCalculationType() == CalculationType.Constant) {
@@ -680,6 +680,27 @@ public class PatientReportController implements Serializable {
 //            currentPatientReport = cpt;
 //        }
         return currentPatientReport;
+    }
+
+    public PatientReport getLastPatientReport(Investigation ix) {
+        System.err.println("getLastPatientReport");
+        String j;
+        PatientReport pr ;
+        Map m = new HashMap();
+        if (ix.getReportedAs() == null) {
+            m.put("ix", ix);
+        } else {
+            Investigation ixr = (Investigation) ix.getReportedAs();
+            m.put("ix", ixr);
+        }
+        j = "select pr from PatientReport pr"
+                + " where pr.item=:ix "
+                + " order by pr.id desc";
+        System.err.println("j = " + j);
+        System.err.println("m = " + m);
+        pr = getFacade().findFirstBySQL(j, m);
+        System.err.println("pr = " + pr);
+        return pr;
     }
 
     public void createNewReport(PatientInvestigation pi) {

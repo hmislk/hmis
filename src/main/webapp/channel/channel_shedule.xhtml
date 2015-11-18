@@ -77,8 +77,7 @@
 
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
-
-
+                        
                         <h:outputText value="Institution" ></h:outputText>
                         <p:selectOneMenu id="cmbIns" value="#{sheduleController.current.institution}" >
                             <f:selectItem itemLabel="Please select a Institution"/>
@@ -185,7 +184,6 @@
                     </h:panelGrid>
                     <p:dataTable value="#{sheduleController.itemFees}" var="i" >
                         <p:column headerText="Name">
-<!--                            <h:inputText value="#{i.name}"/>                            -->
                             <h:outputLabel value="#{i.name}"/> 
                         </p:column>
                         <p:column headerText="Fee Type">
@@ -211,7 +209,7 @@
                 </p:panel>
 
             </h:panelGrid>
-            <p:commandButton value="Update On-Call Fees" action="#{sheduleController.createOnCallFeeOldSession()}" ajax="false" />
+            <p:commandButton value="Update On-Call Fees" action="#{sheduleController.createOnCallFeeOldSession()}" rendered="false" ajax="false" />
         </h:form>
     </ui:define>
 

@@ -42,6 +42,11 @@
                             <p:commandButton  styleClass="linkButton" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>
                         </p:panelGrid>
                     </p:panel>
+                    <p:panel header="Shedule" >
+                        <p:panelGrid columns="1" >
+                            <p:commandButton  styleClass="linkButton" ajax="false" value="Channel Fee Update" action="/channel/channel_fee_change" actionListener="#{sheduleController.prepareAddFeeChange}" />
+                        </p:panelGrid>
+                    </p:panel>
                 </p:panelGrid>
             </p:panel>
 

@@ -101,7 +101,7 @@
                                  selectionMode="single" 
                                  selection="#{bookingController.selectedServiceSession}"
                                  scrollable="true" 
-                                 scrollHeight="300"
+                                 scrollHeight="300" rowStyleClass="#{ses.deactivated ? 'redText':''}"
                                  style="min-height: 300px;">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
@@ -109,43 +109,40 @@
                                 listener="#{bookingController.fillBillSessions}" />
 
                         <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
-                           <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                            <h:outputText value="* " rendered="#{ses.deactivated}" />
+                            <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="E"/>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
-                            <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
+                            <h:outputText value=" &nbsp;&nbsp;" />
+                            <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="MMM/dd/yyyy"/>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
-                            <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
+                            <h:outputText value=" &nbsp;&nbsp;" />
+                            <h:outputText value="#{ses.startingTime}" >
                                 <f:convertDateTime pattern="hh:mm a"/>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
-                            <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
+                            <h:outputText value=" &nbsp;&nbsp;" />
+                            <h:outputText value="#{ses.totalFee}" >
                                 <f:convertNumber pattern="#,##0" ></f:convertNumber>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
-                            <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" rendered="#{!ses.deactivated}">
+                            <h:outputText value=" &nbsp;&nbsp;" />
+                            <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" >
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
-                            <h:outputText value="(" rendered="#{!ses.deactivated}" />
-                            <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0 and !ses.deactivated}" >
+                            <h:outputText value="(" />
+                            <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}" >
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
-                            <h:outputText value=") &nbsp;&nbsp;#" rendered="#{!ses.deactivated}"/>
-                            <h:outputText value="#{ses.displayCount+1}" style="color: red" rendered="#{!ses.deactivated}">
+                            <h:outputText value=") &nbsp;&nbsp;#" />
+                            <h:outputText value="#{ses.displayCount+1}" style="color: red" >
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;**" rendered="#{!ses.deactivated}"/>
-                            <h:outputText value="#{ses.transCreditBillCount}" rendered="#{!ses.deactivated}">
+                            <h:outputText value=" &nbsp;&nbsp;**" />
+                            <h:outputText value="#{ses.transCreditBillCount}" >
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
-                            <h:outputText value="**" rendered="#{!ses.deactivated}"/>
-                            <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
-                            <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
-                                <f:convertDateTime pattern="MMM/dd/yyyy"/>
-                            </h:outputText>
-                            <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
+                            <h:outputText value="**" />
+                            <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
                         </p:column>
 
                         <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
@@ -402,19 +399,45 @@
                         <p:tab  id="tabSearchPt" title="Search Pateint">
                             <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{channelBillController.searchPatient}" 
-                                            completeMethod="#{patientController.completePatient}" 
+                                            completeMethod="#{patientController.completePatientByNameOrCode}" 
                                             var="apt" itemLabel="#{apt.person.name}" 
                                             itemValue="#{apt}" size="30"  styleClass="mediuminput">
-                                <p:ajax event="itemSelect" process="@this" update="panSearch"/>
-                            </p:autoComplete>   
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                </p:column>
 
+                                <p:column headerText="Age">
+                                    <h:outputLabel value="#{apt.age}" />
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{apt.code}" />
+                                </p:column>
+                                <p:column headerText="Sex">
+                                    <h:outputLabel value="#{apt.person.sex}" />
+                                </p:column>
+                                <p:column headerText="Address">
+                                    <h:outputLabel value="#{apt.person.address}" />
+                                </p:column>
+                                <p:column headerText="Date of Birth">
+                                    <h:outputLabel value="#{apt.person.dob}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:ajax event="itemSelect" process="@this" update="panSearch"/>
+                            </p:autoComplete>
                             <h:panelGrid id="panSearch" columns="2" >
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Name" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.nameWithTitle}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.nameWithTitle}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Code" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.code}" />
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Phone" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.phone}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.phone}" />
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Sex" />
-                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.sex}" ></h:outputLabel>
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.sex}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Address" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.person.address}" />
+                                <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Age" />
+                                <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.age}" />
                             </h:panelGrid>   
                         </p:tab>
                     </p:tabView>
@@ -452,16 +475,24 @@
 
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
+
+
+                            <div>
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">
+                                    <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.printingBill}" dup="false"/>
+                                </h:panelGroup>
+                            </div>
                             <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
                                     <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                         <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
-                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
+<!--                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>-->
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </div>
                             <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                         <ch:channelReciptPosDouble bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
@@ -472,6 +503,7 @@
 
                                 </h:panelGroup>
                             </div>
+
                         </h:panelGroup>
 
                         <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
@@ -683,16 +715,23 @@
 
 
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
+
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">
+                                            <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
+                                    </h:panelGroup>
+                                </div>
+
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
                                         <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                             <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+<!--                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </div>
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
                                         <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                             <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                         </h:panelGroup>
@@ -874,7 +913,7 @@
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
                                                     <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
                                                         <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+<!--                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>-->
                                                     </h:panelGroup>
                                                 </h:panelGroup>
                                             </div>

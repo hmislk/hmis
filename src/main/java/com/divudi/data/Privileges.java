@@ -255,6 +255,8 @@ public enum Privileges {
     ChannellingPastBooking,
     ChannellingBookedList,
     ChannellingDoctorLeave,
+    ChannellingDoctorLeaveByDate,
+    ChannellingDoctorLeaveByServiceSession,
     ChannellingChannelSheduling,
     ChannellingChannelAgentFee,
     ChannellingDoctorSessionView,

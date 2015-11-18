@@ -4,10 +4,12 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.Title;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.FinalVariables;
@@ -69,6 +71,9 @@ public class BookingPastController implements Serializable {
     private double agentTotalR;
     private double taxTotalR;
     int serialNo;
+    String selectTextSpeciality = "";
+    String selectTextConsultant = "";
+    String selectTextSession = "";
     ////////////////////
     private List<ServiceSession> serviceSessions;
     private List<BillSession> billSessions;
@@ -82,6 +87,8 @@ public class BookingPastController implements Serializable {
     private ChannelReportController channelReportController;
     @Inject
     private ChannelSearchController channelSearchController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -214,8 +221,8 @@ public class BookingPastController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-        fillConsultants();
-        setStaff(null);
+//        fillConsultants();
+//        setStaff(null);
     }
 
     public void fillConsultants() {
@@ -316,10 +323,32 @@ public class BookingPastController implements Serializable {
         UtilityController.addSuccessMessage("Patient Updated");
     }
 
-    public void fillBillSessions(SelectEvent event) {
+//    public void fillBillSessions(SelectEvent event) {
+//        selectedBillSession = null;
+//        setSelectedServiceSession(null);
+//        selectedServiceSession = ((ServiceSession) event.getObject());
+//
+//        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+//        List<BillType> bts = Arrays.asList(billTypes);
+//
+//        String sql = "Select bs From BillSession bs "
+//                + " where bs.retired=false"
+//                + " and bs.serviceSession=:ss "
+//                + " and bs.bill.billType in :bt"
+//                + " and type(bs.bill)=:class "
+//                + " and bs.sessionDate= :ssDate "
+//                + " order by bs.serialNo ";
+//        HashMap hh = new HashMap();
+//        hh.put("bt", bts);
+//        hh.put("class", BilledBill.class);
+//        hh.put("ssDate", getDate());
+//        hh.put("ss", getSelectedServiceSession());
+//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//    }
+    
+    public void fillBillSessions() {
         selectedBillSession = null;
-        setSelectedServiceSession(null);
-        selectedServiceSession = ((ServiceSession) event.getObject());
+//        selectedServiceSession = ((ServiceSession) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -334,14 +363,20 @@ public class BookingPastController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
-        hh.put("ssDate", getDate());
+        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        System.out.println("hh = " + hh);
+        System.out.println("sql = " + sql);
+        System.out.println("billSessions.size() = " + billSessions.size());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+
     }
 
-    public void generateSessions(SelectEvent event) {
-        date = null;
-        date = ((Date) event.getObject());
+    public void generateSessions() {
+//        date = null;
+//        date = ((Date) event.getObject());
+        selectedBillSession = null;
+        billSessions=new ArrayList();
         serviceSessions = new ArrayList<>();
 
         Date currenDate = new Date();
@@ -353,11 +388,19 @@ public class BookingPastController implements Serializable {
         String sql = "";
 
         if (staff != null) {
-            Calendar c = Calendar.getInstance();
-            c.setTime(getDate());
-            int wd = c.get(Calendar.DAY_OF_WEEK);
-            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//            Calendar c = Calendar.getInstance();
+//            c.setTime(getDate());
+//            int wd = c.get(Calendar.DAY_OF_WEEK);
+//            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
+//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+            serviceSessions=fetchCreatedServiceSession(staff, date);
+            int a=0;
+            for (ServiceSession s : serviceSessions) {
+                s.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(s, s.getSessionDate()));
+                s.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(s, s.getSessionDate()));
+                s.setTransRowNumber(a++);
+            }
+            System.out.println("serviceSessions.size() = " + serviceSessions.size());
         }
 
         billSessions = new ArrayList<>();
@@ -446,6 +489,123 @@ public class BookingPastController implements Serializable {
 
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
         return dbl;
+    }
+    
+    public List<ServiceSession> fetchCreatedServiceSession(Staff s, Date d) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select s From ServiceSession s where s.retired=false "
+                + " and s.staff=:staff "
+                + " and s.originatingSession is not null "
+                + " and s.sessionDate=:d "
+                + " and type(s)=:class "
+                + " order by s.sessionWeekday,s.startingTime ";
+        m.put("d", d);
+        m.put("staff", s);
+        m.put("class", ServiceSession.class);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        return getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+    
+    public void listnerStaffListForRowSelect() {
+        getSelectedConsultants();
+        setStaff(null);
+        billSessions=null;
+    }
+    
+    public List<Staff> getSelectedConsultants() {
+        System.out.println("selectText.length() = " + selectTextConsultant.length());
+        String sql;
+        Map m = new HashMap();
+
+//        //System.out.println("consultants = " + consultants);
+        if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
+            m.put("sp", getSpeciality());
+            if (getSpeciality() != null) {
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and pi.staff.speciality=:sp "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("typ", PersonInstitutionType.Channelling);
+
+                } else {
+                    sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
+                }
+                System.out.println("m = " + m);
+                System.out.println("sql = " + sql);
+                consultants = getStaffFacade().findBySQL(sql, m);
+            }
+        } else {
+            if (selectTextConsultant.length() > 4) {
+                doctorSpecialityController.setSelectText("");
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                            + " and pi.type=:typ "
+                            + " and pi.institution=:ins "
+                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " order by pi.staff.person.name ";
+
+                    m.put("ins", getSessionController().getInstitution());
+                    m.put("typ", PersonInstitutionType.Channelling);
+                    System.out.println("m = " + m);
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql, m);
+
+                } else {
+                    sql = "select p from Staff p where p.retired=false "
+                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " order by p.person.name";
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql);
+                }
+
+            } else {
+                m.put("sp", getSpeciality());
+                if (getSpeciality() != null) {
+                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+
+                        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                                + " and pi.type=:typ "
+                                + " and pi.institution=:ins "
+                                + " and pi.staff.speciality=:sp "
+                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " order by pi.staff.person.name ";
+
+                        m.put("ins", getSessionController().getInstitution());
+                        m.put("typ", PersonInstitutionType.Channelling);
+
+                    } else {
+                        sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
+                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " order by p.person.name";
+                    }
+                    System.out.println("m = " + m);
+                    System.out.println("sql = " + sql);
+                    consultants = getStaffFacade().findBySQL(sql, m);
+                }
+            }
+        }
+        if (consultants == null) {
+            consultants = new ArrayList<>();
+        }
+
+        if (consultants.size() > 0) {
+            System.out.println("consultants.size() = " + consultants.size());
+            setStaff(consultants.get(0));
+            setSpeciality(getStaff().getSpeciality());
+        } else {
+
+            setStaff(null);
+        }
+
+        return consultants;
     }
 
     public Staff getStaff() {        
@@ -781,5 +941,29 @@ public class BookingPastController implements Serializable {
 
     public void setTaxTotalR(double taxTotalR) {
         this.taxTotalR = taxTotalR;
+    }
+
+    public String getSelectTextSpeciality() {
+        return selectTextSpeciality;
+    }
+
+    public void setSelectTextSpeciality(String selectTextSpeciality) {
+        this.selectTextSpeciality = selectTextSpeciality;
+    }
+
+    public String getSelectTextConsultant() {
+        return selectTextConsultant;
+    }
+
+    public void setSelectTextConsultant(String selectTextConsultant) {
+        this.selectTextConsultant = selectTextConsultant;
+    }
+
+    public String getSelectTextSession() {
+        return selectTextSession;
+    }
+
+    public void setSelectTextSession(String selectTextSession) {
+        this.selectTextSession = selectTextSession;
     }
 }

@@ -240,11 +240,11 @@
                                     <h:outputLabel value="Additionl OT Before Shift"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.staffShift.extraTimeFromStartRecordVarified/60}" 
-                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
+                                               rendered="#{!(add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya') )}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                                 <p:outputLabel value="0" 
-                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
+                                               rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya')}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -254,11 +254,11 @@
                                     <h:outputLabel value="Additional OT After Shift"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.staffShift.extraTimeFromEndRecordVarified/60}"  
-                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
+                                               rendered="#{!(add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya'))}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                                 <p:outputLabel value="0" 
-                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
+                                               rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya')}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>
@@ -268,11 +268,11 @@
                                     <h:outputLabel value="All"/>
                                 </f:facet>
                                 <p:outputLabel value="#{add.staffShift.extraTimeCompleteRecordVarified/60}"  
-                                               rendered="#{!(add.times eq 'All' and add.staffShift.dayType eq 'Poya')}">
+                                               rendered="#{!(add.times eq 'All' and (add.staffShift.dayType eq 'DayOff'or add.staffShift.dayType eq 'Poya'))}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                                 <p:outputLabel value="0" 
-                                               rendered="#{add.times eq 'All' and add.staffShift.dayType eq 'Poya'}">
+                                               rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya')}">
                                     <f:convertNumber pattern="0"/>
                                 </p:outputLabel>
                             </p:column>

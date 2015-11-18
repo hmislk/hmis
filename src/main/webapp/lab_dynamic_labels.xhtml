@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
 
@@ -90,29 +91,50 @@
                         </p:panel>
                         <p:panel header="Already added Labels" >
                             <p:panelGrid columns="1" >
-
+                                <f:facet name="header" >
+                                    <p:commandButton value="Excel" ajax="false">
+                                        <pe:exporter type="xlsx" target="tbl" fileName="lab_dianamic_lables"  />
+                                    </p:commandButton>
+                                </f:facet>
                                 <p:dataTable id="tbl" value="#{investigationItemDynamicLabelController.dynamicLabels}" var="f" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="#{investigationItemDynamicLabelController.investigation.name} - " />
+                                        
+                                        <p:outputLabel value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType.name}" />
+                                    </f:facet>
                                     <p:column headerText="Sex">
-                                        #{f.sex}
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Sex" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{f.sex}" />
                                     </p:column>
                                     <p:column headerText="From Age">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="From Age" />
+                                        </f:facet>
                                         <p:inputText autocomplete="off" value="#{f.fromAge}" >
                                             <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="To Age">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="To Age" />
+                                        </f:facet>
                                         <p:inputText autocomplete="off" value="#{f.toAge}" >
                                             <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
                                         </p:inputText>
                                     </p:column>
 
                                     <p:column headerText="Message">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Message" />
+                                        </f:facet>
                                         <p:inputText autocomplete="off" value="#{f.flagMessage}" >
                                             <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Remove">
+                                    <p:column headerText="Remove" exportable="false">
                                         <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}" onclick="onSubmitButton();"  >
                                             <f:setPropertyActionListener value="#{f}" target="#{investigationItemDynamicLabelController.removingInvestigationItemofDynamicLabelType}" />
                                         </p:commandButton>

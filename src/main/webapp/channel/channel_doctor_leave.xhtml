@@ -28,7 +28,7 @@
                     </h:panelGrid>
                 </p:panel>
 
-                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.items}" var="d" rowStyleClass="#{d.retired ? 'crossLine':''}" >
+                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.serviceSessionLeaves}" var="d" rowStyleClass="#{d.retired ? 'crossLine':''}" >
                     <p:column>
                         <h:outputLabel value="#{d.sessionDate}">
                             <f:convertDateTime parent="YYYY MM dd" />
@@ -53,7 +53,7 @@
                     <f:ajax event="dateSelect" execute="@this"  />
                 </p:calendar>
                 <p:outputLabel/>
-                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeave}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.removeLeave}" onclick="onSubmitButton();"/>
             </h:panelGrid>
 
         </h:form>

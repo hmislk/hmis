@@ -75,6 +75,7 @@ public class BookKeepingSummery implements Serializable {
     private List<String1Value3> opdList;
     List<String1Value2> outSideFees;
     private List<String1Value2> pharmacySales;
+    List<String1Value2> pharmacyWholeSales;
     private List<String1Value2> channelBills;
     List<String1Value2> collections2Hos;
     List<String1Value2> finalValues;
@@ -99,6 +100,7 @@ public class BookKeepingSummery implements Serializable {
     double opdRegentTotalByPayMethod;
     double outSideFeeTotal;
     double pharmacyTotal;
+    double pharmacyWholeSaleTotal;
     double inwardPaymentTotal;
     double agentPaymentTotal;
     double creditCompanyTotal;
@@ -138,6 +140,7 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = 0;
         outSideFeeTotal = 0;
         pharmacyTotal = 0;
+        pharmacyWholeSaleTotal = 0;
         inwardPaymentTotal = 0;
         agentPaymentTotal = 0;
         creditCompanyTotal = 0;
@@ -315,6 +318,14 @@ public class BookKeepingSummery implements Serializable {
         this.pharmacyTotal = pharmacyTotal;
     }
 
+    public double getPharmacyWholeSaleTotal() {
+        return pharmacyWholeSaleTotal;
+    }
+
+    public void setPharmacyWholeSaleTotal(double pharmacyWholeSaleTotal) {
+        this.pharmacyWholeSaleTotal = pharmacyWholeSaleTotal;
+    }
+
     public double getOutSideFeeTotal() {
         return outSideFeeTotal;
     }
@@ -427,6 +438,17 @@ public class BookKeepingSummery implements Serializable {
 
     public void setPharmacySales(List<String1Value2> pharmacySales) {
         this.pharmacySales = pharmacySales;
+    }
+
+    public List<String1Value2> getPharmacyWholeSales() {
+        if (pharmacyWholeSales == null) {
+            pharmacyWholeSales = new ArrayList<>();
+        }
+        return pharmacyWholeSales;
+    }
+
+    public void setPharmacyWholeSales(List<String1Value2> pharmacyWholeSales) {
+        this.pharmacyWholeSales = pharmacyWholeSales;
     }
 
     public List<String1Value2> getChannelBills() {
@@ -1468,7 +1490,7 @@ public class BookKeepingSummery implements Serializable {
 
         bookKeepingSummeryRowsInward.addAll(createFee(BillClassType.BilledBill, bts, null,
                 getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
-        
+
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
 
     }
@@ -1508,8 +1530,6 @@ public class BookKeepingSummery implements Serializable {
         List<BookKeepingSummeryRow> bookKeepingSummery = new ArrayList<>();
         totalRegentFee = 0;
 
-        
-
         System.out.println("inside createFee");
 
         for (Item item : getItems(billClassType, billTypes, feeTypes,
@@ -1532,7 +1552,7 @@ public class BookKeepingSummery implements Serializable {
                 hm.put("td", tDate);
             }
 
-            if (!billTypes.isEmpty()) {                
+            if (!billTypes.isEmpty()) {
                 sql += " and bf.bill.billType in :bTp ";
                 hm.put("bTp", billTypes);
             }
@@ -2125,7 +2145,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
-                + " and bi.item.department.institution=:ins "
+//                + " and bi.item.department.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms";
@@ -2826,7 +2846,7 @@ public class BookKeepingSummery implements Serializable {
         pharmacySales = new ArrayList<>();
 
         //System.err.println("DEP " + d.getName());
-        List<Object[]> list = getBillBean().fetchDepartmentSale(getFromDate(), getToDate(), getInstitution());
+        List<Object[]> list = getBillBean().fetchDepartmentSale(getFromDate(), getToDate(), getInstitution(), BillType.PharmacySale);
 
         for (Object[] obj : list) {
             String1Value2 newRow = new String1Value2();
@@ -2843,6 +2863,32 @@ public class BookKeepingSummery implements Serializable {
 
             if (value != null) {
                 getPharmacySales().add(newRow);
+            }
+        }
+
+    }
+
+    private void createPharmacyWholeSale() {
+        pharmacyWholeSales = new ArrayList<>();
+
+        //System.err.println("DEP " + d.getName());
+        List<Object[]> list = getBillBean().fetchDepartmentSale(getFromDate(), getToDate(), getInstitution(), BillType.PharmacyWholeSale);
+
+        for (Object[] obj : list) {
+            String1Value2 newRow = new String1Value2();
+            Department department = ((Department) obj[0]);
+            Double value = (Double) obj[1];
+
+            if (department != null) {
+                newRow.setString(department.getName());
+            }
+
+            if (value != null) {
+                newRow.setValue1(value);
+            }
+
+            if (value != null) {
+                getPharmacyWholeSales().add(newRow);
             }
         }
 
@@ -3084,7 +3130,8 @@ public class BookKeepingSummery implements Serializable {
         ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFees(fromDate, toDate, institution);
-        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
+        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
@@ -3376,6 +3423,7 @@ public class BookKeepingSummery implements Serializable {
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOutSideFeeWithPro();
         createPharmacySale();
+        createPharmacyWholeSale();
         createChannelBill();
         createInwardCollection();
         agentCollections = agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
@@ -3389,7 +3437,8 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
-        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
+        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         channelTotal = getBillBean().calChannelTotal(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
@@ -3469,11 +3518,13 @@ public class BookKeepingSummery implements Serializable {
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOutSideFee();
         createPharmacySale();
+        createPharmacyWholeSale();
         createInwardCollectionMonth();
         ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFees(fromDate, toDate, institution);
-        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
+        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
@@ -3497,6 +3548,7 @@ public class BookKeepingSummery implements Serializable {
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOutSideFeeWithPro();
         createPharmacySale();
+        createPharmacyWholeSale();
         createInwardCollectionMonth();
 //        agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
 //        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
@@ -3506,7 +3558,8 @@ public class BookKeepingSummery implements Serializable {
         ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
-        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
+        pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);

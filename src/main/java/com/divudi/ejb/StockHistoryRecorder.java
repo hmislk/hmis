@@ -5,14 +5,21 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
+import com.divudi.entity.FeeChange;
 import com.divudi.entity.Item;
+import com.divudi.entity.ItemFee;
+import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Staff;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FeeChangeFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
@@ -24,6 +31,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -44,6 +53,13 @@ public class StockHistoryRecorder {
     AmpFacade ampFacade;
     @EJB
     StockHistoryFacade stockHistoryFacade;
+    @EJB
+    FeeChangeFacade feeChangeFacade;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
+
+    @Inject
+    CommonFunctions commonFunctions;
 
     @SuppressWarnings("unused")
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
@@ -78,6 +94,36 @@ public class StockHistoryRecorder {
                 }
                 //System.out.println("hx finished for = " + d);
             }
+        }
+        //System.out.println("End writing stock history: " + new Date());
+//        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+    }
+
+    @SuppressWarnings("unused")
+    @Schedule(minute = "15", second = "59", hour = "18", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    public void myTimerDaily() {
+        Date startTime = new Date();
+        System.out.println("Start writing stock history: " + startTime);
+        for (FeeChange fc : fetchFeeChanges()) {
+            System.err.println("fc.getFee().getName() = " + fc.getFee().getName());
+            System.err.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
+            if (fc.getFee().getStaff() != null) {
+                System.out.println("fc.getFee().getStaff().getPerson().getName() = " + fc.getFee().getStaff().getPerson().getName());
+            }
+            for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName(), fc.getFee().getStaff())) {
+                System.out.println("1.f.getFee() = " + f.getFee());
+                f.setFee(f.getFee() + fc.getFee().getFee());
+                System.out.println("2.f.getFee() = " + f.getFee());
+                System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
+                System.out.println("1.f.getFfee() = " + f.getFfee());
+                f.setFfee(f.getFfee() + fc.getFee().getFfee());
+                System.out.println("2.f.getFfee() = " + f.getFfee());
+                System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
+                getItemFeeFacade().edit(f);
+            }
+            fc.setDoneAt(new Date());
+            fc.setDone(true);
+            getFeeChangeFacade().edit(fc);
         }
         //System.out.println("End writing stock history: " + new Date());
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
@@ -123,7 +169,6 @@ public class StockHistoryRecorder {
         sql = "select sum(s.stock * s.itemBatch.retailsaleRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
         return getStockFacade().findDoubleByJpql(sql, m);
     }
-    
 
     public double getStockPurchaseValue(Item item, Department department) {
         if (item instanceof Ampp) {
@@ -137,7 +182,45 @@ public class StockHistoryRecorder {
         return getStockFacade().findDoubleByJpql(sql, m);
     }
 
-    
+    public List<FeeChange> fetchFeeChanges() {
+        String sql;
+        Map m = new HashMap();
+        sql = " select fc from FeeChange fc where "
+                + " fc.retired=false "
+                + " and fc.validFrom=:ed "
+                + " and fc.done!=true ";
+        m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
+        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("changes.size() = " + changes.size());
+        return changes;
+    }
+
+    public List<ItemFee> fetchServiceSessionFees(FeeType ft, String s, Staff staff) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and type(f.serviceSession)=:type "
+                + " and f.serviceSession.originatingSession is null "
+                + " and f.feeType=:ft "
+                + " and f.serviceSession.staff=:staff "
+                + " and f.name=:a ";
+
+        if ((ft == FeeType.Service && s.equals("Scan Fee")) || (ft == FeeType.OwnInstitution && s.equals("Hospital Fee"))) {
+            sql += " and (f.fee>0 or f.ffee>0) ";
+        }
+
+        sql += " order by f.id";
+        m.put("type", ServiceSession.class);
+        m.put("ft", ft);
+        m.put("a", s);
+        m.put("staff", staff);
+        List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
+        System.out.println("itemFees.size() = " + itemFees.size());
+        return itemFees;
+    }
 
 // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -187,6 +270,30 @@ public class StockHistoryRecorder {
 
     public void setStockHistoryFacade(StockHistoryFacade stockHistoryFacade) {
         this.stockHistoryFacade = stockHistoryFacade;
+    }
+
+    public FeeChangeFacade getFeeChangeFacade() {
+        return feeChangeFacade;
+    }
+
+    public void setFeeChangeFacade(FeeChangeFacade feeChangeFacade) {
+        this.feeChangeFacade = feeChangeFacade;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
     }
 
 }

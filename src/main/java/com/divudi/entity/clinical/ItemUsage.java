@@ -6,17 +6,21 @@
 package com.divudi.entity.clinical;
 
 import com.divudi.data.Sex;
-import com.divudi.data.clinical.FavouriteItemType;
+import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,10 +33,10 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
-public class FavouriteItem implements Serializable {
+public class ItemUsage implements Serializable {
 
     @ManyToOne
-    private FavouriteItem parent;
+    private ItemUsage parent;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -48,7 +52,13 @@ public class FavouriteItem implements Serializable {
     @ManyToOne
     private Item forItem;
 
-    private FavouriteItemType type;
+    @ManyToOne
+    Patient patient;
+    @ManyToOne
+    PatientEncounter patientEncounter;
+
+    @Enumerated(EnumType.STRING)
+    private ItemUsageType type;
 
     @ManyToOne
     private Item item;
@@ -62,14 +72,14 @@ public class FavouriteItem implements Serializable {
     Integer intValue2;
     @ManyToOne
     private MeasurementUnit measurementUnit2;
-
+    @Enumerated(EnumType.STRING)
     private Sex sex;
     private Long ageInMonthsFrom;
     private Long ageInMonthsTo;
     private int orderNo;
 
     @OneToMany(mappedBy = "parent")
-    private List<FavouriteItem> children;
+    private List<ItemUsage> children;
 
     //Created Properties
     @ManyToOne
@@ -97,6 +107,40 @@ public class FavouriteItem implements Serializable {
         this.id = id;
     }
 
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public Integer getIntValue1() {
+        return intValue1;
+    }
+
+    public void setIntValue1(Integer intValue1) {
+        this.intValue1 = intValue1;
+    }
+
+    public Integer getIntValue2() {
+        return intValue2;
+    }
+
+    public void setIntValue2(Integer intValue2) {
+        this.intValue2 = intValue2;
+    }
+
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -107,10 +151,10 @@ public class FavouriteItem implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof FavouriteItem)) {
+        if (!(object instanceof ItemUsage)) {
             return false;
         }
-        FavouriteItem other = (FavouriteItem) object;
+        ItemUsage other = (ItemUsage) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -146,11 +190,11 @@ public class FavouriteItem implements Serializable {
         this.forWebUser = forWebUser;
     }
 
-    public FavouriteItemType getType() {
+    public ItemUsageType getType() {
         return type;
     }
 
-    public void setType(FavouriteItemType type) {
+    public void setType(ItemUsageType type) {
         this.type = type;
     }
 
@@ -226,11 +270,11 @@ public class FavouriteItem implements Serializable {
         this.orderNo = orderNo;
     }
 
-    public List<FavouriteItem> getChildren() {
+    public List<ItemUsage> getChildren() {
         return children;
     }
 
-    public void setChildren(List<FavouriteItem> children) {
+    public void setChildren(List<ItemUsage> children) {
         this.children = children;
     }
 
@@ -298,11 +342,11 @@ public class FavouriteItem implements Serializable {
         this.editedAt = editedAt;
     }
 
-    public FavouriteItem getParent() {
+    public ItemUsage getParent() {
         return parent;
     }
 
-    public void setParent(FavouriteItem parent) {
+    public void setParent(ItemUsage parent) {
         this.parent = parent;
     }
 
@@ -322,6 +366,4 @@ public class FavouriteItem implements Serializable {
         this.category = category;
     }
 
-    
-    
 }

@@ -112,6 +112,9 @@
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column>
+                            <h:outputLabel value="#{b.paymentMethod}"/>
+                        </p:column>
+                        <p:column>
                             <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>
                         <p:column style="text-align: right;">
@@ -252,6 +255,9 @@
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                         </p:column> 
+                        <p:column>
+                            <h:outputLabel value="#{b.paymentMethod}"/>
+                        </p:column>
                         <p:column>
                             <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>

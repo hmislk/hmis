@@ -72,6 +72,7 @@
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.insId}" />
+                                <p:outputLabel value=" - #{b.paidBill.insId}" rendered="#{b.paidBill ne b}" />
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >

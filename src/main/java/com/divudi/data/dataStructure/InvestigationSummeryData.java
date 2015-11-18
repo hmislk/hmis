@@ -18,6 +18,7 @@ public class InvestigationSummeryData {
     private long count;
     private double total;
     private double turnOverValue;
+    boolean b;
 
     public Item getInvestigation() {
         return investigation;
@@ -60,4 +61,13 @@ public class InvestigationSummeryData {
     public void setTurnOverValue(double turnOverValue) {
         this.turnOverValue = turnOverValue;
     }
+
+    public boolean isB() {
+        return b;
+    }
+
+    public void setB(boolean b) {
+        this.b = b;
+    }
+    
 }

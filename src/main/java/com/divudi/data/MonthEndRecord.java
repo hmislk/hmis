@@ -19,6 +19,7 @@ public class MonthEndRecord {
     double workedDays;
     double extraDutyDays;
     double poyaDays;
+    double poyaDaysLeave;
     double merhchantileDays;
     double leave_annual;
     double leave_casual;
@@ -187,6 +188,14 @@ public class MonthEndRecord {
 
     public void setExtraDutyDays(double extraDutyDays) {
         this.extraDutyDays = extraDutyDays;
+    }
+
+    public double getPoyaDaysLeave() {
+        return poyaDaysLeave;
+    }
+
+    public void setPoyaDaysLeave(double poyaDaysLeave) {
+        this.poyaDaysLeave = poyaDaysLeave;
     }
 
 }

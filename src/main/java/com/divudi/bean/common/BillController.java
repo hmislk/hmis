@@ -260,8 +260,6 @@ public class BillController implements Serializable {
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(opdPaymentCredit);
 
-        
-
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
         temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
         temp.setBillType(BillType.CashRecieveBill);
@@ -288,7 +286,7 @@ public class BillController implements Serializable {
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        reminingCashPaid=opdPaymentCredit;
+        reminingCashPaid = opdPaymentCredit;
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
@@ -864,7 +862,7 @@ public class BillController implements Serializable {
         for (Department d : billDepts) {
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
-            
+
             if (myBill == null) {
                 return false;
             }
@@ -887,10 +885,10 @@ public class BillController implements Serializable {
             }
 
             getBillFacade().edit(myBill);
-            
+
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
-            
+
             bills.add(myBill);
         }
 
@@ -1215,9 +1213,11 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (getNewPatient().getPerson().getPhone() == null) {
-            UtilityController.addErrorMessage("Please Insert a Phone Number");
-            return true;
+        if (!sessionController.userPreference.isOpdSettleWithoutPatientPhoneNumber()) {
+            if (getNewPatient().getPerson().getPhone() == null) {
+                UtilityController.addErrorMessage("Please Insert a Phone Number");
+                return true;
+            }
         }
 
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
@@ -1366,26 +1366,31 @@ public class BillController implements Serializable {
     }
 
     public void addToBill() {
-
+        System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
+            System.out.println("noting to add");
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
+            System.out.println("an item ?");
             UtilityController.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
+            System.out.println("fee ?");
             UtilityController.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
+            System.out.println("dept?");
             UtilityController.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
+            System.out.println("cat ?");
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
@@ -1394,6 +1399,7 @@ public class BillController implements Serializable {
 
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+        System.out.println("to get current bill items");
         lastBillItem = getCurrentBillItem();
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
@@ -1405,6 +1411,7 @@ public class BillController implements Serializable {
         getCurrentBillItem().setQty(1.0);
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
 
+        System.out.println("to cal totals");
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
@@ -1715,7 +1722,7 @@ public class BillController implements Serializable {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()||getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 System.err.println("IF In");
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
@@ -1765,7 +1772,7 @@ public class BillController implements Serializable {
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
     }
-    
+
     public double calBillPaidValue(Bill b) {
         String sql;
 
